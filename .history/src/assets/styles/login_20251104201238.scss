@@ -1,0 +1,32 @@
+.login-wrapper {
+    background-color: #FBF6F2; 
+    width: 100%;
+    min-height: 100vh;
+  
+    .card {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 0.4em 0.7em;
+    font-weight: 600;
+  }
+  
+  /* Style cho các modal (sẽ dùng ở bước sau) */
+  .modal-header {
+    border-bottom: 1px solid #dee2e6;
+  }
+  .modal-footer {
+    border-top: 1px solid #dee2e6;
+  }
+  
+  /* Style cho các card filter */
+  .filter-card .card-header {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #5a5a5a;
+  }

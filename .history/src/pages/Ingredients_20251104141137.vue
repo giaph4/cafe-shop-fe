@@ -1,0 +1,388 @@
+<template>
+    <div class="modal fade" id="ingredientModal" tabindex="-1" ref="modalElement">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ isEditing ? 'Cập nhật Nguyên liệu' : 'Tạo mới Nguyên liệu' }}</h5>
+            <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+          </div>
+          
+          <Form @submit="handleSubmit" :validation-schema="ingredientSchema" v-slot="{ errors }">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Tên Nguyên liệu <span class="text-danger">*</span></label>
+                <Field 
+                  name="name" 
+                  type="text" 
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.name }"
+                  v-model="formData.name"
+                />
+                <ErrorMessage name="name" class="invalid-feedback" />
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold">Đơn vị <span class="text-danger">*</span></label>
+                  <Field 
+                    name="unit" 
+                    type="text" 
+                    class="form-control"
+                    placeholder="ví dụ: kg, lít, cái"
+                    :class="{ 'is-invalid': errors.unit }"
+                    v-model="formData.unit"
+                  />
+                  <ErrorMessage name="unit" class="invalid-feedback" />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold">Mức đặt lại <span class="text-danger">*</span></label>
+                  <Field 
+                    name="reorderLevel" 
+                    type="number" 
+                    step="0.01"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.reorderLevel }"
+                    v-model="formData.reorderLevel"
+                  />
+                  <ErrorMessage name="reorderLevel" class="invalid-feedback" />
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" @click="closeModal">Huỷ</button>
+              <button type="submit" class="btn btn-primary" :disabled="createMutation.isPending.value || updateMutation.isPending.value">
+                Lưu
+              </button>
+            </div>
+          </Form>
+        </div>
+      </div>
+    </div>
+  
+    <div class="modal fade" id="adjustModal" tabindex="-1" ref="adjustModalElement">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Điều chỉnh Tồn kho</h5>
+            <button type="button" class="btn-close" @click="closeAdjustModal" aria-label="Close"></button>
+          </div>
+          
+          <Form @submit="handleAdjustSubmit" :validation-schema="adjustSchema" v-slot="{ errors }">
+            <div class="modal-body">
+              <h6 class="mb-3">Nguyên liệu: <span class="text-primary">{{ adjustData.name }}</span></h6>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Lượng điều chỉnh <span class="text-danger">*</span></label>
+                <Field 
+                  name="adjustment" 
+                  type="number" 
+                  step="0.01"
+                  class="form-control"
+                  placeholder="Nhập số âm để giảm, số dương để tăng"
+                  :class="{ 'is-invalid': errors.adjustment }"
+                  v-model="adjustData.adjustment"
+                />
+                <ErrorMessage name="adjustment" class="invalid-feedback" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Lý do <span class="text-danger">*</span></label>
+                <Field 
+                  name="reason" 
+                  as="textarea"
+                  rows="3"
+                  class="form-control"
+                  placeholder="ví dụ: Hỏng, Kiểm kho,..."
+                  :class="{ 'is-invalid': errors.reason }"
+                  v-model="adjustData.reason"
+                />
+                <ErrorMessage name="reason" class="invalid-feedback" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" @click="closeAdjustModal">Huỷ</button>
+              <button type="submit" class="btn btn-primary" :disabled="adjustMutation.isPending.value">
+                Xác nhận
+              </button>
+            </div>
+          </Form>
+        </div>
+      </div>
+    </div>
+  
+  
+    <div data-aos="fade-up">
+      <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <h2 class="page-title">Quản lý Nguyên liệu</h2>
+        <button class="btn btn-primary" @click="openModal()">
+          <i class="bi bi-plus-lg me-2"></i> Thêm mới
+        </button>
+      </div>
+  
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="input-group" style="max-width: 400px;">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Tìm kiếm theo tên nguyên liệu..."
+              v-model="searchQuery"
+            >
+          </div>
+        </div>
+      </div>
+  
+      <div class="card">
+        <div class="card-body">
+          
+          <div v-if="isLoading" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+          
+          <div v-else-if="isError" class="alert alert-danger">
+            Không thể tải dữ liệu: {{ error.message }}
+          </div>
+  
+          <div v-else-if="data" class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Tên Nguyên liệu</th>
+                  <th scope="col">Đơn vị</th>
+                  <th scope="col">Tồn kho</th>
+                  <th scope="col">Mức đặt lại</th>
+                  <th scope="col" class="text-end">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="ingredient in data.content" :key="ingredient.id">
+                  <td class="fw-bold">{{ ingredient.name }}</td>
+                  <td>{{ ingredient.unit }}</td>
+                  <td>
+                    <span 
+                      class="badge" 
+                      :class="ingredient.quantityInStock <= ingredient.reorderLevel ? 'bg-danger-muted' : 'bg-light text-dark'"
+                    >
+                      {{ ingredient.quantityInStock }}
+                    </span>
+                  </td>
+                  <td>{{ ingredient.reorderLevel }}</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-info me-2" @click="openAdjustModal(ingredient)">
+                      <i class="bi bi-gear-fill"></i> Điều chỉnh
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary me-2" @click="openModal(ingredient)">
+                      <i class="bi bi-pencil-fill"></i> Sửa
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" @click="handleDelete(ingredient)">
+                      <i class="bi bi-trash-fill"></i> Xoá
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="data.content.length === 0">
+                  <td colspan="5" class="text-center text-muted">Không tìm thấy nguyên liệu nào.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div v-if="data && data.totalPages > 1" class="mt-4">
+            <Pagination 
+              :current-page="currentPage"
+              :total-pages="data.totalPages"
+              @page-change="handlePageChange"
+            />
+          </div>
+  
+        </div>
+      </div>
+    </div>
+  </template>
+  
+  <script setup>
+  import { ref, onMounted, onUnmounted, reactive, watch } from 'vue'
+  import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+  import { Modal } from 'bootstrap'
+  import { Form, Field, ErrorMessage } from 'vee-validate'
+  import * as yup from 'yup'
+  import { toast } from 'vue3-toastify'
+  import { getIngredients, createIngredient, updateIngredient, deleteIngredient, adjustInventory } from '@/api/ingredientService'
+  import Pagination from '@/components/Pagination.vue' // Import component mới
+  
+  // === State ===
+  const queryClient = useQueryClient()
+  const currentPage = ref(1)
+  const searchQuery = ref('')
+  const debouncedSearch = ref('') // Giá trị search đã được debounce
+  let searchTimeout = null
+  
+  // Modal 1: Create/Edit
+  const modalElement = ref(null)
+  const bsModal = ref(null)
+  const isEditing = ref(false)
+  const formData = reactive({ id: null, name: '', unit: '', reorderLevel: 0 })
+  
+  // Modal 2: Adjust
+  const adjustModalElement = ref(null)
+  const bsAdjustModal = ref(null)
+  const adjustData = reactive({ ingredientId: null, name: '', adjustment: null, reason: '' })
+  
+  // === Validation Schemas ===
+  const ingredientSchema = yup.object({
+    name: yup.string().required('Tên là bắt buộc'),
+    unit: yup.string().required('Đơn vị là bắt buộc'),
+    reorderLevel: yup.number().required('Mức đặt lại là bắt buộc').min(0, 'Không thể là số âm'),
+  })
+  
+  const adjustSchema = yup.object({
+    adjustment: yup.number().required('Lượng điều chỉnh là bắt buộc').notOneOf([0], 'Không thể là 0'),
+    reason: yup.string().required('Lý do là bắt buộc'),
+  })
+  
+  // === Logic Tìm kiếm (Debounce) ===
+  watch(searchQuery, (newVal) => {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+      debouncedSearch.value = newVal
+      currentPage.value = 1 // Reset về trang 1 khi tìm kiếm
+    }, 300) // Chờ 300ms
+  })
+  
+  // === Vue Query: Lấy dữ liệu (API 36) ===
+  const { data, isLoading, isError, error } = useQuery({
+    // queryKey sẽ thay đổi khi 'currentPage' hoặc 'debouncedSearch' thay đổi
+    // và Vue Query sẽ tự động gọi lại API
+    queryKey: ['ingredients', currentPage, debouncedSearch],
+    queryFn: () => getIngredients(currentPage.value - 1, 10, debouncedSearch.value),
+    keepPreviousData: true, // Giữ data cũ khi đang loading trang mới
+  })
+  
+  // === Vue Query: Mutations (API 35, 38, 39, 40) ===
+  const createMutation = useMutation({
+    mutationFn: createIngredient,
+    onSuccess: () => {
+      toast.success('Tạo nguyên liệu thành công!')
+      queryClient.invalidateQueries(['ingredients'])
+      closeModal()
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Lỗi!')
+  })
+  
+  const updateMutation = useMutation({
+    mutationFn: updateIngredient,
+    onSuccess: () => {
+      toast.success('Cập nhật nguyên liệu thành công!')
+      queryClient.invalidateQueries(['ingredients'])
+      closeModal()
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Lỗi!')
+  })
+  
+  const deleteMutation = useMutation({
+    mutationFn: deleteIngredient,
+    onSuccess: () => {
+      toast.success('Xoá nguyên liệu thành công!')
+      queryClient.invalidateQueries(['ingredients'])
+    },
+    onError: (err) => {
+      // Bắt lỗi nghiệp vụ (API 39)
+      toast.error(err.response?.data?.message || 'Không thể xoá!')
+    }
+  })
+  
+  const adjustMutation = useMutation({
+    mutationFn: adjustInventory,
+    onSuccess: () => {
+      toast.success('Điều chỉnh tồn kho thành công!')
+      queryClient.invalidateQueries(['ingredients'])
+      closeAdjustModal()
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Lỗi!')
+  })
+  
+  // === Xử lý Modal (Bootstrap JS) ===
+  onMounted(() => {
+    if (modalElement.value) bsModal.value = new Modal(modalElement.value)
+    if (adjustModalElement.value) bsAdjustModal.value = new Modal(adjustModalElement.value)
+  })
+  onUnmounted(() => {
+    bsModal.value?.dispose()
+    bsAdjustModal.value?.dispose()
+  })
+  
+  // Modal 1
+  const openModal = (ingredient = null) => {
+    if (ingredient) {
+      isEditing.value = true
+      formData.id = ingredient.id
+      formData.name = ingredient.name
+      formData.unit = ingredient.unit
+      formData.reorderLevel = ingredient.reorderLevel
+    } else {
+      isEditing.value = false
+      formData.id = null
+      formData.name = ''
+      formData.unit = ''
+      formData.reorderLevel = 0
+    }
+    bsModal.value?.show()
+  }
+  const closeModal = () => bsModal.value?.hide()
+  
+  // Modal 2
+  const openAdjustModal = (ingredient) => {
+    adjustData.ingredientId = ingredient.id
+    adjustData.name = ingredient.name
+    adjustData.adjustment = null
+    adjustData.reason = ''
+    bsAdjustModal.value?.show()
+  }
+  const closeAdjustModal = () => bsAdjustModal.value?.hide()
+  
+  // === Xử lý Submit Form ===
+  const handleSubmit = () => {
+    const data = { 
+      name: formData.name, 
+      unit: formData.unit, 
+      reorderLevel: formData.reorderLevel 
+    }
+    if (isEditing.value) {
+      updateMutation.mutate({ id: formData.id, data })
+    } else {
+      createMutation.mutate(data)
+    }
+  }
+  
+  const handleAdjustSubmit = () => {
+    adjustMutation.mutate({
+      ingredientId: adjustData.ingredientId,
+      adjustment: adjustData.adjustment,
+      reason: adjustData.reason
+    })
+  }
+  
+  const handleDelete = (ingredient) => {
+    if (confirm(`Bạn có chắc chắn muốn xoá "${ingredient.name}"?`)) {
+      deleteMutation.mutate(ingredient.id)
+    }
+  }
+  
+  // === Xử lý Phân trang ===
+  const handlePageChange = (page) => {
+    currentPage.value = page
+  }
+  </script>
+  
+  <style scoped>
+  .page-title {
+    color: #A36B4A;
+  }
+  .bg-danger-muted {
+    background-color: #f8d7da !important;
+    color: #C14A45 !important;
+    font-weight: 600;
+  }
+  .btn-info {
+    background-color: #E9CDA7;
+    border-color: #E9CDA7;
+    color: #3B2F2F;
+  }
+  </style>

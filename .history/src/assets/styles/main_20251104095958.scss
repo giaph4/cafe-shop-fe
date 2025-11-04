@@ -1,0 +1,299 @@
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap');
+
+/*
+  Palette:
+  Background: #FBF6F2
+  Primary (Brown): #A36B4A
+  Accent (Dark Brown): #3B2F2F
+  Soft Beige: #E9CDA7
+  Red muted: #C14A45
+  White: #FFFFFF
+*/
+
+// Định nghĩa biến
+$font-body: 'Inter', sans-serif;
+$font-heading: 'Playfair Display', serif;
+$bg-color: #FBF6F2;
+$primary-color: #A36B4A;
+$accent-color: #3B2F2F;
+$white-color: #FFFFFF;
+$border-color: #EAE0D9; // Màu border nhạt
+
+$sidebar-width: 260px;
+$sidebar-width-collapsed: 80px;
+$topbar-height: 70px;
+
+// Reset cơ bản
+body {
+  background-color: $bg-color;
+  font-family: $font-body;
+  color: $accent-color;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-heading;
+  font-weight: 600;
+  color: $accent-color;
+}
+
+.card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  background-color: $white-color;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  border-color: $primary-color;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #8a583d;
+  border-color: #8a583d;
+  box-shadow: 0 2px 8px rgba(163, 107, 74, 0.3);
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: $accent-color;
+  opacity: 0.7;
+  font-size: 1.25rem;
+  
+  &:hover {
+    opacity: 1;
+    color: $primary-color;
+  }
+}
+
+/* Tùy chỉnh màu text */
+.text-primary { color: $primary-color !important; }
+.text-accent { color: $accent-color !important; }
+.text-danger-muted { color: #C14A45 !important; }
+
+
+.main-wrapper {
+  display: flex;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.main-content-wrapper {
+  flex-grow: 1;
+  width: calc(100% - #{$sidebar-width});
+  margin-left: $sidebar-width;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-in-out;
+}
+
+.page-content {
+  padding: 1.5rem;
+  flex-grow: 1;
+}
+
+.sidebar-wrapper {
+  width: $sidebar-width;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: $white-color;
+  border-right: 1px solid $border-color;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-in-out;
+  z-index: 1000;
+
+  .sidebar-header {
+    height: $topbar-height;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid $border-color;
+    
+    .sidebar-brand {
+      font-size: 1.5rem;
+      font-family: $font-heading;
+      text-decoration: none;
+      color: $primary-color;
+      font-weight: 600;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+
+  .sidebar-menu {
+    padding: 1rem 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+
+    .nav-item-title {
+      font-size: 0.75rem;
+      color: $accent-color;
+      opacity: 0.5;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 1rem 0 0.5rem;
+      white-space: nowrap;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 0;
+      color: $accent-color;
+      opacity: 0.7;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      
+      i {
+        font-size: 1.25rem;
+        width: 30px;
+        text-align: center;
+        margin-right: 1rem;
+      }
+      
+      &:hover {
+        opacity: 1;
+        color: $primary-color;
+        background-color: rgba($primary-color, 0.05);
+      }
+
+      &.router-link-exact-active {
+        opacity: 1;
+        color: $primary-color;
+        font-weight: 600;
+      }
+    }
+  }
+  
+  .sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid $border-color;
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 0;
+      color: $accent-color;
+      opacity: 0.7;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+
+      i {
+        font-size: 1.25rem;
+        width: 30px;
+        text-align: center;
+        margin-right: 1rem;
+      }
+       &:hover {
+        opacity: 1;
+        color: $primary-color;
+      }
+    }
+  }
+}
+
+
+.topbar-wrapper {
+  height: $topbar-height;
+  background-color: $white-color;
+  border-bottom: 1px solid $border-color;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+
+  .topbar-title h5 {
+    color: $accent-color;
+    margin-bottom: 0;
+  }
+
+  .topbar-search {
+    .form-control, .input-group-text {
+      border-radius: 8px;
+      border-color: $border-color;
+      background-color: $white-color;
+    }
+    .form-control:focus {
+      border-color: $primary-color;
+      box-shadow: none;
+    }
+  }
+
+  .topbar-profile {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: $accent-color;
+  }
+}
+
+.main-wrapper.sidebar-collapsed {
+  .sidebar-wrapper {
+    width: $sidebar-width-collapsed;
+
+    .sidebar-header .sidebar-brand span,
+    .sidebar-menu .nav-item-title,
+    .sidebar-menu .nav-link span,
+    .sidebar-footer .nav-link span {
+      display: none;
+    }
+    
+    .sidebar-menu .nav-link i {
+      margin-right: 0;
+    }
+    .sidebar-footer .nav-link i {
+      margin-right: 0;
+    }
+  }
+  
+  .main-content-wrapper {
+    width: calc(100% - #{$sidebar-width-collapsed});
+    margin-left: $sidebar-width-collapsed;
+  }
+}
+@media (max-width: 768px) {
+  .main-wrapper {
+    .sidebar-wrapper {
+      width: $sidebar-width-collapsed;
+      
+      .sidebar-header .sidebar-brand span,
+      .sidebar-menu .nav-item-title,
+      .sidebar-menu .nav-link span,
+      .sidebar-footer .nav-link span {
+        display: none;
+      }
+      .sidebar-menu .nav-link i {
+        margin-right: 0;
+      }
+       .sidebar-footer .nav-link i {
+        margin-right: 0;
+      }
+    }
+
+    .main-content-wrapper {
+      width: calc(100% - #{$sidebar-width-collapsed});
+      margin-left: $sidebar-width-collapsed;
+    }
+
+    .topbar-search {
+      display: none;
+    }
+  }
+}

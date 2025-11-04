@@ -71,7 +71,7 @@ const isLoading = ref(false)
 const loginSchema = yup.object({
     username: yup.string()
         .required('Tên đăng nhập là bắt buộc')
-        .min(4, 'Tên đăng nhập phải có ít nhất 4 ký tự'),
+        .min(4, 'Tên đăng nhập phải ít nhất 4 ký tự'),
     password: yup.string()
         .required('Mật khẩu là bắt buộc')
         .min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
@@ -79,22 +79,13 @@ const loginSchema = yup.object({
 
 const handleLogin = async (values) => {
     isLoading.value = true
-    try {
         await authStore.login(values)
-
+        toast.success(`Chào mừng ${authStore.user.fullName}!`)
+  
         router.push('/')
-
-    } catch (error) {
-        console.error('Lỗi đăng nhập:', error)
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            toast.error('Tên đăng nhập hoặc mật khẩu không đúng.')
-        } else {
-            toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
-        }
-    } finally {
-        isLoading.value = false
     }
-}
+
+
 </script>
 
 <style scoped>

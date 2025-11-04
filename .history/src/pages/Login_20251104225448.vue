@@ -1,5 +1,5 @@
 <template>
-    <div class="login-wrapper">
+    <div class*="login-wrapper">
         <div class="container">
             <div class="row justify-content-center align-items-center min-vh-100">
                 <div class="col-md-6 col-lg-4">
@@ -81,7 +81,8 @@ const handleLogin = async (values) => {
     isLoading.value = true
     try {
         await authStore.login(values)
-
+        toast.success(`Chào mừng ${authStore.user.fullName}!`)
+  
         router.push('/')
 
     } catch (error) {

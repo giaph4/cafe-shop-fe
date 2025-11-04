@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 
 export const useAuthStore = defineStore('auth', () => {
+    /
     const token = ref(localStorage.getItem('token') || null)
-    const user = ref(JSON.parse(localStorage.getItem('username')) || null)
+    const user = ref(JSON.parse(localStorage.getItem('user')) || null)
     const router = useRouter()
     const isAuthenticated = computed(() => !!token.value)
     const userRole = computed(() => user.value?.roles?.[0] || null)

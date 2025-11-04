@@ -1,5 +1,5 @@
 <template>
-    <div class="login-wrapper">
+    <div class*="login-wrapper">
         <div class="container">
             <div class="row justify-content-center align-items-center min-vh-100">
                 <div class="col-md-6 col-lg-4">
@@ -62,11 +62,12 @@ import { useAuthStore } from '@/store/auth'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
 import { toast } from 'vue3-toastify'
-import '@/assets/styles/login.scss'
+import '@/assets/styles/login.scss' // Import style riêng cho trang login
 
 const router = useRouter()
 const authStore = useAuthStore()
 const isLoading = ref(false)
+
 
 const loginSchema = yup.object({
     username: yup.string()
@@ -81,7 +82,8 @@ const handleLogin = async (values) => {
     isLoading.value = true
     try {
         await authStore.login(values)
-
+        toast.success(`Chào mừng ${authStore.user.fullName}!`)
+  
         router.push('/')
 
     } catch (error) {

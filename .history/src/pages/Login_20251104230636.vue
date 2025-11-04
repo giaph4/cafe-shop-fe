@@ -81,6 +81,7 @@ const handleLogin = async (values) => {
     isLoading.value = true
     try {
         await authStore.login(values)
+        toast.success(`Chào mừng ${authStore.user.fullName}!`)
 
         router.push('/')
 

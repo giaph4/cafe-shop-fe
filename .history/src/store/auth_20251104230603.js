@@ -5,7 +5,7 @@ import api from '@/api/axios'
 
 export const useAuthStore = defineStore('auth', () => {
     const token = ref(localStorage.getItem('token') || null)
-    const user = ref(JSON.parse(localStorage.getItem('username')) || null)
+    const user = ref(JSON.parse(localStorage.getItem('user')) || null)
     const router = useRouter()
     const isAuthenticated = computed(() => !!token.value)
     const userRole = computed(() => user.value?.roles?.[0] || null)
@@ -20,11 +20,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function login(credentials) {
         const response = await api.post('/auth/login', credentials)
-   
+
         const { token: newToken, user: userData } = response.data
         setUser(newToken, userData)
     }
-   
+
     function logout() {
         token.value = null
         user.value = null

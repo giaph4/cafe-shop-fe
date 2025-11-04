@@ -66,12 +66,7 @@
                         <span>Nhập hàng</span>
                     </router-link>
                 </li>
-                <li class="nav-item">
-                    <router-link to="/expenses" class="nav-link">
-                        <i class="bi bi-cash-stack"></i>
-                        <span>Chi phí</span>
-                    </router-link>
-                </li>
+                
                 <li class="nav-item">
                     <router-link to="/users" class="nav-link">
                         <i class="bi bi-people-fill"></i>
@@ -92,22 +87,16 @@
 </template>
 
 <script setup>
-// import { ref } from 'vue' // 'ref' không cần thiết nếu bạn không dùng
-import { RouterLink } from 'vue-router'; // 1. SỬA LỖI: Import RouterLink
-import { useAuthStore } from '@/store/auth'; // 2. Import auth store
+import { ref } from 'vue'
 
 defineProps({
     isCollapsed: Boolean
 })
 
-// 3. Lấy auth store instance
-const authStore = useAuthStore();
-
 const handleLogout = () => {
-    // 4. Gọi hàm logout từ store
-    // Nó sẽ tự động xoá token và chuyển hướng về trang Login
-    authStore.logout();
+    alert('Đăng xuất!')
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>

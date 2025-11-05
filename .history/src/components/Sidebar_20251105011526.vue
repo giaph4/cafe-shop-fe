@@ -92,8 +92,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue' // 'ref' không cần thiết nếu bạn không dùng
-import { useAuthStore } from '@/store/auth'; // 2. Import auth store
+// import { ref } from 'vue' // 'ref' không cần thiết nếu bạn không dùng
+import { RouterLink } from 'vue-router';
+import { useAuthStore } from '@/store/auth';
 
 defineProps({
     isCollapsed: Boolean
@@ -103,8 +104,6 @@ defineProps({
 const authStore = useAuthStore();
 
 const handleLogout = () => {
-    // 4. Gọi hàm logout từ store
-    // Nó sẽ tự động xoá token và chuyển hướng về trang Login
     authStore.logout();
 }
 </script>

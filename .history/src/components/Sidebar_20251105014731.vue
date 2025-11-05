@@ -92,7 +92,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue' // 'ref' không cần thiết nếu bạn không dùng
+// import { ref } from 'vue' // 'ref' không cần thiết nếu bạn không dùng
+import { RouterLink } from 'vue-router'; // 1. SỬA LỖI: Import RouterLink
 import { useAuthStore } from '@/store/auth'; // 2. Import auth store
 
 defineProps({
@@ -102,6 +103,11 @@ defineProps({
 // 3. Lấy auth store instance
 const authStore = useAuthStore();
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Xoá token và chuyển hướng về trang Login
+ */
+/*******  7c017c27-cafb-45f0-9712-c6bda1a2d368  *******/
 const handleLogout = () => {
     // 4. Gọi hàm logout từ store
     // Nó sẽ tự động xoá token và chuyển hướng về trang Login

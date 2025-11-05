@@ -61,11 +61,11 @@ const routes = [
                 name: 'Quản lý Nhập hàng',
                 component: PurchaseOrders,
             },
-            // {
-            //     path: 'expenses',
-            //     name: 'Quản lý Chi phí',
-            //     component: Expenses,
-            // },
+            {
+                path: 'expenses',
+                name: 'Quản lý Chi phí',
+                component: Expenses,
+            },
             {
                 path: 'purchase-orders/new',
                 name: 'Tạo Đơn nhập hàng',

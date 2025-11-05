@@ -11,8 +11,7 @@ import Ingredients from '../pages/Ingredients.vue'
 import Suppliers from '../pages/Suppliers.vue'
 import PurchaseOrders from '../pages/PurchaseOrders.vue'
 import PurchaseOrderCreate from '../pages/PurchaseOrderCreate.vue'
-import NotFound from '../pages/NotFound.vue'
-// import Expenses from '../pages/Expenses.vue'
+im
 // import Expenses from '../pages/Expenses.vue'
 
 const routes = [
@@ -80,11 +79,11 @@ const routes = [
         component: Login,
         meta: { requiresGuest: true },
     },
-   {
-       path: '/:pathMatch(.*)*',
-       name: 'NotFound',
-       component: NotFound
-   }
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: () => import('../pages/NotFound.vue') // (Nên tạo trang 404)
+    }
 ]
 
 const router = createRouter({

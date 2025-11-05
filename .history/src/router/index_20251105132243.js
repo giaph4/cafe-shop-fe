@@ -13,7 +13,6 @@ import PurchaseOrders from '../pages/PurchaseOrders.vue'
 import PurchaseOrderCreate from '../pages/PurchaseOrderCreate.vue'
 import NotFound from '../pages/NotFound.vue'
 // import Expenses from '../pages/Expenses.vue'
-// import Expenses from '../pages/Expenses.vue'
 
 const routes = [
     {

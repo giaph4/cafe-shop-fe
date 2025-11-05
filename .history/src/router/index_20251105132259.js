@@ -12,7 +12,7 @@ import Suppliers from '../pages/Suppliers.vue'
 import PurchaseOrders from '../pages/PurchaseOrders.vue'
 import PurchaseOrderCreate from '../pages/PurchaseOrderCreate.vue'
 import NotFound from '../pages/NotFound.vue'
-// import Expenses from '../pages/Expenses.vue'
+import Expenses from '../pages/Expenses.vue'
 // import Expenses from '../pages/Expenses.vue'
 
 const routes = [
@@ -61,11 +61,11 @@ const routes = [
                 name: 'Quản lý Nhập hàng',
                 component: PurchaseOrders,
             },
-            // {
-            //     path: 'expenses',
-            //     name: 'Quản lý Chi phí',
-            //     component: Expenses,
-            // },
+            {
+                path: 'expenses',
+                name: 'Quản lý Chi phí',
+                component: Expenses,
+            },
             {
                 path: 'purchase-orders/new',
                 name: 'Tạo Đơn nhập hàng',

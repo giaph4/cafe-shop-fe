@@ -36,7 +36,6 @@
 import { ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 
-// Đăng ký component apexchart
 const apexchart = VueApexCharts
 
 const stats = ref([

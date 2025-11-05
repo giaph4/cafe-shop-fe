@@ -92,7 +92,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue' // 'ref' không cần thiết nếu bạn không dùng
+// import { ref } from 'vue' // 'ref' không cần thiết nếu bạn không dùng
+import { RouterLink } from 'vue-router'; // 1. SỬA LỖI: Import RouterLink
 import { useAuthStore } from '@/store/auth'; // 2. Import auth store
 
 defineProps({
@@ -103,8 +104,6 @@ defineProps({
 const authStore = useAuthStore();
 
 const handleLogout = () => {
-    // 4. Gọi hàm logout từ store
-    // Nó sẽ tự động xoá token và chuyển hướng về trang Login
     authStore.logout();
 }
 </script>

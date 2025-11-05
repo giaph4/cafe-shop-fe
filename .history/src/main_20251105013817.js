@@ -16,6 +16,8 @@ import * as bootstrap from 'bootstrap'
 import Toast from 'vue3-toastify'
 import AOS from 'aos'
 
+
+auth.restoreSession()
 const app = createApp(App)
 
 app.use(createPinia())
@@ -34,14 +36,5 @@ AOS.init({
     duration: 800,
     once: false
 })
-
-let stored = null
-try {
-  stored = JSON.parse(localStorage.getItem('auth'))
-} catch (e) {
-  stored = null
-}
-const state = ref(stored ?? { user: null, token: null })
-
 
 window.bootstrap = bootstrap

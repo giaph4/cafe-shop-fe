@@ -1,0 +1,243 @@
+<template>
+    <div class="customers-tab">
+        <div class="customers-tab__summary">
+            <div class="summary-card">
+                <div class="summary-card__icon bg-emerald-light">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="summary-card__meta">
+                    <span>Tổng chi phí</span>
+                    <strong>{{ formatCurrency(expenseSummary.total) }}</strong>
+                    <small v-if="expenseSummary.range">{{ expenseSummary.range }}</small>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card__icon bg-amber-light">
+                    <i class="bi bi-bag-plus"></i>
+                </div>
+                <div class="summary-card__meta">
+                    <span>Chi phí nhập nguyên liệu</span>
+                    <strong>{{ formatCurrency(importSummary.total) }}</strong>
+                    <small v-if="importSummary.range">{{ importSummary.range }}</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="customers-tab__grid">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Khách hàng tiêu biểu</h5>
+                    <p>Top khách hàng theo doanh số trong giai đoạn lọc</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th class="text-end">Số đơn</th>
+                            <th class="text-end">Tổng chi tiêu</th>
+                            <th class="text-end">Đơn TB</th>
+                            <th class="text-end">Điểm</th>
+                            <th>Đơn gần nhất</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="customer in topCustomers" :key="customer.customerId">
+                            <td>{{ customer.customerName }}</td>
+                            <td>{{ customer.phone || '—' }}</td>
+                            <td class="text-end">{{ customer.totalOrders ?? 0 }}</td>
+                            <td class="text-end">{{ formatCurrency(customer.totalSpent) }}</td>
+                            <td class="text-end">{{ formatCurrency(customer.averageOrderValue) }}</td>
+                            <td class="text-end">{{ customer.loyaltyPoints ?? 0 }}</td>
+                            <td>{{ formatDate(customer.lastOrderDate) }}</td>
+                        </tr>
+                        <tr v-if="!topCustomers?.length">
+                            <td colspan="7">
+                                <EmptyState message="Chưa có số liệu khách hàng"/>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Hiệu suất nhân viên</h5>
+                    <p>Top nhân viên theo doanh thu và số đơn</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Vai trò</th>
+                            <th class="text-end">Số đơn</th>
+                            <th class="text-end">Doanh thu</th>
+                            <th class="text-end">Giá trị TB</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="staff in staffPerformance" :key="staff.userId">
+                            <td>{{ staff.fullName || staff.username }}</td>
+                            <td><span class="customers-tab__role-badge">{{ prettyRole(staff.role) }}</span></td>
+                            <td class="text-end">{{ staff.totalOrders ?? 0 }}</td>
+                            <td class="text-end">{{ formatCurrency(staff.totalRevenue) }}</td>
+                            <td class="text-end">{{ formatCurrency(staff.averageOrderValue) }}</td>
+                        </tr>
+                        <tr v-if="!staffPerformance?.length">
+                            <td colspan="5">
+                                <EmptyState message="Chưa có thống kê nhân viên"/>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import {computed} from 'vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import {formatCurrency} from '@/utils/formatters'
+
+const props = defineProps({
+    topCustomers: {type: Array, default: () => []},
+    staffPerformance: {type: Array, default: () => []},
+    totalExpenses: {type: Object, default: null},
+    totalImportedCost: {type: Object, default: null}
+})
+
+const expenseSummary = computed(() => buildFinancialSummary(props.totalExpenses, 'totalExpenses'))
+const importSummary = computed(() => buildFinancialSummary(props.totalImportedCost, 'totalImportedIngredientCost'))
+
+const buildFinancialSummary = (source, key) => {
+    if (!source) {
+        return {total: 0, range: ''}
+    }
+    const total = typeof source === 'number' ? source : source?.[key] ?? 0
+    const {startDate, endDate} = source ?? {}
+    let range = ''
+    if (startDate || endDate) {
+        range = [startDate, endDate].filter(Boolean).join(' → ')
+    }
+    return {total, range}
+}
+
+const formatDate = (value) => {
+    if (!value) return '—'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return '—'
+    return date.toLocaleDateString('vi-VN')
+}
+
+const prettyRole = (role) => {
+    if (!role) return '—'
+    return role.replace('ROLE_', '').toLowerCase().replace(/(^|\s)\S/g, (s) => s.toUpperCase())
+}
+</script>
+
+<style scoped>
+.customers-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.customers-tab__summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.35rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-soft);
+}
+
+.summary-card__icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    color: var(--color-primary);
+}
+
+.summary-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.summary-card__meta span {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.summary-card__meta small {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.customers-tab__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 1.5rem;
+}
+
+.card-header {
+    border-bottom: none;
+    margin-bottom: 1rem;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table tbody tr {
+    vertical-align: middle;
+}
+
+.customers-tab__role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: capitalize;
+    color: var(--color-badge-soft-text);
+    background: var(--color-badge-soft-bg);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 6px 14px rgba(15, 23, 42, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.dark-theme .customers-tab__role-badge {
+    border-color: rgba(129, 140, 248, 0.32);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 18px rgba(15, 23, 42, 0.35);
+}
+
+.comfort-theme .customers-tab__role-badge {
+    border-color: rgba(95, 111, 148, 0.28);
+}
+
+@media (max-width: 992px) {
+    .customers-tab__grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

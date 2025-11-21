@@ -1,73 +1,613 @@
 <template>
-    <nav class="topbar-wrapper navbar navbar-expand">
-      <button class="btn btn-icon" @click="toggleSidebar">
-        <i class="bi" :class="isSidebarCollapsed ? 'bi-list' : 'bi-x-lg'"></i>
-      </button>
-  
-      <div class="topbar-title ms-3">
-        <h5 class="mb-0">{{ $route.name }}</h5>
-      </div>
-  
-      <div class="ms-auto d-flex align-items-center">
-        <div class="topbar-search me-3">
-          <div class="input-group">
-            <span class="input-group-text bg-white border-end-0">
-              <i class="bi bi-search"></i>
-            </span>
-            <input type="text" class="form-control border-start-0" placeholder="Tìm kiếm...">
-          </div>
-        </div>
-  
-        <button class="btn btn-icon me-2">
-          <i class="bi bi-bell-fill"></i>
-        </button>
-  
-        <div class="dropdown">
-          <a href="#" class="topbar-profile" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://i.pravatar.cc/40" alt="Avatar" class="rounded-circle" />
-            <div class="ms-2 d-none d-md-block">
-              <span class="d-block small">Xin chào,</span>
-              <span class="fw-bold">Manager</span>
+    <header class="neo-nav" :class="{ 'neo-nav--scrolled': isScrolled }">
+        <div class="neo-nav__section neo-nav__section--left">
+            <button
+                class="neo-nav__icon neo-nav__icon--primary"
+                type="button"
+                :aria-label="sidebarAriaLabel"
+                @click="toggleSidebar"
+            >
+                <i class="bi" :class="sidebarIcon"></i>
+            </button>
+
+            <div class="neo-nav__brand">
+                <span class="neo-nav__brand-prefix">Bảng điều khiển</span>
+                <strong class="neo-nav__brand-title" :title="pageTitle">{{ pageTitle }}</strong>
             </div>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg border-0" style="border-radius: 12px;">
-            <li>
-              <a class="dropdown-item rounded" href="#">
-                <i class="bi bi-person-circle me-2"></i> Hồ sơ
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item rounded" href="#">
-                <i class="bi bi-gear-fill me-2"></i> Cài đặt
-              </a>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item rounded text-danger-muted" href="#" @click.prevent="handleLogout">
-                <i class="bi bi-box-arrow-left me-2"></i> Đăng xuất
-              </a>
-            </li>
-          </ul>
         </div>
-      </div>
-    </nav>
-  </template>
-  
-  <script setup>
-  const emit = defineEmits(['toggleSidebar'])
-  
-  defineProps({
+
+        <div class="neo-nav__section neo-nav__section--center">
+            <div class="neo-nav__search" role="search">
+                <i class="bi bi-search"></i>
+                <input
+                    v-model="searchKeyword"
+                    class="neo-nav__search-input"
+                    type="search"
+                    placeholder="Tìm kiếm nhanh..."
+                    @keydown.enter.prevent="emitSearch"
+                />
+                <button v-if="searchKeyword" class="neo-nav__search-clear" type="button" @click="clearSearch">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="neo-nav__section neo-nav__section--right">
+            <button
+                class="neo-nav__icon"
+                type="button"
+                :title="`Chuyển sang ${nextThemeInfo.label}`"
+                @click="handleThemeCycle"
+            >
+                <i class="bi" :class="currentThemeInfo.icon"></i>
+            </button>
+
+            <button class="neo-nav__icon" type="button" aria-label="Thông báo">
+                <span class="neo-nav__icon-indicator"></span>
+                <i class="bi bi-bell"></i>
+            </button>
+
+            <div class="neo-nav__profile" :class="{ 'is-open': profileMenuOpen }">
+                <button class="neo-nav__profile-trigger" type="button" @click="toggleProfileMenu" aria-haspopup="menu" :aria-expanded="profileMenuOpen">
+                    <img :src="avatarUrl" alt="Avatar"/>
+                    <div class="neo-nav__profile-info">
+                        <span>Xin chào,</span>
+                        <strong>{{ displayName }}</strong>
+                    </div>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+
+                <div v-if="profileMenuOpen" class="neo-nav__profile-menu" role="menu">
+                    <button class="neo-nav__profile-item" type="button" role="menuitem" @click="goToProfile">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Hồ sơ</span>
+                    </button>
+                    <button class="neo-nav__profile-item" type="button" role="menuitem">
+                        <i class="bi bi-gear"></i>
+                        <span>Cài đặt</span>
+                    </button>
+                    <hr class="neo-nav__profile-divider"/>
+                    <button class="neo-nav__profile-item neo-nav__profile-item--danger" type="button" role="menuitem" @click="handleLogout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Đăng xuất</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+</template>
+<script setup>
+import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useAuthStore} from '@/store/auth'
+import {
+    getStoredTheme,
+    applyThemeClass,
+    persistTheme,
+    LIGHT_THEME,
+    COMFORT_THEME,
+    DARK_THEME,
+    normalizeTheme,
+    resolveInitialTheme,
+    THEME_SEQUENCE
+} from '@/utils/theme'
+
+const emit = defineEmits(['toggleSidebar', 'search'])
+
+const props = defineProps({
     isSidebarCollapsed: Boolean
-  })
-  
-  const toggleSidebar = () => {
+})
+
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+
+const searchKeyword = ref('')
+const profileMenuOpen = ref(false)
+const profileRef = ref(null)
+const isScrolled = ref(false)
+
+const currentTheme = ref(normalizeTheme(getStoredTheme() || resolveInitialTheme()))
+
+const THEME_META = {
+    [LIGHT_THEME]: {icon: 'bi-sun', label: 'Chế độ sáng'},
+    [COMFORT_THEME]: {icon: 'bi-droplet-half', label: 'Chế độ dịu mắt'},
+    [DARK_THEME]: {icon: 'bi-moon-stars', label: 'Chế độ tối'}
+}
+
+const pageTitle = computed(() => route.meta?.breadcrumb || route.meta?.title || route.name || 'Trang chính')
+const displayName = computed(() => authStore.user?.fullName || authStore.user?.username || 'Người dùng')
+const avatarUrl = computed(() => authStore.user?.avatar || 'https://i.pravatar.cc/80')
+
+const sidebarIcon = computed(() => (props.isSidebarCollapsed ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar'))
+const sidebarAriaLabel = computed(() => (props.isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'))
+
+const toggleSidebar = () => {
     emit('toggleSidebar')
-  }
-  
-  const handleLogout = () => {
-    alert('Đăng xuất!')
-  }
-  </script>
-  
-  <style scoped>
-  </style>
+}
+
+const emitSearch = () => {
+    emit('search', searchKeyword.value.trim())
+}
+
+const clearSearch = () => {
+    searchKeyword.value = ''
+    emitSearch()
+}
+
+const handleLogout = () => {
+    authStore.logout()
+    profileMenuOpen.value = false
+}
+
+const applyTheme = (theme) => {
+    const normalized = normalizeTheme(theme)
+    if (currentTheme.value === normalized) return
+    currentTheme.value = normalized
+    applyThemeClass(normalized)
+    persistTheme(normalized)
+}
+
+const nextThemeValue = computed(() => {
+    const index = THEME_SEQUENCE.indexOf(currentTheme.value)
+    return THEME_SEQUENCE[(index + 1) % THEME_SEQUENCE.length]
+})
+
+const currentThemeInfo = computed(() => THEME_META[currentTheme.value])
+const nextThemeInfo = computed(() => THEME_META[nextThemeValue.value])
+
+const handleThemeCycle = () => {
+    applyTheme(nextThemeValue.value)
+}
+
+const toggleProfileMenu = () => {
+    profileMenuOpen.value = !profileMenuOpen.value
+}
+
+const goToProfile = () => {
+    profileMenuOpen.value = false
+    router.push({name: 'Hồ sơ cá nhân'})
+}
+
+const closeProfileMenu = (event) => {
+    if (!profileMenuOpen.value) return
+    if (profileRef.value && !profileRef.value.contains(event.target)) {
+        profileMenuOpen.value = false
+    }
+}
+
+const handleScroll = () => {
+    isScrolled.value = window.scrollY > 8
+}
+
+const handleEscape = (event) => {
+    if (event.key === 'Escape') {
+        profileMenuOpen.value = false
+    }
+}
+
+const handleStorage = (event) => {
+    if (event.key === 'app-theme' && event.newValue) {
+        applyTheme(event.newValue)
+    }
+}
+
+const handleSystemPreference = (event) => {
+    const stored = getStoredTheme()
+    if (stored) return
+    applyTheme(event.matches ? DARK_THEME : LIGHT_THEME)
+}
+
+onMounted(() => {
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener('pointerdown', closeProfileMenu)
+    window.addEventListener('keydown', handleEscape)
+    window.addEventListener('scroll', handleScroll, {passive: true})
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)')
+    if (media) {
+        media.addEventListener('change', handleSystemPreference)
+        if (!getStoredTheme()) {
+            applyTheme(media.matches ? DARK_THEME : LIGHT_THEME)
+        }
+    }
+    handleScroll()
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener('storage', handleStorage)
+    window.removeEventListener('pointerdown', closeProfileMenu)
+    window.removeEventListener('keydown', handleEscape)
+    window.removeEventListener('scroll', handleScroll)
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)')
+    media?.removeEventListener('change', handleSystemPreference)
+})
+
+watch(
+    () => route.fullPath,
+    () => {
+        profileMenuOpen.value = false
+    }
+)
+</script>
+
+<style scoped>
+:global(:root) {
+    --nav-height: 72px;
+    --nav-padding-x: clamp(1.2rem, 2vw, 2rem);
+    --nav-gap: 1.25rem;
+}
+
+.neo-nav {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--nav-gap);
+    min-height: var(--nav-height);
+    padding: 0.75rem var(--nav-padding-x);
+    border-radius: 22px;
+    border: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
+    background: var(--color-elevated);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(16px);
+    transition: box-shadow 0.24s ease, transform 0.24s ease, border-color 0.24s ease;
+    z-index: 120;
+}
+
+.neo-nav--scrolled {
+    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.18);
+    border-color: rgba(99, 102, 241, 0.24);
+}
+
+.neo-nav__section {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+}
+
+.neo-nav__section--center {
+    justify-content: center;
+}
+
+.neo-nav__section--right {
+    justify-content: flex-end;
+    gap: 0.8rem;
+}
+
+.neo-nav__icon {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    display: grid;
+    place-items: center;
+    color: var(--color-text-muted);
+    font-size: 1.18rem;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.neo-nav__icon:hover,
+.neo-nav__icon:focus-visible {
+    background: rgba(99, 102, 241, 0.18);
+    border-color: rgba(99, 102, 241, 0.32);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.neo-nav__icon--primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-primary-contrast, #fff);
+    border-color: transparent;
+}
+
+.neo-nav__icon--primary:hover,
+.neo-nav__icon--primary:focus-visible {
+    color: var(--color-primary-contrast, #fff);
+    transform: translateY(-1px) scale(1.02);
+}
+
+.neo-nav__icon-indicator {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.18);
+}
+
+.neo-nav__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.neo-nav__brand-prefix {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-text-subtle);
+}
+
+.neo-nav__brand-title {
+    font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+    font-weight: 700;
+    color: var(--color-heading);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.neo-nav__search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: clamp(220px, 40vw, 420px);
+    padding: 0.55rem 0.95rem;
+    border-radius: 18px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.neo-nav__search:focus-within {
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.18);
+}
+
+.neo-nav__search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.95rem;
+    color: var(--color-text);
+    outline: none;
+}
+
+.neo-nav__search-clear {
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: color 0.18s ease;
+}
+
+.neo-nav__search-clear:hover {
+    color: var(--color-primary);
+}
+
+.neo-nav__profile {
+    position: relative;
+}
+
+.neo-nav__profile-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0.55rem;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    cursor: pointer;
+    transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.neo-nav__profile-trigger:hover,
+.neo-nav__profile-trigger:focus-visible {
+    border-color: rgba(99, 102, 241, 0.32);
+    background: rgba(99, 102, 241, 0.12);
+    box-shadow: 0 12px 22px rgba(99, 102, 241, 0.18);
+}
+
+.neo-nav__profile-trigger img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+.neo-nav__profile-info span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.neo-nav__profile-info strong {
+    font-size: 0.95rem;
+    color: var(--color-heading);
+}
+
+.neo-nav__profile-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 220px;
+    padding: 0.55rem;
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: var(--color-elevated);
+    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.18);
+    backdrop-filter: blur(18px);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    animation: dropdown-fade 0.18s ease;
+    z-index: 140;
+}
+
+.neo-nav__profile-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: background-color 0.18s ease, color 0.18s ease;
+    cursor: pointer;
+}
+
+.neo-nav__profile-item i {
+    font-size: 1.05rem;
+}
+
+.neo-nav__profile-item:hover,
+.neo-nav__profile-item:focus-visible {
+    background: rgba(99, 102, 241, 0.14);
+    color: var(--color-primary);
+}
+
+.neo-nav__profile-item--danger {
+    color: #dc2626;
+}
+
+.neo-nav__profile-item--danger:hover,
+.neo-nav__profile-item--danger:focus-visible {
+    background: rgba(220, 38, 38, 0.12);
+    color: #b91c1c;
+}
+
+.neo-nav__profile-divider {
+    height: 1px;
+    margin: 0.25rem 0.35rem;
+    border: none;
+    background: rgba(148, 163, 184, 0.28);
+}
+
+@keyframes dropdown-fade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1199px) {
+    :root {
+        --nav-padding-x: clamp(1rem, 3vw, 1.6rem);
+        --nav-gap: 1rem;
+    }
+
+    .neo-nav {
+        grid-template-columns: auto auto auto;
+    }
+
+    .neo-nav__search {
+        width: clamp(200px, 35vw, 320px);
+    }
+}
+
+@media (max-width: 992px) {
+    .neo-nav {
+        grid-template-columns: 1fr auto;
+        grid-template-areas: 'left right' 'center center';
+        row-gap: 0.75rem;
+        align-items: start;
+    }
+
+    .neo-nav__section--left {
+        grid-area: left;
+    }
+
+    .neo-nav__section--right {
+        grid-area: right;
+    }
+
+    .neo-nav__section--center {
+        grid-area: center;
+        justify-content: stretch;
+    }
+
+    .neo-nav__search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --nav-padding-x: clamp(0.85rem, 4vw, 1.2rem);
+        --nav-gap: 0.9rem;
+    }
+
+    .neo-nav__brand-prefix {
+        font-size: 0.68rem;
+    }
+
+    .neo-nav__brand-title {
+        font-size: 1.05rem;
+    }
+
+    .neo-nav__icon,
+    .neo-nav__icon--primary {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        font-size: 1.05rem;
+    }
+
+    .neo-nav__profile-trigger {
+        gap: 0.6rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .neo-nav__profile-trigger img {
+        width: 38px;
+        height: 38px;
+    }
+
+    .neo-nav__profile-info span {
+        font-size: 0.7rem;
+    }
+
+    .neo-nav__profile-info strong {
+        font-size: 0.88rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .neo-nav {
+        grid-template-columns: 1fr auto;
+    }
+
+    .neo-nav__brand-prefix {
+        display: none;
+    }
+
+    .neo-nav__brand-title {
+        font-size: 1rem;
+    }
+
+    .neo-nav__search {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .neo-nav__search i:first-child {
+        font-size: 0.95rem;
+    }
+
+    .neo-nav__profile-info {
+        display: none;
+    }
+
+    .neo-nav__profile-trigger i {
+        display: none;
+    }
+}
+</style>

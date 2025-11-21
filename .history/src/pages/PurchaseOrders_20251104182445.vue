@@ -133,7 +133,7 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { getPurchaseOrders, updatePurchaseOrderStatus, deletePurchaseOrder } from '@/api/purchaseOrderService';
 import Pagination from '@/components/Pagination.vue'; // Tái sử dụng component
-import PurchaseOrderDetailModal from '@/components/PurchaseOrderDetailModal.vue'; // Tái sử dụng component
+import PurchaseOrderDetailModal from '@/components/purchase-orders/PurchaseOrderDetailModal.vue'; // Tái sử dụng component
 import { formatMoney } from '@/utils/formatMoney'; // Tái sử dụng tiện ích
 import { useToast } from 'vue-toastification'; // Giả định dùng vue-toastification
 import debounce from 'lodash/debounce';

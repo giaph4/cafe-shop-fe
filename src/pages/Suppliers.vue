@@ -1,57 +1,57 @@
 <template>
-    <div class="modal fade" id="supplierModal" tabindex="-1" ref="modalElement">
+    <!-- Supplier Modal -->
+    <div class="modal fade" id="supplierModal" tabindex="-1" ref="modalElement" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ isEditing ? 'Cập nhật Nhà cung cấp' : 'Tạo mới Nhà cung cấp' }}</h5>
+            <div class="modal-content form-modal">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-semibold">{{ isEditing ? 'Cập nhật nhà cung cấp' : 'Thêm nhà cung cấp mới' }}</h5>
+                        <p class="modal-subtitle text-muted mb-0">Lưu thông tin chính xác để quản lý chuỗi cung ứng hiệu quả.</p>
+                    </div>
                     <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                 </div>
 
                 <Form @submit="handleSubmit" :validation-schema="supplierSchema" v-slot="{ errors }">
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Tên nhà cung cấp <span
-                                        class="text-danger">*</span></label>
-                                <Field name="name" type="text" class="form-control"
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+                                <Field name="name" type="text" class="form-control" placeholder="Ví dụ: Công ty ABC"
                                     :class="{ 'is-invalid': errors.name }" v-model="formData.name" />
                                 <ErrorMessage name="name" class="invalid-feedback" />
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Người liên hệ</label>
-                                <Field name="contactPerson" type="text" class="form-control"
-                                    v-model="formData.contactPerson" />
+                            <div class="col-md-6">
+                                <label class="form-label">Người liên hệ</label>
+                                <Field name="contactPerson" type="text" class="form-control" placeholder="Nguyễn Văn A"
+                                    :class="{ 'is-invalid': errors.contactPerson }" v-model="formData.contactPerson" />
+                                <ErrorMessage name="contactPerson" class="invalid-feedback" />
                             </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Số điện thoại <span
-                                        class="text-danger">*</span></label>
-                                <Field name="phone" type="text" class="form-control"
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                <Field name="phone" type="text" class="form-control" placeholder="0123456789"
                                     :class="{ 'is-invalid': errors.phone }" v-model="formData.phone" />
                                 <ErrorMessage name="phone" class="invalid-feedback" />
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Email</label>
-                                <Field name="email" type="email" class="form-control"
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <Field name="email" type="email" class="form-control" placeholder="supplier@email.com"
                                     :class="{ 'is-invalid': errors.email }" v-model="formData.email" />
                                 <ErrorMessage name="email" class="invalid-feedback" />
                             </div>
+                            <div class="col-12">
+                                <label class="form-label">Địa chỉ</label>
+                                <Field name="address" as="textarea" rows="3" class="form-control"
+                                    placeholder="Số nhà, đường, quận/huyện, tỉnh/thành"
+                                    :class="{ 'is-invalid': errors.address }" v-model="formData.address" />
+                                <ErrorMessage name="address" class="invalid-feedback" />
+                            </div>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Địa chỉ</label>
-                            <Field name="address" as="textarea" rows="3" class="form-control"
-                                v-model="formData.address" />
-                        </div>
-
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="closeModal">Huỷ</button>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary" @click="closeModal">Huỷ</button>
                         <button type="submit" class="btn btn-primary"
                             :disabled="createMutation.isPending.value || updateMutation.isPending.value">
-                            Lưu
+                            {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
                         </button>
                     </div>
                 </Form>
@@ -59,39 +59,71 @@
         </div>
     </div>
 
-    <div data-aos="fade-up">
-        <div class="page-header d-flex justify-content-between align-items-center mb-4">
-            <h2 class="page-title">Quản lý Nhà cung cấp</h2>
-            <button class="btn btn-primary" @click="openModal()">
-                <i class="bi bi-plus-lg me-2"></i> Thêm mới
-            </button>
+    <div class="suppliers-page container-fluid" data-aos="fade-up">
+        <div class="page-header card-shadow">
+            <div>
+                <h2 class="page-title">Quản lý Nhà cung cấp</h2>
+                <p class="page-subtitle">Theo dõi thông tin liên hệ và hợp tác chặt chẽ với đối tác cung ứng.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-primary" type="button" @click="refetch" :disabled="isFetching">
+                    <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
+                    Làm mới
+                </button>
+                <button class="btn btn-primary" type="button" @click="openModal()">
+                    <i class="bi bi-plus-lg me-2"></i>Thêm nhà cung cấp
+                </button>
+            </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="input-group" style="max-width: 400px;">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Tìm kiếm theo tên, SĐT, email..."
-                        v-model="searchQuery">
+        <div class="row g-4 mb-4 mt-1">
+            <div class="col-md-4" v-for="stat in stats" :key="stat.label">
+                <div class="stat-card">
+                    <div class="stat-icon" :class="stat.variant">
+                        <i :class="stat.icon"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label mb-1">{{ stat.label }}</p>
+                        <h4 class="stat-value mb-0">{{ stat.value }}</h4>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card filter-card mb-4">
             <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">Tìm kiếm</label>
+                        <div class="input-group search-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Tên, người liên hệ, SĐT, email"
+                                v-model="searchQuery" />
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3" v-if="supportsPagination">
+                        <label class="form-label">Số dòng / trang</label>
+                        <select class="form-select" :value="pageSize" @change="updatePageSize($event.target.value)">
+                            <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <div v-if="isLoading" class="text-center my-5">
+        <div class="card table-card">
+            <div class="card-body p-0">
+                <div v-if="isLoading" class="state-block py-5">
                     <div class="spinner-border text-primary" role="status"></div>
                 </div>
-                <div v-else-if="isError" class="alert alert-danger">
-                    Không thể tải dữ liệu: {{ error.message }}
+                <div v-else-if="isError" class="state-block py-5">
+                    <div class="alert alert-danger mb-0">{{ errorMessage }}</div>
                 </div>
-
-                <div v-else-if="suppliers" class="table-responsive">
-                    <table class="table table-hover align-middle">
+                <div v-else class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th scope="col">Tên Nhà cung cấp</th>
+                                <th scope="col">Tên nhà cung cấp</th>
                                 <th scope="col">Người liên hệ</th>
                                 <th scope="col">Điện thoại</th>
                                 <th scope="col">Email</th>
@@ -100,137 +132,203 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="supplier in filteredSuppliers" :key="supplier.id">
-                                <td class="fw-bold">{{ supplier.name }}</td>
-                                <td>{{ supplier.contactPerson || 'N/A' }}</td>
+                            <tr v-for="supplier in tableData" :key="supplier.id">
+                                <td class="fw-semibold">{{ supplier.name }}</td>
+                                <td>{{ supplier.contactPerson || '—' }}</td>
                                 <td>{{ supplier.phone }}</td>
-                                <td>{{ supplier.email || 'N/A' }}</td>
-                                <td>{{ supplier.address || 'N/A' }}</td>
+                                <td>{{ supplier.email || '—' }}</td>
+                                <td>{{ supplier.address || '—' }}</td>
                                 <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary me-2" @click="openModal(supplier)">
-                                        <i class="bi bi-pencil-fill"></i> Sửa
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" @click="handleDelete(supplier)">
-                                        <i class="bi bi-trash-fill"></i> Xoá
-                                    </button>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button class="btn btn-outline-secondary" type="button" @click="openModal(supplier)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" type="button" @click="handleDelete(supplier)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
-                            <tr v-if="filteredSuppliers.length === 0">
-                                <td colspan="6" class="text-center text-muted">Không tìm thấy nhà cung cấp nào.</td>
+                            <tr v-if="!tableData.length">
+                                <td colspan="6" class="text-center text-muted py-5">Không tìm thấy nhà cung cấp phù hợp.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div class="card-footer bg-transparent" v-if="supportsPagination && totalPages > 1">
+                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
+                    @page-change="handlePageChange" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { Modal } from 'bootstrap'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
-import { toast } from 'vue3-toastify'
+
+import Pagination from '@/components/common/Pagination.vue'
+import { usePagination, PaginationMode } from '@/composables/usePagination'
+import { showSuccess, showError } from '@/utils/toast'
+import { formatNumber } from '@/utils/formatters'
 import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '@/api/supplierService'
 
 const queryClient = useQueryClient()
+
 const modalElement = ref(null)
 const bsModal = ref(null)
 const isEditing = ref(false)
+
+const formData = reactive({ id: null, name: '', contactPerson: '', phone: '', email: '', address: '' })
+
 const searchQuery = ref('')
+const debouncedSearch = ref('')
+const pageSizeOptions = [10, 25, 50]
 
-const initialFormData = {
-    id: null,
-    name: '',
-    contactPerson: '',
-    phone: '',
-    email: '',
-    address: ''
-}
-const formData = reactive({ ...initialFormData })
+const pagination = usePagination({ mode: PaginationMode.ZERO_BASED, pageSize: pageSizeOptions[0] })
+const { pageSize, zeroBasedPage, setPage, updatePageSize, resetPage } = pagination
 
-const phoneRegex = /^(0\d{9})$/ // Regex đơn giản cho SĐT Việt Nam (10 số, bắt đầu bằng 0)
-const supplierSchema = yup.object({
-    name: yup.string().required('Tên nhà cung cấp là bắt buộc'),
-    contactPerson: yup.string().nullable(),
-    phone: yup.string()
-        .required('Số điện thoại là bắt buộc')
-        .matches(phoneRegex, 'Số điện thoại không hợp lệ (gồm 10 số, bắt đầu bằng 0)'),
-    email: yup.string().email('Email không hợp lệ').nullable(),
-    address: yup.string().nullable(),
-})
+let searchTimeoutId
 
-const { data: suppliers, isLoading, isError, error } = useQuery({
-    queryKey: ['suppliers'],
-    queryFn: getSuppliers
-})
-
-const createMutation = useMutation({
-    mutationFn: createSupplier,
-    onSuccess: () => {
-        toast.success('Tạo nhà cung cấp thành công!')
-        queryClient.invalidateQueries(['suppliers'])
-        closeModal()
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Lỗi!')
-})
-
-const updateMutation = useMutation({
-    mutationFn: updateSupplier,
-    onSuccess: () => {
-        toast.success('Cập nhật nhà cung cấp thành công!')
-        queryClient.invalidateQueries(['suppliers'])
-        closeModal()
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Lỗi!')
-})
-
-const deleteMutation = useMutation({
-    mutationFn: deleteSupplier,
-    onSuccess: () => {
-        toast.success('Xoá nhà cung cấp thành công!')
-        queryClient.invalidateQueries(['suppliers'])
-    },
-    onError: (err) => {
-        // Bắt lỗi nghiệp vụ
-        toast.error(err.response?.data?.message || 'Không thể xoá nhà cung cấp này.')
-    }
-})
-
-// Lọc/Tìm kiếm phía Client
-const filteredSuppliers = computed(() => {
-    if (!suppliers.value) return []
-    if (!searchQuery.value) return suppliers.value
-
-    const lowerCaseQuery = searchQuery.value.toLowerCase()
-    return suppliers.value.filter(
-        supplier =>
-            supplier.name.toLowerCase().includes(lowerCaseQuery) ||
-            supplier.phone.toLowerCase().includes(lowerCaseQuery) ||
-            (supplier.email && supplier.email.toLowerCase().includes(lowerCaseQuery)) ||
-            (supplier.contactPerson && supplier.contactPerson.toLowerCase().includes(lowerCaseQuery))
-    )
+watch(searchQuery, (value) => {
+    clearTimeout(searchTimeoutId)
+    searchTimeoutId = setTimeout(() => {
+        debouncedSearch.value = value.trim()
+        if (supportsPagination.value) {
+            resetPage()
+        }
+    }, 300)
 })
 
 onMounted(() => {
     if (modalElement.value) {
-        bsModal.value = new Modal(modalElement.value)
+        bsModal.value = new Modal(modalElement.value, { backdrop: 'static' })
     }
 })
 
 onUnmounted(() => {
+    if (searchTimeoutId) {
+        clearTimeout(searchTimeoutId)
+    }
     bsModal.value?.dispose()
 })
+
+const phoneRegex = /^(0\d{9})$/
+const supplierSchema = yup.object({
+    name: yup.string().trim().required('Tên nhà cung cấp là bắt buộc'),
+    contactPerson: yup.string().trim().nullable().transform((value) => (value === '' ? null : value)),
+    phone: yup
+        .string()
+        .required('Số điện thoại là bắt buộc')
+        .matches(phoneRegex, 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)'),
+    email: yup
+        .string()
+        .trim()
+        .nullable()
+        .transform((value) => (value === '' ? null : value))
+        .email('Email không hợp lệ'),
+    address: yup.string().trim().nullable().transform((value) => (value === '' ? null : value)),
+})
+
+const query = useQuery({
+    queryKey: computed(() => ['suppliers', { page: zeroBasedPage.value, size: pageSize.value, keyword: debouncedSearch.value }]),
+    queryFn: ({ queryKey }) => {
+        const [, params] = queryKey
+        return getSuppliers({ page: params.page, size: params.size, keyword: params.keyword || undefined })
+    },
+    keepPreviousData: true,
+})
+
+const { data, isLoading, isError, error, isFetching, refetch } = query
+
+const rawSuppliers = computed(() => data.value ?? null)
+const paginatedContent = computed(() => Array.isArray(rawSuppliers.value?.content) ? rawSuppliers.value.content : null)
+const supportsPagination = computed(() => Array.isArray(paginatedContent.value))
+
+const baseItems = computed(() => {
+    if (supportsPagination.value) return paginatedContent.value
+    if (Array.isArray(rawSuppliers.value)) return rawSuppliers.value
+    if (Array.isArray(rawSuppliers.value?.data)) return rawSuppliers.value.data
+    return []
+})
+
+const tableData = computed(() => {
+    if (supportsPagination.value) return baseItems.value
+
+    const keyword = debouncedSearch.value.toLowerCase()
+    if (!keyword) return baseItems.value
+
+    return baseItems.value.filter((supplier) => {
+        const haystack = [supplier.name, supplier.contactPerson, supplier.phone, supplier.email]
+            .filter(Boolean)
+            .map((value) => value.toString().toLowerCase())
+        return haystack.some((value) => value.includes(keyword))
+    })
+})
+
+const totalElements = computed(() => {
+    if (supportsPagination.value) {
+        const total = rawSuppliers.value?.totalElements ?? rawSuppliers.value?.total
+        return typeof total === 'number' ? total : baseItems.value.length
+    }
+    return baseItems.value.length
+})
+
+const totalPages = computed(() => {
+    if (supportsPagination.value) {
+        const total = rawSuppliers.value?.totalPages ?? rawSuppliers.value?.totalPage ?? rawSuppliers.value?.pageInfo?.totalPages
+        return typeof total === 'number' ? total : 0
+    }
+    return baseItems.value.length > 0 ? 1 : 0
+})
+
+const emailCount = computed(() => tableData.value.filter((supplier) => supplier.email)?.length ?? 0)
+const addressCount = computed(() => tableData.value.filter((supplier) => supplier.address)?.length ?? 0)
+
+const stats = computed(() => [
+    {
+        label: 'Tổng nhà cung cấp',
+        value: formatNumber(totalElements.value, { maximumFractionDigits: 0 }),
+        icon: 'bi bi-people',
+        variant: 'variant-primary'
+    },
+    {
+        label: 'Có email liên hệ',
+        value: formatNumber(emailCount.value, { maximumFractionDigits: 0 }),
+        icon: 'bi bi-envelope-open',
+        variant: 'variant-info'
+    },
+    {
+        label: 'Có địa chỉ đầy đủ',
+        value: formatNumber(addressCount.value, { maximumFractionDigits: 0 }),
+        icon: 'bi bi-geo-alt',
+        variant: 'variant-success'
+    }
+])
+
+const errorMessage = computed(() => error.value?.response?.data?.message || error.value?.message || 'Không thể tải dữ liệu nhà cung cấp.')
 
 const openModal = (supplier = null) => {
     if (supplier) {
         isEditing.value = true
-        Object.assign(formData, supplier)
+        formData.id = supplier.id
+        formData.name = supplier.name ?? ''
+        formData.contactPerson = supplier.contactPerson ?? ''
+        formData.phone = supplier.phone ?? ''
+        formData.email = supplier.email ?? ''
+        formData.address = supplier.address ?? ''
     } else {
         isEditing.value = false
-        Object.assign(formData, initialFormData)
+        formData.id = null
+        formData.name = ''
+        formData.contactPerson = ''
+        formData.phone = ''
+        formData.email = ''
+        formData.address = ''
     }
     bsModal.value?.show()
 }
@@ -239,10 +337,39 @@ const closeModal = () => {
     bsModal.value?.hide()
 }
 
+const createMutation = useMutation({
+    mutationFn: createSupplier,
+    onSuccess: () => {
+        showSuccess('Tạo nhà cung cấp thành công!')
+        queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        closeModal()
+    },
+    onError: (err) => showError(err.response?.data?.message || 'Không thể tạo nhà cung cấp.'),
+})
+
+const updateMutation = useMutation({
+    mutationFn: updateSupplier,
+    onSuccess: () => {
+        showSuccess('Cập nhật nhà cung cấp thành công!')
+        queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        closeModal()
+    },
+    onError: (err) => showError(err.response?.data?.message || 'Không thể cập nhật nhà cung cấp.'),
+})
+
+const deleteMutation = useMutation({
+    mutationFn: deleteSupplier,
+    onSuccess: () => {
+        showSuccess('Xoá nhà cung cấp thành công!')
+        queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+    },
+    onError: (err) => showError(err.response?.data?.message || 'Không thể xoá nhà cung cấp này.'),
+})
+
 const handleSubmit = (values) => {
     const payload = { ...values }
 
-    if (isEditing.value) {
+    if (isEditing.value && formData.id) {
         updateMutation.mutate({ id: formData.id, data: payload })
     } else {
         createMutation.mutate(payload)
@@ -254,14 +381,126 @@ const handleDelete = (supplier) => {
         deleteMutation.mutate(supplier.id)
     }
 }
+
+const handlePageChange = (page) => {
+    setPage(page)
+}
 </script>
 
 <style scoped>
-.page-title {
-    color: #A36B4A;
+.suppliers-page {
+    padding-bottom: 2rem;
 }
 
-.table-hover tbody tr:hover {
-    background-color: #fdfaf7;
+.card-shadow {
+    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--color-heading);
+    margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+    margin-bottom: 0;
+    color: var(--color-text-muted);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+.variant-primary {
+    background: linear-gradient(140deg, #6366f1, #8b5cf6);
+}
+
+.variant-info {
+    background: linear-gradient(140deg, #0ea5e9, #38bdf8);
+}
+
+.variant-success {
+    background: linear-gradient(140deg, #22c55e, #4ade80);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.stat-value {
+    font-weight: 700;
+    color: var(--color-heading);
+}
+
+.filter-card,
+.table-card {
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+}
+
+.search-group .input-group-text {
+    background: transparent;
+    border-right: none;
+}
+
+.search-group .form-control {
+    border-left: none;
+}
+
+.state-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-modal {
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+}
+
+.form-modal .modal-subtitle {
+    font-size: 0.9rem;
+}
+
+.btn-group .btn + .btn {
+    margin-left: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .card-shadow {
+        padding: 1.25rem;
+    }
 }
 </style>

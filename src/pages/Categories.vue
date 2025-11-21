@@ -76,7 +76,6 @@
                                 <th scope="col">ID</th>
                                 <th scope="col">Tên Danh mục</th>
                                 <th scope="col">Mô tả</th>
-                                <th scope="col">Số sản phẩm</th>
                                 <th scope="col" class="text-end">Hành động</th>
                             </tr>
                         </thead>
@@ -85,9 +84,6 @@
                                 <th scope="row">{{ category.id }}</th>
                                 <td class="fw-bold">{{ category.name }}</td>
                                 <td>{{ category.description || 'N/A' }}</td>
-                                <td>
-                                    <span class="badge bg-light text-dark">{{ category.productCount }}</span>
-                                </td>
                                 <td class="text-end">
                                     <button class="btn btn-sm btn-outline-primary me-2" @click="openModal(category)">
                                         <i class="bi bi-pencil-fill"></i> Sửa
@@ -139,7 +135,7 @@ const { data: categories, isLoading, isError, error } = useQuery({
 })
 
 const createMutation = useMutation({
-    mutationFn: createCategory,
+    mutationFn: (payload) => createCategory(payload),
     onSuccess: () => {
         toast.success('Tạo danh mục mới thành công!')
         queryClient.invalidateQueries(['categories'])
@@ -151,7 +147,7 @@ const createMutation = useMutation({
 })
 
 const updateMutation = useMutation({
-    mutationFn: updateCategory,
+    mutationFn: ({id, ...payload}) => updateCategory(id, payload),
     onSuccess: () => {
         toast.success('Cập nhật danh mục thành công!')
         queryClient.invalidateQueries(['categories']) 
@@ -216,7 +212,8 @@ const handleSubmit = () => {
     if (isEditing.value) {
         updateMutation.mutate({
             id: formData.id,
-            data: { name: formData.name, description: formData.description }
+            name: formData.name,
+            description: formData.description
         })
     } else {
         createMutation.mutate({

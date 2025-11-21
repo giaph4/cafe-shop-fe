@@ -1,0 +1,191 @@
+/* Dynamic Island Toast CSS - Auto Resize Version */
+
+/* --- Biến CSS (Giữ nguyên như cũ) --- */
+:root {
+    --di-bg-color: rgba(255, 255, 255, 0.85); /* Tăng độ đục nhẹ để dễ đọc text hơn */
+    --di-text-color: #1a1a1a;
+    --di-shadow-color: rgba(0, 0, 0, 0.12);
+    --di-border-color: rgba(255, 255, 255, 0.4);
+    --di-glow-color: rgba(255, 255, 255, 0.5);
+}
+
+.dark {
+    --di-bg-color: rgba(30, 30, 30, 0.85);
+    --di-text-color: #f0f0f0;
+    --di-shadow-color: rgba(0, 0, 0, 0.4);
+    --di-border-color: rgba(80, 80, 80, 0.5);
+    --di-glow-color: rgba(255, 255, 255, 0.15);
+}
+
+/* --- Base Container --- */
+.di-toast {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: var(--di-bg-color);
+    color: var(--di-text-color);
+
+    border-radius: 24px; /* Bo góc tròn hơn chút */
+    padding: 6px 8px; /* Padding cơ bản, text sẽ có padding riêng */
+    margin-top: 14px;
+
+    /* QUAN TRỌNG: Layout co giãn */
+    display: flex;
+    align-items: center; /* Căn giữa icon và text theo chiều dọc */
+
+    /* Thay thế width cố định bằng fit-content */
+    width: fit-content !important;
+    min-width: 200px; /* Độ rộng tối thiểu để không quá bé */
+    max-width: 90vw; /* Không vượt quá 90% màn hình thiết bị */
+
+    /* Chiều cao tự động theo text */
+    height: auto;
+    min-height: 50px;
+
+    box-shadow: 0 4px 20px var(--di-shadow-color),
+    0 0 0 1px var(--di-border-color) inset;
+
+    /* Animation */
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    transform-origin: top center;
+    overflow: hidden;
+}
+
+/* Desktop: Giới hạn chiều rộng tốt hơn để không quá dài */
+@media (min-width: 768px) {
+    .di-toast {
+        max-width: 500px; /* Trên PC, toast dài tối đa 500px rồi xuống dòng */
+    }
+}
+
+/* --- Text Content --- */
+.di-body {
+    padding: 8px 16px 8px 4px; /* Padding phải rộng hơn để thoáng */
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4; /* Tăng khoảng cách dòng để dễ đọc khi xuống dòng */
+
+    /* QUAN TRỌNG: Cho phép xuống dòng */
+    white-space: normal;
+    word-break: break-word; /* Ngắt từ hợp lý nếu từ quá dài */
+
+    opacity: 1;
+    flex-grow: 1; /* Chiếm phần không gian còn lại */
+}
+
+/* --- ICON --- */
+.di-toast .Vue-Toastification__icon {
+    /* Giữ icon không bị méo khi text dài */
+    flex-shrink: 0;
+    margin-left: 8px;
+    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 50%;
+
+    /* Animation icon */
+    transform: scale(0.5);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s, opacity 0.3s ease 0.2s;
+}
+
+.Vue-Toastification__fade-enter-active .Vue-Toastification__icon {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* --- Các loại Toast ---
+   Thay vì set cứng width, ta chỉ set min-width hoặc border màu
+   để phân biệt, còn lại để text tự đẩy khung ra.
+*/
+
+/* SUCCESS */
+.Vue-Toastification__toast--success {
+    min-width: 180px; /* Ngắn gọn nếu ít chữ */
+}
+
+.Vue-Toastification__toast--success .Vue-Toastification__icon {
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+}
+
+/* ERROR */
+.Vue-Toastification__toast--error {
+    min-width: 280px; /* Mặc định rộng hơn chút */
+}
+
+.Vue-Toastification__toast--error .Vue-Toastification__icon {
+    background: linear-gradient(135deg, #ef5350, #c62828);
+    box-shadow: 0 2px 10px rgba(239, 83, 80, 0.3);
+}
+
+/* WARNING */
+.Vue-Toastification__toast--warning {
+    min-width: 250px;
+}
+
+.Vue-Toastification__toast--warning .Vue-Toastification__icon {
+    background: linear-gradient(135deg, #ffa726, #ef6c00);
+    box-shadow: 0 2px 10px rgba(255, 167, 38, 0.3);
+}
+
+/* INFO */
+.Vue-Toastification__toast--info {
+    min-width: 220px;
+}
+
+.Vue-Toastification__toast--info .Vue-Toastification__icon {
+    background: linear-gradient(135deg, #42a5f5, #1565c0);
+    box-shadow: 0 2px 10px rgba(66, 165, 245, 0.3);
+}
+
+/* --- Progress Bar --- */
+.di-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.8));
+    width: 0;
+    animation: di-loading 3s linear forwards;
+    opacity: 0.7;
+}
+
+@keyframes di-loading {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+/* --- Enter / Leave Animations --- */
+.Vue-Toastification__fade-enter-active {
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.Vue-Toastification__fade-leave-active {
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.Vue-Toastification__fade-enter-from {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.7); /* Xuất hiện từ trên cao, nhỏ */
+}
+
+.Vue-Toastification__fade-leave-to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+}
+
+/* --- Hover --- */
+.di-toast:hover {
+    transform: translateY(2px) scale(1.02);
+    box-shadow: 0 8px 30px var(--di-shadow-color),
+    0 0 0 1px var(--di-border-color) inset;
+    cursor: default;
+}

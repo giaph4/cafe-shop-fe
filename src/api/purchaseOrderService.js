@@ -1,14 +1,22 @@
 import api from './axios'
 
+const BASE_URL = '/api/v1/purchase-orders'
+
 /**
- * API 42: Lấy danh sách đơn hàng (Có phân trang VÀ LỌC)
- * @param {object} filters - { page, size, status, supplierId, startDate, endDate }
+ * 12.1 Tạo phiếu nhập hàng
+ */
+export const createPurchaseOrder = async (orderData) => {
+    const { data } = await api.post(BASE_URL, orderData)
+    return data
+}
+
+/**
+ * 12.2 Lấy danh sách phiếu nhập (có lọc)
  */
 export const getPurchaseOrders = async (filters) => {
     const params = {
         page: filters.page || 0,
         size: filters.size || 10,
-        sort: 'orderDate,desc',
         status: filters.status || null,
         supplierId: filters.supplierId || null,
         startDate: filters.startDate || null,
@@ -22,38 +30,30 @@ export const getPurchaseOrders = async (filters) => {
         }
     })
 
-    const { data } = await api.get('/purchase-orders', { params })
+    const { data } = await api.get(BASE_URL, { params })
     return data
 }
 
 /**
- * API 43: Lấy chi tiết một đơn hàng
+ * 12.3 Lấy chi tiết phiếu nhập
  */
 export const getPurchaseOrderById = async (id) => {
-    const { data } = await api.get(`/purchase-orders/${id}`)
+    const { data } = await api.get(`${BASE_URL}/${id}`)
     return data
 }
 
 /**
- * API 41: Tạo đơn hàng mới
- */
-export const createPurchaseOrder = async (orderData) => {
-    const { data } = await api.post('/purchase-orders', orderData)
-    return data
-}
-
-/**
- * API 44: Đánh dấu hoàn thành
+ * 12.4 Hoàn thành phiếu nhập
  */
 export const markOrderAsCompleted = async (id) => {
-    const { data } = await api.post(`/purchase-orders/${id}/complete`)
+    const { data } = await api.post(`${BASE_URL}/${id}/complete`)
     return data
 }
 
 /**
- * API 45: Huỷ đơn hàng
+ * 12.5 Hủy phiếu nhập
  */
 export const cancelPurchaseOrder = async (id) => {
-    const { data } = await api.post(`/purchase-orders/${id}/cancel`)
+    const { data } = await api.post(`${BASE_URL}/${id}/cancel`)
     return data
 }

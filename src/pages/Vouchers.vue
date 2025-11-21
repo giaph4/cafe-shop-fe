@@ -1,0 +1,921 @@
+<template>
+    <Teleport to="body">
+        <div class="modal fade" ref="modalElement" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title">{{ isEditing ? 'Cập nhật voucher' : 'Thêm voucher mới' }}</h5>
+                            <p class="mb-0 text-muted small">Điền chính xác thông tin theo contract backend, mọi trường đều kiểm tra chặt chẽ.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+                    </div>
+
+                    <div v-if="formLoading" class="modal-body d-flex flex-column align-items-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3 mb-0 text-muted">Đang tải dữ liệu voucher...</p>
+                    </div>
+
+                    <Form
+                        v-else
+                        :key="formKey"
+                        :validation-schema="voucherSchema"
+                        @submit="handleSubmit"
+                        v-slot="{ errors, isSubmitting }"
+                    >
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Mã voucher <span class="text-danger">*</span></label>
+                                    <Field
+                                        name="code"
+                                        type="text"
+                                        class="form-control"
+                                        v-model="formData.code"
+                                        :class="{ 'is-invalid': errors.code }"
+                                        autocomplete="off"
+                                        maxlength="50"
+                                    />
+                                    <ErrorMessage name="code" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Loại voucher <span class="text-danger">*</span></label>
+                                    <Field
+                                        name="type"
+                                        as="select"
+                                        class="form-select"
+                                        v-model="formData.type"
+                                        :class="{ 'is-invalid': errors.type }"
+                                    >
+                                        <option value="">Chọn loại</option>
+                                        <option v-for="type in VOUCHER_TYPES" :key="type.value" :value="type.value">{{ type.label }}</option>
+                                    </Field>
+                                    <ErrorMessage name="type" class="invalid-feedback" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Mô tả <span class="text-danger">*</span></label>
+                                    <Field
+                                        name="description"
+                                        as="textarea"
+                                        rows="2"
+                                        class="form-control"
+                                        v-model="formData.description"
+                                        :class="{ 'is-invalid': errors.description }"
+                                        maxlength="255"
+                                    />
+                                    <ErrorMessage name="description" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Giá trị giảm <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <Field
+                                            name="discountValue"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            class="form-control"
+                                            v-model.number="formData.discountValue"
+                                            :class="{ 'is-invalid': errors.discountValue }"
+                                        />
+                                        <span class="input-group-text" v-if="formData.type === 'PERCENTAGE'">%</span>
+                                        <span class="input-group-text" v-else>VND</span>
+                                    </div>
+                                    <ErrorMessage name="discountValue" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Đơn hàng tối thiểu</label>
+                                    <div class="input-group">
+                                        <Field
+                                            name="minimumOrderAmount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            class="form-control"
+                                            v-model.number="formData.minimumOrderAmount"
+                                            :class="{ 'is-invalid': errors.minimumOrderAmount }"
+                                        />
+                                        <span class="input-group-text">VND</span>
+                                    </div>
+                                    <ErrorMessage name="minimumOrderAmount" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Giảm tối đa</label>
+                                    <div class="input-group">
+                                        <Field
+                                            name="maximumDiscountAmount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            class="form-control"
+                                            v-model.number="formData.maximumDiscountAmount"
+                                            :class="{ 'is-invalid': errors.maximumDiscountAmount }"
+                                        />
+                                        <span class="input-group-text">VND</span>
+                                    </div>
+                                    <ErrorMessage name="maximumDiscountAmount" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Hiệu lực từ <span class="text-danger">*</span></label>
+                                    <Field
+                                        name="validFrom"
+                                        type="datetime-local"
+                                        class="form-control"
+                                        v-model="formData.validFrom"
+                                        :class="{ 'is-invalid': errors.validFrom }"
+                                    />
+                                    <ErrorMessage name="validFrom" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Hiệu lực đến <span class="text-danger">*</span></label>
+                                    <Field
+                                        name="validTo"
+                                        type="datetime-local"
+                                        class="form-control"
+                                        v-model="formData.validTo"
+                                        :class="{ 'is-invalid': errors.validTo }"
+                                    />
+                                    <ErrorMessage name="validTo" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Giới hạn lượt sử dụng <span class="text-danger">*</span></label>
+                                    <Field
+                                        name="usageLimit"
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        class="form-control"
+                                        v-model.number="formData.usageLimit"
+                                        :class="{ 'is-invalid': errors.usageLimit }"
+                                    />
+                                    <ErrorMessage name="usageLimit" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <div class="form-check form-switch mt-4 pt-1">
+                                        <Field
+                                            name="active"
+                                            type="checkbox"
+                                            class="form-check-input"
+                                            role="switch"
+                                            v-model="formData.active"
+                                        />
+                                        <label class="form-check-label">Kích hoạt ngay</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="isSubmitting">Hủy</button>
+                            <button type="submit" class="btn btn-primary" :disabled="isSubmitting || voucherStore.saving">
+                                <span v-if="isSubmitting || voucherStore.saving" class="spinner-border spinner-border-sm me-2"></span>
+                                {{ isEditing ? 'Lưu thay đổi' : 'Tạo mới' }}
+                            </button>
+                        </div>
+                    </Form>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
+    <section class="vouchers-page" data-aos="fade-up">
+        <header class="vouchers-header">
+            <div>
+                <h2>Quản lý voucher</h2>
+                <p class="text-muted mb-0">Theo dõi, tạo và kiểm soát voucher theo đúng chuẩn API backend.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline-secondary" type="button" @click="handleRefresh" :disabled="loading">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Làm mới
+                </button>
+                <button class="btn btn-outline-primary" type="button" @click="exportCurrentPage" :disabled="!items.length">
+                    <i class="bi bi-file-earmark-arrow-down me-2"></i>Xuất CSV
+                </button>
+                <button v-if="canManage" class="btn btn-primary" type="button" @click="openCreateModal" :disabled="voucherStore.saving || formLoading">
+                    <i class="bi bi-plus-lg me-2"></i>Thêm voucher
+                </button>
+            </div>
+        </header>
+
+        <div class="summary-grid" v-if="summaryLoading">
+            <article class="summary-card text-center justify-content-center">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 mb-0 text-muted">Đang tải thống kê voucher...</p>
+            </article>
+        </div>
+        <div class="summary-grid" v-else>
+            <article class="summary-card">
+                <div class="summary-icon bg-success-subtle text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div>
+                    <p class="summary-label">Đang hoạt động</p>
+                    <p class="summary-value">{{ summary.activeCount }}</p>
+                </div>
+            </article>
+            <article class="summary-card">
+                <div class="summary-icon bg-secondary-subtle text-secondary">
+                    <i class="bi bi-pause-circle"></i>
+                </div>
+                <div>
+                    <p class="summary-label">Ngừng hoạt động</p>
+                    <p class="summary-value">{{ summary.inactiveCount }}</p>
+                </div>
+            </article>
+            <article class="summary-card">
+                <div class="summary-icon bg-warning-subtle text-warning">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                    <p class="summary-label">Sắp hết hạn (7 ngày)</p>
+                    <p class="summary-value">{{ summary.expiringSoonCount }}</p>
+                </div>
+            </article>
+            <article class="summary-card">
+                <div class="summary-icon bg-info-subtle text-info">
+                    <i class="bi bi-ticket-perforated"></i>
+                </div>
+                <div>
+                    <p class="summary-label">Đã sử dụng</p>
+                    <p class="summary-value">{{ summary.redeemedCount }}</p>
+                </div>
+            </article>
+        </div>
+
+        <div v-if="errorMessage" class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ errorMessage }}
+        </div>
+
+        <div class="filter-card">
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label class="form-label">Tìm theo mã</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" v-model.trim="filterDraft.code" placeholder="Nhập mã voucher" />
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="form-label">Loại voucher</label>
+                    <select class="form-select" v-model="filterDraft.type">
+                        <option value="">Tất cả</option>
+                        <option v-for="type in VOUCHER_TYPES" :key="type.value" :value="type.value">{{ type.label }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" v-model="filterDraft.active">
+                        <option value="">Tất cả</option>
+                        <option value="true">Đang hoạt động</option>
+                        <option value="false">Ngừng hoạt động</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="form-label">Hiệu lực từ</label>
+                    <input type="datetime-local" class="form-control" v-model="filterDraft.validFrom" />
+                </div>
+                <div class="filter-item">
+                    <label class="form-label">Hiệu lực đến</label>
+                    <input type="datetime-local" class="form-control" v-model="filterDraft.validTo" />
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-outline-secondary" type="button" @click="handleFilterReset" :disabled="loading">
+                        Đặt lại
+                    </button>
+                    <button class="btn btn-primary" type="button" @click="handleFilterApply" :disabled="loading">
+                        Áp dụng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">Mã</th>
+                            <th scope="col">Mô tả</th>
+                            <th scope="col">Loại</th>
+                            <th scope="col">Giá trị</th>
+                            <th scope="col">Đơn tối thiểu</th>
+                            <th scope="col">Giảm tối đa</th>
+                            <th scope="col">Hiệu lực</th>
+                            <th scope="col">Sử dụng</th>
+                            <th scope="col">Trạng thái</th>
+                            <th scope="col">Cập nhật</th>
+                            <th scope="col" class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="loading">
+                            <td colspan="11" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status"></div>
+                                <p class="mt-2 mb-0 text-muted">Đang tải dữ liệu voucher...</p>
+                            </td>
+                        </tr>
+                        <tr v-else-if="!items.length">
+                            <td colspan="11" class="text-center py-4 text-muted">
+                                <i class="bi bi-search mb-2 d-block fs-4"></i>
+                                Không có voucher nào phù hợp bộ lọc hiện tại.
+                            </td>
+                        </tr>
+                        <tr v-for="voucher in items" :key="voucher.id">
+                            <td class="fw-semibold">{{ voucher.code }}</td>
+                            <td>{{ voucher.description }}</td>
+                            <td>
+                                <span class="badge rounded-pill" :class="voucher.type === 'PERCENTAGE' ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary'">
+                                    {{ voucher.type === 'PERCENTAGE' ? 'Giảm %' : 'Giảm cố định' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span v-if="voucher.type === 'PERCENTAGE'">{{ formatNumber(voucher.discountValue) }}%</span>
+                                <span v-else>{{ formatCurrencySafe(voucher.discountValue) }}</span>
+                            </td>
+                            <td>{{ voucher.minimumOrderAmount ? formatCurrencySafe(voucher.minimumOrderAmount) : '—' }}</td>
+                            <td>{{ voucher.maximumDiscountAmount ? formatCurrencySafe(voucher.maximumDiscountAmount) : (voucher.type === 'PERCENTAGE' ? 'Không giới hạn' : '—') }}</td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    <small class="text-muted">Từ: {{ formatDateTime(voucher.validFrom) }}</small>
+                                    <small class="text-muted">Đến: {{ formatDateTime(voucher.validTo) }}</small>
+                                </div>
+                            </td>
+                            <td>{{ voucher.timesUsed }} / {{ voucher.usageLimit }}</td>
+                            <td>
+                                <span class="badge rounded-pill" :class="voucher.active ? 'bg-success' : 'bg-secondary'">
+                                    {{ voucher.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
+                                </span>
+                            </td>
+                            <td>{{ formatDateTime(voucher.updatedAt || voucher.createdAt) }}</td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" type="button" @click="openEditModal(voucher)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-sm btn-outline-warning"
+                                        type="button"
+                                        @click="handleToggle(voucher)"
+                                        :disabled="voucherStore.toggling"
+                                    >
+                                        <i class="bi" :class="voucher.active ? 'bi-pause-circle' : 'bi-play-circle'"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-sm btn-outline-danger"
+                                        type="button"
+                                        @click="handleDelete(voucher)"
+                                        :disabled="voucher.timesUsed > 0 || voucherStore.deleting"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer" v-if="pagination.totalPages > 1">
+                <div>
+                    <label class="form-label me-2 mb-0">Hiển thị</label>
+                    <select class="form-select form-select-sm d-inline-flex w-auto" :value="pagination.size" @change="handlePageSizeChange($event.target.value)">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span class="ms-2 text-muted">mục / trang</span>
+                </div>
+                <Pagination
+                    :current-page="pagination.page"
+                    :total-pages="pagination.totalPages"
+                    @page-change="handlePageChange"
+                />
+            </div>
+        </div>
+    </section>
+</template>
+
+<script setup>
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {Form, Field, ErrorMessage} from 'vee-validate'
+import * as yup from 'yup'
+import {Modal} from 'bootstrap'
+import {toast} from 'vue3-toastify'
+import {storeToRefs} from 'pinia'
+import {useVoucherStore} from '@/store/voucher'
+import {VOUCHER_TYPES} from '@/api/voucherService'
+import {formatCurrency, formatDateTime, formatNumber} from '@/utils/formatters'
+import Pagination from '@/components/Pagination.vue'
+import {useAuthStore} from '@/store/auth'
+
+const voucherStore = useVoucherStore()
+const authStore = useAuthStore()
+const {items, pagination, loading, summary, summaryLoading, errorMessage} = storeToRefs(voucherStore)
+const {userRoles} = storeToRefs(authStore)
+
+// Chỉ ROLE_MANAGER và ROLE_ADMIN mới được phép thao tác tạo/sửa/xoá.
+const canManage = computed(() => userRoles.value.includes('ROLE_ADMIN') || userRoles.value.includes('ROLE_MANAGER'))
+
+const modalElement = ref(null)
+const bsModal = ref(null)
+const isEditing = ref(false)
+const formLoading = ref(false)
+const formKey = ref(0)
+
+const defaultFormState = () => ({
+    id: null,
+    code: '',
+    description: '',
+    type: '',
+    discountValue: '',
+    minimumOrderAmount: '',
+    maximumDiscountAmount: '',
+    validFrom: '',
+    validTo: '',
+    usageLimit: 1,
+    active: true
+})
+
+const formData = reactive(defaultFormState())
+
+const filters = voucherStore.filters
+const filterDraft = reactive({
+    code: '',
+    type: '',
+    active: '',
+    validFrom: '',
+    validTo: ''
+})
+
+// Chuẩn hoá message trả về từ backend trước khi hiển thị.
+const normalizeMessage = (err) => {
+    const message = err?.response?.data?.message || err?.message || errorMessage.value
+    if (!message) return 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.'
+    if (message.toLowerCase().includes('đã tồn tại')) return 'Mã voucher đã tồn tại. Vui lòng chọn mã khác.'
+    if (message.toLowerCase().includes('usageLimit'.toLowerCase())) return 'Giới hạn lượt sử dụng phải lớn hơn hoặc bằng số lượt đã dùng hiện tại.'
+    if (message.toLowerCase().includes('không thể xóa voucher')) return 'Không thể xoá voucher đã được sử dụng.'
+    if (message.toLowerCase().includes('validfrom phải trước validto')) return 'Thời gian hiệu lực không hợp lệ: "Hiệu lực từ" phải sớm hơn "Hiệu lực đến".'
+    if (message.toLowerCase().includes('voucher không tồn tại')) return 'Voucher không tồn tại hoặc đã bị xoá.'
+    if (message.toLowerCase().includes('voucher code không được bỏ trống')) return 'Mã voucher là bắt buộc.'
+    return message
+}
+
+const formatDateTimeInput = (value) => {
+    if (!value) return ''
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return ''
+    const yyyy = date.getFullYear()
+    const mm = `${date.getMonth() + 1}`.padStart(2, '0')
+    const dd = `${date.getDate()}`.padStart(2, '0')
+    const hh = `${date.getHours()}`.padStart(2, '0')
+    const min = `${date.getMinutes()}`.padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`
+}
+
+const syncFilterDraft = () => {
+    filterDraft.code = filters.code || ''
+    filterDraft.type = filters.type || ''
+    filterDraft.active = filters.active === '' ? '' : String(filters.active)
+    filterDraft.validFrom = formatDateTimeInput(filters.validFrom)
+    filterDraft.validTo = formatDateTimeInput(filters.validTo)
+}
+
+watch(filters, () => {
+    syncFilterDraft()
+}, {deep: true})
+
+const formatCurrencySafe = (value) => {
+    const numeric = Number(value)
+    if (!Number.isFinite(numeric)) return ''
+    return formatCurrency(numeric)
+}
+
+const resetFormState = () => {
+    Object.assign(formData, defaultFormState())
+    formKey.value += 1
+}
+
+const populateForm = (voucher) => {
+    formData.id = voucher.id
+    formData.code = voucher.code ?? ''
+    formData.description = voucher.description ?? ''
+    formData.type = voucher.type ?? ''
+    formData.discountValue = voucher.discountValue != null ? Number(voucher.discountValue) : ''
+    formData.minimumOrderAmount = voucher.minimumOrderAmount != null ? Number(voucher.minimumOrderAmount) : ''
+    formData.maximumDiscountAmount = voucher.maximumDiscountAmount != null ? Number(voucher.maximumDiscountAmount) : ''
+    formData.validFrom = formatDateTimeInput(voucher.validFrom)
+    formData.validTo = formatDateTimeInput(voucher.validTo)
+    formData.usageLimit = voucher.usageLimit != null ? Number(voucher.usageLimit) : 1
+    formData.active = Boolean(voucher.active)
+    formKey.value += 1
+}
+
+const voucherSchema = yup.object({
+    code: yup.string().trim().max(50, 'Tối đa 50 ký tự').required('Mã voucher là bắt buộc'),
+    description: yup.string().trim().max(255, 'Tối đa 255 ký tự').required('Mô tả là bắt buộc'),
+    type: yup.string().oneOf(VOUCHER_TYPES.map((item) => item.value), 'Loại voucher không hợp lệ').required('Loại voucher là bắt buộc'),
+    discountValue: yup
+        .number()
+        .transform((value, originalValue) => {
+            if (originalValue === null || originalValue === undefined || originalValue === '') return Number.NaN
+            const numeric = Number(originalValue)
+            return Number.isFinite(numeric) ? numeric : Number.NaN
+        })
+        .typeError('Giá trị giảm phải là số hợp lệ')
+        .moreThan(0, 'Giá trị giảm phải lớn hơn 0')
+        .when('type', {
+            is: 'PERCENTAGE',
+            then: (schema) => schema.max(100, 'Giảm phần trăm tối đa 100%'),
+            otherwise: (schema) => schema
+        })
+        .required('Giá trị giảm là bắt buộc'),
+    minimumOrderAmount: yup
+        .number()
+        .transform((value, originalValue) => {
+            if (originalValue === null || originalValue === undefined || originalValue === '') return null
+            const numeric = Number(originalValue)
+            return Number.isFinite(numeric) ? numeric : null
+        })
+        .nullable()
+        .typeError('Giá trị tối thiểu phải là số hợp lệ')
+        .test('min-order-positive', 'Đơn hàng tối thiểu phải lớn hơn 0', (value) => value === null || value > 0),
+    maximumDiscountAmount: yup
+        .number()
+        .transform((value, originalValue) => {
+            if (originalValue === null || originalValue === undefined || originalValue === '') return null
+            const numeric = Number(originalValue)
+            return Number.isFinite(numeric) ? numeric : null
+        })
+        .nullable()
+        .typeError('Giảm tối đa phải là số hợp lệ')
+        .test('max-discount-positive', 'Giảm tối đa phải lớn hơn 0', (value) => value === null || value > 0)
+        .test('fixed-amount-check', 'Giảm tối đa không được nhỏ hơn giá trị giảm', function (value) {
+            if (this.parent.type !== 'FIXED_AMOUNT' || value === null || value === undefined) return true
+            return value >= this.parent.discountValue
+        }),
+    validFrom: yup.string().required('Thời gian bắt đầu là bắt buộc'),
+    validTo: yup
+        .string()
+        .required('Thời gian kết thúc là bắt buộc')
+        .test('after-start', '"Hiệu lực đến" phải sau "Hiệu lực từ"', function (value) {
+            if (!value || !this.parent.validFrom) return true
+            return new Date(value) > new Date(this.parent.validFrom)
+        }),
+    usageLimit: yup
+        .number()
+        .typeError('Giới hạn lượt sử dụng phải là số nguyên dương')
+        .integer('Giới hạn lượt sử dụng phải là số nguyên')
+        .moreThan(0, 'Giới hạn lượt sử dụng phải lớn hơn 0')
+        .required('Giới hạn lượt sử dụng là bắt buộc'),
+    active: yup.boolean()
+})
+
+const initialize = async () => {
+    try {
+        syncFilterDraft()
+        await Promise.all([voucherStore.loadSummary(), voucherStore.loadVouchers()])
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const handleRefresh = async () => {
+    try {
+        await Promise.all([voucherStore.loadSummary(), voucherStore.loadVouchers()])
+        toast.success('Đã làm mới dữ liệu voucher.')
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const handleFilterApply = async () => {
+    try {
+        voucherStore.setFilters({
+            code: filterDraft.code,
+            type: filterDraft.type,
+            active: filterDraft.active,
+            validFrom: filterDraft.validFrom,
+            validTo: filterDraft.validTo
+        })
+        await voucherStore.loadVouchers()
+        syncFilterDraft()
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const handleFilterReset = async () => {
+    try {
+        voucherStore.resetFilters()
+        syncFilterDraft()
+        await voucherStore.loadVouchers()
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const handlePageChange = async (page) => {
+    voucherStore.setPage(page)
+    try {
+        await voucherStore.loadVouchers()
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const handlePageSizeChange = async (size) => {
+    voucherStore.setPageSize(Number(size))
+    try {
+        await voucherStore.loadVouchers()
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const openCreateModal = () => {
+    if (!canManage.value) return
+    isEditing.value = false
+    resetFormState()
+    bsModal.value?.show()
+}
+
+const openEditModal = async (voucher) => {
+    if (!canManage.value) return
+    formLoading.value = true
+    isEditing.value = true
+    resetFormState()
+    try {
+        const detail = await voucherStore.fetchVoucher(voucher.id)
+        populateForm(detail)
+        bsModal.value?.show()
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    } finally {
+        formLoading.value = false
+    }
+}
+
+const closeModal = () => {
+    bsModal.value?.hide()
+}
+
+const handleSubmit = async () => {
+    try {
+        formData.code = formData.code?.toString().trim().toUpperCase()
+        if (isEditing.value && formData.id) {
+            await voucherStore.update(formData.id, formData)
+            toast.success('Đã cập nhật voucher thành công.')
+        } else {
+            await voucherStore.create(formData)
+            toast.success('Đã tạo voucher mới.')
+        }
+        closeModal()
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const handleToggle = async (voucher) => {
+    try {
+        const updated = await voucherStore.toggle(voucher.id)
+        toast.success(updated.active ? 'Voucher đã được kích hoạt.' : 'Voucher đã được tạm ngưng.')
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const handleDelete = async (voucher) => {
+    if (voucher.timesUsed > 0) {
+        toast.warning('Voucher đã có lượt sử dụng, không thể xoá.')
+        return
+    }
+    if (!window.confirm(`Bạn có chắc chắn muốn xoá voucher "${voucher.code}"?`)) {
+        return
+    }
+    try {
+        await voucherStore.remove(voucher.id)
+        toast.success('Đã xoá voucher.')
+    } catch (err) {
+        toast.error(normalizeMessage(err))
+    }
+}
+
+const exportCurrentPage = () => {
+    if (!items.value.length) {
+        toast.info('Không có dữ liệu để xuất.')
+        return
+    }
+
+    const headers = ['Mã', 'Mô tả', 'Loại', 'Giá trị', 'Đơn tối thiểu', 'Giảm tối đa', 'Hiệu lực từ', 'Hiệu lực đến', 'Đã dùng', 'Giới hạn', 'Trạng thái', 'Cập nhật']
+    const rows = items.value.map((voucher) => [
+        voucher.code,
+        voucher.description,
+        voucher.type,
+        voucher.type === 'PERCENTAGE' ? `${voucher.discountValue}%` : voucher.discountValue,
+        voucher.minimumOrderAmount ?? '',
+        voucher.maximumDiscountAmount ?? '',
+        formatDateTime(voucher.validFrom),
+        formatDateTime(voucher.validTo),
+        voucher.timesUsed,
+        voucher.usageLimit,
+        voucher.active ? 'ACTIVE' : 'INACTIVE',
+        formatDateTime(voucher.updatedAt || voucher.createdAt)
+    ])
+
+    const csvContent = [headers, ...rows]
+        .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\n')
+
+    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'})
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    const currentPage = pagination.value?.page ?? 1
+    link.setAttribute('download', `vouchers_page_${currentPage}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+}
+
+onMounted(() => {
+    if (modalElement.value) {
+        bsModal.value = new Modal(modalElement.value, {backdrop: 'static'})
+    }
+    initialize()
+})
+
+onUnmounted(() => {
+    bsModal.value?.dispose()
+})
+</script>
+
+<style scoped>
+.vouchers-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+.vouchers-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-soft);
+}
+
+.vouchers-header h2 {
+    font-weight: 700;
+    color: var(--color-heading);
+    margin-bottom: 0.25rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-soft-sm);
+}
+
+.summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+}
+
+.summary-label {
+    margin-bottom: 0.15rem;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.summary-value {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--color-heading);
+}
+
+.filter-card {
+    border-radius: 18px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft-sm);
+    padding: 1.25rem 1.5rem;
+}
+
+.filter-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.filter-item .form-label {
+    font-weight: 600;
+    color: var(--color-heading);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+}
+
+.table-card {
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+}
+
+.table-card table {
+    margin: 0;
+}
+
+.table-card thead {
+    background: rgba(148, 163, 184, 0.12);
+}
+
+.table-card th {
+    border-bottom: 0;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.table-card td {
+    vertical-align: middle;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem 1.25rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+@media (max-width: 992px) {
+    .vouchers-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .table-card {
+        border-radius: 16px;
+    }
+
+    .table-card table {
+        min-width: 1100px;
+    }
+}
+
+.dark-theme .vouchers-header,
+.dark-theme .filter-card,
+.dark-theme .table-card,
+.dark-theme .summary-card {
+    border-color: rgba(129, 140, 248, 0.28);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.92));
+    box-shadow: 0 24px 46px rgba(2, 6, 23, 0.55);
+}
+
+.comfort-theme .vouchers-header,
+.comfort-theme .filter-card,
+.comfort-theme .table-card,
+.comfort-theme .summary-card {
+    border-color: rgba(95, 111, 148, 0.25);
+    background: linear-gradient(170deg, rgba(245, 241, 235, 0.98), rgba(236, 232, 226, 0.92));
+}
+</style>

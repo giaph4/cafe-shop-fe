@@ -1,52 +1,56 @@
-import axios from './axios';
+import api from './axios'
 
-const API_URL = '/api/v1/expenses';
-
-/**
- * Lấy danh sách chi phí (có phân trang, sắp xếp và lọc theo ngày)
- * @param {object} params - Các tham số truy vấn (page, size, sort, startDate, endDate)
- */
-const getAll = (params) => {
-    return axios.get(API_URL, { params });
-};
+const BASE_URL = '/api/v1/expenses'
 
 /**
- * Lấy chi tiết một chi phí bằng ID
- * @param {number} id - ID của chi phí
+ * 13.1 Tạo khoản chi mới
  */
-const getById = (id) => {
-    return axios.get(`${API_URL}/${id}`);
-};
+export const createExpense = async (expenseData) => {
+    const { data } = await api.post(BASE_URL, expenseData)
+    return data
+}
 
 /**
- * Tạo một chi phí mới
- * @param {object} expenseDTO - Đối tượng chi phí (không cần id, user, createdAt...)
+ * 13.2 Lấy danh sách chi phí (có lọc)
  */
-const create = (expenseDTO) => {
-    return axios.post(API_URL, expenseDTO);
-};
+export const getExpenses = async (filters) => {
+    const params = {
+        page: filters.page || 0,
+        size: filters.size || 10,
+        startDate: filters.startDate || null,
+        endDate: filters.endDate || null,
+    }
+
+    // Xóa các param rỗng hoặc null
+    Object.keys(params).forEach(key => {
+        if (params[key] === null || params[key] === '') {
+            delete params[key]
+        }
+    })
+
+    const { data } = await api.get(BASE_URL, { params })
+    return data
+}
 
 /**
- * Cập nhật một chi phí
- * @param {number} id - ID của chi phí cần cập nhật
- * @param {object} expenseDTO - Đối tượng chi phí
+ * 13.3 Lấy chi tiết khoản chi
  */
-const update = (id, expenseDTO) => {
-    return axios.put(`${API_URL}/${id}`, expenseDTO);
-};
+export const getExpenseById = async (id) => {
+    const { data } = await api.get(`${BASE_URL}/${id}`)
+    return data
+}
 
 /**
- * Xóa một chi phí
- * @param {number} id - ID của chi phí cần xóa
+ * 13.4 Cập nhật khoản chi
  */
-const deleteExpense = (id) => {
-    return axios.delete(`${API_URL}/${id}`);
-};
+export const updateExpense = async ({ id, data: expenseData }) => {
+    const { data } = await api.put(`${BASE_URL}/${id}`, expenseData)
+    return data
+}
 
-export const expenseService = {
-    getAll,
-    getById,
-    create,
-    update,
-    deleteExpense,
-};
+/**
+ * 13.5 Xóa khoản chi
+ */
+export const deleteExpense = async (id) => {
+    await api.delete(`${BASE_URL}/${id}`)
+}

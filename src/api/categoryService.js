@@ -1,21 +1,34 @@
 import api from './axios'
 
+const BASE_URL = '/api/v1/categories'
+
+const normalizeCategoryPayload = (payload = {}) => {
+    const name = typeof payload.name === 'string' ? payload.name.trim() : ''
+    const descriptionRaw = typeof payload.description === 'string' ? payload.description.trim() : ''
+
+    return {
+        name,
+        description: descriptionRaw || null
+    }
+}
+
 export const getCategories = async () => {
-    const { data } = await api.get('/categories')
+    const {data} = await api.get(BASE_URL)
+    return Array.isArray(data) ? data : []
+}
+
+export const createCategory = async (payload) => {
+    const body = normalizeCategoryPayload(payload)
+    const {data} = await api.post(BASE_URL, body)
     return data
 }
 
-export const createCategory = async (categoryData) => {
-    const { data } = await api.post('/categories', categoryData)
+export const updateCategory = async (id, payload) => {
+    const body = normalizeCategoryPayload(payload)
+    const {data} = await api.put(`${BASE_URL}/${id}`, body)
     return data
-}
-
-export const updateCategory = async ({ id, data }) => {
-    const { data: responseData } = await api.put(`/categories/${id}`, data)
-    return responseData
 }
 
 export const deleteCategory = async (id) => {
-    await api.delete(`/categories/${id}`)
-    return id
+    await api.delete(`${BASE_URL}/${id}`)
 }

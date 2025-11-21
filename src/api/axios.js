@@ -1,27 +1,39 @@
 import axios from 'axios'
+import {
+    getAccessToken,
+    clearTokens,
+    clearUser
+} from '@/utils/tokenStorage'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL
+    baseURL: API_BASE_URL,
+    timeout: 15000
 })
 
-api.interceptors.request.use(config => {
-    const token = localStorage.getItem('token')
+api.interceptors.request.use((config) => {
+    const token = getAccessToken()
     if (token) {
         config.headers.Authorization = `Bearer ${token}`
     }
     return config
-},
-    error => Promise.reject(error)
-)
+})
 
 api.interceptors.response.use(
-    response => response,
-    error => {
-        if (error.response?.status === 401) {
-            
-            localStorage.removeItem('token')
-            window.location.href = '/login'
+    (response) => response,
+    (error) => {
+        const { response, config } = error || {}
+        const status = response?.status
+
+        if (status === 401) {
+            clearTokens()
+            clearUser()
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { config } }))
+            }
         }
+
         return Promise.reject(error)
     }
 )

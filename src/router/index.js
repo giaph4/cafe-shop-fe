@@ -1,19 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
-import MainLayout from '../layouts/MainLayout.vue'
+import MainLayout from '../MainLayout.vue' // Corrected path
 import Dashboard from '../pages/Dashboard.vue'
 import Login from '../pages/Login.vue'
 import Products from '../pages/Products.vue'
 import Orders from '../pages/Orders.vue'
+import Reports from '../pages/Reports.vue'
+import Chat from '../pages/Chat.vue'
 import Categories from '../pages/Categories.vue'
 import Tables from '../pages/Tables.vue'
 import Ingredients from '../pages/Ingredients.vue'
 import Suppliers from '../pages/Suppliers.vue'
 import PurchaseOrders from '../pages/PurchaseOrders.vue'
 import PurchaseOrderCreate from '../pages/PurchaseOrderCreate.vue'
+import InventoryReport from '../pages/InventoryReport.vue'
+import Expenses from '../pages/Expenses.vue'
 import NotFound from '../pages/NotFound.vue'
-// import Expenses from '../pages/Expenses.vue'
-// import Expenses from '../pages/Expenses.vue'
+import Pos from '../pages/Pos.vue'
+import Staff from '../pages/Staff.vue'
+import ShiftManagement from '../pages/ShiftManagement.vue'
+import Payroll from '../pages/Payroll.vue'
+import Vouchers from '../pages/Vouchers.vue'
+import ShiftReport from '../pages/ShiftReport.vue'
+import Customers from '../pages/Customers.vue'
 
 const routes = [
     {
@@ -27,6 +36,11 @@ const routes = [
                 component: Dashboard,
             },
             {
+                path: 'pos',
+                name: 'POS',
+                component: Pos,
+            },
+            {
                 path: 'products',
                 name: 'Quản lý Sản phẩm',
                 component: Products,
@@ -35,6 +49,19 @@ const routes = [
                 path: 'orders',
                 name: 'Quản lý Hoá đơn',
                 component: Orders,
+                meta: { allowedRoles: ['ROLE_STAFF', 'ROLE_MANAGER', 'ROLE_ADMIN'] }
+            },
+            {
+                path: 'customers',
+                name: 'Quản lý Khách hàng',
+                component: Customers,
+                meta: { allowedRoles: ['ROLE_STAFF', 'ROLE_MANAGER', 'ROLE_ADMIN'] }
+            },
+            {
+                path: 'customers/:id',
+                name: 'Chi tiết Khách hàng',
+                component: () => import('../pages/CustomerOrderDetail.vue'),
+                meta: { allowedRoles: ['ROLE_STAFF', 'ROLE_MANAGER', 'ROLE_ADMIN'] }
             },
             {
                 path: 'categories',
@@ -45,6 +72,28 @@ const routes = [
                 path: 'tables',
                 name: 'Quản lý Bàn',
                 component: Tables,
+            },
+            {
+                path: 'vouchers',
+                name: 'Quản lý Voucher',
+                component: Vouchers,
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+            },
+            {
+                path: 'reports',
+                name: 'Báo cáo tổng hợp',
+                component: Reports,
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+            },
+            {
+                path: 'chat',
+                name: 'Trò chuyện nội bộ',
+                component: Chat,
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
+            },
+            {
+                path: 'sales',
+                redirect: { path: '/reports' }
             },
             {
                 path: 'ingredients',
@@ -61,17 +110,49 @@ const routes = [
                 name: 'Quản lý Nhập hàng',
                 component: PurchaseOrders,
             },
-            // {
-            //     path: 'expenses',
-            //     name: 'Quản lý Chi phí',
-            //     component: Expenses,
-            // },
             {
                 path: 'purchase-orders/new',
                 name: 'Tạo Đơn nhập hàng',
                 component: PurchaseOrderCreate,
             },
-
+            {
+                path: 'inventory-report',
+                name: 'Báo cáo tồn kho',
+                component: InventoryReport,
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+            },
+            {
+                path: 'expenses',
+                name: 'Quản lý Chi phí',
+                component: Expenses,
+            },
+            {
+                path: 'staff',
+                name: 'Quản lý Nhân viên',
+                component: Staff,
+            },
+            {
+                path: 'shifts',
+                name: 'Quản lý Ca làm',
+                component: ShiftManagement,
+            },
+            {
+                path: 'shift-report',
+                name: 'Báo cáo Ca làm',
+                component: ShiftReport,
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+            },
+            {
+                path: 'payroll',
+                name: 'Quản lý Lương',
+                component: Payroll,
+            },
+            {
+                path: 'profile',
+                name: 'Hồ sơ cá nhân',
+                component: () => import('../pages/Profile.vue'),
+                meta: { requiresAuth: true }
+            }
         ]
     },
     {
@@ -98,14 +179,32 @@ router.beforeEach((to, from, next) => {
     const isAuthenticated = authStore.isAuthenticated
 
     if (to.meta.requiresAuth && !isAuthenticated) {
-        next({ name: 'Login' }) // Chuyển đến trang Login
+        next({ name: 'Login' })
+        return
     }
-    else if (to.meta.requiresGuest && isAuthenticated) {
+
+    if (to.meta.requiresGuest && isAuthenticated) {
         next({ name: 'Dashboard' })
+        return
     }
-    else {
-        next()
+
+    const allowedRoles = to.meta?.allowedRoles
+    if (Array.isArray(allowedRoles) && allowedRoles.length) {
+        if (!isAuthenticated) {
+            next({ name: 'Login' })
+            return
+        }
+
+        const roles = authStore.userRoles || []
+        const hasPermission = allowedRoles.some((role) => roles.includes(role))
+
+        if (!hasPermission) {
+            next({ name: 'Dashboard' })
+            return
+        }
     }
+
+    next()
 })
 
 export default router

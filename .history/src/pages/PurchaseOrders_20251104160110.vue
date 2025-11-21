@@ -111,7 +111,7 @@ PurchaseOrders<template>
   import { toast } from 'vue3-toastify'
   import { getPurchaseOrders, markOrderAsCompleted, cancelPurchaseOrder } from '@/api/purchaseOrderService'
   import Pagination from '@/components/Pagination.vue'
-  import PurchaseOrderDetailModal from '@/components/PurchaseOrderDetailModal.vue'
+  import PurchaseOrderDetailModal from '@/components/purchase-orders/PurchaseOrderDetailModal.vue'
   import { formatMoney } from '@/utils/formatMoney.js'
   
   const queryClient = useQueryClient()

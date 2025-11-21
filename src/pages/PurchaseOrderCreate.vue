@@ -53,7 +53,7 @@
                                                 </td>
 
                                                 <td>
-                                                    <Field :name="`items[${idx}].unitPrice`" type="number"
+                                                    <Field :name="`items[${idx}].unitPrice`" type="number" step="0.01"
                                                         class="form-control"
                                                         :class="{ 'is-invalid': errors[`items[${idx}].unitPrice`] }" />
                                                     <ErrorMessage :name="`items[${idx}].unitPrice`"
@@ -187,7 +187,7 @@ const schema = yup.object({
                 unitPrice: yup
                     .number()
                     .required('Đơn giá là bắt buộc')
-                    .min(0, 'Đơn giá không thể âm'),
+                    .min(0.01, 'Đơn giá phải lớn hơn 0'),
             })
         )
         .min(1, 'Đơn hàng phải có ít nhất 1 mặt hàng.')
@@ -212,7 +212,7 @@ const handleSubmit = (values) => {
     const payload = {
         supplierId: Number(values.supplierId),
         expectedDate: values.expectedDate
-            ? new Date(values.expectedDate).toISOString()
+            ? `${values.expectedDate}T00:00:00`
             : null,
         items: values.items.map((item) => ({
             ingredientId: Number(item.ingredientId),

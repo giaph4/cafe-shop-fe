@@ -1,529 +1,333 @@
 <template>
-    <aside class="chat-sidebar" :class="layoutClass">
-        <header class="chat-sidebar__header" :class="headerClass">
-            <div class="chat-sidebar__title">
-                <span class="chat-sidebar__title-icon">
-                    <i class="bi bi-chat-square-text"></i>
-                </span>
-                <div>
-                    <h2>Tin nhắn</h2>
-                    <small>Quản lý mọi cuộc trò chuyện</small>
-                </div>
-            </div>
-            <button type="button" class="chat-sidebar__new" @click="$emit('create-conversation')">
-                <i class="bi bi-pencil-square"></i>
-                <span>Tạo mới</span>
+    <aside class="chat-sidebar">
+        <header class="chat-sidebar__header">
+            <h2>Trò chuyện</h2>
+            <button type="button" class="chat-sidebar__new-btn" @click="$emit('create')">
+                <i class="bi bi-plus-lg"></i>
             </button>
         </header>
 
-        <label class="chat-sidebar__search" :class="searchClass" @focusin="ensureDirectory">
+        <div class="chat-sidebar__search">
             <i class="bi bi-search"></i>
             <input
-                type="search"
-                v-model="search"
-                :placeholder="searchPlaceholder"
-                @focus="ensureDirectory"
+                type="text"
+                placeholder="Tìm kiếm hội thoại hoặc người dùng"
+                v-model="searchTerm"
             />
-        </label>
+        </div>
 
-        <div class="chat-sidebar__body" :class="bodyClass">
-            <section class="chat-sidebar__section chat-sidebar__section--list">
-                <div class="chat-sidebar__scroll" ref="scrollContainer" @scroll="handleScroll">
-                    <div v-if="isLoading" class="chat-sidebar__skeletons">
-                        <div v-for="i in 6" :key="i" class="chat-sidebar__skeleton shimmer"></div>
-                    </div>
-                    <div v-else-if="!filteredConversations.length" class="chat-sidebar__empty">
-                        <span class="chat-sidebar__empty-icon">
-                            <i class="bi bi-chat-square-dots"></i>
-                        </span>
-                        <p>Chưa có hội thoại nào</p>
-                        <small>Nhấn “Tạo mới” để bắt đầu trao đổi.</small>
-                    </div>
-                    <ul v-else class="chat-sidebar__list">
-                        <li v-for="conversation in filteredConversations" :key="conversation.id">
-                            <ChatConversationItem
-                                :conversation="conversation"
-                                :current-user-id="currentUserId"
-                                :is-active="conversation.id === activeConversationId"
-                                @select="$emit('select', $event)"
-                                @toggle-pin="emitTogglePin"
-                            />
-                        </li>
-                    </ul>
-                    <footer v-if="hasMore && !isLoading" class="chat-sidebar__load-more">
-                        <button type="button" class="chat-sidebar__load-more-button" @click="$emit('load-more')">
-                            <i class="bi bi-arrow-down-circle"></i>
-                            <span>Tải thêm</span>
-                        </button>
-                    </footer>
+        <div class="chat-sidebar__filters">
+            <button
+                v-for="filter in filters"
+                :key="filter.value"
+                type="button"
+                class="chat-sidebar__filter"
+                :class="{ 'chat-sidebar__filter--active': activeFilter === filter.value }"
+                @click="activeFilter = filter.value"
+            >
+                {{ filter.label }}
+            </button>
+        </div>
+
+        <div class="chat-sidebar__list">
+            <div
+                v-for="conversation in filteredConversations"
+                :key="conversation.id"
+                class="chat-sidebar__item"
+                :class="{ 'chat-sidebar__item--active': conversation.id === activeConversationId }"
+                @click="$emit('select', conversation.id)"
+            >
+                <div class="chat-sidebar__avatar">
+                    <img v-if="conversation.avatarUrl" :src="conversation.avatarUrl" :alt="conversation.name" />
+                    <span v-else>{{ getInitials(conversation.name) }}</span>
                 </div>
-            </section>
+                <div class="chat-sidebar__content">
+                    <div class="chat-sidebar__name">{{ conversation.name }}</div>
+                    <div class="chat-sidebar__preview">{{ conversation.lastMessage?.content || 'Chưa có tin nhắn' }}</div>
+                </div>
+                <div class="chat-sidebar__meta">
+                    <div class="chat-sidebar__time">{{ formatTime(conversation.lastMessage?.createdAt) }}</div>
+                    <div v-if="conversation.unreadCount > 0" class="chat-sidebar__badge">
+                        {{ conversation.unreadCount }}
+                    </div>
+                </div>
+            </div>
         </div>
     </aside>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import ChatConversationItem from './ChatConversationItem.vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
-    conversations: { type: Array, default: () => [] },
-    isLoading: { type: Boolean, default: false },
-    hasMore: { type: Boolean, default: false },
-    activeConversationId: { type: Number, default: null },
-    currentUserId: { type: Number, default: null },
-    directory: {
-        type: Object,
-        default: () => ({ users: [], loading: false, error: null })
+    conversations: {
+        type: Array,
+        default: () => []
     },
-    layout: { type: String, default: 'slack' }
-})
-
-const emit = defineEmits(['select', 'load-more', 'create-conversation', 'toggle-pin', 'search', 'start-direct'])
-
-const search = ref('')
-const scrollContainer = ref(null)
-
-const layoutClass = computed(() => `chat-sidebar--${props.layout || 'slack'}`)
-const headerClass = computed(() => ({
-    'chat-sidebar__header--compact': props.layout === 'minimal',
-    'chat-sidebar__header--accent': props.layout === 'whatsapp'
-}))
-const searchClass = computed(() => ({
-    'chat-sidebar__search--pill': props.layout !== 'minimal',
-    'chat-sidebar__search--underline': props.layout === 'minimal'
-}))
-const bodyClass = computed(() => ({
-    'chat-sidebar__body--spacious': props.layout === 'slack',
-    'chat-sidebar__body--compact': props.layout === 'minimal',
-    'chat-sidebar__body--cards': props.layout === 'whatsapp'
-}))
-
-const searchPlaceholder = computed(() => {
-    switch (props.layout) {
-        case 'minimal':
-            return 'Tìm hội thoại hoặc người dùng'
-        case 'whatsapp':
-            return 'Tìm kiếm hoặc bắt đầu trò chuyện mới'
-        default:
-            return 'Tìm kiếm trên Messenger'
+    activeConversationId: {
+        type: [String, Number],
+        default: null
+    },
+    currentUserId: {
+        type: [String, Number],
+        required: true
     }
 })
+
+defineEmits(['select', 'create'])
+
+const searchTerm = ref('')
+const activeFilter = ref('all')
+
+const filters = [
+    { label: 'Tất cả', value: 'all' },
+    { label: 'Đã ghim', value: 'pinned' },
+    { label: 'Chưa đọc', value: 'unread' }
+]
 
 const filteredConversations = computed(() => {
-    if (!search.value.trim()) return props.conversations
-    const keyword = search.value.trim().toLowerCase()
-    return props.conversations.filter((conversation) => {
-        const title = conversation.title || ''
-        const participantNames = (conversation.participants || [])
-            .map((member) => member.fullName || member.username || '')
-            .join(' ')
-        return [title, participantNames].some((text) => text.toLowerCase().includes(keyword))
-    })
-})
+    let result = [...props.conversations]
 
-const handleScroll = () => {
-    if (!scrollContainer.value || props.isLoading || !props.hasMore) return
-    const container = scrollContainer.value
-    if (container.scrollTop + container.clientHeight >= container.scrollHeight - 40) {
-        // near bottom
-        emitLoadMore()
+    // Filter by search term
+    if (searchTerm.value) {
+        const term = searchTerm.value.toLowerCase()
+        result = result.filter(c => 
+            c.name?.toLowerCase().includes(term) ||
+            c.lastMessage?.content?.toLowerCase().includes(term)
+        )
     }
-}
 
-const emitLoadMore = () => {
-    if (!props.hasMore) return
-    emit('load-more')
-}
+    // Filter by active filter
+    if (activeFilter.value === 'pinned') {
+        result = result.filter(c => c.pinned)
+    } else if (activeFilter.value === 'unread') {
+        result = result.filter(c => c.unreadCount > 0)
+    }
 
-const emitTogglePin = (conversation) => {
-    emit('toggle-pin', conversation)
-}
+    // Sort: pinned first, then by last message time
+    result.sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1
+        if (!a.pinned && b.pinned) return 1
+        const timeA = a.lastMessage?.createdAt || 0
+        const timeB = b.lastMessage?.createdAt || 0
+        return timeB - timeA
+    })
 
-const ensureDirectory = () => {
-    emit('search', search.value)
-}
-
-watch(search, (value) => {
-    emit('search', value)
+    return result
 })
 
-const emitStartDirect = (user) => {
-    emit('start-direct', user)
-}
-
-const directorySectionVisible = computed(() => search.value.length > 0 || props.directory.users.length > 0 || props.directory.loading)
-
-const initialsOf = (name) => {
-    if (!name) return 'NV'
+const getInitials = (name) => {
+    if (!name) return 'U'
     return name
         .split(' ')
         .filter(Boolean)
         .slice(0, 2)
-        .map((part) => part[0])
+        .map(s => s[0])
         .join('')
         .toUpperCase()
+}
+
+const formatTime = (timestamp) => {
+    if (!timestamp) return ''
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diff = now - date
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return 'Vừa xong'
+    if (minutes < 60) return `${minutes} phút trước`
+    if (hours < 24) return `${hours} giờ trước`
+    if (days < 7) return `${days} ngày trước`
+    return date.toLocaleDateString('vi-VN')
 }
 </script>
 
 <style scoped>
 .chat-sidebar {
-    --sidebar-bg: var(--shell-pane-bg, #ffffff);
-    --sidebar-border: var(--shell-border, rgba(15, 23, 42, 0.06));
-    --sidebar-accent: var(--shell-accent, #006aff);
-    --sidebar-accent-soft: var(--shell-accent-soft, rgba(0, 106, 255, 0.12));
-    --sidebar-text-primary: var(--shell-text-primary, #0f172a);
-    --sidebar-text-secondary: var(--shell-text-secondary, #4b5563);
-
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: 0;
-    width: 100%;
-    background: var(--sidebar-bg);
-    color: var(--sidebar-text-primary);
-    padding: 1.5rem 1.4rem 1.75rem;
-    gap: 1.25rem;
-    border-right: 1px solid var(--sidebar-border);
-    transition: background 0.24s ease;
-}
-
-.chat-sidebar--minimal {
-    --sidebar-bg: transparent;
-    --sidebar-border: transparent;
-    padding: 1.1rem 0.75rem 1.1rem;
-    gap: 0.9rem;
-}
-
-.chat-sidebar--whatsapp {
-    --sidebar-bg: linear-gradient(180deg, rgba(240, 242, 245, 0.92) 0%, rgba(224, 228, 232, 0.92) 100%);
-    --sidebar-border: rgba(0, 0, 0, 0.04);
-    --sidebar-accent: #00a884;
-    --sidebar-accent-soft: rgba(0, 168, 132, 0.18);
-    padding: 1.6rem 1.35rem;
+    background: #ffffff;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .chat-sidebar__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0 0.25rem;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.chat-sidebar__title {
+.chat-sidebar__header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #050505;
+}
+
+.chat-sidebar__new-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #e4e6eb;
+    color: #050505;
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
 }
 
-.chat-sidebar__title-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
-    background: rgba(37, 99, 235, 0.12);
-    color: var(--sidebar-accent);
-}
-
-.chat-sidebar__title h2 {
-    font-size: 1.2rem;
-    margin: 0;
-    font-weight: 700;
-}
-
-.chat-sidebar__title small {
-    display: block;
-    color: var(--sidebar-text-secondary);
-}
-
-.chat-sidebar__header--compact h2 {
-    font-size: 1.05rem;
-}
-
-.chat-sidebar__header--accent h2 {
-    color: var(--sidebar-accent);
-}
-
-.chat-sidebar__new {
-    background: linear-gradient(135deg, var(--sidebar-accent), #5b7bff);
-    border: none;
-    color: #fff;
-    padding: 0.5rem 1.2rem;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-    box-shadow: 0 14px 26px rgba(37, 99, 235, 0.22);
-}
-
-.chat-sidebar__new:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 18px 36px rgba(37, 99, 235, 0.3);
+.chat-sidebar__new-btn:hover {
+    background: #d0d2d6;
 }
 
 .chat-sidebar__search {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.55rem 0.75rem;
-    border-radius: 18px;
-    background: rgba(15, 23, 42, 0.04);
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.chat-sidebar__search i {
+    color: #65676b;
 }
 
 .chat-sidebar__search input {
-    border: none;
-    background: transparent;
     flex: 1;
-    padding: 0;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: inherit;
+    border: none;
     outline: none;
+    background: transparent;
+    font-size: 0.9375rem;
+    color: #050505;
 }
 
 .chat-sidebar__search input::placeholder {
-    color: rgba(71, 85, 105, 0.6);
+    color: #65676b;
 }
 
-.chat-sidebar__search--underline:focus-within {
-    border-color: var(--sidebar-accent);
-    box-shadow: 0 0 0 2px rgba(0, 106, 255, 0.12);
+.chat-sidebar__filters {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.chat-sidebar__body--spacious {
-    background: rgba(15, 23, 42, 0.02);
+.chat-sidebar__filter {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
     border-radius: 20px;
-    padding: 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #65676b;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
 
-.chat-sidebar__body--cards {
-    background: rgba(255, 255, 255, 0.92);
-    border-radius: 22px;
-    padding: 1rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+.chat-sidebar__filter:hover {
+    background: #f0f2f5;
+}
+
+.chat-sidebar__filter--active {
+    background: #1877f2;
+    color: #ffffff;
 }
 
 .chat-sidebar__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.chat-sidebar__section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    min-height: 0;
-}
-
-.chat-sidebar__scroll {
     flex: 1;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
 }
 
-.chat-sidebar__skeletons {
-    display: grid;
-    gap: 0.65rem;
-}
-
-.chat-sidebar__skeleton {
-    height: 64px;
-    border-radius: 18px;
-}
-
-.chat-sidebar__empty {
-    text-align: center;
-    padding: 3.2rem 1.5rem;
-    color: var(--sidebar-text-secondary);
-    display: grid;
-    gap: 0.65rem;
-    background: rgba(248, 249, 253, 0.7);
-    border-radius: 22px;
-    border: 1px dashed rgba(148, 163, 184, 0.35);
-}
-
-.chat-sidebar__empty-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 20px;
-    display: grid;
-    place-items: center;
-    margin: 0 auto 0.25rem;
-    background: rgba(37, 99, 235, 0.12);
-    color: var(--sidebar-accent);
-    font-size: 1.75rem;
-}
-
-.chat-sidebar__directory-button {
-    width: 100%;
+.chat-sidebar__item {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
-    padding: 0.55rem 0.65rem;
-    border: none;
-    border-radius: inherit;
-    background: transparent;
-    color: inherit;
-    transition: background 0.2s ease, transform 0.2s ease;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
 }
 
-.chat-sidebar__directory-button:hover {
-    background: rgba(99, 102, 241, 0.08);
-    transform: translateX(2px);
+.chat-sidebar__item:hover {
+    background: #f0f2f5;
 }
 
-.chat-sidebar__directory-avatar {
-    width: 40px;
-    height: 40px;
+.chat-sidebar__item--active {
+    background: #e7f3ff;
+}
+
+.chat-sidebar__avatar {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #050505;
+    flex-shrink: 0;
     overflow: hidden;
-    background: rgba(15, 23, 42, 0.08);
-    display: grid;
-    place-items: center;
 }
 
-.chat-sidebar__directory-avatar img {
+.chat-sidebar__avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.chat-sidebar__directory-info {
+.chat-sidebar__content {
     flex: 1;
     min-width: 0;
+}
+
+.chat-sidebar__name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #050505;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-sidebar__preview {
+    font-size: 0.8125rem;
+    color: #65676b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-sidebar__meta {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    align-items: flex-end;
+    gap: 0.25rem;
+    flex-shrink: 0;
 }
 
-.chat-sidebar__directory-info strong {
-    font-size: 0.88rem;
-}
-
-.chat-sidebar__directory-info small {
-    color: var(--shell-text-secondary, rgba(71, 85, 105, 0.65));
+.chat-sidebar__time {
     font-size: 0.75rem;
+    color: #65676b;
 }
 
-.chat-sidebar__directory-action {
-    color: var(--shell-accent, #006aff);
-    font-size: 1rem;
-}
-
-.chat-sidebar__directory-empty {
-    padding: 0.65rem;
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--shell-text-secondary, rgba(71, 85, 105, 0.7));
-}
-
-.chat-sidebar__load-more {
-    display: flex;
-    justify-content: center;
-    margin-top: 0.5rem;
-}
-
-.chat-sidebar__load-more-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    border: none;
-    border-radius: 999px;
-    padding: 0.5rem 1.1rem;
-    background: rgba(37, 99, 235, 0.1);
-    color: var(--sidebar-accent);
+.chat-sidebar__badge {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 0.375rem;
+    border-radius: 10px;
+    background: #1877f2;
+    color: #ffffff;
+    font-size: 0.75rem;
     font-weight: 600;
-    transition: background 0.18s ease, transform 0.18s ease;
-}
-
-.chat-sidebar__load-more-button:hover {
-    background: rgba(37, 99, 235, 0.18);
-    transform: translateY(-1px);
-}
-
-.chat-sidebar__scroll::-webkit-scrollbar {
-    width: 6px;
-}
-
-.chat-sidebar__scroll::-webkit-scrollbar-thumb {
-    background-color: rgb(148, 163, 184, 0.45);
-    border-radius: 999px;
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar {
-    background: rgba(15, 23, 42, 0.96);
-    color: rgba(226, 232, 240, 0.95);
-    --sidebar-text-secondary: rgba(148, 163, 184, 0.85);
-    --sidebar-border: rgba(148, 163, 184, 0.18);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar--minimal {
-    background: transparent;
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar--whatsapp {
-    background: linear-gradient(180deg, rgba(23, 39, 47, 0.95) 0%, rgba(15, 25, 32, 0.95) 100%);
-    --sidebar-accent: #2f7f6f;
-    --sidebar-accent-soft: rgba(47, 127, 111, 0.28);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__new {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__badge {
-    background: rgba(35, 116, 225, 0.22);
-    color: rgba(199, 210, 254, 0.95);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__skeleton,
-:global([data-bs-theme='dark']) .chat-sidebar__directory-skeleton {
-    background: linear-gradient(90deg, rgba(51, 65, 85, 0.55), rgba(51, 65, 85, 0.3), rgba(51, 65, 85, 0.55));
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar--whatsapp .chat-sidebar__skeleton {
-    background: linear-gradient(90deg, rgba(34, 53, 48, 0.55), rgba(34, 53, 48, 0.3), rgba(34, 53, 48, 0.55));
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__empty {
-    color: rgba(148, 163, 184, 0.78);
-}
-:global([data-bs-theme='dark']) .chat-sidebar__directory-button:hover {
-    background: rgba(35, 116, 225, 0.18);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__directory-avatar {
-    background: rgba(35, 116, 225, 0.28);
-    color: rgba(226, 232, 240, 0.95);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__directory-info small {
-    color: rgba(189, 197, 209, 0.75);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__directory-empty {
-    color: rgba(176, 179, 184, 0.75);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__load-more-button {
-    background: rgba(35, 116, 225, 0.16);
-    color: rgba(199, 210, 254, 0.95);
-}
-
-:global([data-bs-theme='dark']) .chat-sidebar__load-more-button:hover {
-    background: rgba(35, 116, 225, 0.24);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>

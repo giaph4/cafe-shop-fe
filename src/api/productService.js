@@ -122,7 +122,7 @@ export const getProductRecipe = async (productId) => {
 /**
  * 5.2 Cập nhật công thức sản phẩm
  */
-export const updateProductRecipe = async (productId, ingredients) => {
-    const {data} = await api.put(`${BASE_URL}/${productId}/recipe`, {ingredients})
+export const updateProductRecipe = async (productId, recipeDTO) => {
+    const {data} = await api.put(`${BASE_URL}/${productId}/recipe`, recipeDTO)
     return data
 }

@@ -17,7 +17,10 @@ export const sidebarIcons = {
     people: 'bi bi-people',
     staff: 'bi bi-person-badge',
     shifts: 'bi bi-calendar-check',
+    attendance: 'bi bi-clock-history',
     shiftReport: 'bi bi-clipboard-data',
+    shiftAssignment: 'bi bi-person-check-fill',
+    performanceAdjustment: 'bi bi-graph-up-arrow',
     finance: 'bi bi-cash-stack',
     expenses: 'bi bi-wallet2',
     payroll: 'bi bi-cash-coin',
@@ -25,5 +28,10 @@ export const sidebarIcons = {
     collapse: 'bi bi-chevron-double-left',
     expand: 'bi bi-chevron-double-right',
     profile: 'bi bi-person-circle',
-    chat: 'bi bi-chat-text'
+    chat: 'bi bi-chat-text',
+    loginHistory: 'bi bi-clock-history',
+    fileManagement: 'bi bi-folder',
+    adminAnalytics: 'bi bi-robot',
+    roleDashboards: 'bi bi-person-badge',
+    customers: 'bi bi-people-fill'
 }

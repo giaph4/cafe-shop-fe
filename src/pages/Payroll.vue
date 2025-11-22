@@ -405,12 +405,6 @@ fetchCycles()
 }
 
 
-.page-title {
-    color: var(--color-heading);
-    font-weight: 700;
-}
-
-.filter-card,
 .cycles-card,
 .cycle-detail {
     border-radius: 18px;

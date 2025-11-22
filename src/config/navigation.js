@@ -162,6 +162,13 @@ export const navigationSections = [
                         icon: 'bi bi-calendar-check',
                         to: '/shifts',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'attendance',
+                        label: 'Chấm công',
+                        icon: 'bi bi-clock-history',
+                        to: '/attendance',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
                     }
                 ]
             },

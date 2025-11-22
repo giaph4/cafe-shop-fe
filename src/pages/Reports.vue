@@ -1,5 +1,5 @@
 <template>
-    <div class="reports-page container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid" data-aos="fade-up">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Báo cáo tổng hợp</h2>
@@ -825,12 +825,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.reports-page {
-    display: flex;
-    flex-direction: column;
-    gap: 1.75rem;
-    padding-bottom: 2rem;
-}
+/* Page-specific styles only - Global styles (.page-container) are in components.scss */
 
 .card-shadow {
     background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));

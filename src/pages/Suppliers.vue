@@ -77,8 +77,8 @@
         </div>
 
         <div class="row g-4 mb-4 mt-1">
-            <div class="col-md-4" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card">
+            <div class="col-md-4 d-flex" v-for="stat in stats" :key="stat.label">
+                <div class="stat-card w-100">
                     <div class="stat-icon" :class="stat.variant">
                         <i :class="stat.icon"></i>
                     </div>
@@ -392,28 +392,6 @@ const handlePageChange = (page) => {
     padding-bottom: 2rem;
 }
 
-.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-}
-
-.page-title {
-    font-weight: 700;
-    color: var(--color-heading);
-    margin-bottom: 0.25rem;
-}
-
-.page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted);
-}
 
 .stat-card {
     display: flex;
@@ -424,6 +402,8 @@ const handlePageChange = (page) => {
     padding: 1rem 1.25rem;
     background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    height: 100%;
+    min-height: 140px;
 }
 
 .stat-icon {
@@ -461,7 +441,6 @@ const handlePageChange = (page) => {
     color: var(--color-heading);
 }
 
-.filter-card,
 .table-card {
     border-radius: 18px;
     border: 1px solid rgba(148, 163, 184, 0.28);
@@ -478,11 +457,6 @@ const handlePageChange = (page) => {
     border-left: none;
 }
 
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .form-modal {
     border-radius: 20px;
@@ -499,8 +473,8 @@ const handlePageChange = (page) => {
 }
 
 @media (max-width: 768px) {
-    .card-shadow {
-        padding: 1.25rem;
+    .stat-card {
+        flex-direction: row;
     }
 }
 </style>

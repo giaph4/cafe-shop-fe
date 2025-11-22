@@ -1,168 +1,124 @@
 <template>
-    <div class="customers-page" data-aos="fade-up">
-        <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="page-container container-fluid" data-aos="fade-up">
+        <div class="page-header card-shadow">
             <div>
-                <h2 class="page-title mb-1">Quản lý Khách hàng</h2>
-                <p class="text-muted mb-0">Theo dõi thông tin, lịch sử mua hàng và điểm thưởng của khách hàng.</p>
+                <h2 class="page-title">Quản lý Khách hàng</h2>
+                <p class="page-subtitle">Theo dõi thông tin, lịch sử mua hàng và điểm thưởng của khách hàng.</p>
             </div>
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <span v-if="totalCustomerCount > -1" class="badge rounded-pill bg-light text-dark">
-                    <i class="bi bi-people me-2"></i>
-                    Tổng khách hàng: {{ totalCustomerCount.toLocaleString('vi-VN') }}
-                </span>
-                <button v-if="canManage" class="btn btn-primary" type="button" @click="openCreateModal">
-                    <i class="bi bi-person-plus me-2"></i>
-                    Thêm khách hàng
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    Làm mới
                 </button>
             </div>
         </div>
 
-        <div class="card filter-card mb-4">
+        <div class="card filter-card mb-4" v-if="activeTab === 'list' || activeTab === 'statistics'">
             <div class="card-body">
                 <div class="row g-3 align-items-end">
-                    <div class="col-xl-4 col-lg-5 col-md-6">
+                    <div class="col-lg-3 col-md-4">
                         <label class="form-label">Tìm kiếm</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input
                                 type="text"
                                 class="form-control"
-                                placeholder="Tên, SĐT hoặc email khách hàng"
+                                placeholder="Tên, SĐT hoặc email"
                                 v-model="filters.keyword"
                                 :disabled="loading"
                             />
                         </div>
-                        <div class="form-text">Nhập từ khóa để tìm theo tên, số điện thoại hoặc email.</div>
                     </div>
-                    <div class="col-md-auto ms-md-auto">
-                        <div class="d-flex gap-2 justify-content-md-end">
-                            <button
-                                class="btn btn-outline-secondary"
-                                type="button"
-                                @click="resetFilters"
-                                :disabled="loading || !filters.keyword"
-                            >
-                                Đặt lại
-                            </button>
-                            <button class="btn btn-outline-primary" type="button" @click="refreshList" :disabled="loading">
-                                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                Làm mới
-                            </button>
-                        </div>
+                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
+                        <label class="form-label">Điểm thưởng từ</label>
+                        <input
+                            type="number"
+                            class="form-control"
+                            placeholder="0"
+                            v-model.number="filters.minLoyaltyPoints"
+                            min="0"
+                        />
+                    </div>
+                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
+                        <label class="form-label">Điểm thưởng đến</label>
+                        <input
+                            type="number"
+                            class="form-control"
+                            placeholder="999999"
+                            v-model.number="filters.maxLoyaltyPoints"
+                            min="0"
+                        />
+                    </div>
+                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
+                        <label class="form-label">Ngày tạo từ</label>
+                        <input type="date" class="form-control" v-model="filters.createdDateFrom" />
+                    </div>
+                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
+                        <label class="form-label">Ngày tạo đến</label>
+                        <input type="date" class="form-control" v-model="filters.createdDateTo" />
+                    </div>
+                    <div class="col-lg-1 col-md-4">
+                        <button class="btn btn-outline-secondary w-100" type="button" @click="resetFilters" :disabled="loading">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card data-card mb-4">
+        <div class="card tabs-card mb-4">
             <div class="card-body">
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Đang tải...</span>
-                    </div>
-                </div>
-                <div v-else-if="error" class="alert alert-warning mb-0">
-                    {{ error }}
-                </div>
-                <template v-else>
-                    <div v-if="!customers.length">
-                        <EmptyState
-                            title="Chưa có khách hàng phù hợp"
-                            message="Điều chỉnh bộ lọc hoặc tạo khách hàng mới để bắt đầu quản lý."
+                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
+                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
+                        <button
+                            type="button"
+                            class="nav-link"
+                            :class="{ active: activeTab === tab.key }"
+                            @click="activeTab = tab.key"
                         >
-                            <template #action>
-                                <button v-if="canManage" class="btn btn-primary" type="button" @click="openCreateModal">
-                                    <i class="bi bi-person-plus me-2"></i>
-                                    Thêm khách hàng
-                                </button>
-                            </template>
-                        </EmptyState>
-                    </div>
-                    <div v-else class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th scope="col">Khách hàng</th>
-                                    <th scope="col">Liên hệ</th>
-                                    <th scope="col" class="text-center">Điểm thưởng</th>
-                                    <th scope="col">Ngày tạo</th>
-                                    <th scope="col">Cập nhật</th>
-                                    <th scope="col" class="text-end">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="customer in customers" :key="customer.id">
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <button class="btn btn-link p-0 text-start fw-semibold" type="button" @click="openDetailDrawer(customer.id)">
-                                                {{ customer.fullName || '—' }}
-                                            </button>
-                                            <small class="text-muted">Mã KH: {{ customer.id }}</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <span><i class="bi bi-telephone me-1"></i>{{ customer.phone || '—' }}</span>
-                                            <span class="text-muted small"><i class="bi bi-envelope me-1"></i>{{ customer.email || '—' }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-soft-primary">
-                                            {{ formatLoyaltyPoints(customer.loyaltyPoints) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="text-muted small">{{ formatDate(customer.createdAt) }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="text-muted small">{{ formatDate(customer.updatedAt) }}</div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="btn-group btn-group-sm action-group" role="group" aria-label="Thao tác khách hàng">
-                                            <button class="btn btn-outline-secondary" type="button" title="Xem chi tiết" @click="openDetailDrawer(customer.id)">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <router-link
-                                                :to="{ name: 'Chi tiết Khách hàng', params: { id: customer.id } }"
-                                                class="btn btn-outline-secondary"
-                                                title="Lịch sử mua hàng"
-                                            >
-                                                <i class="bi bi-receipt"></i>
-                                            </router-link>
-                                            <button
-                                                v-if="canManage"
-                                                class="btn btn-outline-secondary"
-                                                type="button"
-                                                title="Chỉnh sửa"
-                                                @click="openEditModal(customer)"
-                                            >
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button
-                                                v-if="canDelete"
-                                                class="btn btn-outline-danger"
-                                                type="button"
-                                                title="Xóa khách hàng"
-                                                @click="confirmDelete(customer)"
-                                                :disabled="deleting"
-                                            >
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </template>
-            </div>
-            <div class="card-footer d-flex justify-content-end" v-if="!loading && customers.length && totalPages > 1">
-                <Pagination
-                    mode="zero-based"
-                    :current-page="zeroBasedPage"
-                    :total-pages="totalPages"
-                    @page-change="handlePageChange"
-                />
+                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
+                        </button>
+                    </li>
+                </ul>
+                <div v-if="loading && activeTab !== 'overview'" class="state-block py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+                <div v-else-if="error && activeTab !== 'overview'" class="state-block py-5">
+                    <div class="alert alert-danger mb-0">{{ error }}</div>
+                </div>
+                <div v-else class="tab-content">
+                    <CustomerOverviewTab
+                        v-if="activeTab === 'overview'"
+                        :stats="overviewStats"
+                        :recent-customers="recentCustomers"
+                        :top-customers="topCustomers"
+                    />
+                    <CustomerListTab
+                        v-else-if="activeTab === 'list'"
+                        :customers="filteredCustomers"
+                        :loading="loading"
+                        :error="error"
+                        :zero-based-page="zeroBasedPage"
+                        :total-pages="totalPages"
+                        :total-elements="totalElements"
+                        :can-manage="canManage"
+                        :can-delete="canDelete"
+                        :can-export="canExport"
+                        :deleting="deleting"
+                        @create="openCreateModal"
+                        @view-detail="openDetailDrawer"
+                        @edit="openEditModal"
+                        @delete="confirmDelete"
+                        @page-change="handlePageChange"
+                        @export="handleExport"
+                    />
+                    <CustomerStatisticsTab
+                        v-else-if="activeTab === 'statistics'"
+                        :stats="statisticsStats"
+                        :loyalty-distribution="loyaltyDistribution"
+                        :monthly-new-customers="monthlyNewCustomers"
+                    />
+                </div>
             </div>
         </div>
 
@@ -221,19 +177,22 @@ import { Modal } from 'bootstrap'
 import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
 
-import EmptyState from '@/components/common/EmptyState.vue'
-import Pagination from '@/components/common/Pagination.vue'
 import CustomerFormModal from '@/components/customers/CustomerFormModal.vue'
 import CustomerDetailDrawer from '@/components/customers/CustomerDetailDrawer.vue'
+import CustomerOverviewTab from '@/components/customers/CustomerOverviewTab.vue'
+import CustomerListTab from '@/components/customers/CustomerListTab.vue'
+import CustomerStatisticsTab from '@/components/customers/CustomerStatisticsTab.vue'
 import { PaginationMode, usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/store/auth'
+import { useLoading } from '@/composables/useLoading'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import {
     createCustomer,
     deleteCustomer,
     getCustomers,
     updateCustomer
 } from '@/api/customerService'
-import { formatDateTime } from '@/utils/formatters'
+import { formatNumber } from '@/utils/formatters'
 
 const router = useRouter()
 const route = useRoute()
@@ -243,14 +202,30 @@ const { isAdmin, isManager, isStaff } = storeToRefs(authStore)
 
 const canManage = computed(() => isAdmin.value || isManager.value || isStaff.value)
 const canDelete = computed(() => isAdmin.value)
+const canExport = computed(() => isAdmin.value || isManager.value)
+
+const activeTab = ref('overview')
+const tabs = [
+    { key: 'overview', label: 'Tổng quan', icon: 'bi bi-speedometer2' },
+    { key: 'list', label: 'Danh sách', icon: 'bi bi-list-ul' },
+    { key: 'statistics', label: 'Thống kê', icon: 'bi bi-graph-up' }
+]
 
 const filters = reactive({
-    keyword: typeof route.query.keyword === 'string' ? route.query.keyword : ''
+    keyword: typeof route.query.keyword === 'string' ? route.query.keyword : '',
+    minLoyaltyPoints: null,
+    maxLoyaltyPoints: null,
+    createdDateFrom: '',
+    createdDateTo: ''
 })
 
-const customers = ref([])
-const loading = ref(false)
+const allCustomers = ref([]) // For statistics
+
+const { loading, withLoading } = useLoading(false)
+const { handleError } = useErrorHandler({ context: 'Customers' })
 const error = ref('')
+
+const customers = ref([])
 
 const formState = reactive({
     visible: false,
@@ -294,45 +269,69 @@ syncQuery(route, router, {
 
 let suppressWatcherFetch = false
 
-const fetchCustomers = async () => {
-    loading.value = true
+const fetchCustomers = async (fetchAll = false) => {
     error.value = ''
-    try {
-        const response = await getCustomers({
-            keyword: filters.keyword?.trim() || '',
-            page: zeroBasedPage.value,
-            size: pageSize.value
-        })
+    
+    await withLoading(async () => {
+        try {
+            const size = fetchAll ? 10000 : pageSize.value
+            const response = await getCustomers({
+                keyword: filters.keyword?.trim() || '',
+                page: fetchAll ? 0 : zeroBasedPage.value,
+                size: size
+            })
 
-        const list = Array.isArray(response?.content) ? response.content : []
-        customers.value = list
+            const list = Array.isArray(response?.content) ? response.content : []
+            
+            if (fetchAll) {
+                allCustomers.value = list
+            } else {
+                customers.value = list
+                const { adjusted } = updateFromResponse({
+                    page: response?.number,
+                    totalPages: response?.totalPages,
+                    totalElements: response?.totalElements
+                })
+                suppressWatcherFetch = adjusted
+            }
+        } catch (err) {
+            error.value = handleError(err, 'Không thể tải danh sách khách hàng. Vui lòng thử lại.')
+            customers.value = []
+            allCustomers.value = []
+        }
+    })
+}
 
-        const { adjusted } = updateFromResponse({
-            page: response?.number,
-            totalPages: response?.totalPages,
-            totalElements: response?.totalElements
-        })
-
-        suppressWatcherFetch = adjusted
-    } catch (err) {
-        console.error('Failed to fetch customers', err)
-        error.value = err?.response?.data?.message || 'Không thể tải danh sách khách hàng. Vui lòng thử lại.'
-        customers.value = []
-    } finally {
-        loading.value = false
+const fetchData = async () => {
+    if (activeTab.value === 'overview' || activeTab.value === 'statistics') {
+        await fetchCustomers(true)
+    } else {
+        await fetchCustomers(false)
     }
 }
 
 watch(
+    () => activeTab.value,
+    (newTab) => {
+        if (newTab === 'overview' || newTab === 'statistics') {
+            fetchCustomers(true)
+        } else {
+            fetchCustomers(false)
+        }
+    },
+    { immediate: true }
+)
+
+watch(
     () => [zeroBasedPage.value, pageSize.value],
     () => {
+        if (activeTab.value !== 'list') return
         if (suppressWatcherFetch) {
             suppressWatcherFetch = false
             return
         }
-        fetchCustomers()
-    },
-    { immediate: true }
+        fetchCustomers(false)
+    }
 )
 
 let keywordDebounceId = null
@@ -380,7 +379,11 @@ watch(
             const target = setPageFromZero(0)
 
             if (previousPage === target) {
-                fetchCustomers()
+                if (activeTab.value === 'list') {
+                    fetchCustomers(false)
+                } else if (activeTab.value === 'overview' || activeTab.value === 'statistics') {
+                    fetchCustomers(true)
+                }
             }
         }, 400)
     }
@@ -388,10 +391,173 @@ watch(
 
 const resetFilters = () => {
     filters.keyword = ''
+    filters.minLoyaltyPoints = null
+    filters.maxLoyaltyPoints = null
+    filters.createdDateFrom = ''
+    filters.createdDateTo = ''
 }
 
-const refreshList = () => {
-    fetchCustomers()
+// Computed properties for statistics
+const overviewStats = computed(() => {
+    const total = allCustomers.value.length
+    const thisMonth = new Date()
+    thisMonth.setDate(1)
+    thisMonth.setHours(0, 0, 0, 0)
+    
+    const newThisMonth = allCustomers.value.filter(c => {
+        const created = new Date(c.createdAt)
+        return created >= thisMonth
+    }).length
+    
+    const totalLoyaltyPoints = allCustomers.value.reduce((sum, c) => sum + (Number(c.loyaltyPoints) || 0), 0)
+    const avgLoyaltyPoints = total > 0 ? Math.round(totalLoyaltyPoints / total) : 0
+    
+    const vipCount = allCustomers.value.filter(c => (Number(c.loyaltyPoints) || 0) >= 1000).length
+    
+    return [
+        {
+            label: 'Tổng khách hàng',
+            value: formatNumber(total, { maximumFractionDigits: 0 }),
+            icon: 'bi bi-people',
+            iconClass: 'bg-primary-subtle'
+        },
+        {
+            label: 'Khách hàng mới (tháng này)',
+            value: formatNumber(newThisMonth, { maximumFractionDigits: 0 }),
+            icon: 'bi bi-person-plus',
+            iconClass: 'bg-success-subtle'
+        },
+        {
+            label: 'Điểm thưởng trung bình',
+            value: formatNumber(avgLoyaltyPoints, { maximumFractionDigits: 0 }),
+            icon: 'bi bi-star',
+            iconClass: 'bg-warning-subtle'
+        },
+        {
+            label: 'Khách hàng VIP',
+            value: formatNumber(vipCount, { maximumFractionDigits: 0 }),
+            icon: 'bi bi-trophy',
+            iconClass: 'bg-info-subtle'
+        }
+    ]
+})
+
+const recentCustomers = computed(() => {
+    return [...allCustomers.value]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5)
+})
+
+const topCustomers = computed(() => {
+    return [...allCustomers.value]
+        .sort((a, b) => (Number(b.loyaltyPoints) || 0) - (Number(a.loyaltyPoints) || 0))
+        .slice(0, 5)
+})
+
+const statisticsStats = computed(() => {
+    const total = allCustomers.value.length
+    const totalLoyaltyPoints = allCustomers.value.reduce((sum, c) => sum + (Number(c.loyaltyPoints) || 0), 0)
+    const avgLoyaltyPoints = total > 0 ? Math.round(totalLoyaltyPoints / total) : 0
+    const maxLoyaltyPoints = allCustomers.value.length > 0
+        ? Math.max(...allCustomers.value.map(c => Number(c.loyaltyPoints) || 0))
+        : 0
+    
+    return [
+        {
+            label: 'Tổng khách hàng',
+            value: formatNumber(total, { maximumFractionDigits: 0 }),
+            icon: 'bi bi-people',
+            iconClass: 'bg-primary-subtle'
+        },
+        {
+            label: 'Điểm thưởng trung bình',
+            value: formatNumber(avgLoyaltyPoints, { maximumFractionDigits: 0 }),
+            icon: 'bi bi-star',
+            iconClass: 'bg-warning-subtle'
+        },
+        {
+            label: 'Điểm thưởng cao nhất',
+            value: formatNumber(maxLoyaltyPoints, { maximumFractionDigits: 0 }),
+            icon: 'bi bi-trophy',
+            iconClass: 'bg-info-subtle'
+        }
+    ]
+})
+
+const loyaltyDistribution = computed(() => {
+    const ranges = [
+        { label: '0-100', min: 0, max: 100 },
+        { label: '101-500', min: 101, max: 500 },
+        { label: '501-1000', min: 501, max: 1000 },
+        { label: '1001-5000', min: 1001, max: 5000 },
+        { label: '5000+', min: 5001, max: Infinity }
+    ]
+    
+    const distribution = ranges.map(range => {
+        const count = allCustomers.value.filter(c => {
+            const points = Number(c.loyaltyPoints) || 0
+            return points >= range.min && points <= range.max
+        }).length
+        return { ...range, count }
+    })
+    
+    const total = distribution.reduce((sum, item) => sum + item.count, 0)
+    
+    return distribution.map(item => ({
+        range: item.label,
+        count: item.count,
+        percentage: total > 0 ? Math.round((item.count / total) * 100) : 0
+    }))
+})
+
+const monthlyNewCustomers = computed(() => {
+    const monthly = {}
+    allCustomers.value.forEach(customer => {
+        const date = new Date(customer.createdAt)
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+        if (!monthly[key]) {
+            monthly[key] = { year: date.getFullYear(), month: date.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }), count: 0 }
+        }
+        monthly[key].count++
+    })
+    
+    return Object.values(monthly)
+        .sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year
+            return b.month.localeCompare(a.month)
+        })
+        .slice(0, 12)
+})
+
+const handleExport = () => {
+    // Export to Excel/CSV
+    const headers = ['ID', 'Họ và tên', 'Số điện thoại', 'Email', 'Điểm thưởng', 'Ngày tạo', 'Ngày cập nhật']
+    const rows = customers.value.map(c => [
+        c.id,
+        c.fullName || '',
+        c.phone || '',
+        c.email || '',
+        c.loyaltyPoints || 0,
+        c.createdAt || '',
+        c.updatedAt || ''
+    ])
+    
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `customers_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    toast.success('Đã xuất danh sách khách hàng thành công!')
 }
 
 const openCreateModal = () => {
@@ -443,7 +609,11 @@ const handleFormSubmit = async (payload) => {
             // Fetch sẽ được kích hoạt bởi watcher phân trang
             return
         }
-        fetchCustomers()
+        if (activeTab.value === 'list') {
+            fetchCustomers(false)
+        } else {
+            fetchCustomers(true)
+        }
     } catch (err) {
         console.error('Failed to submit customer form', err)
         const message = err?.response?.data?.message
@@ -494,9 +664,13 @@ const handleDeleteConfirm = async () => {
         await deleteCustomer(deleteTarget.value.id)
         toast.success('Đã xóa khách hàng thành công.')
         closeDeleteModal()
-        fetchCustomers()
+        if (activeTab.value === 'list') {
+            fetchCustomers(false)
+        } else {
+            fetchCustomers(true)
+        }
     } catch (err) {
-        console.error('Failed to delete customer', err)
+        handleError(err, 'Không thể xóa khách hàng.')
         const message = err?.response?.data?.message
             || 'Không thể xóa khách hàng. Vui lòng kiểm tra và thử lại.'
         toast.error(message)
@@ -509,18 +683,42 @@ const handlePageChange = (page) => {
     setPageFromZero(page)
 }
 
-const formatDate = (value) => {
-    if (!value) return '—'
-    return formatDateTime(value)
-}
-
-const formatLoyaltyPoints = (points) => {
-    const numeric = Number(points)
-    if (!Number.isFinite(numeric)) return '0'
-    return numeric.toLocaleString('vi-VN')
-}
-
-const totalCustomerCount = computed(() => totalElements.value ?? 0)
+// Filter customers for List tab
+const filteredCustomers = computed(() => {
+    if (activeTab.value !== 'list') return customers.value
+    
+    let filtered = [...customers.value]
+    
+    // Filter by loyalty points
+    if (filters.minLoyaltyPoints !== null && filters.minLoyaltyPoints !== '') {
+        filtered = filtered.filter(c => (Number(c.loyaltyPoints) || 0) >= Number(filters.minLoyaltyPoints))
+    }
+    if (filters.maxLoyaltyPoints !== null && filters.maxLoyaltyPoints !== '') {
+        filtered = filtered.filter(c => (Number(c.loyaltyPoints) || 0) <= Number(filters.maxLoyaltyPoints))
+    }
+    
+    // Filter by created date
+    if (filters.createdDateFrom) {
+        const fromDate = new Date(filters.createdDateFrom)
+        fromDate.setHours(0, 0, 0, 0)
+        filtered = filtered.filter(c => {
+            const created = new Date(c.createdAt)
+            created.setHours(0, 0, 0, 0)
+            return created >= fromDate
+        })
+    }
+    if (filters.createdDateTo) {
+        const toDate = new Date(filters.createdDateTo)
+        toDate.setHours(23, 59, 59, 999)
+        filtered = filtered.filter(c => {
+            const created = new Date(c.createdAt)
+            created.setHours(0, 0, 0, 0)
+            return created <= toDate
+        })
+    }
+    
+    return filtered
+})
 
 onBeforeRouteLeave(() => {
     rememberCurrent()
@@ -551,92 +749,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.customers-page {
-    padding-bottom: 3rem;
-}
-
-.page-title {
-    font-weight: 700;
-}
-
-.filter-card,
-.data-card {
-    border: none;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    border-radius: var(--radius-lg, 18px);
-}
-
-.filter-card .card-body {
-    padding: 1.75rem;
-}
-
-.data-card .card-body {
-    padding: 0;
-}
-
-.data-card .card-body > *:not(.table-responsive) {
-    padding: 2rem;
-}
-
-.table {
-    margin-bottom: 0;
-}
-
-.table thead th {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-text-muted, #64748b);
-}
-
-.table tbody tr:hover {
-    background: rgba(99, 102, 241, 0.04);
-}
-
-.action-group .btn {
-    border-radius: 999px;
-    min-width: 36px;
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.action-group .btn i {
-    font-size: 0.95rem;
-}
-
-.bg-soft-primary {
-    background: rgba(99, 102, 241, 0.12);
-    color: var(--color-primary, #4f46e5);
-    font-weight: 600;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-}
-
-.card-footer {
-    border-top: none;
-    padding: 1rem 1.75rem 1.75rem;
-}
-
-.form-text {
-    font-size: 0.85rem;
-    color: var(--color-text-muted, #64748b);
-}
-
-@media (max-width: 767.98px) {
-    .filter-card .card-body {
-        padding: 1.25rem;
-    }
-
-    .data-card .card-body > *:not(.table-responsive) {
-        padding: 1.5rem;
-    }
-
-    .action-group {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 0.35rem;
-    }
-}
+/* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card, .tabs-card, .reports-tabs, .state-block) are in components.scss */
 </style>

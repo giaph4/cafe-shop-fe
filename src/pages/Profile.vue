@@ -435,7 +435,7 @@ const handleSubmit = async () => {
                 try {
                     await deleteFile(oldFileName)
                 } catch (cleanupErr) {
-                    console.warn('Không thể xoá ảnh cũ:', cleanupErr)
+                    // Ignore cleanup errors
                 }
             }
         }

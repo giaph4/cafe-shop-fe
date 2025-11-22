@@ -250,7 +250,6 @@ const fetchData = async () => {
         profitOptions.value = buildProfitOptions()
 
     } catch (err) {
-        console.error(err)
         error.value = 'Không thể tải dữ liệu báo cáo. Vui lòng thử lại.'
     } finally {
         loading.value = false

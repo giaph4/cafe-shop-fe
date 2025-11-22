@@ -26,55 +26,11 @@
                             <p class="mt-3 mb-0" v-if="currentInstance.notes">Ghi chú: {{ currentInstance.notes }}</p>
                         </div>
 
-                        <section class="card mb-4 session-card">
-                            <div class="card-body">
-                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-                                    <div class="d-flex flex-column gap-1">
-                                        <h6 class="mb-0">Phiên ca đang hoạt động</h6>
-                                        <small class="text-muted">Danh sách nhân viên đã bắt đầu ca này (cập nhật realtime).</small>
-                                        <span class="badge" :class="realtimeStatus.variant">{{ realtimeStatus.label }}</span>
-                                        <small v-if="realtimeErrorMessage" class="text-danger">{{ realtimeErrorMessage }}</small>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" @click="loadActiveSessions" :disabled="sessionListLoading">
-                                            <span v-if="sessionListLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                            Làm mới
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div v-if="sessionListError" class="alert alert-warning mb-0">{{ sessionListError.message || sessionListError }}</div>
-                                <div v-else-if="sessionListLoading" class="text-center py-3">
-                                    <div class="spinner-border text-primary"></div>
-                                </div>
-                                <EmptyState
-                                    v-else-if="!activeSessions.length"
-                                    title="Chưa có nhân viên nào bắt đầu ca"
-                                    message="Nhân viên sẽ xuất hiện tại đây ngay khi vào ca."
-                                />
-                                <div v-else class="list-group list-group-flush">
-                                    <div class="list-group-item d-flex flex-wrap justify-content-between align-items-start gap-3" v-for="session in activeSessions" :key="session.id">
-                                        <div>
-                                            <div class="fw-semibold">{{ session.fullName || session.username || `User #${session.userId}` }}</div>
-                                            <div class="text-muted small">Bắt đầu: {{ formatDateTime(session.startAt) }}</div>
-                                            <div class="text-muted small" v-if="session.adminOverride">Cho phép vượt giới hạn nhân sự.</div>
-                                        </div>
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <span class="badge bg-success">{{ session.status }}</span>
-                                            <button
-                                                type="button"
-                                                class="btn btn-outline-danger btn-sm"
-                                                :disabled="forceSubmitting(session.id)"
-                                                @click="promptForceEndSession(session)"
-                                            >
-                                                <span v-if="forceSubmitting(session.id)" class="spinner-border spinner-border-sm me-2"></span>
-                                                Kết thúc cưỡng bức
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
+                        <!-- 
+                            Lưu ý: ShiftInstance không có workShiftId, nên không thể lấy active sessions.
+                            Active sessions chỉ có thể lấy từ WorkShift, không phải ShiftInstance.
+                            Phần này đã được ẩn để tránh lỗi API.
+                        -->
 
                         <section class="assignment-form card mb-4">
                             <div class="card-body">
@@ -482,20 +438,13 @@ const staffOptions = ref([])
 const shiftSessionStore = useShiftSessionStore()
 const {lastEvent, realtimeConnected, realtimeConnecting, realtimeError} = storeToRefs(shiftSessionStore)
 
-const activeSessions = computed(() => {
-    const workShiftId = currentInstance.value?.id
-    return workShiftId ? shiftSessionStore.getActiveSessions(workShiftId) : []
-})
+// ShiftInstance không có workShiftId, nên không thể lấy active sessions
+// Active sessions chỉ có thể lấy từ WorkShift, không phải ShiftInstance
+const activeSessions = computed(() => [])
 
-const sessionListLoading = computed(() => {
-    const workShiftId = currentInstance.value?.id
-    return workShiftId ? shiftSessionStore.isActiveLoading(workShiftId) : false
-})
+const sessionListLoading = computed(() => false)
 
-const sessionListError = computed(() => {
-    const workShiftId = currentInstance.value?.id
-    return workShiftId ? shiftSessionStore.getActiveError(workShiftId) : null
-})
+const sessionListError = computed(() => null)
 
 const realtimeStatus = computed(() => {
     if (realtimeConnecting.value) return {label: 'Đang kết nối…', variant: 'bg-warning text-dark'}
@@ -575,14 +524,10 @@ const attendanceState = reactive({
 
 const forceSubmitting = (sessionId) => shiftSessionStore.isForceSubmitting(sessionId)
 
+// ShiftInstance không có workShiftId, nên không thể lấy active sessions
 const loadActiveSessions = async () => {
-    if (!currentInstance.value?.id) return
-    try {
-        await shiftSessionStore.fetchActiveSessions(currentInstance.value.id)
-    } catch (error) {
-        console.error(error)
-        toast.error(error.message || 'Không thể tải danh sách phiên ca đang hoạt động.')
-    }
+    // Không làm gì vì ShiftInstance không có workShiftId
+    // Active sessions chỉ có thể lấy từ WorkShift
 }
 
 const promptForceEndSession = async (session) => {

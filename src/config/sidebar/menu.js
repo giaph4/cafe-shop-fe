@@ -10,6 +10,13 @@ export const sidebarMenu = [
                 roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
             },
             {
+                id: 'role-dashboards',
+                label: 'Dashboard theo vai trò',
+                icon: 'roleDashboards',
+                to: '/role-dashboards',
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+            },
+            {
                 id: 'chat',
                 label: 'Trò chuyện',
                 icon: 'chat',
@@ -47,6 +54,13 @@ export const sidebarMenu = [
                         icon: 'tables',
                         to: '/tables',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+                    },
+                    {
+                        id: 'customers',
+                        label: 'Khách hàng',
+                        icon: 'customers',
+                        to: '/customers',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
                     }
                 ]
             },
@@ -54,8 +68,23 @@ export const sidebarMenu = [
                 id: 'sales-analytics',
                 label: 'Báo cáo & Phân tích',
                 icon: 'reports',
-                to: '/sales',
-                roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                children: [
+                    {
+                        id: 'reports',
+                        label: 'Báo cáo tổng hợp',
+                        icon: 'reports',
+                        to: '/reports',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'admin-analytics',
+                        label: 'Phân tích AI',
+                        icon: 'adminAnalytics',
+                        to: '/admin-analytics',
+                        roles: ['ROLE_ADMIN']
+                    }
+                ]
             }
         ]
     },
@@ -66,14 +95,14 @@ export const sidebarMenu = [
                 id: 'products',
                 label: 'Danh mục sản phẩm',
                 icon: 'products',
-                roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'],
                 children: [
                     {
                         id: 'products-list',
                         label: 'Sản phẩm',
                         icon: 'products',
                         to: '/products',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
                     },
                     {
                         id: 'categories',
@@ -136,7 +165,7 @@ export const sidebarMenu = [
                 id: 'people',
                 label: 'Nhân sự & Ca làm',
                 icon: 'people',
-                roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'],
                 children: [
                     {
                         id: 'staff',
@@ -153,10 +182,31 @@ export const sidebarMenu = [
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     },
                     {
+                        id: 'attendance',
+                        label: 'Chấm công',
+                        icon: 'attendance',
+                        to: '/attendance',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+                    },
+                    {
                         id: 'shift-report',
                         label: 'Báo cáo ca làm',
                         icon: 'shiftReport',
                         to: '/shift-report',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'shift-assignment',
+                        label: 'Phân công ca làm',
+                        icon: 'shiftAssignment',
+                        to: '/shift-assignment',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+                    },
+                    {
+                        id: 'performance-adjustment',
+                        label: 'Điều chỉnh hiệu suất',
+                        icon: 'performanceAdjustment',
+                        to: '/performance-adjustment',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     }
                 ]
@@ -201,6 +251,20 @@ export const sidebarMenu = [
                 icon: 'settings',
                 to: '/settings',
                 roles: ['ROLE_ADMIN']
+            },
+            {
+                id: 'login-history',
+                label: 'Lịch sử đăng nhập',
+                icon: 'loginHistory',
+                to: '/login-history',
+                roles: ['ROLE_ADMIN']
+            },
+            {
+                id: 'file-management',
+                label: 'Quản lý File',
+                icon: 'fileManagement',
+                to: '/file-management',
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
             }
         ]
     }

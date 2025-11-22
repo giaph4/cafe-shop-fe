@@ -404,7 +404,7 @@ import {storeToRefs} from 'pinia'
 import {useVoucherStore} from '@/store/voucher'
 import {VOUCHER_TYPES} from '@/api/voucherService'
 import {formatCurrency, formatDateTime, formatNumber} from '@/utils/formatters'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/common/Pagination.vue'
 import {useAuthStore} from '@/store/auth'
 
 const voucherStore = useVoucherStore()
@@ -820,13 +820,6 @@ onUnmounted(() => {
     color: var(--color-heading);
 }
 
-.filter-card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft-sm);
-    padding: 1.25rem 1.5rem;
-}
 
 .filter-grid {
     display: grid;

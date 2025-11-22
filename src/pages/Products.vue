@@ -1,13 +1,11 @@
 <template>
-    <div class="products-page container-fluid" data-aos="fade-up">
-        <div
-            class="page-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+    <div class="page-container container-fluid" data-aos="fade-up">
+        <div class="page-header card-shadow">
             <div>
-                <h2 class="page-title text-primary mb-1">Quản lý Sản phẩm</h2>
-                <p class="page-subtitle mb-0 text-muted">Theo dõi trạng thái, giá và công thức sản phẩm với bố cục linh
-                    hoạt.</p>
+                <h2 class="page-title">Quản lý Sản phẩm</h2>
+                <p class="page-subtitle">Theo dõi trạng thái, giá và công thức sản phẩm với bố cục linh hoạt.</p>
             </div>
-            <div class="page-actions d-flex flex-wrap gap-2 justify-content-lg-end">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
                 <div class="btn-group layout-toggle" role="group" aria-label="Chọn bố cục hiển thị">
                     <button
                         type="button"
@@ -26,7 +24,7 @@
                         <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
                     </button>
                 </div>
-                <button class="btn btn-primary" @click="openModal()">
+                <button v-if="canCreate" class="btn btn-primary" @click="openModal()">
                     <i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm
                 </button>
             </div>
@@ -74,14 +72,16 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card tabs-card">
             <div class="card-body">
-                <div v-if="loading" class="state-block">
+                <div v-if="loading" class="state-block py-5">
                     <div class="spinner-border text-primary" role="status"></div>
                 </div>
-                <div v-else-if="error" class="alert alert-danger d-flex align-items-center gap-2">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>{{ error }}</span>
+                <div v-else-if="error" class="state-block py-5">
+                    <div class="alert alert-danger mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        {{ error }}
+                    </div>
                 </div>
                 <EmptyState
                     v-else-if="!products.length"
@@ -126,11 +126,16 @@
                                             <i class="bi bi-eye"></i>
                                             <span>Chi tiết</span>
                                         </button>
-                                        <button class="action-button" type="button" @click="openModal(product)">
+                                        <button v-if="canEdit" class="action-button" type="button" @click="openModal(product)">
                                             <i class="bi bi-pencil"></i>
                                             <span>Chỉnh sửa</span>
                                         </button>
+                                        <button v-if="canEdit" class="action-button action-button--info" type="button" @click="openRecipeModal(product)">
+                                            <i class="bi bi-list-check"></i>
+                                            <span>Công thức</span>
+                                        </button>
                                         <button
+                                            v-if="canToggle"
                                             class="action-button"
                                             type="button"
                                             :class="product.available ? 'action-button--warning' : 'action-button--success'"
@@ -143,7 +148,7 @@
                                                 <span>{{ product.available ? 'Ngừng bán' : 'Kinh doanh' }}</span>
                                             </template>
                                         </button>
-                                        <button class="action-button action-button--danger" type="button" @click="deleteProduct(product)">
+                                        <button v-if="canDelete" class="action-button action-button--danger" type="button" @click="deleteProduct(product)">
                                             <i class="bi bi-trash"></i>
                                             <span>Xóa</span>
                                         </button>
@@ -181,11 +186,16 @@
                                     <i class="bi bi-eye"></i>
                                     <span>Chi tiết</span>
                                 </button>
-                                <button class="action-button" type="button" @click="openModal(product)">
+                                <button v-if="canEdit" class="action-button" type="button" @click="openModal(product)">
                                     <i class="bi bi-pencil"></i>
                                     <span>Chỉnh sửa</span>
                                 </button>
+                                <button v-if="canEdit" class="action-button action-button--info" type="button" @click="openRecipeModal(product)">
+                                    <i class="bi bi-list-check"></i>
+                                    <span>Công thức</span>
+                                </button>
                                 <button
+                                    v-if="canToggle"
                                     class="action-button"
                                     type="button"
                                     :class="product.available ? 'action-button--warning' : 'action-button--success'"
@@ -198,7 +208,7 @@
                                         <span>{{ product.available ? 'Ngừng bán' : 'Kinh doanh' }}</span>
                                     </template>
                                 </button>
-                                <button class="action-button action-button--danger" type="button" @click="deleteProduct(product)">
+                                <button v-if="canDelete" class="action-button action-button--danger" type="button" @click="deleteProduct(product)">
                                     <i class="bi bi-trash"></i>
                                     <span>Xóa</span>
                                 </button>
@@ -225,6 +235,8 @@
         />
 
         <ProductDetailModal ref="productDetailModal" :product="detailProduct"/>
+        
+        <ProductRecipeModal ref="productRecipeModal" :product="selectedProduct" @saved="handleRecipeSaved" />
     </div>
 </template>
 
@@ -232,6 +244,7 @@
 import {computed, nextTick, reactive, ref, watch} from 'vue'
 import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router'
 import {toast} from 'vue3-toastify'
+import {storeToRefs} from 'pinia'
 import * as productService from '@/api/productService'
 import * as categoryService from '@/api/categoryService'
 import {formatCurrency} from '@/utils/formatters'
@@ -239,16 +252,32 @@ import Pagination from '@/components/common/Pagination.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ProductModal from '@/components/products/ProductModal.vue'
 import ProductDetailModal from '@/components/products/ProductDetailModal.vue'
+import ProductRecipeModal from '@/components/products/ProductRecipeModal.vue'
 import {PaginationMode, usePagination} from '@/composables/usePagination'
+import {useAuthStore} from '@/store/auth'
+import {useLoading} from '@/composables/useLoading'
+import {useErrorHandler} from '@/composables/useErrorHandler'
+
+const authStore = useAuthStore()
+const {isAdmin, isManager, isStaff} = storeToRefs(authStore)
+
+// Permission checks
+const canCreate = computed(() => isAdmin.value || isManager.value || isStaff.value)
+const canEdit = computed(() => isAdmin.value || isManager.value || isStaff.value)
+const canToggle = computed(() => isAdmin.value || isManager.value || isStaff.value)
+const canDelete = computed(() => isAdmin.value || isManager.value) // Only Admin and Manager can delete
+
+const {loading, withLoading} = useLoading(true)
+const {handleError, extractErrorMessage} = useErrorHandler({context: 'Products'})
+const error = ref(null)
 
 const products = ref([])
 const categories = ref([])
-const loading = ref(true)
-const error = ref(null)
 const selectedProduct = ref(null)
 const detailProduct = ref(null)
 const productModal = ref(null)
 const productDetailModal = ref(null)
+const productRecipeModal = ref(null)
 const layoutMode = ref('table')
 const togglingAvailability = reactive({})
 
@@ -314,34 +343,33 @@ const isToggling = (id) => Boolean(togglingAvailability[id])
 let suppressWatcherFetch = false
 
 const fetchProducts = async () => {
-    loading.value = true
     error.value = null
     const requestedPage = zeroBasedPage.value
-    try {
-        const response = await productService.getProducts({
-            name: filters.name,
-            categoryId: filters.categoryId,
-            available: filters.available,
-            page: requestedPage,
-            size: pageSize.value
-        })
-        products.value = response.content || []
-        suppressWatcherFetch = true
-        const {adjusted} = updateFromResponse({
-            page: response.number,
-            totalPages: response.totalPages,
-            totalElements: response.totalElements
-        })
-        suppressWatcherFetch = false
-        if (adjusted) {
-            toast.info('Trang đang xem đã được điều chỉnh theo số trang khả dụng.', {autoClose: 2500})
+    
+    await withLoading(async () => {
+        try {
+            const response = await productService.getProducts({
+                name: filters.name,
+                categoryId: filters.categoryId,
+                available: filters.available,
+                page: requestedPage,
+                size: pageSize.value
+            })
+            products.value = response.content || []
+            suppressWatcherFetch = true
+            const {adjusted} = updateFromResponse({
+                page: response.number,
+                totalPages: response.totalPages,
+                totalElements: response.totalElements
+            })
+            suppressWatcherFetch = false
+            if (adjusted) {
+                toast.info('Trang đang xem đã được điều chỉnh theo số trang khả dụng.', {autoClose: 2500})
+            }
+        } catch (err) {
+            error.value = handleError(err, 'Không thể tải danh sách sản phẩm.')
         }
-    } catch (err) {
-        console.error(err)
-        error.value = err.response?.data?.message || 'Không thể tải danh sách sản phẩm.'
-    } finally {
-        loading.value = false
-    }
+    })
 }
 
 const fetchCategories = async () => {
@@ -349,8 +377,7 @@ const fetchCategories = async () => {
         const response = await categoryService.getCategories()
         categories.value = Array.isArray(response?.content) ? response.content : response
     } catch (err) {
-        console.error('Không thể tải danh mục:', err)
-        toast.error('Không thể tải danh mục. Vui lòng thử lại.')
+        handleError(err, 'Không thể tải danh mục. Vui lòng thử lại.')
     }
 }
 
@@ -381,6 +408,15 @@ const openDetailModal = async (product) => {
     productDetailModal.value?.show()
 }
 
+const openRecipeModal = (product) => {
+    selectedProduct.value = product ? {...product} : null
+    productRecipeModal.value?.show()
+}
+
+const handleRecipeSaved = () => {
+    // Recipe saved successfully
+}
+
 const deleteProduct = async (product) => {
     const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa "${product.name}"?`)
     if (!confirmDelete) return
@@ -390,8 +426,7 @@ const deleteProduct = async (product) => {
         toast.success('Đã xóa sản phẩm thành công')
         fetchProducts()
     } catch (err) {
-        console.error(err)
-        toast.error(err.response?.data?.message || 'Không thể xóa sản phẩm. Vui lòng thử lại.')
+        handleError(err, 'Không thể xóa sản phẩm. Vui lòng thử lại.')
     }
 }
 
@@ -410,8 +445,7 @@ const handleToggleAvailability = async (product) => {
             }
         }
     } catch (err) {
-        console.error(err)
-        toast.error(err.response?.data?.message || 'Không thể thay đổi trạng thái. Vui lòng thử lại.')
+        handleError(err, 'Không thể thay đổi trạng thái. Vui lòng thử lại.')
     } finally {
         delete togglingAvailability[product.id]
     }
@@ -446,31 +480,11 @@ fetchCategories()
 </script>
 
 <style scoped>
-.page-header {
-    background: linear-gradient(102deg, rgba(99, 102, 241, 0.12) 0%, rgba(129, 140, 248, 0.08) 100%);
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    backdrop-filter: blur(10px);
-}
-
-.page-title {
-    font-weight: 700;
-}
-
-.page-subtitle {
-    font-size: 0.95rem;
-}
+/* Page-specific styles only - Global styles (.page-header, .page-title, .page-subtitle, .filter-card, .state-block) are in components.scss */
 
 .layout-toggle .btn {
     min-width: 120px;
     font-weight: 600;
-}
-
-.filter-card {
-    border-radius: 18px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .search-field .input-group-text {
@@ -480,13 +494,6 @@ fetchCategories()
 
 .search-field .form-control {
     border-left: none;
-}
-
-.state-block {
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .product-thumb {
@@ -568,6 +575,16 @@ fetchCategories()
 .action-button--warning:hover:not(:disabled) {
     background: rgba(249, 115, 22, 0.12);
     box-shadow: 0 6px 16px rgba(249, 115, 22, 0.18);
+}
+
+.action-button--info {
+    border-color: rgba(13, 202, 240, 0.32);
+    color: var(--color-info, #0dcaf0);
+}
+
+.action-button--info:hover:not(:disabled) {
+    background: rgba(13, 202, 240, 0.12);
+    box-shadow: 0 6px 16px rgba(13, 202, 240, 0.18);
 }
 
 .action-button--danger {

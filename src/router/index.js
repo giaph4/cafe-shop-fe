@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
-import MainLayout from '../MainLayout.vue' // Corrected path
+import MainLayout from '@/layouts/MainLayout.vue'
 import Dashboard from '../pages/Dashboard.vue'
 import Login from '../pages/Login.vue'
 import Products from '../pages/Products.vue'
@@ -22,6 +22,8 @@ import ShiftManagement from '../pages/ShiftManagement.vue'
 import Payroll from '../pages/Payroll.vue'
 import Vouchers from '../pages/Vouchers.vue'
 import ShiftReport from '../pages/ShiftReport.vue'
+import ShiftAssignment from '../pages/ShiftAssignment.vue'
+import PerformanceAdjustment from '../pages/PerformanceAdjustment.vue'
 import Customers from '../pages/Customers.vue'
 
 const routes = [
@@ -137,9 +139,27 @@ const routes = [
                 component: ShiftManagement,
             },
             {
+                path: 'attendance',
+                name: 'Chấm công',
+                component: () => import('../pages/Attendance.vue'),
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
+            },
+            {
                 path: 'shift-report',
                 name: 'Báo cáo Ca làm',
                 component: ShiftReport,
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+            },
+            {
+                path: 'shift-assignment',
+                name: 'Phân công Ca làm',
+                component: ShiftAssignment,
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
+            },
+            {
+                path: 'performance-adjustment',
+                name: 'Điều chỉnh Hiệu suất',
+                component: PerformanceAdjustment,
                 meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
             },
             {
@@ -152,6 +172,30 @@ const routes = [
                 name: 'Hồ sơ cá nhân',
                 component: () => import('../pages/Profile.vue'),
                 meta: { requiresAuth: true }
+            },
+            {
+                path: 'login-history',
+                name: 'Lịch sử đăng nhập',
+                component: () => import('../pages/LoginHistory.vue'),
+                meta: { allowedRoles: ['ROLE_ADMIN'] }
+            },
+            {
+                path: 'file-management',
+                name: 'Quản lý File',
+                component: () => import('../pages/FileManagement.vue'),
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+            },
+            {
+                path: 'admin-analytics',
+                name: 'Phân tích AI',
+                component: () => import('../pages/AdminAnalytics.vue'),
+                meta: { allowedRoles: ['ROLE_ADMIN'] }
+            },
+            {
+                path: 'role-dashboards',
+                name: 'Dashboard theo vai trò',
+                component: () => import('../pages/RoleBasedDashboards.vue'),
+                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
             }
         ]
     },

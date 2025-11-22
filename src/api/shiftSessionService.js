@@ -96,13 +96,17 @@ export const getCurrentShiftSession = async () => {
         const { data } = await api.get(`${BASE_URL}/current`)
         return normalizeShiftSession(data)
     } catch (error) {
+        // 404 là bình thường khi user chưa có active session
+        if (error?.response?.status === 404) {
+            return null
+        }
         throw buildError(error)
     }
 }
 
 export const listActiveSessionsByWorkShift = async (workShiftId) => {
     try {
-        const { data } = await api.get(`${BASE_URL}/work-shifts/${workShiftId}/active`)
+        const { data } = await api.get(`${BASE_URL}/shift/${workShiftId}`)
         return normalizeShiftSessionList(data)
     } catch (error) {
         throw buildError(error)

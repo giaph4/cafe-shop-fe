@@ -1,5 +1,5 @@
 <template>
-    <div class="pos-container">
+    <div class="pos-container container-fluid" data-aos="fade-up">
         <header class="pos-header">
             <div>
                 <h2 class="pos-header__title">Điều phối POS</h2>
@@ -68,7 +68,7 @@
 
             <!-- Order Cart -->
             <div class="col-lg-5 col-md-6">
-                <div class="sidebar-content border-start">
+                <div class="sidebar-content border-start sticky-sidebar">
                     <section class="sidebar-card mb-4">
                         <header class="sidebar-card__header">
                             <div>
@@ -426,6 +426,32 @@ const handleNewTakeaway = () => {
     background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
 }
 
+.sticky-sidebar {
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sticky-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sticky-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sticky-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 3px;
+}
+
+.sticky-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+}
+
 .sidebar-card {
     border-radius: 18px;
     border: 1px solid var(--color-border);
@@ -532,6 +558,12 @@ const handleNewTakeaway = () => {
     .pos-header__actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .sticky-sidebar {
+        position: relative;
+        top: 0;
+        max-height: none;
     }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
     <PurchaseOrderDetailModal :order-id="selectedOrderId" @close="selectedOrderId = null"/>
 
-    <div class="purchase-orders-page container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid" data-aos="fade-up">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Quản lý Nhập hàng</h2>
@@ -19,8 +19,8 @@
         </div>
 
         <div class="row g-4 mb-4 mt-1">
-            <div class="col-sm-6 col-lg-3" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card">
+            <div class="col-sm-6 col-lg-3 d-flex" v-for="stat in stats" :key="stat.label">
+                <div class="stat-card w-100">
                     <div class="stat-icon" :class="stat.variant">
                         <i :class="stat.icon"></i>
                     </div>
@@ -152,6 +152,9 @@ import PurchaseOrderDetailModal from '@/components/purchase-orders/PurchaseOrder
 import Pagination from '@/components/common/Pagination.vue'
 import {usePagination, PaginationMode} from '@/composables/usePagination'
 import {showSuccess, showError} from '@/utils/toast'
+import {useErrorHandler} from '@/composables/useErrorHandler'
+
+const {handleError, extractErrorMessage} = useErrorHandler({context: 'PurchaseOrders'})
 import {formatCurrency, formatDateTime, formatNumber} from '@/utils/formatters'
 import {getSuppliers} from '@/api/supplierService'
 import {getPurchaseOrders, markOrderAsCompleted, cancelPurchaseOrder} from '@/api/purchaseOrderService'
@@ -273,7 +276,10 @@ const stats = computed(() => {
     ]
 })
 
-const errorMessage = computed(() => error.value?.response?.data?.message || error.value?.message || 'Không thể tải dữ liệu phiếu nhập.')
+const errorMessage = computed(() => {
+    if (!error.value) return ''
+    return extractErrorMessage(error.value) || 'Không thể tải dữ liệu phiếu nhập.'
+})
 
 const isResetDisabled = computed(() =>
     !filters.supplierId && !filters.status && !filters.startDate && !filters.endDate && pageSize.value === pageSizeOptions[0]
@@ -293,7 +299,7 @@ const completeMutation = useMutation({
         showSuccess(`Đơn nhập #${data.id} đã hoàn thành.`)
         queryClient.invalidateQueries({queryKey: ['purchaseOrders']})
     },
-    onError: (err) => showError(err.response?.data?.message || 'Không thể hoàn thành phiếu nhập.')
+    onError: (err) => handleError(err, 'Không thể hoàn thành phiếu nhập.')
 })
 
 const cancelMutation = useMutation({
@@ -302,7 +308,7 @@ const cancelMutation = useMutation({
         showSuccess(`Đơn nhập #${data.id} đã được huỷ.`)
         queryClient.invalidateQueries({queryKey: ['purchaseOrders']})
     },
-    onError: (err) => showError(err.response?.data?.message || 'Không thể huỷ phiếu nhập.')
+    onError: (err) => handleError(err, 'Không thể huỷ phiếu nhập.')
 })
 
 const handleComplete = (order) => {
@@ -335,32 +341,7 @@ const statusLabel = (status) => {
 </script>
 
 <style scoped>
-.purchase-orders-page {
-    padding-bottom: 2rem;
-}
-
-.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-}
-
-.page-title {
-    font-weight: 700;
-    color: var(--color-heading);
-    margin-bottom: 0.25rem;
-}
-
-.page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted);
-}
+/* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card, .state-block) are in components.scss */
 
 .stat-card {
     display: flex;
@@ -371,6 +352,8 @@ const statusLabel = (status) => {
     padding: 1rem 1.25rem;
     background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    height: 100%;
+    min-height: 140px;
 }
 
 .stat-icon {
@@ -412,18 +395,11 @@ const statusLabel = (status) => {
     color: var(--color-heading);
 }
 
-.filter-card,
 .table-card {
     border-radius: 18px;
     border: 1px solid rgba(148, 163, 184, 0.28);
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
     background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-}
-
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .status-badge {

@@ -1,339 +1,83 @@
 <template>
-    <div class="shifts-page container-fluid" data-aos="fade-up">
-        <div class="page-header mb-4">
+    <div class="shift-management-page container-fluid" data-aos="fade-up">
+        <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Quản lý Ca làm</h2>
                 <p class="page-subtitle">Theo dõi ca làm, phân công nhân viên và trạng thái thực hiện.</p>
             </div>
-            <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-outline-primary" type="button" @click="openCreateInstance">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button class="btn btn-primary" type="button" @click="openCreateInstance" v-if="activeTab === 'instances'">
                     <i class="bi bi-plus-lg me-2"></i>Tạo ca làm mới
+                </button>
+                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    Làm mới
                 </button>
             </div>
         </div>
 
-        <div class="card session-control-card mb-4">
+        <div class="card tabs-card mb-4">
             <div class="card-body">
-                <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
-                    <div class="d-flex flex-column gap-1">
-                        <h5 class="card-title mb-0">Phiên ca của tôi</h5>
-                        <small class="text-muted">Theo dõi và điều khiển trạng thái ca làm realtime.</small>
-                        <span class="badge" :class="sessionRealtimeStatus.variant">{{ sessionRealtimeStatus.label }}</span>
-                        <small v-if="sessionRealtimeError" class="text-danger">{{ sessionRealtimeError }}</small>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-outline-primary btn-sm" type="button" @click="refreshCurrentSession" :disabled="sessionRefreshing">
-                            <span v-if="sessionRefreshing" class="spinner-border spinner-border-sm me-2"></span>
-                            Làm mới
+                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
+                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
+                        <button
+                            type="button"
+                            class="nav-link"
+                            :class="{ active: activeTab === tab.key }"
+                            @click="activeTab = tab.key"
+                        >
+                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
                         </button>
-                    </div>
+                    </li>
+                </ul>
+                <div v-if="loading && activeTab !== 'overview'" class="state-block py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
                 </div>
-
-                <div class="mt-3" v-if="currentSession">
-                    <div class="session-info row g-3">
-                        <div class="col-md-4">
-                            <div class="session-info__item">
-                                <span class="session-info__label">Work Shift ID</span>
-                                <span class="session-info__value">#{{ currentSession.workShiftId || 'N/A' }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="session-info__item">
-                                <span class="session-info__label">Bắt đầu</span>
-                                <span class="session-info__value">{{ formatDateTime(currentSession.startAt) || 'Chưa xác định' }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="session-info__item">
-                                <span class="session-info__label">Trạng thái</span>
-                                <span class="session-info__value badge bg-success">{{ currentSession.status }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2 mt-3">
-                        <button class="btn btn-danger" type="button" @click="handleEndSession" :disabled="endSubmitting || sessionRefreshing">
-                            <span v-if="endSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-                            Kết thúc ca
-                        </button>
-                    </div>
+                <div v-else-if="error && activeTab !== 'overview'" class="state-block py-5">
+                    <div class="alert alert-danger mb-0">{{ error }}</div>
                 </div>
-
-                <div v-else class="session-start-form">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-lg-4 col-md-6">
-                            <label class="form-label">Chọn ca để nhận <span class="text-danger">*</span></label>
-                            <select class="form-select" v-model.number="startForm.workShiftId" :disabled="startSubmitting || !instanceOptions.length">
-                                <option :value="null">Chọn Work Shift</option>
-                                <option v-for="opt in instanceOptions" :key="opt.value" :value="opt.value">
-                                    {{ opt.label }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <label class="form-label">Vượt giới hạn nhân sự</label>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="sessionAdminOverride" v-model="startForm.adminOverride" :disabled="startSubmitting" />
-                                <label class="form-check-label" for="sessionAdminOverride">Cho phép</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <label class="form-label">&nbsp;</label>
-                            <button class="btn btn-success w-100" type="button" @click="handleStartSession" :disabled="startSubmitting || !startForm.workShiftId">
-                                <span v-if="startSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-                                Nhận ca
-                            </button>
-                        </div>
-                    </div>
-                    <p v-if="lastActionErrorMessage" class="text-danger mt-2 mb-0">{{ lastActionErrorMessage }}</p>
+                <div v-else class="tab-content">
+                    <ShiftOverviewTab
+                        v-if="activeTab === 'overview'"
+                        :calendar-loading="calendarLoading"
+                        :calendar-error="calendarError"
+                        :calendar-state="calendarState"
+                        :calendar-cells="calendarCells"
+                        :calendar-selected-shifts="calendarSelectedShifts"
+                        :selected-date-label="selectedDateLabel"
+                        :calendar-title="calendarTitle"
+                        @change-month="changeMonth"
+                        @select-day="handleSelectDay"
+                        @view-detail="openDetail"
+                    />
+                    <ShiftInstancesTab
+                        v-else-if="activeTab === 'instances'"
+                        :instances="instances"
+                        :loading="loading"
+                        :error="error"
+                        :filters="filters"
+                        :status-options="SHIFT_STATUSES"
+                        :pagination="instancePagination"
+                        @filter="fetchInstances"
+                        @reset-filters="resetFilters"
+                        @view-detail="openDetail"
+                        @edit="openEditInstance"
+                        @update-status="promptStatusUpdate"
+                        @remove="removeInstance"
+                        @page-change="handlePageChange"
+                    />
+                    <ShiftTemplatesTab
+                        v-else-if="activeTab === 'templates'"
+                        :templates="templates"
+                        :loading="templateLoading"
+                        :error="templateError"
+                        :pagination="templatePage"
+                        @create="openCreateTemplate"
+                        @edit="openEditTemplate"
+                        @remove="removeTemplate"
+                        @page-change="handleTemplatePageChange"
+                    />
                 </div>
-            </div>
-        </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="filters.from" />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="filters.to" />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" v-model="filters.status">
-                            <option value="">Tất cả</option>
-                            <option v-for="option in SHIFT_STATUSES" :key="option.value" :value="option.value">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-6 text-lg-end text-md-start">
-                        <button class="btn btn-primary me-2" type="button" @click="fetchInstances">
-                            <i class="bi bi-funnel me-1"></i>Lọc
-                        </button>
-                        <button class="btn btn-outline-secondary" type="button" @click="resetFilters">Xóa bộ lọc</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-4">
-            <div class="col-12 col-xl-7">
-                <div class="card calendar-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                            <div>
-                                <h5 class="card-title mb-1">Lịch ca làm</h5>
-                                <p class="text-muted mb-0">Đánh dấu ngày có ca và xem nhanh lịch trình.</p>
-                            </div>
-                            <div class="calendar-nav d-flex align-items-center gap-2">
-                                <button class="btn btn-outline-secondary btn-sm" type="button" @click="changeMonth(-1)" :disabled="calendarLoading">
-                                    <i class="bi bi-chevron-left"></i>
-                                </button>
-                                <span class="fw-semibold text-nowrap">{{ calendarTitle }}</span>
-                                <button class="btn btn-outline-secondary btn-sm" type="button" @click="changeMonth(1)" :disabled="calendarLoading">
-                                    <i class="bi bi-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div v-if="calendarError" class="alert alert-warning mb-0">
-                            {{ calendarError }}
-                        </div>
-                        <div v-else>
-                            <div v-if="calendarLoading" class="text-center py-4">
-                                <div class="spinner-border text-primary"></div>
-                            </div>
-                            <div v-else>
-                                <div class="calendar-grid mb-3">
-                                    <div class="calendar-weekday" v-for="day in WEEK_DAYS" :key="day">{{ day }}</div>
-                                    <button
-                                        v-for="day in calendarCells"
-                                        :key="day.dateKey"
-                                        type="button"
-                                        class="calendar-day"
-                                        :class="{
-                                            'is-outside': !day.inCurrentMonth,
-                                            'is-today': day.isToday,
-                                            'is-selected': calendarState.selectedDate === day.dateKey,
-                                            'has-shift': day.hasShifts
-                                        }"
-                                        @click="handleSelectDay(day)"
-                                    >
-                                        <span class="day-number">{{ day.label }}</span>
-                                        <span v-if="day.hasShifts" class="calendar-indicator"></span>
-                                    </button>
-                                </div>
-
-                                <div class="selected-day">
-                                    <h6 class="mb-3">Ca trong ngày {{ selectedDateLabel }}</h6>
-                                    <div v-if="!calendarSelectedShifts.length" class="selected-day__empty text-muted text-center py-3">
-                                        Chưa có ca nào. Hãy thêm ca mới cho ngày này.
-                                    </div>
-                                    <div v-else class="list-group list-group-flush rounded-3">
-                                        <div class="list-group-item" v-for="shift in calendarSelectedShifts" :key="shift.id">
-                                            <div class="d-flex justify-content-between align-items-start gap-2">
-                                                <div>
-                                                    <div class="fw-semibold">{{ shift.templateName || 'Ca linh hoạt' }}</div>
-                                                    <div class="text-muted small">{{ formatTime(shift.startTime) }} - {{ formatTime(shift.endTime) }}</div>
-                                                    <div class="text-muted small" v-if="shift.assignments?.length">
-                                                        {{ shift.assignments.length }} phân công
-                                                    </div>
-                                                </div>
-                                                <button class="btn btn-outline-primary btn-sm" type="button" @click="openDetail(shift)">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-5">
-                <div class="card template-card h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                            <div>
-                                <h5 class="card-title mb-1">Ca mẫu</h5>
-                                <p class="text-muted mb-0">Quản lý khung giờ chuẩn để lập lịch nhanh.</p>
-                            </div>
-                            <button class="btn btn-primary btn-sm" type="button" @click="openCreateTemplate">
-                                <i class="bi bi-plus-lg me-1"></i>Tạo ca mẫu
-                            </button>
-                        </div>
-
-                        <div v-if="templateError" class="alert alert-warning flex-shrink-0">
-                            {{ templateError }}
-                        </div>
-                        <div v-else-if="templateLoading" class="flex-grow-1 d-flex align-items-center justify-content-center">
-                            <div class="spinner-border text-primary"></div>
-                        </div>
-                        <div v-else-if="!templates.length" class="template-empty flex-grow-1 d-flex align-items-center justify-content-center text-muted text-center py-4">
-                            Chưa có ca mẫu nào. Tạo ca mẫu để tái sử dụng khi lên lịch.
-                        </div>
-                        <div v-else class="template-list flex-grow-1 overflow-auto">
-                            <div class="list-group list-group-flush">
-                                <div class="list-group-item template-item" v-for="template in templates" :key="template.id">
-                                    <div class="d-flex justify-content-between align-items-start gap-3">
-                                        <div>
-                                            <div class="fw-semibold">{{ template.name }}</div>
-                                            <div class="text-muted small">{{ formatTime(template.startTime) }} - {{ formatTime(template.endTime) }}</div>
-                                            <div class="text-muted small" v-if="template.requiredRoles?.length">
-                                                Vai trò: {{ template.requiredRoles.join(', ') }}
-                                            </div>
-                                            <div class="text-muted small" v-if="template.updatedAt">
-                                                Cập nhật: {{ formatDateTime(template.updatedAt) }}
-                                            </div>
-                                        </div>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-secondary" type="button" @click="openEditTemplate(template)">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger" type="button" @click="removeTemplate(template)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer" v-if="templatePage.totalPages > 1">
-                        <Pagination
-                            mode="zero-based"
-                            :current-page="templatePage.number"
-                            :total-pages="templatePage.totalPages"
-                            @page-change="handleTemplatePageChange"
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card table-card">
-            <div class="card-body">
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-                <div v-else-if="error" class="alert alert-warning d-flex align-items-center gap-2">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>{{ error }}</span>
-                </div>
-                <EmptyState
-                    v-else-if="!instances.length"
-                    title="Chưa có ca làm nào"
-                    message="Tạo ca mới bằng nút ở góc trên bên phải."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Ngày</th>
-                            <th>Giờ</th>
-                            <th>Template</th>
-                            <th>Trạng thái</th>
-                            <th>Phân công</th>
-                            <th class="text-end">Hành động</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="instance in instances" :key="instance.id">
-                            <td>
-                                <div class="fw-semibold">{{ formatDate(instance.shiftDate) }}</div>
-                                <div class="text-muted small">Tạo bởi {{ instance.createdBy || 'Hệ thống' }}</div>
-                            </td>
-                            <td>
-                                {{ formatTime(instance.startTime) }} - {{ formatTime(instance.endTime) }}
-                                <div class="text-muted small" v-if="instance.notes">{{ instance.notes }}</div>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ instance.templateName }}</div>
-                                <div class="text-muted small">ID: {{ instance.templateId }}</div>
-                            </td>
-                            <td>
-                                <span class="badge" :class="statusClass(instance.status)">
-                                    {{ translateStatus(instance.status) }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ instance.assignments?.length || 0 }} nhân viên</div>
-                                <div class="text-muted small">
-                                    {{ summarizeAssignments(instance.assignments) }}
-                                </div>
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" @click="openDetail(instance)">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-secondary" @click="openEditInstance(instance)">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" @click="promptStatusUpdate(instance)">
-                                        <i class="bi bi-arrow-repeat"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" @click="removeInstance(instance)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-end" v-if="instancePagination.totalPages > 1">
-                <Pagination
-                    mode="zero-based"
-                    :current-page="instancePagination.number"
-                    :total-pages="instancePagination.totalPages"
-                    @page-change="handlePageChange"
-                />
             </div>
         </div>
 
@@ -357,11 +101,12 @@
 </template>
 
 <script setup>
-import {computed, onMounted, reactive, ref, watch} from 'vue'
-import {storeToRefs} from 'pinia'
-import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router'
-import EmptyState from '@/components/common/EmptyState.vue'
-import Pagination from '@/components/common/Pagination.vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import ShiftOverviewTab from '@/components/shifts/ShiftOverviewTab.vue'
+import ShiftInstancesTab from '@/components/shifts/ShiftInstancesTab.vue'
+import ShiftTemplatesTab from '@/components/shifts/ShiftTemplatesTab.vue'
 import ShiftInstanceFormModal from '@/components/shifts/ShiftInstanceFormModal.vue'
 import ShiftTemplateFormModal from '@/components/shifts/ShiftTemplateFormModal.vue'
 import ShiftInstanceDetailModal from '@/components/shifts/ShiftInstanceDetailModal.vue'
@@ -378,10 +123,10 @@ import {
     updateShiftTemplate,
     deleteShiftTemplate
 } from '@/api/shiftService'
-import {toast} from 'vue3-toastify'
-import {formatDate, formatDateTime} from '@/utils/formatters'
-import {PaginationMode, usePagination} from '@/composables/usePagination'
-import {useShiftSessionStore} from '@/store/shiftSession'
+import { toast } from 'vue3-toastify'
+import { formatDate, formatDateTime } from '@/utils/formatters'
+import { PaginationMode, usePagination } from '@/composables/usePagination'
+import { useShiftSessionStore } from '@/store/shiftSession'
 
 const WEEK_DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
 const CALENDAR_FETCH_SIZE = 200
@@ -403,6 +148,13 @@ const startOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1)
 const endOfMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0)
 
 const TODAY_KEY = formatDateKey(new Date())
+
+const activeTab = ref('overview')
+const tabs = [
+    { key: 'overview', label: 'Tổng quan', icon: 'bi bi-speedometer2' },
+    { key: 'instances', label: 'Danh sách ca làm', icon: 'bi bi-calendar-check' },
+    { key: 'templates', label: 'Ca mẫu', icon: 'bi bi-file-earmark-text' }
+]
 
 const filters = reactive({
     from: '',
@@ -477,19 +229,19 @@ const sessionRealtimeStatus = computed(() => {
 })
 
 const sessionRealtimeError = computed(() => {
-    const error = realtimeError.value
-    if (!error) return ''
-    if (typeof error === 'string') return error
-    if (error.message) return error.message
-    if (error.body) {
+    const err = realtimeError.value
+    if (!err) return ''
+    if (typeof err === 'string') return err
+    if (err.message) return err.message
+    if (err.body) {
         try {
-            const parsed = JSON.parse(error.body)
+            const parsed = JSON.parse(err.body)
             if (parsed?.message) return parsed.message
         } catch (parseErr) {
-            return String(error.body)
+            return String(err.body)
         }
     }
-    if (error.headers?.message) return error.headers.message
+    if (err.headers?.message) return err.headers.message
     return 'Không thể kết nối realtime.'
 })
 
@@ -503,6 +255,10 @@ const refreshCurrentSession = async () => {
     try {
         await shiftSessionStore.loadCurrentSession()
     } catch (error) {
+        // 404 là bình thường khi user chưa có active session, không cần log hoặc hiển thị lỗi
+        if (error?.status === 404) {
+            return
+        }
         console.error(error)
         toast.error(error.message || 'Không thể làm mới phiên ca.')
     }
@@ -544,12 +300,12 @@ const handleEndSession = async () => {
 }
 
 const calendarTitle = computed(() =>
-    calendarState.baseDate.toLocaleString('vi-VN', {month: 'long', year: 'numeric'})
+    calendarState.baseDate.toLocaleString('vi-VN', { month: 'long', year: 'numeric' })
 )
 
 const calendarCells = computed(() => {
     const monthStart = startOfMonth(calendarState.baseDate)
-    const leading = (monthStart.getDay() + 6) % 7 // convert Sunday=0 to Monday=0 system
+    const leading = (monthStart.getDay() + 6) % 7
     const gridStart = new Date(monthStart)
     gridStart.setDate(gridStart.getDate() - leading)
     const cells = []
@@ -580,7 +336,7 @@ const selectedDateLabel = computed(() => {
 
 const fetchTemplateOptions = async () => {
     try {
-        const data = await getShiftTemplates({page: 0, size: 100})
+        const data = await getShiftTemplates({ page: 0, size: 100 })
         templateOptions.value = data?.content || []
     } catch (err) {
         console.error(err)
@@ -615,7 +371,7 @@ const instancePagination = computed(() => ({
 
 const templatePagination = usePagination({
     mode: PaginationMode.ZERO_BASED,
-    pageSize: 5,
+    pageSize: 10,
     persistKey: 'shifts:templates'
 })
 
@@ -655,7 +411,8 @@ const buildFilterParams = () => ({
     size: instancePageSize.value,
     from: filters.from || undefined,
     to: filters.to || undefined,
-    status: filters.status || undefined
+    status: filters.status || undefined,
+    sort: 'shiftDate,desc' // Sắp xếp theo ngày mới nhất
 })
 
 const fetchInstances = async () => {
@@ -663,14 +420,23 @@ const fetchInstances = async () => {
     error.value = null
     try {
         const data = await listShiftInstances(buildFilterParams())
-        instances.value = data?.content || []
+        let fetchedInstances = data?.content || []
+        
+        // Sắp xếp theo ngày mới nhất (nếu backend chưa sort)
+        fetchedInstances.sort((a, b) => {
+            const dateA = new Date(a.shiftDate)
+            const dateB = new Date(b.shiftDate)
+            return dateB - dateA // Mới nhất trước
+        })
+        
+        instances.value = fetchedInstances
 
         if (!startForm.workShiftId && instances.value.length) {
             startForm.workShiftId = instances.value[0]?.id ?? null
         }
 
         suppressInstanceFetch = true
-        const {adjusted} = updateInstanceFromResponse({
+        const { adjusted } = updateInstanceFromResponse({
             page: data?.number,
             totalPages: data?.totalPages,
             totalElements: data?.totalElements
@@ -678,7 +444,7 @@ const fetchInstances = async () => {
         suppressInstanceFetch = false
 
         if (adjusted) {
-            toast.info('Trang danh sách ca làm đã được điều chỉnh theo dữ liệu hiện có.', {autoClose: 2500})
+            toast.info('Trang danh sách ca làm đã được điều chỉnh theo dữ liệu hiện có.', { autoClose: 2500 })
         }
     } catch (err) {
         console.error(err)
@@ -840,7 +606,7 @@ const promptStatusUpdate = async (instance) => {
         return
     }
     try {
-        await updateShiftInstanceStatus(instance.id, {status: nextStatus, notes: instance.notes || null})
+        await updateShiftInstanceStatus(instance.id, { status: nextStatus, notes: instance.notes || null })
         toast.success('Đã cập nhật trạng thái ca làm.')
         await fetchInstances()
         await fetchCalendarData()
@@ -876,7 +642,7 @@ const openCreateTemplate = () => {
 
 const openEditTemplate = async (template) => {
     if (!template?.id) return
-    editingTemplate.value = {...template}
+    editingTemplate.value = { ...template }
     templateModal.value?.show()
     try {
         const fresh = await getShiftTemplate(template.id)
@@ -916,8 +682,8 @@ const removeTemplate = async (template) => {
     try {
         await deleteShiftTemplate(template.id)
         toast.success('Đã xóa ca mẫu.')
-        if (templates.value.length === 1 && templatePage.number > 0) {
-            templatePage.number -= 1
+        if (templates.value.length === 1 && templatePage.value.number > 0) {
+            templatePage.value.number -= 1
         }
         await fetchTemplates()
         await fetchTemplateOptions()
@@ -952,41 +718,29 @@ const formatTime = (time) => {
     return time.length === 5 ? time : time.slice(0, 5)
 }
 
-const translateStatus = (status) => {
-    const map = {
-        PLANNED: 'Lên kế hoạch',
-        LOCKED: 'Đã khóa',
-        IN_PROGRESS: 'Đang diễn ra',
-        DONE: 'Hoàn thành',
-        CANCELLED: 'Đã hủy'
-    }
-    return map[status] || status
-}
-
-const statusClass = (status) => {
-    switch (status) {
-        case 'DONE':
-            return 'bg-success'
-        case 'LOCKED':
-            return 'bg-info text-dark'
-        case 'CANCELLED':
-            return 'bg-danger'
-        case 'IN_PROGRESS':
-            return 'bg-warning text-dark'
-        default:
-            return 'bg-secondary'
+const fetchData = () => {
+    if (activeTab.value === 'overview') {
+        fetchCalendarData()
+        fetchTemplates()
+        refreshCurrentSession()
+    } else if (activeTab.value === 'instances') {
+        fetchInstances()
+    } else if (activeTab.value === 'templates') {
+        fetchTemplates()
     }
 }
 
-const summarizeAssignments = (assignmentList) => {
-    if (!assignmentList?.length) return 'Chưa phân công'
-    const completed = assignmentList.filter((item) => item.status === 'COMPLETED').length
-    const inProgress = assignmentList.filter((item) => item.status === 'IN_PROGRESS').length
-    if (!completed && !inProgress) {
-        return 'Chưa có dữ liệu thực thi'
+watch(activeTab, (newTab) => {
+    if (newTab === 'overview') {
+        fetchCalendarData()
+        fetchTemplates()
+        refreshCurrentSession()
+    } else if (newTab === 'instances') {
+        fetchInstances()
+    } else if (newTab === 'templates') {
+        fetchTemplates()
     }
-    return `${completed} hoàn thành • ${inProgress} đang làm`
-}
+})
 
 watch(lastEvent, async (event) => {
     if (!event) return
@@ -995,11 +749,11 @@ watch(lastEvent, async (event) => {
         await shiftSessionStore.fetchActiveSessions(session.workShiftId)
     }
     if (type === 'SESSION_STARTED') {
-        toast.info(`Ca của ${session?.fullName || session?.username || '#'+session?.userId} đã bắt đầu.`)
+        toast.info(`Ca của ${session?.fullName || session?.username || '#' + session?.userId} đã bắt đầu.`)
     }
     if (type === 'SESSION_ENDED' || type === 'SESSION_FORCED') {
         const verb = type === 'SESSION_FORCED' ? 'kết thúc cưỡng bức' : 'kết thúc'
-        toast.info(`Ca của ${session?.fullName || session?.username || '#'+session?.userId} đã ${verb}.`)
+        toast.info(`Ca của ${session?.fullName || session?.username || '#' + session?.userId} đã ${verb}.`)
     }
 })
 
@@ -1011,7 +765,7 @@ watch(
         fetchInstances()
         fetchCalendarData()
     },
-    {deep: true}
+    { deep: true }
 )
 
 watch(
@@ -1020,7 +774,7 @@ watch(
         if (suppressInstanceFetch) return
         fetchInstances()
     },
-    {immediate: true}
+    { immediate: true }
 )
 
 watch(
@@ -1029,166 +783,83 @@ watch(
         if (suppressTemplateFetch) return
         fetchTemplates()
     },
-    {immediate: true}
+    { immediate: true }
 )
 
 onMounted(() => {
     fetchTemplateOptions()
     fetchCalendarData()
+    fetchTemplates()
     refreshCurrentSession()
 })
 </script>
 
 <style scoped>
-.shifts-page {
-    padding-bottom: 3rem;
+.shift-management-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    padding-bottom: 2rem;
 }
 
-.page-header {
+.card-shadow {
+    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 1.5rem 2rem;
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
     gap: 1.5rem;
 }
 
-
 .page-title {
+    font-weight: 700;
     color: var(--color-heading);
     margin-bottom: 0.25rem;
 }
 
 .page-subtitle {
     margin-bottom: 0;
-}
-
-.filter-card,
-.table-card,
-.calendar-card,
-.template-card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-}
-
-.template-list {
-    background: var(--color-card-muted);
-    padding: 1rem;
-    border-radius: 16px;
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 0.5rem;
-}
-
-.calendar-weekday {
-    text-align: center;
-    font-weight: 600;
     color: var(--color-text-muted);
 }
 
-.calendar-day {
-    position: relative;
-    border: none;
-    background: var(--color-card-muted);
-    border-radius: 14px;
-    padding: 0.75rem 0.6rem;
-    text-align: left;
-    transition: all 0.2s ease;
-    color: inherit;
-}
-
-.calendar-day:hover {
-    background: var(--color-soft-primary);
-}
-
-.calendar-day.is-outside {
-    opacity: 0.4;
-}
-
-.calendar-day.is-selected {
-    border: 1.5px solid var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.18);
-    background: var(--color-soft-primary);
-}
-
-.calendar-day.is-today .day-number {
-    font-weight: 700;
-    color: var(--color-primary);
-}
-
-.calendar-indicator {
-    position: absolute;
-    right: 12px;
-    bottom: 10px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-success);
-}
-
-.selected-day {
-    border: 1px dashed var(--color-border);
-    border-radius: 16px;
-    padding: 1rem;
-    background: var(--color-card-muted);
-}
-
-.selected-day__empty,
-.template-empty {
-    border: 1px dashed var(--color-border);
-    border-radius: 16px;
-    background: var(--color-card-muted);
-}
-
-.template-item {
-    border-left: 3px solid transparent;
-    transition: border-color 0.2s ease;
-}
-
-.template-item:hover {
-    border-left-color: var(--color-primary);
-    background: var(--color-card-muted);
-}
-
-.badge {
-    font-weight: 600;
-}
-
-.session-control-card {
+.tabs-card {
     border-radius: 18px;
-    border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
 }
 
-.session-info__item {
+.reports-tabs {
     display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.75rem 1rem;
-    border-radius: 14px;
-    background: var(--color-card-muted);
-    border: 1px solid var(--color-border-subtle);
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
-.session-info__label {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
-.session-info__value {
+.reports-tabs .nav-link {
+    border-radius: 999px;
+    padding: 0.65rem 1.25rem;
     font-weight: 600;
+    color: var(--color-text-muted);
+    background: rgba(148, 163, 184, 0.12);
 }
 
-@media (max-width: 992px) {
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
+.reports-tabs .nav-link.active {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #fff;
+}
+
+.state-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .card-shadow {
+        padding: 1.25rem;
     }
 }
 </style>

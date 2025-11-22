@@ -425,13 +425,6 @@ const getStatusMetaRef = getStatusMeta
     margin-bottom: 0.25rem;
 }
 
-.filter-card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft-sm);
-    padding: 1.25rem 1.5rem;
-}
 
 .filter-grid {
     display: grid;
@@ -551,14 +544,6 @@ const getStatusMetaRef = getStatusMeta
 .btn-icon:hover {
     background: rgba(99, 102, 241, 0.15);
     border-color: rgba(99, 102, 241, 0.35);
-}
-
-.state-block {
-    display: grid;
-    place-items: center;
-    gap: 0.5rem;
-    padding: 2.5rem 0;
-    color: var(--color-text-muted);
 }
 
 .state-block i {

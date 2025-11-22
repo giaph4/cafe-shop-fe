@@ -88,6 +88,11 @@ export const deleteShiftInstance = async (id) => {
 }
 
 // --- Shift assignments ---
+export const getAssignmentsForCurrentUser = async () => {
+    const {data} = await api.get(`${BASE_URL}/assignments/me`)
+    return data
+}
+
 export const getAssignmentsForShift = async (shiftId) => {
     const {data} = await api.get(`${BASE_URL}/assignments/shift/${shiftId}`)
     return data

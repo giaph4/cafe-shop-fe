@@ -70,3 +70,25 @@ export function formatNumber(value, options = {}) {
 
     return formatter.format(numericValue);
 }
+
+/**
+ * Định dạng số thành phần trăm với locale vi-VN.
+ * @param {number|string} value - Số cần định dạng (0-100).
+ * @param {Intl.NumberFormatOptions} options - Tuỳ chọn định dạng.
+ * @returns {string} - Chuỗi đã định dạng với ký hiệu % (ví dụ: "75,5%").
+ */
+export function formatPercent(value, options = {}) {
+    if (value === null || value === undefined || value === '') return '0%';
+    const numericValue = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(numericValue)) return '0%';
+
+    const formatter = new Intl.NumberFormat('vi-VN', {
+        style: 'percent',
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 2,
+        ...options
+    });
+
+    // Convert to decimal (0.755 -> 75.5%)
+    return formatter.format(numericValue / 100);
+}

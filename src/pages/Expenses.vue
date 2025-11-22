@@ -374,9 +374,6 @@ const handleDelete = (expense) => {
 </script>
 
 <style scoped>
-.page-title {
-    color: #A36B4A;
-}
 
 .table-hover tbody tr:hover {
     background-color: #fdfaf7;

@@ -70,7 +70,7 @@ onMounted(async () => {
         bestSellersChart.value.series = bestSellersData.map(p => p.totalQuantitySold)
 
     } catch (error) {
-        console.error('Failed to load sales data:', error)
+        // Error handled silently
     }
 })
 </script>

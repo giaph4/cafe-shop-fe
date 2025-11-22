@@ -43,31 +43,44 @@
                             </p>
                         </div>
                         <div class="pos-cart__item-actions">
-                            <button
-                                class="btn btn-sm btn-outline-secondary"
-                                type="button"
-                                @click="updateQuantity(index, -1)"
-                                :disabled="isProcessing('quantity')"
-                                aria-label="Giảm số lượng"
-                            >
-                                <i class="bi bi-dash"></i>
-                            </button>
-                            <span class="pos-cart__item-quantity">{{ item.quantity }}</span>
-                            <button
-                                class="btn btn-sm btn-outline-secondary"
-                                type="button"
-                                @click="updateQuantity(index, 1)"
-                                :disabled="isProcessing('quantity')"
-                                aria-label="Tăng số lượng"
-                            >
-                                <i class="bi bi-plus"></i>
-                            </button>
+                            <div class="quantity-controls">
+                                <button
+                                    class="btn btn-sm btn-outline-secondary quantity-btn"
+                                    type="button"
+                                    @click="updateQuantity(index, -1)"
+                                    :disabled="isProcessing('quantity')"
+                                    aria-label="Giảm số lượng"
+                                    title="Giảm (Phím -)"
+                                >
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input
+                                    type="number"
+                                    class="quantity-input"
+                                    :value="item.quantity"
+                                    @change="setQuantity(index, $event.target.value)"
+                                    @blur="setQuantity(index, item.quantity)"
+                                    min="1"
+                                    :disabled="isProcessing('quantity')"
+                                >
+                                <button
+                                    class="btn btn-sm btn-outline-secondary quantity-btn"
+                                    type="button"
+                                    @click="updateQuantity(index, 1)"
+                                    :disabled="isProcessing('quantity')"
+                                    aria-label="Tăng số lượng"
+                                    title="Tăng (Phím +)"
+                                >
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
                             <button
                                 class="btn btn-sm btn-outline-danger"
                                 type="button"
                                 @click="removeItem(index)"
                                 :disabled="isProcessing('quantity')"
                                 aria-label="Xóa món"
+                                title="Xóa (Phím Delete)"
                             >
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -176,25 +189,52 @@
                             </button>
                         </div>
                     </template>
-                    <div v-else class="input-group">
-                        <input
-                            type="text"
-                            class="form-control"
-                            placeholder="Nhập mã voucher"
-                            v-model.trim="voucherCode"
-                            :disabled="!isExistingOrder || isProcessing('apply-voucher')"
-                        >
-                        <button
-                            class="btn btn-outline-secondary"
-                            type="button"
-                            @click="applyVoucher"
-                            :disabled="!canApplyVoucher"
-                        >
-                            <span v-if="isProcessing('apply-voucher')" class="spinner-border spinner-border-sm me-2"></span>
-                            Áp dụng
-                        </button>
+                    <div v-else>
+                        <div class="input-group mb-2">
+                            <input
+                                type="text"
+                                class="form-control"
+                                placeholder="Nhập mã voucher"
+                                v-model.trim="voucherCode"
+                                :disabled="!isExistingOrder || isProcessing('apply-voucher') || isProcessing('check-voucher')"
+                                @keyup.enter="handleVoucherCheck"
+                            >
+                            <button
+                                class="btn btn-outline-info"
+                                type="button"
+                                @click="handleVoucherCheck"
+                                :disabled="!canCheckVoucher"
+                                title="Kiểm tra voucher"
+                            >
+                                <span v-if="isProcessing('check-voucher')" class="spinner-border spinner-border-sm me-2"></span>
+                                <i v-else class="bi bi-search me-1"></i>
+                                Kiểm tra
+                            </button>
+                            <button
+                                class="btn btn-primary"
+                                type="button"
+                                @click="applyVoucher"
+                                :disabled="!canApplyVoucher"
+                            >
+                                <span v-if="isProcessing('apply-voucher')" class="spinner-border spinner-border-sm me-2"></span>
+                                Áp dụng
+                            </button>
+                        </div>
+                        <div v-if="voucherCheckResult" class="alert" :class="voucherCheckResult.valid ? 'alert-success' : 'alert-warning'">
+                            <div v-if="voucherCheckResult.valid">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <strong>Voucher hợp lệ!</strong>
+                                <div class="mt-1">
+                                    Giảm giá: <strong>{{ formatVoucherDiscount(voucherCheckResult) }}</strong>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>{{ voucherCheckResult.message || 'Voucher không hợp lệ' }}</strong>
+                            </div>
+                        </div>
+                        <small v-if="!isExistingOrder" class="text-muted d-block mt-2">Lưu đơn hàng trước khi áp dụng voucher.</small>
                     </div>
-                    <small v-if="!isExistingOrder" class="text-muted d-block mt-2">Lưu đơn hàng trước khi áp dụng voucher.</small>
                 </section>
 
                 <section class="pos-cart__actions">
@@ -244,6 +284,7 @@
 import { ref, watch, computed, onBeforeUnmount } from 'vue'
 import * as orderService from '@/api/orderService.js'
 import { searchCustomers } from '@/api/customerService.js'
+import { checkVoucher } from '@/api/voucherService.js'
 import { formatCurrency } from '@/utils/formatters.js'
 import { toast } from 'vue3-toastify'
 import PosPaymentModal from './PosPaymentModal.vue'
@@ -269,6 +310,7 @@ const localOrder = ref({
 const originalOrderSnapshot = ref(null)
 const isCreatingNew = ref(false)
 const voucherCode = ref('')
+const voucherCheckResult = ref(null)
 const loadingAction = ref(null)
 const paymentModalRef = ref(null)
 
@@ -458,6 +500,7 @@ const showDiscountRow = computed(() => discountAmount.value > 0)
 const showSelectTableButton = computed(() => !props.table && props.viewIntent !== 'takeaway' && !cartIsEmpty.value)
 
 const trimmedVoucherCode = computed(() => voucherCode.value.trim().toUpperCase())
+const canCheckVoucher = computed(() => isExistingOrder.value && Boolean(trimmedVoucherCode.value) && !isProcessing('check-voucher') && !isProcessing('apply-voucher'))
 const canApplyVoucher = computed(() => isExistingOrder.value && Boolean(trimmedVoucherCode.value) && !isProcessing('apply-voucher'))
 const canProcessPayment = computed(() => isExistingOrder.value && !cartIsEmpty.value && !isProcessing('pay'))
 
@@ -494,15 +537,30 @@ const addProduct = (product) => {
 
 const updateQuantity = (index, change) => {
     loadingAction.value = 'quantity'
-    localOrder.value.items[index].quantity += change
-    if (localOrder.value.items[index].quantity <= 0) {
+    const newQuantity = localOrder.value.items[index].quantity + change
+    if (newQuantity <= 0) {
         removeItem(index)
+    } else {
+        localOrder.value.items[index].quantity = newQuantity
     }
     loadingAction.value = null
 }
 
+const setQuantity = (index, value) => {
+    const numValue = parseInt(value, 10)
+    if (Number.isFinite(numValue) && numValue > 0) {
+        loadingAction.value = 'quantity'
+        localOrder.value.items[index].quantity = numValue
+        loadingAction.value = null
+    }
+}
+
 const removeItem = (index) => {
+    const item = localOrder.value.items[index]
+    if (!item) return
+    // Quick remove without confirmation for better UX in POS
     localOrder.value.items.splice(index, 1)
+    toast.info(`Đã xóa "${item.productName}" khỏi đơn hàng`, { autoClose: 2000 })
 }
 
 const saveOrder = async () => {
@@ -624,6 +682,52 @@ const saveOrder = async () => {
     }
 }
 
+const handleVoucherCheck = async () => {
+    if (!localOrder.value.id) {
+        toast.error('Vui lòng lưu đơn hàng trước khi kiểm tra voucher.')
+        return
+    }
+    if (!trimmedVoucherCode.value) {
+        toast.info('Nhập mã voucher trước khi kiểm tra.')
+        return
+    }
+    
+    try {
+        loadingAction.value = 'check-voucher'
+        voucherCheckResult.value = null
+        
+        const totalAmount = Number(localOrder.value.totalAmount || 0)
+        const result = await checkVoucher(trimmedVoucherCode.value, totalAmount)
+        
+        if (result.isValid) {
+            voucherCheckResult.value = {
+                valid: true,
+                discountAmount: Number(result.discountAmount || 0),
+                message: result.message || null
+            }
+        } else {
+            voucherCheckResult.value = {
+                valid: false,
+                message: result.message || 'Voucher không hợp lệ.'
+            }
+        }
+    } catch (error) {
+        const message = error?.response?.data?.message || 'Voucher không hợp lệ hoặc không thể áp dụng.'
+        voucherCheckResult.value = {
+            valid: false,
+            message: message
+        }
+    } finally {
+        loadingAction.value = null
+    }
+}
+
+const formatVoucherDiscount = (result) => {
+    if (!result || !result.valid) return '—'
+    const discount = Number(result.discountAmount || 0)
+    return formatCurrency(discount)
+}
+
 const applyVoucher = async () => {
     if (!localOrder.value.id) {
         toast.error('Vui lòng lưu đơn hàng trước khi áp dụng voucher.')
@@ -641,6 +745,7 @@ const applyVoucher = async () => {
         })
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
         voucherCode.value = ''
+        voucherCheckResult.value = null
         toast.success('Áp dụng voucher thành công.')
         emitOrderUpdated('voucher-applied', updatedOrder)
     } catch (error) {
@@ -660,6 +765,7 @@ const removeVoucher = async () => {
         loadingAction.value = 'remove-voucher'
         const updatedOrder = await orderService.removeVoucher(localOrder.value.id)
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
+        voucherCheckResult.value = null
         toast.info('Đã bỏ voucher khỏi đơn hàng.')
         emitOrderUpdated('voucher-removed', updatedOrder)
     } catch (error) {
@@ -909,13 +1015,48 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .pos-cart__item-actions {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.5rem;
 }
 
-.pos-cart__item-quantity {
-    min-width: 1.75rem;
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.125rem;
+    background: var(--color-bg-muted);
+}
+
+.quantity-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+}
+
+.quantity-btn:hover:not(:disabled) {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.quantity-input {
+    width: 50px;
     text-align: center;
+    border: none;
+    background: transparent;
     font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.25rem;
+}
+
+.quantity-input:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+    border-radius: 4px;
 }
 
 .pos-cart__item-total {

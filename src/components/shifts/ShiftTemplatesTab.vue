@@ -1,0 +1,124 @@
+<template>
+    <div class="shift-templates-tab">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="mb-1">Quản lý Ca mẫu</h5>
+                <p class="text-muted mb-0">Tạo và quản lý các ca mẫu để tái sử dụng khi lên lịch.</p>
+            </div>
+            <button class="btn btn-primary" type="button" @click="handleCreate">
+                <i class="bi bi-plus-lg me-2"></i>Tạo ca mẫu mới
+            </button>
+        </div>
+
+        <div class="card table-card">
+            <div class="card-body">
+                <div v-if="loading" class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+                <div v-else-if="error" class="alert alert-warning d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>{{ error }}</span>
+                </div>
+                <EmptyState
+                    v-else-if="!templates.length"
+                    title="Chưa có ca mẫu nào"
+                    message="Tạo ca mẫu đầu tiên để bắt đầu quản lý ca làm."
+                />
+                <div v-else class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Tên ca</th>
+                            <th>Giờ làm việc</th>
+                            <th>Vai trò yêu cầu</th>
+                            <th>Cập nhật</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="template in templates" :key="template.id">
+                            <td>
+                                <div class="fw-semibold">{{ template.name }}</div>
+                                <div class="text-muted small">ID: {{ template.id }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ formatTime(template.startTime) }} - {{ formatTime(template.endTime) }}</div>
+                                <div class="text-muted small" v-if="template.description">{{ template.description }}</div>
+                            </td>
+                            <td>
+                                <div v-if="template.requiredRoles?.length" class="d-flex flex-wrap gap-1">
+                                    <span class="badge bg-primary-subtle text-primary" v-for="role in template.requiredRoles" :key="role">
+                                        {{ role }}
+                                    </span>
+                                </div>
+                                <span v-else class="text-muted small">Không yêu cầu</span>
+                            </td>
+                            <td>
+                                <div class="text-muted small">{{ formatDateTime(template.updatedAt) }}</div>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary" @click="handleEdit(template)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" @click="handleRemove(template)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-end" v-if="pagination.totalPages > 1">
+                <Pagination
+                    mode="zero-based"
+                    :current-page="pagination.number"
+                    :total-pages="pagination.totalPages"
+                    @page-change="handlePageChange"
+                />
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import EmptyState from '@/components/common/EmptyState.vue'
+import Pagination from '@/components/common/Pagination.vue'
+import { formatDateTime } from '@/utils/formatters'
+
+const props = defineProps({
+    templates: { type: Array, default: () => [] },
+    loading: { type: Boolean, default: false },
+    error: { type: String, default: null },
+    pagination: { type: Object, required: true }
+})
+
+const emit = defineEmits([
+    'create',
+    'edit',
+    'remove',
+    'page-change'
+])
+
+const formatTime = (time) => {
+    if (!time) return '--:--'
+    return time.length === 5 ? time : time.slice(0, 5)
+}
+
+const handleCreate = () => emit('create')
+const handleEdit = (template) => emit('edit', template)
+const handleRemove = (template) => emit('remove', template)
+const handlePageChange = (page) => emit('page-change', page)
+</script>
+
+<style scoped>
+.table-card {
+    border-radius: 18px;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+}
+</style>
+

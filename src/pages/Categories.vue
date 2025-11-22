@@ -38,35 +38,48 @@
         </div>
     </div>
 
-    <div data-aos="fade-up">
-        <div class="page-header d-flex justify-content-between align-items-center mb-4">
-            <h2 class="page-title">Quản lý Danh mục</h2>
-            <button class="btn btn-primary" @click="openModal()">
-                <i class="bi bi-plus-lg me-2"></i> Thêm mới
-            </button>
+    <div class="page-container container-fluid" data-aos="fade-up">
+        <div class="page-header card-shadow">
+            <div>
+                <h2 class="page-title">Quản lý Danh mục</h2>
+                <p class="page-subtitle">Quản lý các danh mục sản phẩm trong hệ thống</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button class="btn btn-primary" @click="openModal()">
+                    <i class="bi bi-plus-lg me-2"></i> Thêm mới
+                </button>
+            </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-body d-flex justify-content-between">
-                <div class="input-group" style="max-width: 400px;">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Tìm kiếm theo tên danh mục..."
-                        v-model="searchQuery">
+        <div class="card filter-card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">Tìm kiếm</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input
+                                type="text"
+                                class="form-control"
+                                placeholder="Tìm kiếm theo tên danh mục..."
+                                v-model="searchQuery"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card tabs-card">
             <div class="card-body">
-
-                <div v-if="isLoading" class="text-center my-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
+                <div v-if="isLoading" class="state-block py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
                 </div>
 
-                <div v-else-if="isError" class="alert alert-danger">
-                    Không thể tải dữ liệu: {{ error.message }}
+                <div v-else-if="isError" class="state-block py-5">
+                    <div class="alert alert-danger mb-0">
+                        Không thể tải dữ liệu: {{ errorMessage }}
+                    </div>
                 </div>
 
                 <div v-else-if="categories" class="table-responsive">
@@ -113,6 +126,9 @@ import { Form, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
 import { toast } from 'vue3-toastify'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/categoryService'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { extractErrorMessage } = useErrorHandler()
 
 const queryClient = useQueryClient()
 const modalElement = ref(null) 
@@ -134,6 +150,11 @@ const { data: categories, isLoading, isError, error } = useQuery({
     queryFn: getCategories
 })
 
+const errorMessage = computed(() => {
+    if (!error.value) return ''
+    return extractErrorMessage(error.value)
+})
+
 const createMutation = useMutation({
     mutationFn: (payload) => createCategory(payload),
     onSuccess: () => {
@@ -142,7 +163,8 @@ const createMutation = useMutation({
         closeModal()
     },
     onError: (err) => {
-        toast.error(err.response?.data?.message || 'Không thể tạo danh mục.')
+        const message = extractErrorMessage(err) || 'Không thể tạo danh mục.'
+        toast.error(message)
     }
 })
 
@@ -154,7 +176,8 @@ const updateMutation = useMutation({
         closeModal()
     },
     onError: (err) => {
-        toast.error(err.response?.data?.message || 'Không thể cập nhật danh mục.')
+        const message = extractErrorMessage(err) || 'Không thể cập nhật danh mục.'
+        toast.error(message)
     }
 })
 
@@ -165,7 +188,8 @@ const deleteMutation = useMutation({
         queryClient.invalidateQueries(['categories'])
     },
     onError: (err) => {
-        toast.error(err.response?.data?.message || 'Không thể xoá danh mục.')
+        const message = extractErrorMessage(err) || 'Không thể xoá danh mục.'
+        toast.error(message)
     }
 })
 
@@ -231,10 +255,7 @@ const handleDelete = (category) => {
 </script>
 
 <style scoped>
-.page-title {
-    color: #A36B4A;
-}
-
+/* Page-specific styles only */
 .table-hover tbody tr:hover {
     background-color: #fdfaf7;
 }

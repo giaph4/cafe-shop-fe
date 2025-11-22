@@ -73,6 +73,17 @@
                                 placeholder="Nhập tổng tồn kho sau điều chỉnh"
                                 :class="{ 'is-invalid': errors.newQuantityOnHand }" v-model="adjustData.newQuantityOnHand" />
                             <ErrorMessage name="newQuantityOnHand" class="invalid-feedback" />
+                            <div v-if="adjustData.newQuantityOnHand && !errors.newQuantityOnHand" class="form-text">
+                                <span v-if="Number(adjustData.newQuantityOnHand) > adjustData.currentStock" class="text-success">
+                                    ➕ Tăng: +{{ formatQuantity(Number(adjustData.newQuantityOnHand) - adjustData.currentStock) }}
+                                </span>
+                                <span v-else-if="Number(adjustData.newQuantityOnHand) < adjustData.currentStock" class="text-danger">
+                                    ➖ Giảm: {{ formatQuantity(Number(adjustData.newQuantityOnHand) - adjustData.currentStock) }}
+                                </span>
+                                <span v-else class="text-muted">
+                                    ➡️ Không thay đổi
+                                </span>
+                            </div>
                         </div>
                         <div>
                             <label class="form-label">Lý do điều chỉnh</label>
@@ -85,6 +96,7 @@
                     <div class="modal-footer border-0 pt-0">
                         <button type="button" class="btn btn-outline-secondary" @click="closeAdjustModal">Huỷ</button>
                         <button type="submit" class="btn btn-primary" :disabled="adjustMutation.isPending.value">
+                            <span v-if="adjustMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
                             Xác nhận
                         </button>
                     </div>
@@ -111,8 +123,8 @@
         </div>
 
         <div class="row g-4 mb-4 mt-1">
-            <div class="col-md-4" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card">
+            <div class="col-md-4 d-flex" v-for="stat in stats" :key="stat.label">
+                <div class="stat-card w-100">
                     <div class="stat-icon" :class="stat.variant">
                         <i :class="stat.icon"></i>
                     </div>
@@ -414,12 +426,59 @@ const handleSubmit = () => {
     }
 }
 
-const handleAdjustSubmit = (values) => {
+const handleAdjustSubmit = async (values) => {
+    const newQuantity = Number(values.newQuantityOnHand)
+    const currentQuantity = adjustData.currentStock
+    const difference = newQuantity - currentQuantity
+    
+    // Kiểm tra kho trước khi chỉnh
+    const checkResult = await checkInventoryBeforeAdjust({
+        ingredientId: adjustData.ingredientId,
+        currentQuantity,
+        newQuantity,
+        difference
+    })
+    
+    if (!checkResult.confirmed) {
+        return // User cancelled
+    }
+    
+    // Nếu có cảnh báo nhưng user vẫn muốn tiếp tục
     adjustMutation.mutate({
         ingredientId: adjustData.ingredientId,
         newQuantityOnHand: values.newQuantityOnHand,
         reason: values.reason
     })
+}
+
+const checkInventoryBeforeAdjust = async ({ ingredientId, currentQuantity, newQuantity, difference }) => {
+    // Tìm nguyên liệu để lấy thông tin reorderLevel
+    const ingredient = tableData.value.find(item => item.id === ingredientId)
+    const reorderLevel = ingredient?.reorderLevel ? Number(ingredient.reorderLevel) : null
+    
+    // Tính toán thông tin
+    const isDecrease = difference < 0
+    const isIncrease = difference > 0
+    const willBeBelowReorder = reorderLevel !== null && newQuantity < reorderLevel
+    const isCurrentlyBelowReorder = reorderLevel !== null && currentQuantity < reorderLevel
+    
+    // Tạo thông báo chi tiết
+    let message = `Bạn có chắc chắn muốn điều chỉnh tồn kho?\n\n`
+    message += `📦 Nguyên liệu: ${adjustData.name}\n`
+    message += `📊 Tồn kho hiện tại: ${formatQuantity(currentQuantity)}\n`
+    message += `📊 Tồn kho mới: ${formatQuantity(newQuantity)}\n`
+    message += `${isIncrease ? '➕' : isDecrease ? '➖' : '➡️'} Chênh lệch: ${isIncrease ? '+' : ''}${formatQuantity(difference)}\n\n`
+    
+    // Cảnh báo nếu giảm xuống dưới mức đặt lại
+    if (willBeBelowReorder && !isCurrentlyBelowReorder) {
+        message += `⚠️ CẢNH BÁO: Tồn kho mới sẽ dưới mức đặt lại (${formatQuantity(reorderLevel)})!\n\n`
+    } else if (willBeBelowReorder && isCurrentlyBelowReorder) {
+        message += `⚠️ LƯU Ý: Tồn kho vẫn dưới mức đặt lại (${formatQuantity(reorderLevel)}).\n\n`
+    }
+    
+    message += `Bạn có muốn tiếp tục?`
+    
+    return { confirmed: confirm(message) }
 }
 
 const handleDelete = (ingredient) => {
@@ -450,29 +509,6 @@ const handlePageChange = (page) => {
     padding-bottom: 2rem;
 }
 
-.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-}
-
-.page-title {
-    font-weight: 700;
-    color: var(--color-heading);
-    margin-bottom: 0.25rem;
-}
-
-.page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted);
-}
-
 .stat-card {
     display: flex;
     align-items: center;
@@ -482,6 +518,8 @@ const handlePageChange = (page) => {
     padding: 1rem 1.25rem;
     background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    height: 100%;
+    min-height: 140px;
 }
 
 .stat-icon {
@@ -519,7 +557,6 @@ const handlePageChange = (page) => {
     color: var(--color-heading);
 }
 
-.filter-card,
 .table-card {
     border-radius: 18px;
     border: 1px solid rgba(148, 163, 184, 0.28);
@@ -540,11 +577,6 @@ const handlePageChange = (page) => {
     margin-bottom: 0;
 }
 
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .form-modal {
     border-radius: 20px;
@@ -566,10 +598,6 @@ const handlePageChange = (page) => {
 }
 
 @media (max-width: 768px) {
-    .card-shadow {
-        padding: 1.25rem;
-    }
-
     .stat-card {
         flex-direction: row;
     }

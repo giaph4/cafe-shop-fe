@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {ref} from 'vue'
+import logger from '@/utils/logger'
 
 const COLLAPSE_KEY = 'ui.sidebar.collapsed'
 const EXPANDED_KEY = 'ui.sidebar.expanded'
@@ -19,7 +20,7 @@ const readArray = (key) => {
         const parsed = JSON.parse(raw)
         return Array.isArray(parsed) ? parsed : []
     } catch (err) {
-        console.warn('Failed to parse sidebar groups from storage', err)
+        logger.warn('Failed to parse sidebar groups from storage', err)
         return []
     }
 }

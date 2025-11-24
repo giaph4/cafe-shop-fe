@@ -1,17 +1,18 @@
 <template>
     <div class="pos-product-menu">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <button class="btn btn-outline-secondary" @click="$emit('back-to-tables')">
+        <!-- Header -->
+        <div class="pos-product-menu__header">
+            <button class="btn btn-link btn-back" @click="$emit('back-to-tables')">
                 <i class="bi bi-arrow-left"></i> Quay lại
             </button>
-            <h2 class="page-title mb-0">Chọn sản phẩm</h2>
-            <div class="text-muted small">
+            <h2 class="pos-product-menu__title">Chọn sản phẩm</h2>
+            <div class="pos-product-menu__search-hint">
                 <kbd>/</kbd> để tìm kiếm
             </div>
         </div>
 
-        <!-- Quick Search -->
-        <div class="pos-product-menu__search mb-4">
+        <!-- Search Bar -->
+        <div class="pos-product-menu__search">
             <div class="input-group input-group-lg">
                 <span class="input-group-text">
                     <i class="bi bi-search"></i>
@@ -35,45 +36,43 @@
             </div>
         </div>
 
-        <!-- Category Pills -->
-        <div class="pos-product-menu__categories mb-4">
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button
-                    class="btn category-pill"
-                    :class="!filters.categoryId ? 'btn-primary' : 'btn-outline-primary'"
-                    @click="filters.categoryId = ''"
-                >
-                    Tất cả
-                </button>
-                <button
-                    v-for="category in categoriesList"
-                    :key="category.id"
-                    class="btn category-pill"
-                    :class="filters.categoryId === category.id ? 'btn-primary' : 'btn-outline-primary'"
-                    @click="filters.categoryId = category.id"
-                >
-                    {{ category.name }}
-                </button>
-            </div>
+        <!-- Category Filters -->
+        <div class="pos-product-menu__categories">
+            <button
+                class="category-pill"
+                :class="!filters.categoryId ? 'category-pill--active' : ''"
+                @click="filters.categoryId = ''"
+            >
+                Tất cả
+            </button>
+            <button
+                v-for="category in categoriesList"
+                :key="category.id"
+                class="category-pill"
+                :class="filters.categoryId === category.id ? 'category-pill--active' : ''"
+                @click="filters.categoryId = category.id"
+            >
+                {{ category.name }}
+            </button>
         </div>
 
-        <!-- Product Count -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <small class="text-muted">
+        <!-- Product List Header -->
+        <div class="pos-product-menu__list-header">
+            <span class="pos-product-menu__count">
                 Tìm thấy <strong>{{ filteredProducts.length }}</strong> sản phẩm
-            </small>
-            <div class="d-flex gap-2">
+            </span>
+            <div class="pos-product-menu__view-toggle">
                 <button
-                    class="btn btn-sm btn-outline-secondary"
-                    :class="{ active: viewMode === 'grid' }"
+                    class="view-toggle-btn"
+                    :class="{ 'view-toggle-btn--active': viewMode === 'grid' }"
                     @click="viewMode = 'grid'"
                     title="Lưới"
                 >
                     <i class="bi bi-grid-3x3"></i>
                 </button>
                 <button
-                    class="btn btn-sm btn-outline-secondary"
-                    :class="{ active: viewMode === 'list' }"
+                    class="view-toggle-btn"
+                    :class="{ 'view-toggle-btn--active': viewMode === 'list' }"
                     @click="viewMode = 'list'"
                     title="Danh sách"
                 >
@@ -83,43 +82,45 @@
         </div>
 
         <!-- Product List -->
-        <div v-if="isLoading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="text-muted mt-2">Đang tải sản phẩm...</p>
-        </div>
-        <div v-else-if="isError" class="alert alert-danger">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            Không thể tải sản phẩm. Vui lòng thử lại.
-        </div>
-        <div v-else-if="filteredProducts.length === 0" class="text-center py-5 text-muted">
-            <i class="bi bi-search fs-1 d-block mb-3"></i>
-            <p class="mb-0">Không tìm thấy sản phẩm nào phù hợp.</p>
-        </div>
-        <div v-else class="pos-product-menu__products" :class="`view-${viewMode}`">
-            <div
-                v-for="product in filteredProducts"
-                :key="product.id"
-                class="product-card"
-                :class="{ 'product-card--unavailable': !product.available }"
-                @click="selectProduct(product)"
-                @keydown.enter="selectProduct(product)"
-                tabindex="0"
-            >
-                <div class="product-card__image">
-                    <img
-                        :src="product.imageUrl || '/placeholder.png'"
-                        :alt="product.name"
-                        @error="handleImageError"
-                    >
-                    <div v-if="!product.available" class="product-card__badge">
-                        <i class="bi bi-slash-circle"></i> Ngừng bán
+        <div class="pos-product-menu__content">
+            <div v-if="isLoading" class="pos-product-menu__loading">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p>Đang tải sản phẩm...</p>
+            </div>
+            <div v-else-if="isError" class="pos-product-menu__error">
+                <i class="bi bi-exclamation-triangle"></i>
+                <p>Không thể tải sản phẩm. Vui lòng thử lại.</p>
+            </div>
+            <div v-else-if="filteredProducts.length === 0" class="pos-product-menu__empty">
+                <i class="bi bi-search"></i>
+                <p>Không tìm thấy sản phẩm nào phù hợp.</p>
+            </div>
+            <div v-else class="pos-product-menu__products" :class="`view-${viewMode}`">
+                <div
+                    v-for="product in filteredProducts"
+                    :key="product.id"
+                    class="product-card"
+                    :class="{ 'product-card--unavailable': !product.available }"
+                    @click="selectProduct(product)"
+                    @keydown.enter="selectProduct(product)"
+                    tabindex="0"
+                >
+                    <div class="product-card__image">
+                        <img
+                            :src="product.imageUrl || '/placeholder.png'"
+                            :alt="product.name"
+                            @error="handleImageError"
+                        >
+                        <div v-if="!product.available" class="product-card__badge">
+                            <i class="bi bi-slash-circle"></i> Ngừng bán
+                        </div>
                     </div>
-                </div>
-                <div class="product-card__body">
-                    <h6 class="product-card__title">{{ product.name }}</h6>
-                    <div class="product-card__price">{{ formatCurrency(product.price) }}</div>
-                    <div v-if="product.description" class="product-card__description">
-                        {{ product.description }}
+                    <div class="product-card__body">
+                        <h6 class="product-card__title">{{ product.name }}</h6>
+                        <div class="product-card__price">{{ formatCurrency(product.price) }}</div>
+                        <div v-if="product.description" class="product-card__description">
+                            {{ product.description }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -143,7 +144,7 @@ const filters = ref({
     name: '',
     categoryId: '',
     page: 0,
-    size: 200, // Load more products for POS
+    size: 200,
 })
 
 const { data: products, isLoading, isError, refetch } = useQuery({
@@ -180,13 +181,9 @@ const categoriesList = computed(() => {
     return []
 })
 
-// Client-side filtering for better UX (backup if server-side filtering doesn't work)
 const filteredProducts = computed(() => {
-    // Create a copy of the array to avoid readonly issues
     let result = [...productList.value]
 
-    // If server-side filtering didn't work, do client-side filtering
-    // Filter by category (handle both string and number)
     if (filters.value.categoryId) {
         const categoryId = filters.value.categoryId
         result = result.filter(p => {
@@ -196,7 +193,6 @@ const filteredProducts = computed(() => {
         })
     }
 
-    // Filter by name (case-insensitive)
     if (filters.value.name) {
         const searchTerm = filters.value.name.toLowerCase().trim()
         if (searchTerm) {
@@ -207,7 +203,6 @@ const filteredProducts = computed(() => {
         }
     }
 
-    // Show available products first - create new sorted array instead of mutating
     return [...result].sort((a, b) => {
         if (a.available && !b.available) return -1
         if (!a.available && b.available) return 1
@@ -231,9 +226,7 @@ const selectProduct = (product) => {
     emit('product-selected', product)
 }
 
-// Keyboard shortcuts
 const handleKeydown = (event) => {
-    // Focus search on "/"
     if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
         event.preventDefault()
         searchInputRef.value?.focus()
@@ -251,38 +244,200 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.pos-product-menu {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.25rem;
+    overflow: hidden;
+}
+
+/* Header */
+.pos-product-menu__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.btn-back {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s;
+}
+
+.btn-back:hover {
+    color: var(--color-primary);
+}
+
+.pos-product-menu__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-heading);
+    margin: 0;
+    flex: 1;
+    text-align: center;
+}
+
+.pos-product-menu__search-hint {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+kbd {
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+    font-family: monospace;
+}
+
+/* Search */
 .pos-product-menu__search {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--color-card);
-    padding: 1rem 0;
-    margin: -1rem 0 1rem;
+    margin-bottom: 1.25rem;
+    flex-shrink: 0;
+}
+
+.input-group-lg .form-control {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+.input-group-text {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
+}
+
+/* Categories */
+.pos-product-menu__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
 }
 
 .category-pill {
+    padding: 0.5rem 1.25rem;
     border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-text);
     font-weight: 500;
-    transition: all 0.2s;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .category-pill:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--color-primary);
     transform: translateY(-1px);
 }
 
+.category-pill--active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+/* List Header */
+.pos-product-menu__list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.pos-product-menu__count {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+.pos-product-menu__view-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.view-toggle-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    border-radius: 8px;
+    color: var(--color-text-muted);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.view-toggle-btn:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.view-toggle-btn--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* Content */
+.pos-product-menu__content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.pos-product-menu__loading,
+.pos-product-menu__error,
+.pos-product-menu__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.pos-product-menu__error i,
+.pos-product-menu__empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Products Grid */
 .pos-product-menu__products {
     display: grid;
     gap: 1rem;
 }
 
 .pos-product-menu__products.view-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 .pos-product-menu__products.view-list {
     grid-template-columns: 1fr;
 }
 
+/* Product Card */
 .product-card {
     cursor: pointer;
     border-radius: 16px;
@@ -319,7 +474,7 @@ onBeforeUnmount(() => {
 .product-card__image {
     position: relative;
     width: 100%;
-    height: 160px;
+    height: 180px;
     overflow: hidden;
     background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
 }
@@ -401,16 +556,21 @@ onBeforeUnmount(() => {
     flex: 1;
 }
 
-kbd {
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    padding: 0.125rem 0.375rem;
-    font-size: 0.75rem;
-    font-family: monospace;
-}
-
 @media (max-width: 768px) {
+    .pos-product-menu {
+        padding: 1rem;
+    }
+
+    .pos-product-menu__header {
+        flex-wrap: wrap;
+    }
+
+    .pos-product-menu__title {
+        order: 3;
+        width: 100%;
+        text-align: left;
+    }
+
     .pos-product-menu__products.view-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }

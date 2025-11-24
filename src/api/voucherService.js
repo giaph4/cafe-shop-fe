@@ -1,4 +1,6 @@
 import api from './axios'
+import { buildApiError } from './utils/errorHandler'
+import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/vouchers'
 
@@ -66,7 +68,8 @@ export const searchVouchers = async ({
     if (validFrom) params.validFrom = normalizeDateTime(validFrom)
     if (validTo) params.validTo = normalizeDateTime(validTo)
 
-    const {data} = await api.get(BASE_URL, {params})
+    const cleanQuery = cleanParams(params)
+    const {data} = await api.get(BASE_URL, {params: cleanQuery})
     return data
 }
 

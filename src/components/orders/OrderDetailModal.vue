@@ -123,7 +123,6 @@ const fetchOrderDetail = async (id) => {
         order.value = await orderService.getOrderById(id)
     } catch (err) {
         error.value = 'Không thể tải chi tiết đơn hàng.'
-        console.error(err)
     } finally {
         loading.value = false
     }
@@ -164,7 +163,6 @@ const printInvoice = async () => {
         }
         toast.success('Đã gửi lệnh in hóa đơn.')
     } catch (err) {
-        console.error(err)
         toast.error('Không thể in hóa đơn. Vui lòng thử lại.')
     } finally {
         printing.value = false

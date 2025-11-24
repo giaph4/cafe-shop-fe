@@ -1,17 +1,7 @@
 import api from '@/api/axios'
+import { buildApiError } from '@/api/utils/errorHandler'
 import { normalizePage } from './transformers'
 import { normalizeMessage, normalizeMessageList } from './normalizers'
-
-const buildError = (error) => {
-    const status = error?.response?.status
-    const { code, message, details } = error?.response?.data || {}
-    return {
-        status,
-        code: code || null,
-        message: message || error?.message || 'Đã xảy ra lỗi không xác định.',
-        details: details || null
-    }
-}
 
 /**
  * @param {number} conversationId
@@ -32,7 +22,7 @@ export const listMessages = async (conversationId, params = {}) => {
         const items = normalizeMessageList(normalized.items)
         return { ...normalized, items }
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -49,7 +39,7 @@ export const sendTextMessage = async (conversationId, content) => {
         })
         return normalizeMessage(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -66,7 +56,7 @@ export const sendEmojiMessage = async (conversationId, code) => {
         })
         return normalizeMessage(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -100,7 +90,7 @@ export const sendAttachmentMessage = async (conversationId, payload, onProgress)
         })
         return normalizeMessage(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -113,7 +103,7 @@ export const recallMessage = async (messageId) => {
         const { data } = await api.post(`/api/chat/messages/${messageId}/recall`)
         return normalizeMessage(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -125,7 +115,7 @@ export const deleteMessageForCurrentUser = async (messageId) => {
     try {
         await api.delete(`/api/chat/messages/${messageId}`)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -138,6 +128,6 @@ export const markSeen = async (conversationId, messageId) => {
     try {
         await api.post(`/api/chat/conversations/${conversationId}/messages/${messageId}/seen`)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }

@@ -423,6 +423,7 @@ import {
 import {getUsers} from '@/api/userService'
 import {formatCurrency, formatDate, formatDateTime} from '@/utils/formatters'
 import {useShiftSessionStore} from '@/store/shiftSession'
+import logger from '@/utils/logger'
 
 const modal = ref(null)
 let modalInstance = null
@@ -541,7 +542,6 @@ const promptForceEndSession = async (session) => {
         await shiftSessionStore.forceEndSession(session.id, reason)
         toast.success(`Đã kết thúc ca của ${session.fullName || session.username || 'nhân viên'}.`)
     } catch (error) {
-        console.error(error)
         toast.error(error.message || 'Không thể kết thúc ca.')
     }
 }
@@ -599,7 +599,6 @@ const loadAdjustmentData = async (assignmentId) => {
         const data = await getAdjustmentsByAssignment(assignmentId)
         adjustmentState.list = Array.isArray(data) ? data : []
     } catch (err) {
-        console.error(err)
         adjustmentState.error = err.response?.data?.message || 'Không thể tải điều chỉnh.'
         adjustmentState.list = []
     } finally {
@@ -615,7 +614,6 @@ const loadAttendanceData = async (assignmentId) => {
         const data = await getAttendanceByAssignment(assignmentId)
         attendanceState.list = Array.isArray(data) ? data : []
     } catch (err) {
-        console.error(err)
         attendanceState.error = err.response?.data?.message || 'Không thể tải chấm công.'
         attendanceState.list = []
     } finally {
@@ -644,7 +642,6 @@ const submitAdjustment = async () => {
         adjustmentState.form.reason = ''
         await Promise.all([loadAdjustmentData(expandedAssignment.value.id), fetchAssignments(true)])
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể thêm điều chỉnh.')
     } finally {
         adjustmentState.submitting = false
@@ -663,7 +660,6 @@ const revokeAdjustmentRecord = async (adjustment) => {
         toast.success('Đã thu hồi điều chỉnh.')
         await Promise.all([loadAdjustmentData(adjustment.assignmentId), fetchAssignments(true)])
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể thu hồi điều chỉnh.')
     } finally {
         adjustmentState.processingId = null
@@ -679,7 +675,7 @@ const deleteAdjustmentRecord = async (adjustment) => {
         toast.success('Đã xoá điều chỉnh.')
         await Promise.all([loadAdjustmentData(adjustment.assignmentId), fetchAssignments(true)])
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to delete adjustment:', err)
         toast.error(err.response?.data?.message || 'Không thể xoá điều chỉnh.')
     } finally {
         adjustmentState.processingId = null
@@ -706,7 +702,7 @@ const submitAttendance = async (action) => {
         attendanceState.form.note = ''
         await Promise.all([loadAttendanceData(expandedAssignment.value.id), fetchAssignments(true)])
     } catch (err) {
-        console.error(err)
+        logger.error(`Failed to ${action}:`, err)
         toast.error(err.response?.data?.message || `Không thể ${action === 'check-in' ? 'check-in' : 'check-out'}.`)
     } finally {
         attendanceState.submitting = false
@@ -741,7 +737,7 @@ const fetchStaffOptions = async () => {
         const data = await getUsers(0, 100)
         staffOptions.value = data?.content || []
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to fetch staff options:', err)
         toast.error('Không thể tải danh sách nhân viên.')
     }
 }
@@ -753,7 +749,7 @@ const refreshCurrentInstance = async (options = {}) => {
         const data = await getShiftInstance(currentInstance.value.id)
         currentInstance.value = data
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to refresh current instance:', err)
         if (showErrorToast) {
             toast.error(err.response?.data?.message || 'Không thể tải chi tiết ca.')
         }
@@ -794,7 +790,7 @@ const fetchAssignments = async (keepDetail = false) => {
             resetDetailStates()
         }
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to fetch assignments:', err)
         assignmentsError.value = err.response?.data?.message || 'Không thể tải phân công.'
         assignments.value = []
         resetDetailStates()
@@ -913,7 +909,7 @@ const submitAssignment = async () => {
         await fetchAssignments()
         resetAssignmentForm()
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to save assignment:', err)
         toast.error(err.response?.data?.message || 'Không thể lưu phân công. Vui lòng thử lại.')
     } finally {
         assignmentFormLoading.value = false
@@ -944,7 +940,7 @@ const promptStatusChange = async (assignment) => {
         toast.success('Đã cập nhật trạng thái phân công.')
         await fetchAssignments()
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to update assignment status:', err)
         toast.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.')
     }
 }
@@ -957,7 +953,7 @@ const removeAssignment = async (assignment) => {
         toast.success('Đã xóa phân công.')
         await fetchAssignments()
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to delete assignment:', err)
         toast.error(err.response?.data?.message || 'Không thể xóa phân công.')
     }
 }

@@ -1,70 +1,85 @@
 <template>
     <div class="staff-dashboard-tab">
-        <!-- Stats Cards -->
+        <!-- Top Row: KPI Cards -->
         <div class="row g-4 mb-4" v-if="dashboardData">
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.performance">
-                <div class="card metric-card metric-card--primary w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Doanh thu của tôi</div>
-                        <div class="metric-value">{{ formatCurrency(dashboardData.performance.totalRevenue) }}</div>
-                        <div class="metric-detail">{{ formatNumber(dashboardData.performance.totalOrders) }} đơn hàng</div>
+            <!-- DOANH THU CỦA TÔI -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.performance">
+                <div class="kpi-card kpi-card--revenue">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">DOANH THU CỦA TÔI</div>
+                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.performance.totalRevenue || 0) }}</div>
+                        <div class="kpi-card__detail">{{ formatNumber(dashboardData.performance.totalOrders || 0) }} đơn hàng</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.performance">
-                <div class="card metric-card metric-card--success w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Giá trị đơn trung bình</div>
-                        <div class="metric-value">{{ formatCurrency(dashboardData.performance.averageOrderValue) }}</div>
+
+            <!-- GIÁ TRỊ ĐƠN TRUNG BÌNH -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.performance">
+                <div class="kpi-card kpi-card--average">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-tag"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">GIÁ TRỊ ĐƠN TRUNG BÌNH</div>
+                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.performance.averageOrderValue || 0) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.shiftSummary">
-                <div class="card metric-card metric-card--warning w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Ca trong tuần</div>
-                        <div class="metric-value">{{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek) }}</div>
-                        <div class="metric-detail">{{ formatNumber(dashboardData.shiftSummary.completedShifts) }} đã hoàn thành</div>
+
+            <!-- CA TRONG TUẦN -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.shiftSummary">
+                <div class="kpi-card kpi-card--shifts">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-calendar-week"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">CA TRONG TUẦN</div>
+                        <div class="kpi-card__value">{{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek || 0) }}</div>
+                        <div class="kpi-card__detail">{{ formatNumber(dashboardData.shiftSummary.completedShifts || 0) }} đã hoàn thành</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.payroll">
-                <div class="card metric-card metric-card--info w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Lương ước tính</div>
-                        <div class="metric-value">{{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle) }}</div>
-                        <div class="metric-detail">Đã nhận: {{ formatCurrency(dashboardData.payroll.lastCyclePaid) }}</div>
+
+            <!-- LƯƠNG ƯỚC TÍNH -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.payroll">
+                <div class="kpi-card kpi-card--salary">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-coin"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">LƯƠNG ƯỚC TÍNH</div>
+                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle || 0) }}</div>
+                        <div class="kpi-card__detail">Đã nhận: {{ formatCurrency(dashboardData.payroll.lastCyclePaid || 0) }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row g-4">
-            <!-- Attendance Status -->
+        <!-- Middle Row: Attendance & Shift Summary -->
+        <div class="row g-4 mb-4">
+            <!-- Trạng thái Chấm công -->
             <div class="col-lg-6" v-if="dashboardData?.attendance">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-clock-history me-2"></i>Trạng thái Chấm công
-                        </h5>
+                <div class="info-card">
+                    <div class="info-card__header">
+                        <div class="info-card__icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h5 class="info-card__title">Trạng thái Chấm công</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="info-card__body">
                         <div class="attendance-status">
-                            <div class="status-indicator" :class="dashboardData.attendance.currentlyCheckedIn ? 'status-indicator--active' : 'status-indicator--inactive'">
+                            <div class="attendance-status__indicator" :class="dashboardData.attendance.currentlyCheckedIn ? 'attendance-status__indicator--active' : 'attendance-status__indicator--inactive'">
                                 <i :class="dashboardData.attendance.currentlyCheckedIn ? 'bi bi-check-circle' : 'bi bi-clock'"></i>
                             </div>
-                            <div class="status-info">
-                                <div class="status-label">
+                            <div class="attendance-status__info">
+                                <div class="attendance-status__label">
                                     {{ dashboardData.attendance.currentlyCheckedIn ? 'Đang làm việc' : 'Chưa check-in' }}
                                 </div>
-                                <div v-if="dashboardData.attendance.lastCheckIn" class="status-detail">
-                                    Check-in: {{ formatDateTime(dashboardData.attendance.lastCheckIn) }}
-                                </div>
-                                <div v-if="dashboardData.attendance.lastCheckOut" class="status-detail">
-                                    Check-out: {{ formatDateTime(dashboardData.attendance.lastCheckOut) }}
-                                </div>
-                                <div class="status-detail">
-                                    Đúng giờ liên tiếp: {{ formatNumber(dashboardData.attendance.consecutiveOnTimeDays) }} ngày
+                                <div class="attendance-status__detail">
+                                    Đúng giờ liên tiếp: {{ formatNumber(dashboardData.attendance.consecutiveOnTimeDays || 0) }} ngày
                                 </div>
                             </div>
                         </div>
@@ -72,222 +87,104 @@
                 </div>
             </div>
 
-            <!-- Shift Summary -->
+            <!-- Tóm tắt Ca làm -->
             <div class="col-lg-6" v-if="dashboardData?.shiftSummary">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-calendar-week me-2"></i>Tóm tắt Ca làm
-                        </h5>
+                <div class="info-card">
+                    <div class="info-card__header">
+                        <div class="info-card__icon">
+                            <i class="bi bi-calendar-week"></i>
+                        </div>
+                        <h5 class="info-card__title">Tóm tắt Ca làm</h5>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Ca trong tuần</div>
-                                    <div class="stat-item__value text-primary">{{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek) }}</div>
-                                </div>
+                    <div class="info-card__body">
+                        <div class="shift-summary">
+                            <div class="shift-summary__item">
+                                <div class="shift-summary__label">CA TRONG TUẦN</div>
+                                <div class="shift-summary__value">{{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek || 0) }}</div>
                             </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Đã hoàn thành</div>
-                                    <div class="stat-item__value text-success">{{ formatNumber(dashboardData.shiftSummary.completedShifts) }}</div>
-                                </div>
+                            <div class="shift-summary__item">
+                                <div class="shift-summary__label">ĐÃ HOÀN THÀNH</div>
+                                <div class="shift-summary__value shift-summary__value--success">{{ formatNumber(dashboardData.shiftSummary.completedShifts || 0) }}</div>
                             </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Chờ xử lý</div>
-                                    <div class="stat-item__value text-warning">{{ formatNumber(dashboardData.shiftSummary.pendingShifts) }}</div>
-                                </div>
+                            <div class="shift-summary__item">
+                                <div class="shift-summary__label">CHỜ XỬ LÝ</div>
+                                <div class="shift-summary__value shift-summary__value--warning">{{ formatNumber(dashboardData.shiftSummary.pendingShifts || 0) }}</div>
                             </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Đi muộn</div>
-                                    <div class="stat-item__value text-danger">{{ formatNumber(dashboardData.shiftSummary.lateCheckIns) }}</div>
-                                </div>
+                            <div class="shift-summary__item">
+                                <div class="shift-summary__label">ĐI MUỘN</div>
+                                <div class="shift-summary__value shift-summary__value--danger">{{ formatNumber(dashboardData.shiftSummary.lateCheckIns || 0) }}</div>
                             </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Về sớm</div>
-                                    <div class="stat-item__value text-info">{{ formatNumber(dashboardData.shiftSummary.earlyCheckOuts) }}</div>
-                                </div>
+                            <div class="shift-summary__item">
+                                <div class="shift-summary__label">VỀ SỚM</div>
+                                <div class="shift-summary__value shift-summary__value--info">{{ formatNumber(dashboardData.shiftSummary.earlyCheckOuts || 0) }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Upcoming Shifts -->
-            <div class="col-lg-6" v-if="dashboardData?.upcomingShifts?.length > 0">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-calendar-event me-2"></i>Ca sắp tới
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <div
-                                v-for="(shift, index) in dashboardData.upcomingShifts.slice(0, 5)"
-                                :key="shift.assignmentId || index"
-                                class="list-group-item"
-                            >
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold">{{ formatDate(shift.shiftDate) }}</div>
-                                        <small class="text-muted">{{ shift.timeRange }}</small>
-                                        <div v-if="shift.role" class="small text-muted mt-1">
-                                            Vai trò: {{ shift.role }}
-                                        </div>
-                                        <div v-if="shift.managerNote" class="small text-muted mt-1">
-                                            Ghi chú: {{ shift.managerNote }}
-                                        </div>
-                                    </div>
-                                    <span class="badge" :class="getShiftStatusBadge(shift.status)">
-                                        {{ shift.status }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Performance Details -->
+        <!-- Bottom Row: Performance & Payroll Details -->
+        <div class="row g-4">
+            <!-- Hiệu suất của tôi -->
             <div class="col-lg-6" v-if="dashboardData?.performance">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-graph-up me-2"></i>Hiệu suất của tôi
-                        </h5>
+                <div class="info-card">
+                    <div class="info-card__header">
+                        <div class="info-card__icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h5 class="info-card__title">Hiệu suất của tôi</h5>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Tổng đơn hàng</div>
-                                    <div class="stat-item__value">{{ formatNumber(dashboardData.performance.totalOrders) }}</div>
-                                </div>
+                    <div class="info-card__body">
+                        <div class="performance-metrics">
+                            <div class="performance-metrics__item">
+                                <div class="performance-metrics__label">TỔNG ĐƠN HÀNG</div>
+                                <div class="performance-metrics__value">{{ formatNumber(dashboardData.performance.totalOrders || 0) }}</div>
                             </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Phản hồi tích cực</div>
-                                    <div class="stat-item__value text-success">{{ formatNumber(dashboardData.performance.positiveFeedbacks) }}</div>
-                                </div>
+                            <div class="performance-metrics__item">
+                                <div class="performance-metrics__label">PHẢN HỒI TÍCH CỰC</div>
+                                <div class="performance-metrics__value performance-metrics__value--success">{{ formatNumber(dashboardData.performance.positiveFeedbacks || 0) }}</div>
                             </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Phản hồi tiêu cực</div>
-                                    <div class="stat-item__value text-danger">{{ formatNumber(dashboardData.performance.negativeFeedbacks) }}</div>
-                                </div>
+                            <div class="performance-metrics__item">
+                                <div class="performance-metrics__label">PHẢN HỒI TIÊU CỰC</div>
+                                <div class="performance-metrics__value performance-metrics__value--danger">{{ formatNumber(dashboardData.performance.negativeFeedbacks || 0) }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Payroll Details -->
+            <!-- Chi tiết Lương -->
             <div class="col-lg-6" v-if="dashboardData?.payroll">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-cash-coin me-2"></i>Chi tiết Lương
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Lương ước tính</div>
-                                    <div class="stat-item__value text-primary">{{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle) }}</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Đã nhận kỳ trước</div>
-                                    <div class="stat-item__value">{{ formatCurrency(dashboardData.payroll.lastCyclePaid) }}</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Tổng thưởng</div>
-                                    <div class="stat-item__value text-success">{{ formatCurrency(dashboardData.payroll.bonusTotal) }}</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Tổng phạt</div>
-                                    <div class="stat-item__value text-danger">{{ formatCurrency(dashboardData.payroll.penaltyTotal) }}</div>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="stat-item">
-                                    <div class="stat-item__label">Điều chỉnh ròng</div>
-                                    <div class="stat-item__value" :class="dashboardData.payroll.adjustmentNet >= 0 ? 'text-success' : 'text-danger'">
-                                        {{ formatCurrency(dashboardData.payroll.adjustmentNet) }}
-                                    </div>
-                                </div>
-                            </div>
+                <div class="info-card">
+                    <div class="info-card__header">
+                        <div class="info-card__icon">
+                            <i class="bi bi-cash-coin"></i>
                         </div>
+                        <h5 class="info-card__title">Chi tiết Lương</h5>
                     </div>
-                </div>
-            </div>
-
-            <!-- Task Reminders -->
-            <div class="col-lg-6" v-if="dashboardData?.taskReminders?.length > 0">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-list-check me-2"></i>Nhắc nhở Công việc
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <div
-                                v-for="(task, index) in dashboardData.taskReminders.slice(0, 5)"
-                                :key="index"
-                                class="list-group-item"
-                            >
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold">{{ task.title }}</div>
-                                        <small class="text-muted">{{ task.description }}</small>
-                                        <div class="small text-muted mt-1">
-                                            Hạn: {{ formatDate(task.dueDate) }}
-                                        </div>
-                                    </div>
-                                    <span class="badge" :class="getPriorityBadge(task.priority)">
-                                        {{ task.priority }}
-                                    </span>
-                                </div>
+                    <div class="info-card__body">
+                        <div class="payroll-details">
+                            <div class="payroll-details__item">
+                                <div class="payroll-details__label">LƯƠNG ƯỚC TÍNH</div>
+                                <div class="payroll-details__value">{{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle || 0) }}</div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Announcements -->
-            <div class="col-lg-6" v-if="dashboardData?.announcements?.length > 0">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-megaphone me-2"></i>Thông báo
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <div
-                                v-for="(announcement, index) in dashboardData.announcements.slice(0, 5)"
-                                :key="index"
-                                class="list-group-item"
-                            >
-                                <div>
-                                    <div class="fw-semibold">{{ announcement.title }}</div>
-                                    <div class="mt-2">{{ announcement.content }}</div>
-                                    <div class="small text-muted mt-2">
-                                        Bởi: {{ announcement.publisher }} | 
-                                        {{ formatDateTime(announcement.publishedAt) }}
-                                    </div>
+                            <div class="payroll-details__item">
+                                <div class="payroll-details__label">ĐÃ NHẬN KỲ TRƯỚC</div>
+                                <div class="payroll-details__value">{{ formatCurrency(dashboardData.payroll.lastCyclePaid || 0) }}</div>
+                            </div>
+                            <div class="payroll-details__item">
+                                <div class="payroll-details__label">TỔNG THƯỞNG</div>
+                                <div class="payroll-details__value payroll-details__value--success">{{ formatCurrency(dashboardData.payroll.bonusTotal || 0) }}</div>
+                            </div>
+                            <div class="payroll-details__item">
+                                <div class="payroll-details__label">TỔNG PHẠT</div>
+                                <div class="payroll-details__value payroll-details__value--danger">{{ formatCurrency(dashboardData.payroll.penaltyTotal || 0) }}</div>
+                            </div>
+                            <div class="payroll-details__item">
+                                <div class="payroll-details__label">ĐIỀU CHỈNH BỔ SUNG</div>
+                                <div class="payroll-details__value" :class="(dashboardData.payroll.adjustmentNet || 0) >= 0 ? 'payroll-details__value--success' : 'payroll-details__value--danger'">
+                                    {{ formatCurrency(dashboardData.payroll.adjustmentNet || 0) }}
                                 </div>
                             </div>
                         </div>
@@ -299,35 +196,11 @@
 </template>
 
 <script setup>
-import { formatCurrency, formatNumber, formatDate, formatDateTime } from '@/utils/formatters'
+import { formatCurrency, formatNumber } from '@/utils/formatters'
 
 defineProps({
     dashboardData: Object
 })
-
-const getShiftStatusBadge = (status) => {
-    if (!status) return 'bg-secondary'
-    const statusLower = status.toLowerCase()
-    if (statusLower.includes('pending') || statusLower.includes('scheduled')) {
-        return 'bg-warning'
-    } else if (statusLower.includes('completed')) {
-        return 'bg-success'
-    } else if (statusLower.includes('cancelled')) {
-        return 'bg-danger'
-    } else if (statusLower.includes('accepted')) {
-        return 'bg-info'
-    }
-    return 'bg-secondary'
-}
-
-const getPriorityBadge = (priority) => {
-    if (!priority) return 'bg-secondary'
-    const pri = priority.toLowerCase()
-    if (pri.includes('high') || pri.includes('urgent')) return 'bg-danger'
-    if (pri.includes('medium')) return 'bg-warning'
-    if (pri.includes('low')) return 'bg-info'
-    return 'bg-secondary'
-}
 </script>
 
 <style scoped>
@@ -335,148 +208,299 @@ const getPriorityBadge = (priority) => {
     padding: 0;
 }
 
-.metric-card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
+/* KPI Cards */
+.kpi-card {
     background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    padding: 1.5rem;
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    transition: all 0.2s ease;
-    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all 0.3s ease;
     min-height: 140px;
 }
 
-.metric-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 20px 35px rgba(15, 23, 42, 0.12);
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(15, 23, 184, 0.12);
 }
 
-.metric-card--primary {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-primary));
+.kpi-card__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    flex-shrink: 0;
+    color: white;
 }
 
-.metric-card--success {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-success));
+.kpi-card--revenue .kpi-card__icon {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
-.metric-card--warning {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-warning));
+.kpi-card--average .kpi-card__icon {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
 }
 
-.metric-card--info {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-info));
+.kpi-card--shifts .kpi-card__icon {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 }
 
-.metric-label {
-    font-size: 0.88rem;
+.kpi-card--salary .kpi-card__icon {
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.kpi-card__content {
+    flex: 1;
+}
+
+.kpi-card__label {
+    font-size: 0.75rem;
+    font-weight: 700;
     color: var(--color-text-muted);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
-    font-weight: 600;
 }
 
-.metric-value {
-    font-size: 1.8rem;
+.kpi-card__value {
+    font-size: 1.75rem;
     font-weight: 800;
     color: var(--color-heading);
+    line-height: 1.2;
     margin-bottom: 0.25rem;
 }
 
-.metric-detail {
-    font-size: 0.85rem;
+.kpi-card__detail {
+    font-size: 0.875rem;
     color: var(--color-text-muted);
     margin-top: 0.25rem;
 }
 
-.card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
+/* Info Cards */
+.info-card {
     background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    height: 100%;
 }
 
-.card-header {
+.info-card__header {
     background: rgba(148, 163, 184, 0.08);
     border-bottom: 1px solid var(--color-border);
-    padding: 1rem 1.5rem;
-    border-radius: 18px 18px 0 0;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
+.info-card__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.info-card__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-heading);
+    margin: 0;
+}
+
+.info-card__body {
+    padding: 1.5rem;
+}
+
+/* Attendance Status */
 .attendance-status {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    padding: 1rem;
 }
 
-.status-indicator {
+.attendance-status__indicator {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 2.5rem;
     flex-shrink: 0;
+    color: white;
 }
 
-.status-indicator--active {
+.attendance-status__indicator--active {
     background: linear-gradient(135deg, #22c55e, #4ade80);
-    color: white;
-    box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
 }
 
-.status-indicator--inactive {
+.attendance-status__indicator--inactive {
     background: linear-gradient(135deg, #94a3b8, #cbd5e1);
-    color: white;
-    box-shadow: 0 10px 20px rgba(148, 163, 184, 0.3);
+    box-shadow: 0 10px 25px rgba(148, 163, 184, 0.3);
 }
 
-.status-info {
+.attendance-status__info {
     flex: 1;
 }
 
-.status-label {
+.attendance-status__label {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-heading);
     margin-bottom: 0.5rem;
 }
 
-.status-detail {
+.attendance-status__detail {
     font-size: 0.9rem;
     color: var(--color-text-muted);
-    margin-top: 0.25rem;
 }
 
-.stat-item {
-    padding: 0.75rem;
+/* Shift Summary */
+.shift-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.shift-summary__item {
+    padding: 1rem;
     background: rgba(148, 163, 184, 0.05);
-    border-radius: 8px;
     border: 1px solid var(--color-border);
+    border-radius: 12px;
 }
 
-.stat-item__label {
-    font-size: 0.85rem;
+.shift-summary__label {
+    font-size: 0.75rem;
+    font-weight: 700;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
 }
 
-.stat-item__value {
-    font-size: 1.25rem;
-    font-weight: 700;
+.shift-summary__value {
+    font-size: 1.5rem;
+    font-weight: 800;
     color: var(--color-heading);
 }
 
-.list-group-item {
-    border: none;
-    border-bottom: 1px solid var(--color-border);
-    padding: 1rem 0;
+.shift-summary__value--success {
+    color: #22c55e;
 }
 
-.list-group-item:last-child {
-    border-bottom: none;
+.shift-summary__value--warning {
+    color: #f59e0b;
+}
+
+.shift-summary__value--danger {
+    color: #ef4444;
+}
+
+.shift-summary__value--info {
+    color: #3b82f6;
+}
+
+/* Performance Metrics */
+.performance-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.performance-metrics__item {
+    padding: 1rem;
+    background: rgba(148, 163, 184, 0.05);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.performance-metrics__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.performance-metrics__value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-heading);
+}
+
+.performance-metrics__value--success {
+    color: #22c55e;
+}
+
+.performance-metrics__value--danger {
+    color: #ef4444;
+}
+
+/* Payroll Details */
+.payroll-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.payroll-details__item {
+    padding: 1rem;
+    background: rgba(148, 163, 184, 0.05);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.payroll-details__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.payroll-details__value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-heading);
+}
+
+.payroll-details__value--success {
+    color: #22c55e;
+}
+
+.payroll-details__value--danger {
+    color: #ef4444;
+}
+
+@media (max-width: 768px) {
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .shift-summary {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
-

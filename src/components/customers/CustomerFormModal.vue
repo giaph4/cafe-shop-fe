@@ -62,6 +62,7 @@
 <script setup>
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Modal } from 'bootstrap'
+import { validatePhone, validateRequired } from '@/utils/validation'
 
 const props = defineProps({
     visible: {
@@ -124,15 +125,22 @@ const onModalHidden = () => {
 
 const submitForm = () => {
     error.value = ''
-    if (!form.value.fullName || !form.value.phone) {
-        error.value = 'Họ tên và số điện thoại là bắt buộc.'
+    
+    if (!validateRequired(form.value.fullName)) {
+        error.value = 'Họ tên là bắt buộc.'
         return
     }
-    const phonePattern = /^(\+?84|0)\d{9}$/
-    if (!phonePattern.test(form.value.phone)) {
+    
+    if (!validateRequired(form.value.phone)) {
+        error.value = 'Số điện thoại là bắt buộc.'
+        return
+    }
+    
+    if (!validatePhone(form.value.phone)) {
         error.value = 'Số điện thoại không đúng định dạng Việt Nam (0XXXXXXXXX hoặc +84XXXXXXXXX).'
         return
     }
+    
     emit('submit', { ...form.value })
 }
 

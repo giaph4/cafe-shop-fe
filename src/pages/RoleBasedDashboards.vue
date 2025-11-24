@@ -64,12 +64,15 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useAuthStore } from '@/store/auth'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import { getAdminDashboard } from '@/api/adminDashboardService'
 import { getManagerDashboard } from '@/api/managerDashboardService'
 import { getStaffDashboard } from '@/api/staffDashboardService'
 import AdminDashboardTab from '@/components/dashboard/AdminDashboardTab.vue'
 import ManagerDashboardTab from '@/components/dashboard/ManagerDashboardTab.vue'
 import StaffDashboardTab from '@/components/dashboard/StaffDashboardTab.vue'
+
+const { handleError } = useErrorHandler({ context: 'RoleBasedDashboards' })
 
 const authStore = useAuthStore()
 const loading = ref(true)
@@ -135,19 +138,16 @@ const fetchDashboard = async () => {
                         params.range = 'CUSTOM'
                         params.from = range.value.from
                         params.to = range.value.to
-                    } else {
-                        // If custom range but missing dates, don't pass range
-                        console.warn('Custom range selected but from/to dates are missing')
                     }
+                    // If custom range but missing dates, don't pass range
                 } else if (typeof range.value === 'string' && range.value.trim() !== '') {
                     // Only pass valid enum values
                     const validRanges = ['TODAY', 'WEEK', 'MONTH', 'LAST_30_DAYS', 'CUSTOM']
                     const trimmedRange = range.value.trim().toUpperCase()
                     if (validRanges.includes(trimmedRange)) {
                         params.range = trimmedRange
-                    } else {
-                        console.warn(`Invalid range value: ${range.value}, skipping`)
                     }
+                    // Invalid range value - skip silently
                 }
             }
             // If no params, backend will use default (LAST_30_DAYS)

@@ -56,16 +56,7 @@ export const normalizeShiftReport = (payload) => {
     }
 }
 
-const buildError = (error) => {
-    const status = error?.response?.status
-    const { code, message, details } = error?.response?.data || {}
-    return {
-        status,
-        code,
-        message: message || error?.message || 'Đã xảy ra lỗi không xác định.',
-        details: details || null
-    }
-}
+import { buildApiError } from './utils/errorHandler'
 
 export const getShiftReport = async (sessionId, { refresh = false } = {}) => {
     try {
@@ -73,7 +64,7 @@ export const getShiftReport = async (sessionId, { refresh = false } = {}) => {
         const { data } = await api.get(`${BASE_URL}/sessions/${sessionId}`, { params })
         return normalizeShiftReport(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -82,7 +73,7 @@ export const regenerateShiftReport = async (sessionId) => {
         const { data } = await api.post(`${BASE_URL}/sessions/${sessionId}/regenerate`)
         return normalizeShiftReport(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -94,6 +85,6 @@ export const listShiftReportsByWorkShift = async (workShiftId) => {
         }
         return data.map(normalizeShiftReport).filter(Boolean)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }

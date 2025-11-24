@@ -5,32 +5,44 @@
  */
 
 /* ============================================
-   PAGE HEADER (card-shadow)
+   PAGE HEADER (Standardized - matches POS header)
    ============================================ */
-.page-header.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
+.page-header.card-shadow,
+.page-header {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-soft);
     margin-bottom: 1.5rem;
+}
+
+.page-header > div:first-child {
+    flex: 1;
+}
+
+.page-header .d-flex.flex-wrap {
+    display: inline-flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .page-title {
     font-weight: 700;
     color: var(--color-heading);
     margin-bottom: 0.25rem;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
 }
 
 .page-subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: 0.9375rem;
+    font-size: 0.9rem;
 }
 
 /* ============================================
@@ -119,11 +131,110 @@
 }
 
 /* ============================================
+   CARD STYLES (Standardized)
+   ============================================ */
+.card {
+    background: var(--color-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    padding: 1.5rem;
+    transition: transform var(--transition-all), box-shadow var(--transition-all),
+        background-color var(--transition-all), border-color var(--transition-all);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+.card-header,
+.card-footer {
+    background: var(--color-card-muted);
+    border-color: var(--color-border);
+}
+
+/* ============================================
+   BUTTON STYLES (Standardized)
+   ============================================ */
+.btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: var(--color-primary-contrast);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    font-size: 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+    color: var(--color-primary);
+}
+
+/* ============================================
+   TAB NAVIGATION (Standardized)
+   ============================================ */
+.tabs-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    border-bottom: 2px solid var(--color-border-soft);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tabs-navigation .nav-link {
+    border-radius: 999px;
+    padding: 0.65rem 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: rgba(148, 163, 184, 0.12);
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.tabs-navigation .nav-link:hover {
+    color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.tabs-navigation .nav-link.active {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
-    .page-header.card-shadow {
+    .page-header.card-shadow,
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
         padding: 1.25rem;
+    }
+
+    .page-header .d-flex.flex-wrap {
+        width: 100%;
+        justify-content: flex-start;
     }
 
     .filter-card .card-body,
@@ -132,7 +243,7 @@
     }
 
     .page-title {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 }
 

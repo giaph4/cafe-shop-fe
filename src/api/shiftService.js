@@ -1,5 +1,6 @@
 import api from './axios'
-import {cleanParams} from './utils'
+import { cleanParams } from './utils'
+import { buildApiError } from './utils/errorHandler'
 
 const BASE_URL = '/api/v1/shifts'
 
@@ -32,6 +33,14 @@ export const ATTENDANCE_SOURCES = [
 ]
 
 // --- Shift templates ---
+/**
+ * Lấy danh sách shift templates với search
+ * @param {Object} params - Query parameters
+ * @param {string} params.name - Tên template để search (optional)
+ * @param {number} params.page - Số trang (optional)
+ * @param {number} params.size - Kích thước trang (optional)
+ * @returns {Promise<Array|Object>} Danh sách templates hoặc paginated response
+ */
 export const getShiftTemplates = async (params = {}) => {
     const {data} = await api.get(`${BASE_URL}/templates`, {params: cleanParams(params)})
     return data
@@ -95,6 +104,24 @@ export const getAssignmentsForCurrentUser = async () => {
 
 export const getAssignmentsForShift = async (shiftId) => {
     const {data} = await api.get(`${BASE_URL}/assignments/shift/${shiftId}`)
+    return data
+}
+
+/**
+ * Lấy assignments của user cụ thể (admin/manager only)
+ * @param {number} userId - ID của user cần lấy assignments
+ * @param {Object} params - Query parameters (startDate, endDate, status, etc.)
+ * @returns {Promise<Array>} Danh sách assignments
+ */
+export const getAssignmentsByUserId = async (userId, params = {}) => {
+    if (!userId) {
+        throw new Error('User ID is required')
+    }
+    const queryParams = cleanParams({
+        userId,
+        ...params
+    })
+    const {data} = await api.get(`${BASE_URL}/assignments`, {params: queryParams})
     return data
 }
 

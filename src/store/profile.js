@@ -2,6 +2,7 @@ import {defineStore} from 'pinia'
 import {ref, computed} from 'vue'
 import {useAuthStore} from '@/store/auth'
 import * as userService from '@/api/userService'
+import logger from '@/utils/logger'
 
 export const useProfileStore = defineStore('profile', () => {
     const authStore = useAuthStore()
@@ -31,7 +32,7 @@ export const useProfileStore = defineStore('profile', () => {
             const data = await userService.getUserById(userId)
             setProfile(data)
         } catch (err) {
-            console.error(err)
+            logger.error('Failed to load profile:', err)
             error.value = err.response?.data?.message || 'Không thể tải thông tin hồ sơ.'
         } finally {
             loading.value = false
@@ -47,7 +48,7 @@ export const useProfileStore = defineStore('profile', () => {
             const data = await userService.getAllRoles()
             roles.value = data
         } catch (err) {
-            console.error(err)
+            logger.error('Failed to load roles:', err)
         }
     }
 
@@ -63,7 +64,7 @@ export const useProfileStore = defineStore('profile', () => {
             setProfile(data)
             return data
         } catch (err) {
-            console.error(err)
+            logger.error('Failed to update profile:', err)
             error.value = err.response?.data?.message || 'Không thể cập nhật hồ sơ.'
             throw err
         } finally {
@@ -82,7 +83,7 @@ export const useProfileStore = defineStore('profile', () => {
             }
             await userService.changePassword(trimmed)
         } catch (err) {
-            console.error(err)
+            logger.error('Failed to change password:', err)
             error.value = err.response?.data?.message || 'Không thể đổi mật khẩu.'
             throw err
         } finally {

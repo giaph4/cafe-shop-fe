@@ -259,7 +259,6 @@ const refreshCurrentSession = async () => {
         if (error?.status === 404) {
             return
         }
-        console.error(error)
         toast.error(error.message || 'Không thể làm mới phiên ca.')
     }
 }
@@ -269,6 +268,21 @@ const handleStartSession = async () => {
         toast.warning('Vui lòng chọn Work Shift trước khi nhận ca.')
         return
     }
+    
+    // Validation: Check xem user đã có active session chưa
+    // Nếu đã có active session, không cho start session mới (trừ khi admin override)
+    if (currentSession.value && currentSession.value.status === 'ACTIVE') {
+        if (!startForm.adminOverride) {
+            toast.warning('Bạn đang có một ca làm đang hoạt động. Vui lòng kết thúc ca hiện tại trước khi bắt đầu ca mới.')
+            return
+        }
+        // Nếu admin override, cho phép start nhưng cảnh báo
+        const confirmed = confirm('Bạn đang có ca làm đang hoạt động. Bạn có chắc chắn muốn bắt đầu ca mới?')
+        if (!confirmed) {
+            return
+        }
+    }
+    
     try {
         const session = await shiftSessionStore.startSession({
             workShiftId: startForm.workShiftId,
@@ -282,7 +296,6 @@ const handleStartSession = async () => {
             await refreshCurrentSession()
         }
     } catch (error) {
-        console.error(error)
         toast.error(error.message || 'Không thể bắt đầu ca làm.')
     }
 }
@@ -294,7 +307,6 @@ const handleEndSession = async () => {
         await fetchInstances()
         await fetchCalendarData()
     } catch (error) {
-        console.error(error)
         toast.error(error.message || 'Không thể kết thúc ca làm.')
     }
 }
@@ -339,7 +351,6 @@ const fetchTemplateOptions = async () => {
         const data = await getShiftTemplates({ page: 0, size: 100 })
         templateOptions.value = data?.content || []
     } catch (err) {
-        console.error(err)
         toast.error('Không thể tải template ca làm.')
         templateOptions.value = []
     }
@@ -447,7 +458,6 @@ const fetchInstances = async () => {
             toast.info('Trang danh sách ca làm đã được điều chỉnh theo dữ liệu hiện có.', { autoClose: 2500 })
         }
     } catch (err) {
-        console.error(err)
         error.value = err.response?.data?.message || 'Không thể tải danh sách ca làm.'
         instances.value = []
     } finally {
@@ -486,7 +496,6 @@ const fetchTemplates = async () => {
             toast.info('Trang danh sách ca mẫu đã được điều chỉnh theo dữ liệu hiện có.', { autoClose: 2500 })
         }
     } catch (err) {
-        console.error(err)
         templateError.value = err.response?.data?.message || 'Không thể tải ca mẫu.'
         templates.value = []
     } finally {
@@ -539,7 +548,6 @@ const fetchCalendarData = async () => {
             calendarState.selectedDate = keysInMonth[0] || formatDateKey(monthStart)
         }
     } catch (err) {
-        console.error(err)
         calendarError.value = err.response?.data?.message || 'Không thể tải dữ liệu lịch.'
     } finally {
         calendarLoading.value = false
@@ -591,7 +599,6 @@ const handleFormSubmit = async (payload) => {
         await fetchInstances()
         await fetchCalendarData()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể lưu ca làm.')
     } finally {
         formSubmitting.value = false
@@ -611,7 +618,6 @@ const promptStatusUpdate = async (instance) => {
         await fetchInstances()
         await fetchCalendarData()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.')
     }
 }
@@ -625,7 +631,6 @@ const removeInstance = async (instance) => {
         await fetchInstances()
         await fetchCalendarData()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể xóa ca làm.')
     }
 }
@@ -648,7 +653,6 @@ const openEditTemplate = async (template) => {
         const fresh = await getShiftTemplate(template.id)
         editingTemplate.value = fresh
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể tải chi tiết ca mẫu.')
     }
 }
@@ -668,7 +672,6 @@ const handleTemplateSubmit = async (payload) => {
         await fetchTemplates()
         await fetchTemplateOptions()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể lưu ca mẫu.')
     } finally {
         templateSubmitting.value = false
@@ -688,7 +691,6 @@ const removeTemplate = async (template) => {
         await fetchTemplates()
         await fetchTemplateOptions()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể xóa ca mẫu.')
     }
 }

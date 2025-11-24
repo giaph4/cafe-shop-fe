@@ -23,9 +23,13 @@
             </header>
 
             <div v-if="!order && !isCreatingNew" class="pos-cart__empty">
-                <i class="bi bi-clipboard-plus fs-2 text-primary"></i>
-                <p class="mb-3 text-muted">Chưa có đơn hàng nào cho bàn này.</p>
-                <button class="btn btn-primary" @click="createNewOrder">Tạo đơn hàng mới</button>
+                <div class="pos-cart__empty-icon">
+                    <i class="bi bi-plus-square"></i>
+                </div>
+                <p class="pos-cart__empty-text">Chưa có đơn hàng nào cho bàn này.</p>
+                <button class="btn btn-primary pos-cart__create-btn" @click="createNewOrder">
+                    Tạo đơn hàng mới
+                </button>
             </div>
 
             <template v-else>
@@ -58,6 +62,7 @@
                                     type="number"
                                     class="quantity-input"
                                     :value="item.quantity"
+                                    @input="setQuantity(index, $event.target.value)"
                                     @change="setQuantity(index, $event.target.value)"
                                     @blur="setQuantity(index, item.quantity)"
                                     min="1"
@@ -468,12 +473,23 @@ const formatCurrencySafe = (value) => {
 }
 
 const subTotal = computed(() => {
-    const backendSubTotal = localOrder.value.subTotal
-    if (Number.isFinite(backendSubTotal)) {
-        return backendSubTotal
-    }
+    // Always calculate from local items for real-time updates
     const items = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
-    return items.reduce((acc, item) => acc + (Number(item.priceAtOrder) || 0) * (Number(item.quantity) || 0), 0)
+    const calculated = items.reduce((acc, item) => {
+        const price = Number(item.priceAtOrder) || 0
+        const qty = Number(item.quantity) || 0
+        return acc + (price * qty)
+    }, 0)
+    
+    // Only use backend value if no local items (for initial load)
+    if (items.length === 0) {
+        const backendSubTotal = localOrder.value.subTotal
+        if (Number.isFinite(backendSubTotal)) {
+            return backendSubTotal
+        }
+    }
+    
+    return calculated
 })
 
 const discountAmount = computed(() => {
@@ -482,10 +498,20 @@ const discountAmount = computed(() => {
 })
 
 const totalAmount = computed(() => {
+    // Always calculate from local items for real-time updates
+    const items = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
+    
+    // If we have local items, always calculate from them
+    if (items.length > 0) {
+        return Math.max(subTotal.value - discountAmount.value, 0)
+    }
+    
+    // Only use backend value if no local items (for initial load)
     const backendTotal = Number(localOrder.value.totalAmount)
     if (Number.isFinite(backendTotal)) {
         return Math.max(backendTotal, 0)
     }
+    
     return Math.max(subTotal.value - discountAmount.value, 0)
 })
 
@@ -536,22 +562,27 @@ const addProduct = (product) => {
 }
 
 const updateQuantity = (index, change) => {
-    loadingAction.value = 'quantity'
     const newQuantity = localOrder.value.items[index].quantity + change
     if (newQuantity <= 0) {
         removeItem(index)
     } else {
+        // Update quantity immediately for real-time calculation
         localOrder.value.items[index].quantity = newQuantity
+        // Force reactivity update
+        localOrder.value = { ...localOrder.value }
     }
-    loadingAction.value = null
 }
 
 const setQuantity = (index, value) => {
     const numValue = parseInt(value, 10)
     if (Number.isFinite(numValue) && numValue > 0) {
-        loadingAction.value = 'quantity'
+        // Update quantity immediately for real-time calculation
         localOrder.value.items[index].quantity = numValue
-        loadingAction.value = null
+        // Force reactivity update
+        localOrder.value = { ...localOrder.value }
+    } else if (numValue <= 0) {
+        // Remove item if quantity is 0 or negative
+        removeItem(index)
     }
 }
 
@@ -676,7 +707,6 @@ const saveOrder = async () => {
         }
     } catch (error) {
         toast.error('Lưu đơn hàng thất bại.')
-        console.error(error)
     } finally {
         loadingAction.value = null
     }
@@ -737,8 +767,37 @@ const applyVoucher = async () => {
         toast.info('Nhập mã voucher trước khi áp dụng.')
         return
     }
+    
+    // Validation: Yêu cầu check voucher trước khi apply
+    // Nếu chưa check hoặc check không hợp lệ, yêu cầu user check lại
+    if (!voucherCheckResult.value) {
+        toast.warning('Vui lòng kiểm tra voucher trước khi áp dụng.')
+        return
+    }
+    if (!voucherCheckResult.value.valid) {
+        toast.warning('Voucher không hợp lệ. Vui lòng kiểm tra lại.')
+        return
+    }
+    
+    // Re-check voucher trước khi apply để đảm bảo voucher vẫn còn hợp lệ
+    // (có thể voucher đã hết hạn hoặc hết lượt sử dụng giữa lúc check và apply)
     try {
         loadingAction.value = 'apply-voucher'
+        
+        // Check lại voucher một lần nữa trước khi apply
+        const totalAmount = Number(localOrder.value.totalAmount || 0)
+        const checkResult = await checkVoucher(trimmedVoucherCode.value, totalAmount)
+        
+        if (!checkResult.isValid) {
+            toast.error(checkResult.message || 'Voucher không hợp lệ hoặc không thể áp dụng.')
+            voucherCheckResult.value = {
+                valid: false,
+                message: checkResult.message || 'Voucher không hợp lệ.'
+            }
+            return
+        }
+        
+        // Nếu voucher hợp lệ, apply voucher
         const updatedOrder = await orderService.applyVoucher({
             orderId: localOrder.value.id,
             voucherCode: trimmedVoucherCode.value
@@ -751,7 +810,8 @@ const applyVoucher = async () => {
     } catch (error) {
         const message = error?.response?.data?.message || 'Áp dụng voucher thất bại.'
         toast.error(message)
-        console.error(error)
+        // Reset check result nếu apply thất bại
+        voucherCheckResult.value = null
     } finally {
         loadingAction.value = null
     }
@@ -771,7 +831,6 @@ const removeVoucher = async () => {
     } catch (error) {
         const message = error?.response?.data?.message || 'Không thể bỏ voucher.'
         toast.error(message)
-        console.error(error)
     } finally {
         loadingAction.value = null
     }
@@ -809,7 +868,6 @@ const confirmPayment = async ({ orderId, paymentMethod } = {}) => {
     } catch (error) {
         const message = error?.response?.data?.message || 'Thanh toán thất bại.'
         toast.error(message)
-        console.error(error)
     } finally {
         loadingAction.value = null
     }
@@ -848,7 +906,6 @@ const cancelOrder = async () => {
     } catch (error) {
         const message = error?.response?.data?.message || 'Hủy đơn hàng thất bại.'
         toast.error(message)
-        console.error(error)
     } finally {
         loadingAction.value = null
     }
@@ -924,7 +981,6 @@ const fetchCustomerSuggestions = async (keyword) => {
                     : []
             customerSearchResults.value = content
         } catch (error) {
-            console.error(error)
             toast.error('Không thể tìm khách hàng. Vui lòng thử lại.')
         } finally {
             customerSearchLoading.value = false
@@ -984,11 +1040,49 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .pos-cart__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    padding: 2rem 1rem;
-    border: 1px dashed rgba(148, 163, 184, 0.4);
-    border-radius: 16px;
-    background: rgba(248, 250, 252, 0.7);
+    padding: 3rem 1.5rem;
+    min-height: 200px;
+}
+
+.pos-cart__empty-icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.pos-cart__empty-icon i {
+    font-size: 2rem;
+    color: var(--color-primary);
+}
+
+.pos-cart__empty-text {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.pos-cart__create-btn {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: var(--color-primary);
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.pos-cart__create-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
 }
 
 .pos-cart__items {

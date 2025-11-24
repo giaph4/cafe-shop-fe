@@ -109,6 +109,7 @@ import { useAuthStore } from '@/store/auth'
 import {
     getAssignmentsForShift,
     getAssignmentsForCurrentUser,
+    getAssignmentsByUserId,
     checkInAttendance,
     checkOutAttendance,
     getAttendanceByAssignment,
@@ -193,8 +194,20 @@ const applyPreset = (value) => {
 const fetchMyAssignments = async () => {
     overviewLoading.value = true
     try {
-        const assignments = await getAssignmentsForCurrentUser()
-        myAssignments.value = Array.isArray(assignments) ? assignments : []
+        let assignments = []
+        
+        // Nếu là admin/manager và có filter userId, lấy assignments của user đó
+        if (isManagerOrAdmin.value && filters.userId && filters.userId !== authStore.user?.id) {
+            assignments = await getAssignmentsByUserId(filters.userId, {
+                startDate: filters.startDate,
+                endDate: filters.endDate
+            })
+        } else {
+            // Lấy assignments của current user
+            assignments = await getAssignmentsForCurrentUser()
+        }
+        
+        myAssignments.value = Array.isArray(assignments) ? assignments : (Array.isArray(assignments?.content) ? assignments.content : [])
         
         // Find active assignment with active session
         const activeAssignment = myAssignments.value.find(a => 
@@ -216,7 +229,6 @@ const fetchMyAssignments = async () => {
             currentSession.value = null
         }
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Không thể tải danh sách ca làm.')
     } finally {
         overviewLoading.value = false
@@ -233,7 +245,6 @@ const handleCheckIn = async (payload) => {
             await fetchHistory()
         }
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Không thể thực hiện check-in.')
     } finally {
         checkInSubmitting.value = false
@@ -250,7 +261,6 @@ const handleCheckOut = async (payload) => {
             await fetchHistory()
         }
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Không thể thực hiện check-out.')
     } finally {
         checkOutSubmitting.value = false
@@ -262,29 +272,22 @@ const fetchHistory = async () => {
     error.value = ''
     try {
         let records = []
+        let assignments = []
         
-        // Get assignments for current user
-        // Note: Backend doesn't have endpoint to get all assignments for admin/manager
-        // So we can only get current user's assignments
-        const assignments = await getAssignmentsForCurrentUser()
-        
-        // If admin/manager selected a specific user, filter assignments
-        // But since we can only get current user's assignments, this will only work if viewing own data
-        let filteredAssignments = assignments
-        
+        // Nếu là admin/manager và có filter userId, lấy assignments của user đó
         if (isManagerOrAdmin.value && filters.userId && filters.userId !== authStore.user?.id) {
-            // If admin/manager selected another user, we can't fetch their assignments
-            // This would require a backend endpoint like GET /api/v1/shifts/assignments/user/{userId}
-            filteredAssignments = assignments.filter(a => 
-                (a.userId === filters.userId) || (a.user?.id === filters.userId)
-            )
-            
-            if (filteredAssignments.length === 0) {
-                // No assignments found for selected user (likely because we can only get current user's)
-                attendanceRecords.value = []
-                return
-            }
+            assignments = await getAssignmentsByUserId(filters.userId, {
+                startDate: filters.startDate,
+                endDate: filters.endDate
+            })
+            assignments = Array.isArray(assignments) ? assignments : (Array.isArray(assignments?.content) ? assignments.content : [])
+        } else {
+            // Lấy assignments của current user
+            assignments = await getAssignmentsForCurrentUser()
+            assignments = Array.isArray(assignments) ? assignments : []
         }
+        
+        let filteredAssignments = assignments
         
         for (const assignment of filteredAssignments) {
             try {
@@ -293,7 +296,7 @@ const fetchHistory = async () => {
                     records.push(...attendance)
                 }
             } catch (err) {
-                console.warn(`Failed to fetch attendance for assignment ${assignment.id}:`, err)
+                // Bỏ qua lỗi khi fetch attendance cho assignment đơn lẻ
             }
         }
         
@@ -315,7 +318,6 @@ const fetchHistory = async () => {
         
         attendanceRecords.value = records
     } catch (err) {
-        console.error(err)
         error.value = err.response?.data?.message || 'Không thể tải lịch sử chấm công.'
     } finally {
         historyLoading.value = false
@@ -327,23 +329,26 @@ const fetchStatistics = async () => {
     error.value = ''
     try {
         let records = []
+        let assignments = []
         
-        // Get assignments for current user
-        // Note: Backend doesn't have endpoint to get all assignments for admin/manager
-        const assignments = await getAssignmentsForCurrentUser()
+        // Nếu là admin/manager và có filter userId, lấy assignments của user đó
+        if (isManagerOrAdmin.value && filters.userId && filters.userId !== authStore.user?.id) {
+            assignments = await getAssignmentsByUserId(filters.userId, {
+                startDate: filters.startDate,
+                endDate: filters.endDate
+            })
+            assignments = Array.isArray(assignments) ? assignments : (Array.isArray(assignments?.content) ? assignments.content : [])
+        } else {
+            // Lấy assignments của current user
+            assignments = await getAssignmentsForCurrentUser()
+            assignments = Array.isArray(assignments) ? assignments : []
+        }
         
-        // If admin/manager selected a specific user, filter assignments
         let filteredAssignments = assignments
         
-        if (isManagerOrAdmin.value && filters.userId && filters.userId !== authStore.user?.id) {
-            filteredAssignments = assignments.filter(a => 
-                (a.userId === filters.userId) || (a.user?.id === filters.userId)
-            )
-            
-            if (filteredAssignments.length === 0) {
-                statistics.value = null
-                return
-            }
+        if (filteredAssignments.length === 0) {
+            statistics.value = null
+            return
         }
         
         for (const assignment of filteredAssignments) {
@@ -353,7 +358,7 @@ const fetchStatistics = async () => {
                     records.push(...attendance)
                 }
             } catch (err) {
-                console.warn(`Failed to fetch attendance for assignment ${assignment.id}:`, err)
+                // Bỏ qua lỗi khi fetch attendance cho assignment đơn lẻ
             }
         }
         
@@ -392,7 +397,6 @@ const fetchStatistics = async () => {
             onTimeRate: totalRecords > 0 ? ((totalRecords - lateCount - earlyLeaveCount) / totalRecords * 100).toFixed(1) : 0
         }
     } catch (err) {
-        console.error(err)
         error.value = err.response?.data?.message || 'Không thể tải thống kê chấm công.'
     } finally {
         statisticsLoading.value = false
@@ -408,7 +412,7 @@ const fetchStaffList = async () => {
             u.roles?.some(r => r.name === 'ROLE_STAFF' || r === 'ROLE_STAFF')
         )
     } catch (err) {
-        console.error(err)
+        // Export error handled silently
     }
 }
 

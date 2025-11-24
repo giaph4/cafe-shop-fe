@@ -134,7 +134,6 @@ const fetchShiftOptions = async () => {
             label: `${shift.templateName || 'Ca'} • ${formatDate(shift.shiftDate)} • ${formatTime(shift.startTime)}-${formatTime(shift.endTime)}`
         }))
     } catch (err) {
-        console.error(err)
         shiftOptions.value = []
     }
 }
@@ -187,7 +186,6 @@ const fetchAssignments = async () => {
         
         assignments.value = fetched
     } catch (err) {
-        console.error(err)
         error.value = err.response?.data?.message || 'Không thể tải danh sách phân công.'
         assignments.value = []
     } finally {
@@ -211,7 +209,6 @@ const fetchMyAssignments = async () => {
         
         myAssignments.value = fetched
     } catch (err) {
-        console.error(err)
         myError.value = err.response?.data?.message || 'Không thể tải phân công của bạn.'
         myAssignments.value = []
     } finally {
@@ -256,7 +253,6 @@ const handleFormSubmit = async (payload) => {
         await fetchAssignments()
         await fetchMyAssignments()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể lưu phân công.')
     } finally {
         formSubmitting.value = false
@@ -276,7 +272,6 @@ const handleUpdateStatus = async (assignment) => {
         await fetchAssignments()
         await fetchMyAssignments()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.')
     }
 }

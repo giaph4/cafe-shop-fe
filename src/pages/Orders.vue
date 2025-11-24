@@ -56,12 +56,8 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading && activeTab !== 'overview'" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error && activeTab !== 'overview'" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading && activeTab !== 'overview'" />
+                <ErrorState v-else-if="error && activeTab !== 'overview'" :message="error" @retry="fetchData" />
                 <div v-else class="tab-content">
                     <OrderOverviewTab
                         v-if="activeTab === 'overview'"
@@ -80,6 +76,7 @@
                         :can-cancel="canCancel"
                         :cancelling="cancelling"
                         @view-detail="openModal"
+                        @update="handleUpdateOrder"
                         @cancel="confirmCancel"
                         @page-change="handlePageChange"
                         @export="handleExport"
@@ -95,6 +92,14 @@
 
         <!-- Order Detail Modal -->
         <OrderDetailModal ref="orderDetailModal" :orderId="selectedOrderId" />
+        
+        <!-- Order Update Modal -->
+        <OrderUpdateModal 
+            ref="orderUpdateModal" 
+            :orderId="selectedOrderId"
+            :order="selectedOrder"
+            @updated="handleOrderUpdated"
+        />
     </div>
 </template>
 
@@ -107,13 +112,14 @@ import * as orderService from '@/api/orderService'
 import { exportOrdersToExcel } from '@/api/reportService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import OrderDetailModal from '@/components/orders/OrderDetailModal.vue'
+import OrderUpdateModal from '@/components/orders/OrderUpdateModal.vue'
 import OrderOverviewTab from '@/components/orders/OrderOverviewTab.vue'
 import OrderListTab from '@/components/orders/OrderListTab.vue'
 import OrderStatisticsTab from '@/components/orders/OrderStatisticsTab.vue'
 import { PaginationMode, usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/store/auth'
-import { useLoading } from '@/composables/useLoading'
-import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useAsyncOperation } from '@/composables/useAsyncOperation'
+import { handleApiError } from '@/composables/useErrorHandler'
 
 const STATUS_METADATA = Object.freeze({
     PENDING: { value: 'PENDING', label: 'Đang chờ', badgeClass: 'status-pill--pending' },
@@ -140,14 +146,14 @@ const tabs = [
     { key: 'statistics', label: 'Thống kê', icon: 'bi bi-graph-up' }
 ]
 
-const { loading, withLoading } = useLoading(false)
-const { handleError } = useErrorHandler({ context: 'Orders' })
-const error = ref(null)
+const { loading, error, execute } = useAsyncOperation({ context: 'Orders' })
 
 const orders = ref([])
 const allOrders = ref([]) // For statistics
 const selectedOrderId = ref(null)
+const selectedOrder = ref(null)
 const orderDetailModal = ref(null)
+const orderUpdateModal = ref(null)
 const cancelling = ref(false)
 const exporting = ref(false)
 
@@ -162,6 +168,7 @@ const {
     zeroBasedPage,
     pageSize,
     totalPages,
+    totalElements,
     setPageFromZero,
     updatePageSize,
     updateFromResponse,
@@ -192,14 +199,13 @@ const fetchData = async (fetchAll = false) => {
 }
 
 const fetchAllOrders = async () => {
-    loading.value = true
-    error.value = null
-    try {
+    await execute(async () => {
         // Fetch all orders for statistics (with a reasonable limit)
         let allData = []
         let page = 0
         const size = 100
         let hasMore = true
+        let usedFallback = false
 
         while (hasMore && page < 10) { // Limit to 1000 orders max
             let response
@@ -213,8 +219,14 @@ const fetchAllOrders = async () => {
                     filters.startDate,
                     filters.endDate,
                     page,
-                    size
+                    size,
+                    { useFallback: true } // Cho phép fallback
                 )
+                
+                // Track nếu đã dùng fallback
+                if (response?._fallback) {
+                    usedFallback = true
+                }
             } else {
                 response = await orderService.getOrders(page, size)
             }
@@ -226,11 +238,18 @@ const fetchAllOrders = async () => {
         }
 
         allOrders.value = allData
-    } catch (err) {
-        error.value = handleError(err, 'Không thể tải dữ liệu đơn hàng.')
-    } finally {
-        loading.value = false
-    }
+        
+        // Hiển thị warning nếu đã dùng fallback
+        if (usedFallback) {
+            toast.warn('Không thể lọc theo khoảng ngày từ server, đã sử dụng bộ lọc phía client.', { 
+                autoClose: 4000 
+            })
+        }
+    }, 'Không thể tải dữ liệu đơn hàng.', {
+        onError: () => {
+            allOrders.value = []
+        }
+    })
 }
 
 const fetchOrders = async () => {
@@ -240,18 +259,28 @@ const fetchOrders = async () => {
     const size = pageSize.value
     const hasStatus = Boolean(filters.status)
     const hasDateRange = Boolean(filters.startDate) && Boolean(filters.endDate)
+    
     try {
         let response
 
         if (hasStatus) {
             response = await orderService.getOrdersByStatus(filters.status, page, size)
         } else if (hasDateRange) {
+            // Service layer đã có fallback logic khi 500, chỉ cần gọi và xử lý response
             response = await orderService.getOrdersByDateRange(
                 filters.startDate,
                 filters.endDate,
                 page,
-                size
+                size,
+                { useFallback: true } // Cho phép fallback
             )
+            
+            // Nếu response có flag _fallback, hiển thị warning
+            if (response?._fallback) {
+                toast.warn('Không thể lọc theo khoảng ngày từ server, đã sử dụng bộ lọc phía client.', { 
+                    autoClose: 4000 
+                })
+            }
         } else {
             response = await orderService.getOrders(page, size)
         }
@@ -267,23 +296,20 @@ const fetchOrders = async () => {
             toast.info('Trang đơn hàng đã được điều chỉnh theo dữ liệu hiện có.', { autoClose: 2500 })
         }
     } catch (err) {
-        if (hasDateRange && err?.response?.status === 500) {
-            toast.warn('Không thể lọc theo khoảng ngày, hiển thị tất cả đơn hàng.', { autoClose: 3000 })
-            try {
-                const fallback = await orderService.getOrders(page, size)
-                orders.value = fallback?.content ?? []
-                updateFromResponse({
-                    page: fallback?.number ?? 0,
-                    totalPages: fallback?.totalPages ?? 0,
-                    totalElements: fallback?.totalElements ?? 0
-                })
-                error.value = null
-                return
-            } catch (fallbackErr) {
-                // Fallback failed, error already handled
-            }
-        }
-        error.value = handleError(err, 'Không thể tải danh sách đơn hàng.')
+        // Error handling đã được xử lý trong service layer
+        // Chỉ cần hiển thị error message cho user
+        error.value = handleApiError(err, { 
+            context: 'Orders',
+            fallbackMessage: 'Không thể tải danh sách đơn hàng.'
+        })
+        orders.value = []
+        
+        // Reset pagination về trang đầu nếu có lỗi
+        updateFromResponse({
+            page: 0,
+            totalPages: 0,
+            totalElements: 0
+        })
     } finally {
         loading.value = false
     }
@@ -373,7 +399,10 @@ const handleExport = async () => {
         URL.revokeObjectURL(url)
         toast.success('Xuất đơn hàng thành công!')
     } catch (err) {
-        handleError(err, 'Xuất đơn hàng thất bại.')
+        handleApiError(err, {
+            context: 'Orders',
+            fallbackMessage: 'Xuất đơn hàng thất bại.'
+        })
     } finally {
         exporting.value = false
     }
@@ -388,16 +417,27 @@ const confirmCancel = (order) => {
 
 const handleCancel = async (orderId) => {
     if (cancelling.value) return
+    cancelling.value = true
     try {
-        cancelling.value = true
-        await orderService.cancelOrder(orderId)
-        toast.success('Đã hủy đơn hàng thành công.')
-        await fetchData()
-    } catch (err) {
-        handleError(err, 'Không thể hủy đơn hàng.')
+        await execute(async () => {
+            await orderService.cancelOrder(orderId)
+            toast.success('Đã hủy đơn hàng thành công.')
+            await fetchData()
+        }, 'Không thể hủy đơn hàng.')
     } finally {
         cancelling.value = false
     }
+}
+
+const handleUpdateOrder = (order) => {
+    if (!order || !canCancel.value) return
+    selectedOrderId.value = order.id
+    selectedOrder.value = order
+    orderUpdateModal.value?.show()
+}
+
+const handleOrderUpdated = async () => {
+    await fetchData()
 }
 
 watch(

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { ROLES } from '@/constants/roles'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Dashboard from '../pages/Dashboard.vue'
 import Login from '../pages/Login.vue'
@@ -36,62 +37,67 @@ const routes = [
                 path: '',
                 name: 'Dashboard',
                 component: Dashboard,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'pos',
                 name: 'POS',
                 component: Pos,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.STAFF] }
             },
             {
                 path: 'products',
                 name: 'Quản lý Sản phẩm',
                 component: Products,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'orders',
                 name: 'Quản lý Hoá đơn',
                 component: Orders,
-                meta: { allowedRoles: ['ROLE_STAFF', 'ROLE_MANAGER', 'ROLE_ADMIN'] }
+                meta: { allowedRoles: [ROLES.STAFF, ROLES.MANAGER, ROLES.ADMIN] }
             },
             {
                 path: 'customers',
                 name: 'Quản lý Khách hàng',
                 component: Customers,
-                meta: { allowedRoles: ['ROLE_STAFF', 'ROLE_MANAGER', 'ROLE_ADMIN'] }
+                meta: { allowedRoles: [ROLES.STAFF, ROLES.MANAGER, ROLES.ADMIN] }
             },
             {
                 path: 'customers/:id',
                 name: 'Chi tiết Khách hàng',
                 component: () => import('../pages/CustomerOrderDetail.vue'),
-                meta: { allowedRoles: ['ROLE_STAFF', 'ROLE_MANAGER', 'ROLE_ADMIN'] }
+                meta: { allowedRoles: [ROLES.STAFF, ROLES.MANAGER, ROLES.ADMIN] }
             },
             {
                 path: 'categories',
                 name: 'Quản lý Danh mục',
                 component: Categories,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'tables',
                 name: 'Quản lý Bàn',
                 component: Tables,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'vouchers',
                 name: 'Quản lý Voucher',
                 component: Vouchers,
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'reports',
                 name: 'Báo cáo tổng hợp',
                 component: Reports,
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'chat',
                 name: 'Trò chuyện nội bộ',
                 component: Chat,
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'sales',
@@ -101,71 +107,85 @@ const routes = [
                 path: 'ingredients',
                 name: 'Quản lý Nguyên liệu',
                 component: Ingredients,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'suppliers',
                 name: 'Quản lý Nhà cung cấp',
                 component: Suppliers,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'purchase-orders',
                 name: 'Quản lý Nhập hàng',
                 component: PurchaseOrders,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'purchase-orders/new',
                 name: 'Tạo Đơn nhập hàng',
                 component: PurchaseOrderCreate,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'inventory-report',
                 name: 'Báo cáo tồn kho',
                 component: InventoryReport,
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'expenses',
                 name: 'Quản lý Chi phí',
                 component: Expenses,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'staff',
                 name: 'Quản lý Nhân viên',
                 component: Staff,
+                meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'shifts',
                 name: 'Quản lý Ca làm',
                 component: ShiftManagement,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'attendance',
                 name: 'Chấm công',
                 component: () => import('../pages/Attendance.vue'),
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'shift-report',
                 name: 'Báo cáo Ca làm',
                 component: ShiftReport,
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'shift-report/:id',
+                name: 'Chi tiết Báo cáo Ca làm',
+                component: () => import('../pages/ShiftReportDetail.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'shift-assignment',
                 name: 'Phân công Ca làm',
                 component: ShiftAssignment,
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'performance-adjustment',
                 name: 'Điều chỉnh Hiệu suất',
                 component: PerformanceAdjustment,
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'payroll',
                 name: 'Quản lý Lương',
                 component: Payroll,
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'profile',
@@ -177,25 +197,31 @@ const routes = [
                 path: 'login-history',
                 name: 'Lịch sử đăng nhập',
                 component: () => import('../pages/LoginHistory.vue'),
-                meta: { allowedRoles: ['ROLE_ADMIN'] }
+                meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'file-management',
                 name: 'Quản lý File',
                 component: () => import('../pages/FileManagement.vue'),
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'admin-analytics',
                 name: 'Phân tích AI',
                 component: () => import('../pages/AdminAnalytics.vue'),
-                meta: { allowedRoles: ['ROLE_ADMIN'] }
+                meta: { allowedRoles: [ROLES.ADMIN] }
+            },
+            {
+                path: 'admin-analytics/:id',
+                name: 'Chi tiết Phân tích AI',
+                component: () => import('../pages/AdminAnalyticsDetail.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'role-dashboards',
                 name: 'Dashboard theo vai trò',
                 component: () => import('../pages/RoleBasedDashboards.vue'),
-                meta: { allowedRoles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'] }
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             }
         ]
     },

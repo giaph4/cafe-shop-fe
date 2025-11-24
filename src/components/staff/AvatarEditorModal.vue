@@ -78,6 +78,7 @@ import {Modal} from 'bootstrap'
 import {nextTick, onBeforeUnmount, onMounted, ref} from 'vue'
 import {toast} from 'vue3-toastify'
 import api from '@/api/axios'
+import logger from '@/utils/logger'
 
 const emit = defineEmits(['apply', 'closed'])
 
@@ -139,7 +140,7 @@ const resolveImageSource = async (src) => {
         fetchedObjectUrl = URL.createObjectURL(blob)
         return fetchedObjectUrl
     } catch (err) {
-        console.error('Không thể tải ảnh để chỉnh sửa:', err)
+        logger.error('Failed to load image for editing:', err)
         toast.error('Không thể tải ảnh gốc để chỉnh sửa. Bạn hãy chọn ảnh mới từ máy nhé.')
         return ''
     }
@@ -185,7 +186,7 @@ const drawBaseImage = async () => {
                 ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
                 imageLoaded.value = true
             } catch (drawErr) {
-                console.error(drawErr)
+                logger.error('Failed to draw image (CORS):', drawErr)
                 toast.error('Không thể hiển thị ảnh để chỉnh sửa (CORS). Vui lòng chọn ảnh khác hoặc liên hệ quản trị.')
                 imageLoaded.value = false
             } finally {
@@ -201,7 +202,7 @@ const drawBaseImage = async () => {
 
         img.src = resolvedSrc
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to load image:', err)
         loading.value = false
         imageLoaded.value = false
         toast.error('Không thể tải ảnh để chỉnh sửa. Vui lòng thử lại hoặc chọn ảnh khác.')

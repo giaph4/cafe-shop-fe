@@ -6,6 +6,10 @@
                 <p class="page-subtitle">Upload, xem và quản lý các file trong hệ thống.</p>
             </div>
             <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button class="btn btn-outline-primary" type="button" @click="toggleFileList" :disabled="fileListLoading">
+                    <i class="bi bi-list-ul me-2"></i>
+                    {{ showFileList ? 'Ẩn danh sách' : 'Xem danh sách files' }}
+                </button>
                 <button class="btn btn-outline-secondary" type="button" @click="resetForms" :disabled="uploading || deleting">
                     <i class="bi bi-arrow-clockwise me-2"></i>Làm mới
                 </button>
@@ -162,6 +166,104 @@
             </div>
         </div>
 
+        <!-- File List Section -->
+        <div v-if="showFileList" class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-files me-2"></i>Danh sách Files
+                </h5>
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="input-group input-group-sm" style="max-width: 300px;">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="fileListKeyword"
+                            placeholder="Tìm kiếm file..."
+                            @keyup.enter="handleFileListSearch"
+                            :disabled="fileListLoading"
+                        />
+                        <button
+                            class="btn btn-outline-secondary"
+                            type="button"
+                            @click="handleFileListSearch"
+                            :disabled="fileListLoading"
+                        >
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="fetchFileList"
+                        :disabled="fileListLoading"
+                    >
+                        <span v-if="fileListLoading" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else class="bi bi-arrow-repeat me-1"></i>
+                        Làm mới
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div v-if="fileListLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+                <div v-else-if="fileListError" class="alert alert-danger mb-0">
+                    {{ fileListError }}
+                </div>
+                <div v-else-if="fileList.length === 0" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    <p class="mb-0">Không có file nào trong hệ thống.</p>
+                </div>
+                <div v-else class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tên file</th>
+                                <th>Kích thước</th>
+                                <th>Loại</th>
+                                <th>Ngày upload</th>
+                                <th>URL</th>
+                                <th class="text-end">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(file, index) in fileList" :key="index">
+                                <td>
+                                    <i class="bi bi-file-earmark me-2"></i>
+                                    {{ file.fileName || file.name || 'N/A' }}
+                                </td>
+                                <td>{{ formatFileSize(file.fileSize || file.size) }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ file.fileType || file.type || 'N/A' }}</span>
+                                </td>
+                                <td>
+                                    <span v-if="file.uploadedAt || file.createdAt">
+                                        {{ formatDateTime(file.uploadedAt || file.createdAt) }}
+                                    </span>
+                                    <span v-else class="text-muted">N/A</span>
+                                </td>
+                                <td>
+                                    <a :href="file.fileUrl || file.url" target="_blank" class="text-decoration-none">
+                                        <i class="bi bi-link-45deg me-1"></i>Xem
+                                    </a>
+                                </td>
+                                <td class="text-end">
+                                    <button
+                                        class="btn btn-sm btn-outline-danger"
+                                        @click="deleteFileFromList(file.fileName || file.name, index)"
+                                        :disabled="deleting"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Recent Uploads (if any) -->
         <div v-if="recentUploads.length > 0" class="card mt-4">
             <div class="card-header">
@@ -215,9 +317,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { toast } from 'vue3-toastify'
-import { uploadFile, uploadMultipleFiles, deleteFile, extractFileName } from '@/api/fileService'
+import { uploadFile, uploadMultipleFiles, deleteFile, extractFileName, listFiles } from '@/api/fileService'
+import { formatDateTime } from '@/utils/formatters'
 
 const singleFileInput = ref(null)
 const multipleFileInput = ref(null)
@@ -231,6 +334,13 @@ const deleteFileName = ref('')
 const deleting = ref(false)
 const deleteError = ref('')
 const deleteSuccess = ref(false)
+
+// File list state
+const fileList = ref([])
+const fileListLoading = ref(false)
+const fileListError = ref('')
+const showFileList = ref(false)
+const fileListKeyword = ref('')
 
 const formatFileSize = (bytes) => {
     if (!bytes) return '0 B'
@@ -294,7 +404,6 @@ const handleUpload = async () => {
         
         toast.success(`Đã upload thành công ${results.length} file(s).`)
     } catch (err) {
-        console.error(err)
         uploadError.value = err.response?.data?.message || 'Không thể upload file. Vui lòng thử lại.'
         toast.error(uploadError.value)
     } finally {
@@ -330,7 +439,48 @@ const handleDelete = async () => {
             deleteSuccess.value = false
         }, 3000)
     } catch (err) {
-        console.error(err)
+        deleteError.value = err.response?.data?.message || 'Không thể xóa file. Vui lòng thử lại.'
+        toast.error(deleteError.value)
+    } finally {
+        deleting.value = false
+    }
+}
+
+const deleteFileFromList = async (fileName, index) => {
+    if (!fileName) {
+        toast.warning('Tên file không hợp lệ.')
+        return
+    }
+    
+    if (!confirm(`Bạn có chắc chắn muốn xóa file "${fileName}"?`)) {
+        return
+    }
+    
+    deleting.value = true
+    deleteError.value = ''
+    deleteSuccess.value = false
+    
+    try {
+        await deleteFile(fileName)
+        deleteSuccess.value = true
+        toast.success('File đã được xóa thành công!')
+        
+        // Remove from file list
+        if (index !== undefined && index >= 0) {
+            fileList.value.splice(index, 1)
+        } else {
+            // Refresh file list
+            await fetchFileList()
+        }
+        
+        // Also remove from recent uploads if exists
+        const recentIndex = recentUploads.value.findIndex(f => 
+            (f.fileName || f.name) === fileName
+        )
+        if (recentIndex !== -1) {
+            recentUploads.value.splice(recentIndex, 1)
+        }
+    } catch (err) {
         deleteError.value = err.response?.data?.message || 'Không thể xóa file. Vui lòng thử lại.'
         toast.error(deleteError.value)
     } finally {
@@ -348,8 +498,12 @@ const deleteRecentFile = async (fileName, index) => {
         await deleteFile(fileName)
         recentUploads.value.splice(index, 1)
         toast.success('File đã được xóa thành công.')
+        
+        // Also refresh file list if it's visible
+        if (showFileList.value) {
+            await fetchFileList()
+        }
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể xóa file.')
     } finally {
         deleting.value = false
@@ -361,7 +515,6 @@ const copyToClipboard = async (text) => {
         await navigator.clipboard.writeText(text)
         toast.success('Đã copy URL vào clipboard!')
     } catch (err) {
-        console.error('Failed to copy:', err)
         toast.error('Không thể copy URL.')
     }
 }
@@ -375,7 +528,43 @@ const resetForms = () => {
     uploadSuccess.value = []
     singleFileInput.value.value = ''
     multipleFileInput.value.value = ''
+    fileListError.value = ''
 }
+
+const fetchFileList = async () => {
+    fileListLoading.value = true
+    fileListError.value = ''
+    try {
+        const params = {}
+        if (fileListKeyword.value && fileListKeyword.value.trim()) {
+            params.keyword = fileListKeyword.value.trim()
+        }
+        
+        const data = await listFiles(params)
+        fileList.value = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
+    } catch (err) {
+        fileListError.value = err.response?.data?.message || 'Không thể tải danh sách files.'
+        fileList.value = []
+    } finally {
+        fileListLoading.value = false
+    }
+}
+
+const toggleFileList = () => {
+    showFileList.value = !showFileList.value
+    if (showFileList.value && fileList.value.length === 0) {
+        fetchFileList()
+    }
+}
+
+const handleFileListSearch = () => {
+    fetchFileList()
+}
+
+onMounted(() => {
+    // Optionally load file list on mount
+    // fetchFileList()
+})
 </script>
 
 <style scoped>

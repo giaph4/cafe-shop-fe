@@ -24,19 +24,40 @@
                 :current-user-id="currentUserId"
             />
         </div>
+        
+        <!-- Create Conversation Modal -->
+        <CreateConversationModal 
+            ref="createConversationModal"
+            @created="handleConversationCreated"
+        />
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useChatStore } from '@/store/chat'
 import { useAuthStore } from '@/store/auth'
+import { useChatSocket } from '@/composables/useChatSocket'
 import ChatSidebar from '@/components/chat/ChatSidebar.vue'
 import ChatWindow from '@/components/chat/ChatWindow.vue'
 import ChatDetailsPanel from '@/components/chat/ChatDetailsPanel.vue'
+import CreateConversationModal from '@/components/chat/CreateConversationModal.vue'
+import * as chatMessages from '@/api/chat/messageService'
 
 const chatStore = useChatStore()
 const authStore = useAuthStore()
+
+// WebSocket connection for real-time updates
+const {
+    connected: wsConnected,
+    reconnecting: wsReconnecting,
+    lastError: wsError,
+    connect: wsConnect,
+    disconnect: wsDisconnect,
+    watchConversation,
+    switchConversation,
+    sendTyping
+} = useChatSocket()
 
 const currentUserId = computed(() => authStore.user?.id)
 const conversations = computed(() => chatStore.conversations)
@@ -55,10 +76,35 @@ const messages = computed(() => {
 const handleSelectConversation = (conversationId) => {
     activeConversationId.value = conversationId
     chatStore.loadMessages(conversationId)
+    
+    // Switch WebSocket subscription to new conversation
+    if (wsConnected.value) {
+        switchConversation(conversationId)
+    } else {
+        // Connect WebSocket if not connected
+        wsConnect(conversationId)
+    }
 }
 
+const createConversationModal = ref(null)
+
 const handleCreateConversation = () => {
-    // TODO: Implement create conversation modal
+    createConversationModal.value?.show()
+}
+
+const handleConversationCreated = (conversation) => {
+    if (conversation?.id) {
+        activeConversationId.value = conversation.id
+        chatStore.loadConversations()
+        chatStore.loadMessages(conversation.id)
+        
+        // Connect WebSocket and watch new conversation
+        if (!wsConnected.value) {
+            wsConnect(conversation.id)
+        } else {
+            switchConversation(conversation.id)
+        }
+    }
 }
 
 const handleSendMessage = async (content) => {
@@ -81,11 +127,29 @@ const handleSendMessage = async (content) => {
     }
 }
 
+// Watch for active conversation changes to update WebSocket subscription
+watch(activeConversationId, (newId, oldId) => {
+    if (newId && newId !== oldId && wsConnected.value) {
+        switchConversation(newId)
+    }
+})
+
 onMounted(async () => {
     await chatStore.loadConversations()
+    
+    // Connect WebSocket for real-time updates
+    // If there's an active conversation, connect with it
+    if (activeConversationId.value) {
+        wsConnect(activeConversationId.value)
+    } else {
+        wsConnect(null) // Connect without specific conversation
+    }
 })
 
 onBeforeUnmount(() => {
+    // Disconnect WebSocket
+    wsDisconnect()
+    // Also call store disconnect for cleanup
     chatStore.disconnect()
 })
 </script>

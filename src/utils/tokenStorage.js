@@ -1,3 +1,5 @@
+import logger from '@/utils/logger'
+
 const ACCESS_TOKEN_KEY = 'accessToken'
 const REFRESH_TOKEN_KEY = 'refreshToken'
 const TOKEN_META_KEY = 'tokenMeta'
@@ -38,7 +40,7 @@ export const getTokenMeta = () => {
         const raw = localStorage.getItem(TOKEN_META_KEY)
         return raw ? JSON.parse(raw) : {}
     } catch (error) {
-        console.warn('Failed to parse token metadata', error)
+        logger.warn('Failed to parse token metadata', error)
         return {}
     }
 }
@@ -75,7 +77,7 @@ export const getUserFromStorage = () => {
     try {
         return JSON.parse(raw)
     } catch (error) {
-        console.warn('Failed to parse user data', error)
+        logger.warn('Failed to parse user data', error)
         return null
     }
 }

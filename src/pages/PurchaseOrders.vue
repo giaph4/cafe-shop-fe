@@ -1,5 +1,11 @@
 <template>
     <PurchaseOrderDetailModal :order-id="selectedOrderId" @close="selectedOrderId = null"/>
+    <PurchaseOrderUpdateModal 
+        ref="updateModal"
+        :purchase-order-id="selectedOrderId"
+        :purchase-order="selectedOrder"
+        @updated="handleOrderUpdated"
+    />
 
     <div class="page-container container-fluid" data-aos="fade-up">
         <div class="page-header card-shadow">
@@ -116,6 +122,11 @@
                                             @click="selectedOrderId = order.id">
                                         <i class="bi bi-eye"></i>
                                     </button>
+                                    <button class="btn btn-outline-primary" type="button"
+                                            v-if="order.status === 'PENDING'"
+                                            @click="handleUpdate(order)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
                                     <button class="btn btn-outline-success" type="button"
                                             v-if="order.status === 'PENDING'"
                                             :disabled="completeMutation.isPending.value" @click="handleComplete(order)">
@@ -149,6 +160,7 @@ import {computed, reactive, ref} from 'vue'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/vue-query'
 
 import PurchaseOrderDetailModal from '@/components/purchase-orders/PurchaseOrderDetailModal.vue'
+import PurchaseOrderUpdateModal from '@/components/purchase-orders/PurchaseOrderUpdateModal.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import {usePagination, PaginationMode} from '@/composables/usePagination'
 import {showSuccess, showError} from '@/utils/toast'
@@ -162,6 +174,8 @@ import {getPurchaseOrders, markOrderAsCompleted, cancelPurchaseOrder} from '@/ap
 const queryClient = useQueryClient()
 
 const selectedOrderId = ref(null)
+const selectedOrder = ref(null)
+const updateModal = ref(null)
 
 const DEFAULT_FILTERS = Object.freeze({
     supplierId: '',
@@ -321,6 +335,19 @@ const handleCancel = (order) => {
     if (confirm(`Bạn có chắc chắn muốn huỷ phiếu nhập #${order.id}?`)) {
         cancelMutation.mutate(order.id)
     }
+}
+
+const handleUpdate = (order) => {
+    if (!order || order.status !== 'PENDING') return
+    selectedOrderId.value = order.id
+    selectedOrder.value = order
+    updateModal.value?.show()
+}
+
+const handleOrderUpdated = () => {
+    queryClient.invalidateQueries({ queryKey: ['purchaseOrders'] })
+    selectedOrderId.value = null
+    selectedOrder.value = null
 }
 
 const handlePageChange = (page) => {

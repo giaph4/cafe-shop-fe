@@ -14,7 +14,6 @@ import './style.css'
 import './assets/dynamic-island-toast.css'
 
 
-import * as bootstrap from 'bootstrap'
 import Toast from 'vue3-toastify'
 import AOS from 'aos'
 
@@ -23,9 +22,6 @@ applyThemeClass(initialTheme)
 persistTheme(initialTheme)
 
 const app = createApp(App)
-
-
-window.bootstrap = bootstrap
 
 const pinia = createPinia()
 app.use(pinia)

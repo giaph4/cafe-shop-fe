@@ -64,6 +64,7 @@
 import { ref, watch, nextTick } from 'vue'
 import { getCustomerById } from '@/api/customerService'
 import { formatDateTime } from '@/utils/formatters'
+import logger from '@/utils/logger'
 
 const props = defineProps({
     visible: {
@@ -98,7 +99,7 @@ const fetchCustomerDetails = async () => {
         const response = await getCustomerById(props.customerId)
         customer.value = response
     } catch (err) {
-        console.error('Failed to fetch customer details', err)
+        logger.error('Failed to fetch customer details:', err)
         error.value = err?.response?.data?.message || 'Không thể tải thông tin chi tiết khách hàng.'
         customer.value = null
     } finally {

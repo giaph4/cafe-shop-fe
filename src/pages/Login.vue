@@ -146,7 +146,7 @@ const handleLogin = async (values) => {
         router.push('/')
 
     } catch (error) {
-        console.error('Lỗi đăng nhập:', error)
+        // Login error handled by toast notification
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             toast.error('Tên đăng nhập hoặc mật khẩu không đúng.')
         } else {

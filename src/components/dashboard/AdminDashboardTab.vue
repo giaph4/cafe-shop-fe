@@ -27,41 +27,60 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
+        <!-- Top Row: KPI Cards -->
         <div class="row g-4 mb-4" v-if="dashboardData">
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.revenue">
-                <div class="card metric-card metric-card--primary w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Doanh thu hôm nay</div>
-                        <div class="metric-value">{{ formatCurrency(dashboardData.revenue.today) }}</div>
-                        <div class="metric-detail">Lợi nhuận: {{ formatCurrency(dashboardData.revenue.todayProfit) }}</div>
+            <!-- DOANH THU HÔM NAY -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.revenue">
+                <div class="kpi-card kpi-card--revenue">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">DOANH THU HÔM NAY</div>
+                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.revenue.today || 0) }}</div>
+                        <div class="kpi-card__detail">Lợi nhuận: {{ formatCurrency(dashboardData.revenue.todayProfit || 0) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.revenue">
-                <div class="card metric-card metric-card--success w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Doanh thu tháng này</div>
-                        <div class="metric-value">{{ formatCurrency(dashboardData.revenue.month) }}</div>
-                        <div class="metric-detail">Lợi nhuận: {{ formatCurrency(dashboardData.revenue.monthProfit) }}</div>
+
+            <!-- DOANH THU THÁNG NÀY -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.revenue">
+                <div class="kpi-card kpi-card--month">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-calendar-month"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">DOANH THU THÁNG NÀY</div>
+                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.revenue.month || 0) }}</div>
+                        <div class="kpi-card__detail">Lợi nhuận: {{ formatCurrency(dashboardData.revenue.monthProfit || 0) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.orders">
-                <div class="card metric-card metric-card--warning w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Đơn hàng hôm nay</div>
-                        <div class="metric-value">{{ formatNumber(dashboardData.orders.today) }}</div>
-                        <div class="metric-detail">Đã hủy: {{ formatNumber(dashboardData.orders.cancelledToday) }}</div>
+
+            <!-- ĐƠN HÀNG HÔM NAY -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.orders">
+                <div class="kpi-card kpi-card--orders">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">ĐƠN HÀNG HÔM NAY</div>
+                        <div class="kpi-card__value">{{ formatNumber(dashboardData.orders.today || 0) }}</div>
+                        <div class="kpi-card__detail">Đã hủy: {{ formatNumber(dashboardData.orders.cancelledToday || 0) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex" v-if="dashboardData.inventory">
-                <div class="card metric-card metric-card--danger w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Nguyên liệu sắp hết</div>
-                        <div class="metric-value">{{ formatNumber(dashboardData.inventory.lowStockItems) }}</div>
-                        <div class="metric-detail">Đơn nhập chờ: {{ formatNumber(dashboardData.inventory.pendingPurchaseOrders) }}</div>
+
+            <!-- NGUYÊN LIỆU SẮP HẾT -->
+            <div class="col-md-3 col-sm-6" v-if="dashboardData.inventory">
+                <div class="kpi-card kpi-card--inventory">
+                    <div class="kpi-card__icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">NGUYÊN LIỆU SẮP HẾT</div>
+                        <div class="kpi-card__value">{{ formatNumber(dashboardData.inventory.lowStockItems || 0) }}</div>
+                        <div class="kpi-card__detail">Đơn nhập chờ: {{ formatNumber(dashboardData.inventory.pendingPurchaseOrders || 0) }}</div>
                     </div>
                 </div>
             </div>
@@ -69,37 +88,41 @@
 
         <!-- System Alerts -->
         <div v-if="dashboardData?.alerts?.length > 0" class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Cảnh báo hệ thống
-                </h5>
+            <div class="info-card__header">
+                <div class="info-card__icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h5 class="info-card__title">Cảnh báo hệ thống</h5>
             </div>
             <div class="card-body">
                 <div class="alert-list">
                     <div
                         v-for="(alert, index) in dashboardData.alerts"
                         :key="index"
-                        class="alert"
+                        class="alert-item"
                         :class="getAlertClass(alert.severity)"
                     >
-                        <i :class="getAlertIcon(alert.severity)" class="me-2"></i>
-                        <strong>{{ alert.type }}:</strong> {{ alert.message }}
+                        <i :class="getAlertIcon(alert.severity)" class="alert-item__icon"></i>
+                        <div class="alert-item__content">
+                            <strong>{{ alert.type }}:</strong> {{ alert.message }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Top Lists -->
+        <!-- Bottom Row: Top Lists -->
         <div class="row g-4">
             <!-- Top Products -->
-            <div v-if="dashboardData?.topProducts?.length > 0" class="col-lg-4 d-flex">
-                <div class="card top-list-card w-100">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-trophy me-2"></i>Top Sản phẩm
-                        </h5>
+            <div v-if="dashboardData?.topProducts?.length > 0" class="col-lg-4">
+                <div class="info-card">
+                    <div class="info-card__header">
+                        <div class="info-card__icon">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                        <h5 class="info-card__title">Top Sản phẩm</h5>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="info-card__body">
                         <div class="top-list">
                             <div
                                 v-for="(product, index) in dashboardData.topProducts.slice(0, 5)"
@@ -110,7 +133,7 @@
                                     <div class="top-list-item__name">{{ product.productName || 'N/A' }}</div>
                                     <div class="top-list-item__detail">{{ formatNumber(product.quantity) }} sản phẩm</div>
                                 </div>
-                                <div class="top-list-item__value text-primary">
+                                <div class="top-list-item__value">
                                     {{ formatCurrency(product.revenue) }}
                                 </div>
                             </div>
@@ -120,14 +143,15 @@
             </div>
 
             <!-- Top Customers -->
-            <div v-if="dashboardData?.topCustomers?.length > 0" class="col-lg-4 d-flex">
-                <div class="card top-list-card w-100">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-people me-2"></i>Top Khách hàng
-                        </h5>
+            <div v-if="dashboardData?.topCustomers?.length > 0" class="col-lg-4">
+                <div class="info-card">
+                    <div class="info-card__header">
+                        <div class="info-card__icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h5 class="info-card__title">Top Khách hàng</h5>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="info-card__body">
                         <div class="top-list">
                             <div
                                 v-for="(customer, index) in dashboardData.topCustomers.slice(0, 5)"
@@ -138,7 +162,7 @@
                                     <div class="top-list-item__name">{{ customer.customerName || 'N/A' }}</div>
                                     <div class="top-list-item__detail">{{ formatNumber(customer.orders) }} đơn</div>
                                 </div>
-                                <div class="top-list-item__value text-success">
+                                <div class="top-list-item__value">
                                     {{ formatCurrency(customer.spend) }}
                                 </div>
                             </div>
@@ -148,14 +172,15 @@
             </div>
 
             <!-- Top Staff -->
-            <div v-if="dashboardData?.topStaff?.length > 0" class="col-lg-4 d-flex">
-                <div class="card top-list-card w-100">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-person-badge me-2"></i>Top Nhân viên
-                        </h5>
+            <div v-if="dashboardData?.topStaff?.length > 0" class="col-lg-4">
+                <div class="info-card">
+                    <div class="info-card__header">
+                        <div class="info-card__icon">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <h5 class="info-card__title">Top Nhân viên</h5>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="info-card__body">
                         <div class="top-list">
                             <div
                                 v-for="(staff, index) in dashboardData.topStaff.slice(0, 5)"
@@ -166,7 +191,7 @@
                                     <div class="top-list-item__name">{{ staff.staffName || 'N/A' }}</div>
                                     <div class="top-list-item__detail">{{ formatNumber(staff.orders) }} đơn</div>
                                 </div>
-                                <div class="top-list-item__value text-primary">
+                                <div class="top-list-item__value">
                                     {{ formatCurrency(staff.revenue) }}
                                 </div>
                             </div>
@@ -195,10 +220,8 @@ const customTo = ref('')
 
 const handleRangeChange = () => {
     if (selectedRange.value === 'CUSTOM') {
-        // Wait for user to input dates - don't emit yet
         return
     }
-    // Clear custom dates when switching to non-custom range
     customFrom.value = ''
     customTo.value = ''
     emit('update-range', selectedRange.value || null)
@@ -206,7 +229,7 @@ const handleRangeChange = () => {
 
 const handleCustomRange = () => {
     if (!customFrom.value || !customTo.value) {
-        return // Don't emit if dates are not filled
+        return
     }
     
     if (new Date(customFrom.value) > new Date(customTo.value)) {
@@ -222,12 +245,12 @@ const handleCustomRange = () => {
 }
 
 const getAlertClass = (severity) => {
-    if (!severity) return 'alert-warning'
+    if (!severity) return 'alert-item--warning'
     const sev = severity.toLowerCase()
-    if (sev.includes('error') || sev.includes('critical')) return 'alert-danger'
-    if (sev.includes('warning')) return 'alert-warning'
-    if (sev.includes('info')) return 'alert-info'
-    return 'alert-secondary'
+    if (sev.includes('error') || sev.includes('critical')) return 'alert-item--danger'
+    if (sev.includes('warning')) return 'alert-item--warning'
+    if (sev.includes('info')) return 'alert-item--info'
+    return 'alert-item--secondary'
 }
 
 const getAlertIcon = (severity) => {
@@ -256,114 +279,199 @@ watch(() => props.range, (newRange) => {
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
 }
 
-.metric-card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
+/* KPI Cards */
+.kpi-card {
     background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    padding: 1.5rem;
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    transition: all 0.2s ease;
-    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all 0.3s ease;
     min-height: 140px;
 }
 
-.metric-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 20px 35px rgba(15, 23, 42, 0.12);
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(15, 23, 184, 0.12);
 }
 
-.metric-card--primary {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-primary));
+.kpi-card__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    flex-shrink: 0;
+    color: white;
 }
 
-.metric-card--success {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-success));
+.kpi-card--revenue .kpi-card__icon {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
-.metric-card--warning {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-warning));
+.kpi-card--month .kpi-card__icon {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
 }
 
-.metric-card--danger {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-danger));
+.kpi-card--orders .kpi-card__icon {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 }
 
-.metric-label {
-    font-size: 0.88rem;
+.kpi-card--inventory .kpi-card__icon {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.kpi-card__content {
+    flex: 1;
+}
+
+.kpi-card__label {
+    font-size: 0.75rem;
+    font-weight: 700;
     color: var(--color-text-muted);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
-    font-weight: 600;
 }
 
-.metric-value {
-    font-size: 1.8rem;
+.kpi-card__value {
+    font-size: 1.75rem;
     font-weight: 800;
     color: var(--color-heading);
+    line-height: 1.2;
     margin-bottom: 0.25rem;
 }
 
-.metric-detail {
-    font-size: 0.85rem;
+.kpi-card__detail {
+    font-size: 0.875rem;
     color: var(--color-text-muted);
     margin-top: 0.25rem;
 }
 
-.card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
+/* Info Cards */
+.info-card {
     background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    height: 100%;
 }
 
-.card-header {
+.info-card__header {
     background: rgba(148, 163, 184, 0.08);
     border-bottom: 1px solid var(--color-border);
-    padding: 1rem 1.5rem;
-    border-radius: 18px 18px 0 0;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
-.list-group-item {
-    border: none;
-    border-bottom: 1px solid var(--color-border);
-    padding: 1rem 0;
+.info-card__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
 }
 
-.list-group-item:last-child {
-    border-bottom: none;
+.info-card__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-heading);
+    margin: 0;
 }
 
+.info-card__body {
+    padding: 1.5rem;
+}
+
+/* Alert List */
 .alert-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
-.top-list-card {
+.alert-item {
     display: flex;
-    flex-direction: column;
-    height: 100%;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid;
 }
 
+.alert-item__icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+}
+
+.alert-item__content {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.alert-item--danger {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+}
+
+.alert-item--warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #d97706;
+}
+
+.alert-item--info {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #2563eb;
+}
+
+.alert-item--secondary {
+    background: rgba(148, 163, 184, 0.1);
+    border-color: rgba(148, 163, 184, 0.3);
+    color: #64748b;
+}
+
+/* Top List */
 .top-list {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
 }
 
 .top-list-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--color-border);
-    transition: background-color 0.2s ease;
-}
-
-.top-list-item:last-child {
-    border-bottom: none;
+    padding: 1rem;
+    background: rgba(148, 163, 184, 0.05);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    transition: all 0.2s ease;
 }
 
 .top-list-item:hover {
-    background-color: rgba(148, 163, 184, 0.05);
+    background: rgba(148, 163, 184, 0.1);
+    transform: translateX(4px);
 }
 
 .top-list-item__content {
@@ -389,9 +497,27 @@ watch(() => props.range, (newRange) => {
 .top-list-item__value {
     font-weight: 700;
     font-size: 1rem;
+    color: var(--color-primary);
     white-space: nowrap;
     margin-left: 1rem;
     flex-shrink: 0;
 }
-</style>
 
+.card {
+    border-radius: 18px;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>

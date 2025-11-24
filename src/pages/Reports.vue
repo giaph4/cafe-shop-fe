@@ -20,6 +20,16 @@
                     <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
                     Làm mới
                 </button>
+                <button 
+                    class="btn btn-primary" 
+                    type="button" 
+                    @click="handleExportAll" 
+                    :disabled="loading || exportingAll"
+                >
+                    <span v-if="exportingAll" class="spinner-border spinner-border-sm me-2"></span>
+                    <i v-else class="bi bi-download me-2"></i>
+                    Xuất tất cả báo cáo
+                </button>
             </div>
         </div>
 
@@ -259,7 +269,7 @@ const inventorySummary = ref({ totalItems: 0, lowStockCount: 0, totalQuantity: 0
 const inventoryLowStockOnly = ref(false)
 const inventoryLoading = ref(false)
 const exporting = reactive({ orders: false, expenses: false, inventory: false })
-const isExportingAll = ref(false)
+const exportingAll = ref(false)
 const bestSellerSort = ref('quantity')
 const topLimit = ref(10)
 const topOptions = [5, 10, 15, 20, 'all']
@@ -579,10 +589,9 @@ const fetchReports = async () => {
         computeInsights()
     } catch (err) {
         if (isMessageChannelError(err)) {
-            console.warn('[Reports] Bỏ qua lỗi message channel đóng sớm:', err)
+            // Bỏ qua lỗi message channel đóng sớm (không ảnh hưởng đến chức năng)
             return
         }
-        console.error(err)
         if (!isActive) {
             return
         }
@@ -608,7 +617,6 @@ const fetchInventory = async () => {
         inventoryItems.value = inventoryData?.items ?? []
         inventorySummary.value = inventoryData?.summary ?? { totalItems: 0, lowStockCount: 0, totalQuantity: 0 }
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Không thể tải dữ liệu tồn kho.')
     } finally {
         if (!isActive) {
@@ -629,7 +637,6 @@ const fetchBestSellers = async () => {
         productSummary.value = productData ?? null
         computeInsights()
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Không thể tải top sản phẩm.')
     }
 }
@@ -676,7 +683,6 @@ const handleExportAll = () => {
         URL.revokeObjectURL(url)
         showSuccess('Đã tải dữ liệu báo cáo tổng hợp!')
     } catch (err) {
-        console.error(err)
         showError(err?.message || 'Không thể tải dữ liệu báo cáo.')
     } finally {
         isExportingAll.value = false
@@ -696,7 +702,6 @@ const handleExportOrders = async () => {
         URL.revokeObjectURL(url)
         showSuccess('Xuất đơn hàng thành công!')
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Xuất đơn hàng thất bại.')
     } finally {
         exporting.orders = false
@@ -716,7 +721,6 @@ const handleExportExpenses = async () => {
         URL.revokeObjectURL(url)
         showSuccess('Xuất báo cáo chi phí thành công!')
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Xuất báo cáo chi phí thất bại.')
     } finally {
         exporting.expenses = false
@@ -736,7 +740,6 @@ const handleExportInventory = async () => {
         URL.revokeObjectURL(url)
         showSuccess('Xuất báo cáo tồn kho thành công!')
     } catch (err) {
-        console.error(err)
         showError(err.response?.data?.message || 'Xuất báo cáo tồn kho thất bại.')
     } finally {
         exporting.inventory = false

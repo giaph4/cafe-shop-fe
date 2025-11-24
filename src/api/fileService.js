@@ -1,4 +1,6 @@
 import api from './axios'
+import { buildApiError } from './utils/errorHandler'
+import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/files'
 
@@ -53,4 +55,21 @@ export const extractFileName = (fileUrl) => {
     } catch (err) {
         return fileUrl.split('?')[0]?.split('/').filter(Boolean).pop() || ''
     }
+}
+
+/**
+ * Lấy danh sách tất cả files
+ * @param {Object} params - Query parameters (page, size, keyword, etc.)
+ * @returns {Promise<Array|Object>} Danh sách files hoặc paginated response
+ */
+export const listFiles = async (params = {}) => {
+    const queryParams = cleanParams({
+        page: params.page,
+        size: params.size,
+        keyword: params.keyword?.trim(),
+        fileType: params.fileType
+    })
+    
+    const {data} = await api.get(`${BASE_URL}/list`, {params: queryParams})
+    return data
 }

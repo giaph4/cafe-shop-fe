@@ -51,17 +51,7 @@ export const normalizeShiftSessionList = (items) => Array.isArray(items)
     ? items.map(normalizeShiftSession).filter(Boolean)
     : []
 
-const buildError = (error) => {
-    const { response } = error || {}
-    const status = response?.status
-    const data = response?.data || {}
-    return {
-        status,
-        code: data.code || null,
-        message: data.message || error?.message || 'Đã xảy ra lỗi không xác định.',
-        details: data.details || null
-    }
-}
+import { buildApiError } from './utils/errorHandler'
 
 export const listShiftSessions = async (filters = {}) => {
     try {
@@ -78,7 +68,7 @@ export const listShiftSessions = async (filters = {}) => {
         }
         return normalizeShiftSessionList(data?.content)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -87,7 +77,7 @@ export const getShiftSession = async (sessionId) => {
         const { data } = await api.get(`${BASE_URL}/${sessionId}`)
         return normalizeShiftSession(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -100,7 +90,7 @@ export const getCurrentShiftSession = async () => {
         if (error?.response?.status === 404) {
             return null
         }
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -109,7 +99,7 @@ export const listActiveSessionsByWorkShift = async (workShiftId) => {
         const { data } = await api.get(`${BASE_URL}/shift/${workShiftId}`)
         return normalizeShiftSessionList(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -122,7 +112,7 @@ export const startShiftSession = async ({ workShiftId, adminOverride = false } =
         const { data } = await api.post(`${BASE_URL}/start`, body)
         return normalizeShiftSession(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -131,7 +121,7 @@ export const endCurrentShiftSession = async () => {
         const { data } = await api.post(`${BASE_URL}/end`)
         return normalizeShiftSession(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -141,7 +131,7 @@ export const forceEndShiftSession = async (sessionId, reason) => {
         const { data } = await api.post(`${BASE_URL}/${sessionId}/force`, payload)
         return normalizeShiftSession(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 

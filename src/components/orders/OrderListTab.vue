@@ -71,6 +71,16 @@
                                         <span>Chi tiết</span>
                                     </button>
                                     <button
+                                        v-if="canCancel"
+                                        class="action-button action-button--primary"
+                                        type="button"
+                                        title="Cập nhật đơn hàng"
+                                        @click="$emit('update', order)"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                        <span>Cập nhật</span>
+                                    </button>
+                                    <button
                                         v-if="canCancel && order.status === 'PENDING'"
                                         class="action-button action-button--danger"
                                         type="button"

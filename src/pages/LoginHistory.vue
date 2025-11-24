@@ -228,7 +228,6 @@ const fetchHistory = async () => {
         page.size = data?.size ?? 20
         page.totalElements = data?.totalElements ?? 0
     } catch (err) {
-        console.error(err)
         error.value = err.response?.data?.message || 'Không thể tải lịch sử đăng nhập.'
         history.value = []
     } finally {

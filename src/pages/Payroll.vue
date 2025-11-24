@@ -267,7 +267,6 @@ const fetchCycles = async () => {
             selectedCycleId.value = null
         }
     } catch (err) {
-        console.error(err)
         cyclesError.value = err.response?.data?.message || 'Không thể tải chu kỳ lương.'
         cycles.value = []
         selectedCycleId.value = null
@@ -287,7 +286,6 @@ const fetchSummaries = async () => {
         const data = await listPayrollSummaries({cycleId: selectedCycleId.value})
         summaries.value = Array.isArray(data) ? data : []
     } catch (err) {
-        console.error(err)
         summariesError.value = err.response?.data?.message || 'Không thể tải tổng hợp lương.'
         summaries.value = []
     } finally {
@@ -311,7 +309,6 @@ const selectCycle = async (cycle) => {
             cycles.value = cycles.value.map((item) => (item.id === fresh.id ? fresh : item))
         }
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể tải chi tiết chu kỳ lương.')
     }
 }
@@ -333,7 +330,6 @@ const openEditModal = async (cycle) => {
         editingCycle.value = fresh
         cycleModalRef.value?.show(fresh)
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể tải chi tiết chu kỳ lương.')
         editingCycle.value = cycle
         cycleModalRef.value?.show(cycle)
@@ -357,7 +353,6 @@ const handleModalSubmit = async (payload) => {
             await fetchSummaries()
         }
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể lưu chu kỳ lương.')
     } finally {
         formSubmitting.value = false
@@ -378,7 +373,6 @@ const handleRegenerate = async () => {
         toast.success('Đã đồng bộ dữ liệu lương.')
         await fetchSummaries()
     } catch (err) {
-        console.error(err)
         const status = err.response?.status
         const backendMessage = err.response?.data?.message
         if (status === 409) {

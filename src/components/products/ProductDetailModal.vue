@@ -189,7 +189,6 @@ const fetchDetail = async (id) => {
         const response = await getProductById(id)
         detail.value = response
     } catch (err) {
-        console.error(err)
         error.value = err.response?.data?.message || 'Không thể tải chi tiết sản phẩm.'
         detail.value = null
     } finally {
@@ -208,7 +207,6 @@ const fetchRecipe = async (id) => {
         const response = await getProductRecipe(id)
         recipe.value = Array.isArray(response) ? response : response?.data || []
     } catch (err) {
-        console.error(err)
         recipeError.value = err.response?.data?.message || 'Không thể tải công thức sản phẩm.'
         recipe.value = []
     } finally {

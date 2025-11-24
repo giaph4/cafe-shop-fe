@@ -80,12 +80,8 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading && activeTab !== 'overview'" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error && activeTab !== 'overview'" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading && activeTab !== 'overview'" />
+                <ErrorState v-else-if="error && activeTab !== 'overview'" :message="error" @retry="fetchData" />
                 <div v-else class="tab-content">
                     <CustomerOverviewTab
                         v-if="activeTab === 'overview'"
@@ -182,10 +178,11 @@ import CustomerDetailDrawer from '@/components/customers/CustomerDetailDrawer.vu
 import CustomerOverviewTab from '@/components/customers/CustomerOverviewTab.vue'
 import CustomerListTab from '@/components/customers/CustomerListTab.vue'
 import CustomerStatisticsTab from '@/components/customers/CustomerStatisticsTab.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import { PaginationMode, usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/store/auth'
-import { useLoading } from '@/composables/useLoading'
-import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useAsyncOperation } from '@/composables/useAsyncOperation'
 import {
     createCustomer,
     deleteCustomer,
@@ -221,9 +218,7 @@ const filters = reactive({
 
 const allCustomers = ref([]) // For statistics
 
-const { loading, withLoading } = useLoading(false)
-const { handleError } = useErrorHandler({ context: 'Customers' })
-const error = ref('')
+const { loading, error, execute } = useAsyncOperation({ context: 'Customers' })
 
 const customers = ref([])
 
@@ -270,32 +265,29 @@ syncQuery(route, router, {
 let suppressWatcherFetch = false
 
 const fetchCustomers = async (fetchAll = false) => {
-    error.value = ''
-    
-    await withLoading(async () => {
-        try {
-            const size = fetchAll ? 10000 : pageSize.value
-            const response = await getCustomers({
-                keyword: filters.keyword?.trim() || '',
-                page: fetchAll ? 0 : zeroBasedPage.value,
-                size: size
-            })
+    await execute(async () => {
+        const size = fetchAll ? 10000 : pageSize.value
+        const response = await getCustomers({
+            keyword: filters.keyword?.trim() || '',
+            page: fetchAll ? 0 : zeroBasedPage.value,
+            size: size
+        })
 
-            const list = Array.isArray(response?.content) ? response.content : []
-            
-            if (fetchAll) {
-                allCustomers.value = list
-            } else {
-                customers.value = list
-                const { adjusted } = updateFromResponse({
-                    page: response?.number,
-                    totalPages: response?.totalPages,
-                    totalElements: response?.totalElements
-                })
-                suppressWatcherFetch = adjusted
-            }
-        } catch (err) {
-            error.value = handleError(err, 'Không thể tải danh sách khách hàng. Vui lòng thử lại.')
+        const list = Array.isArray(response?.content) ? response.content : []
+        
+        if (fetchAll) {
+            allCustomers.value = list
+        } else {
+            customers.value = list
+            const { adjusted } = updateFromResponse({
+                page: response?.number,
+                totalPages: response?.totalPages,
+                totalElements: response?.totalElements
+            })
+            suppressWatcherFetch = adjusted
+        }
+    }, 'Không thể tải danh sách khách hàng. Vui lòng thử lại.', {
+        onError: () => {
             customers.value = []
             allCustomers.value = []
         }
@@ -615,7 +607,7 @@ const handleFormSubmit = async (payload) => {
             fetchCustomers(true)
         }
     } catch (err) {
-        console.error('Failed to submit customer form', err)
+        // Form submission error handled by error handler
         const message = err?.response?.data?.message
             || err?.message
             || 'Không thể lưu thông tin khách hàng. Vui lòng thử lại.'
@@ -661,19 +653,18 @@ const handleDeleteConfirm = async () => {
     if (!deleteTarget.value?.id) return
     deleting.value = true
     try {
-        await deleteCustomer(deleteTarget.value.id)
-        toast.success('Đã xóa khách hàng thành công.')
-        closeDeleteModal()
-        if (activeTab.value === 'list') {
-            fetchCustomers(false)
-        } else {
-            fetchCustomers(true)
-        }
-    } catch (err) {
-        handleError(err, 'Không thể xóa khách hàng.')
-        const message = err?.response?.data?.message
-            || 'Không thể xóa khách hàng. Vui lòng kiểm tra và thử lại.'
-        toast.error(message)
+        await execute(async () => {
+            await deleteCustomer(deleteTarget.value.id)
+            toast.success('Đã xóa khách hàng thành công.')
+            closeDeleteModal()
+            if (activeTab.value === 'list') {
+                fetchCustomers(false)
+            } else {
+                fetchCustomers(true)
+            }
+        }, 'Không thể xóa khách hàng. Vui lòng kiểm tra và thử lại.', {
+            showToast: false // Đã có toast riêng
+        })
     } finally {
         deleting.value = false
     }

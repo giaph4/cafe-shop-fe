@@ -131,6 +131,7 @@ import {toast} from 'vue3-toastify'
 import EmptyState from '@/components/common/EmptyState.vue'
 import {getProductRecipe, updateProductRecipe} from '@/api/productService.js'
 import {getAllIngredients} from '@/api/ingredientService.js'
+import logger from '@/utils/logger'
 
 const props = defineProps({
     productId: {
@@ -182,7 +183,7 @@ const fetchIngredients = async () => {
         const data = await getAllIngredients()
         ingredientOptions.value = Array.isArray(data) ? data : []
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to load ingredients:', err)
         toast.error('Không thể tải danh sách nguyên liệu. Vui lòng thử lại.')
         ingredientOptions.value = []
     }
@@ -252,7 +253,7 @@ const commitRecipe = async (items, {successMessage, spinnerKey} = {}) => {
         }
         return true
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to update recipe:', err)
         toast.error(err.response?.data?.message || 'Không thể cập nhật công thức. Vui lòng thử lại.')
         return false
     } finally {

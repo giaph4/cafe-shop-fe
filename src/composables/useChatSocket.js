@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { getAccessToken } from '@/utils/tokenStorage'
 import { useChatStore } from '@/store/chat'
 import { useAuthStore } from '@/store/auth'
+import logger from '@/utils/logger'
 
 if (typeof window !== 'undefined' && typeof window.global === 'undefined') {
     window.global = window
@@ -18,7 +19,7 @@ const appendTokenParam = (baseUrl, token) => {
         url.searchParams.set('token', token)
         return url.toString()
     } catch (error) {
-        console.warn('Failed to construct WebSocket URL, fallback to manual concat', error)
+        logger.warn('Failed to construct WebSocket URL, fallback to manual concat', error)
         const separator = baseUrl.includes('?') ? '&' : '?'
         return `${baseUrl}${separator}token=${encodeURIComponent(token)}`
     }
@@ -47,7 +48,7 @@ export const useChatSocket = () => {
             try {
                 client.value.deactivate()
             } catch (error) {
-                console.warn('Failed to deactivate STOMP client', error)
+                logger.warn('Failed to deactivate STOMP client', error)
             }
             client.value = null
         }
@@ -72,7 +73,7 @@ export const useChatSocket = () => {
             reconnectDelay: 5000,
             heartbeatIncoming: 10000,
             heartbeatOutgoing: 10000,
-            debug: process.env.NODE_ENV === 'development' ? console.log : undefined
+            debug: import.meta.env.DEV ? logger.debug : undefined
         })
 
         const onConnect = () => {
@@ -147,7 +148,7 @@ export const useChatSocket = () => {
                 try {
                     sub.unsubscribe()
                 } catch (error) {
-                    console.warn('Failed to unsubscribe conversation channel', error)
+                    logger.warn('Failed to unsubscribe conversation channel', error)
                 }
             })
             conversationSubscriptions.delete(conversationId)

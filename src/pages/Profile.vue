@@ -48,56 +48,110 @@
                     </div>
                 </header>
 
-                <form class="profile-form" @submit.prevent="handleSubmit">
+                <Form 
+                    class="profile-form" 
+                    :validation-schema="profileSchema" 
+                    @submit="handleSubmit"
+                    v-slot="{ errors: formErrors, isSubmitting }"
+                >
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                            <input v-model.trim="form.fullName" type="text" class="form-control" :class="{'is-invalid': errors.fullName}" :disabled="saving" maxlength="120"/>
-                            <div class="invalid-feedback" v-if="errors.fullName">{{ errors.fullName }}</div>
+                            <Field
+                                name="fullName"
+                                type="text"
+                                class="form-control"
+                                v-model.trim="form.fullName"
+                                :class="{'is-invalid': formErrors.fullName}"
+                                :disabled="saving || isSubmitting"
+                                maxlength="120"
+                            />
+                            <ErrorMessage name="fullName" class="invalid-feedback" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                            <input v-model.trim="form.phone" type="tel" class="form-control" :class="{'is-invalid': errors.phone}" :disabled="saving" placeholder="0901234567" maxlength="12"/>
-                            <div class="invalid-feedback" v-if="errors.phone">{{ errors.phone }}</div>
+                            <Field
+                                name="phone"
+                                type="tel"
+                                class="form-control"
+                                v-model.trim="form.phone"
+                                :class="{'is-invalid': formErrors.phone}"
+                                :disabled="saving || isSubmitting"
+                                placeholder="0901234567"
+                                maxlength="12"
+                            />
+                            <ErrorMessage name="phone" class="invalid-feedback" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
-                            <input v-model.trim="form.email" type="email" class="form-control" :class="{'is-invalid': errors.email}" :disabled="saving" maxlength="120"/>
-                            <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
+                            <Field
+                                name="email"
+                                type="email"
+                                class="form-control"
+                                v-model.trim="form.email"
+                                :class="{'is-invalid': formErrors.email}"
+                                :disabled="saving || isSubmitting"
+                                maxlength="120"
+                            />
+                            <ErrorMessage name="email" class="invalid-feedback" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Trạng thái tài khoản <span class="text-danger">*</span></label>
-                            <select v-model="form.status" class="form-select" :class="{'is-invalid': errors.status}" :disabled="saving || !profileCanChangeStatus">
+                            <Field
+                                name="status"
+                                as="select"
+                                class="form-select"
+                                v-model="form.status"
+                                :class="{'is-invalid': formErrors.status}"
+                                :disabled="saving || isSubmitting || !profileCanChangeStatus"
+                            >
                                 <option value="ACTIVE">ACTIVE</option>
                                 <option value="INACTIVE">INACTIVE</option>
-                            </select>
-                            <div class="invalid-feedback" v-if="errors.status">{{ errors.status }}</div>
+                            </Field>
+                            <ErrorMessage name="status" class="invalid-feedback" />
                         </div>
                         <div class="col-12">
                             <label class="form-label">Địa chỉ</label>
-                            <textarea v-model.trim="form.address" rows="3" class="form-control" :class="{'is-invalid': errors.address}" :disabled="saving" maxlength="255"></textarea>
-                            <div class="invalid-feedback" v-if="errors.address">{{ errors.address }}</div>
+                            <Field
+                                name="address"
+                                as="textarea"
+                                rows="3"
+                                class="form-control"
+                                v-model.trim="form.address"
+                                :class="{'is-invalid': formErrors.address}"
+                                :disabled="saving || isSubmitting"
+                                maxlength="255"
+                            />
+                            <ErrorMessage name="address" class="invalid-feedback" />
                         </div>
                         <div class="col-12" v-if="isAdmin">
                             <label class="form-label">Quyền <span class="text-danger">*</span></label>
-                            <div class="role-selection" :class="{'is-invalid': errors.roleIds}">
+                            <div class="role-selection" :class="{'is-invalid': formErrors.roleIds}">
                                 <div class="form-check" v-for="role in availableRoles" :key="role.id">
-                                    <input class="form-check-input" type="checkbox" :id="`role-${role.id}`" :value="role.id" :checked="form.roleIds.includes(role.id)" :disabled="saving" @change="toggleRole(role.id)">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        :id="`role-${role.id}`" 
+                                        :value="role.id" 
+                                        :checked="form.roleIds.includes(role.id)" 
+                                        :disabled="saving || isSubmitting" 
+                                        @change="toggleRole(role.id)"
+                                    >
                                     <label class="form-check-label" :for="`role-${role.id}`">{{ role.name }}</label>
                                 </div>
                             </div>
-                            <div class="invalid-feedback" v-if="errors.roleIds">{{ errors.roleIds }}</div>
+                            <ErrorMessage name="roleIds" class="invalid-feedback" />
                         </div>
                     </div>
 
                     <div class="profile-form__actions">
-                        <button class="btn btn-outline-secondary" type="button" :disabled="saving" @click="resetForm">Đặt lại</button>
-                        <button class="btn btn-primary" type="submit" :disabled="saving">
-                            <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
+                        <button class="btn btn-outline-secondary" type="button" :disabled="saving || isSubmitting" @click="resetForm">Đặt lại</button>
+                        <button class="btn btn-primary" type="submit" :disabled="saving || isSubmitting">
+                            <span v-if="saving || isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
                             Lưu thay đổi
                         </button>
                     </div>
-                </form>
+                </Form>
             </section>
 
             <section class="profile-card profile-card--security">
@@ -108,35 +162,64 @@
                     </div>
                 </header>
 
-                <form class="profile-form" @submit.prevent="handlePasswordSubmit">
+                <Form 
+                    class="profile-form" 
+                    :validation-schema="passwordSchema" 
+                    @submit="handlePasswordSubmit"
+                    v-slot="{ errors: passwordFormErrors, isSubmitting: isPasswordSubmitting }"
+                >
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label">Mật khẩu hiện tại <span class="text-danger">*</span></label>
-                            <input v-model.trim="passwordForm.currentPassword" type="password" class="form-control" :class="{'is-invalid': passwordErrors.currentPassword}" :disabled="passwordChanging" autocomplete="current-password"/>
-                            <div class="invalid-feedback" v-if="passwordErrors.currentPassword">{{ passwordErrors.currentPassword }}</div>
+                            <Field
+                                name="currentPassword"
+                                type="password"
+                                class="form-control"
+                                v-model.trim="passwordForm.currentPassword"
+                                :class="{'is-invalid': passwordFormErrors.currentPassword}"
+                                :disabled="passwordChanging || isPasswordSubmitting"
+                                autocomplete="current-password"
+                            />
+                            <ErrorMessage name="currentPassword" class="invalid-feedback" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
-                            <input v-model.trim="passwordForm.newPassword" type="password" class="form-control" :class="{'is-invalid': passwordErrors.newPassword}" :disabled="passwordChanging" autocomplete="new-password"/>
-                            <div class="invalid-feedback" v-if="passwordErrors.newPassword">{{ passwordErrors.newPassword }}</div>
+                            <Field
+                                name="newPassword"
+                                type="password"
+                                class="form-control"
+                                v-model.trim="passwordForm.newPassword"
+                                :class="{'is-invalid': passwordFormErrors.newPassword}"
+                                :disabled="passwordChanging || isPasswordSubmitting"
+                                autocomplete="new-password"
+                            />
+                            <ErrorMessage name="newPassword" class="invalid-feedback" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
-                            <input v-model.trim="passwordForm.confirmationPassword" type="password" class="form-control" :class="{'is-invalid': passwordErrors.confirmationPassword}" :disabled="passwordChanging" autocomplete="new-password"/>
-                            <div class="invalid-feedback" v-if="passwordErrors.confirmationPassword">{{ passwordErrors.confirmationPassword }}</div>
+                            <Field
+                                name="confirmationPassword"
+                                type="password"
+                                class="form-control"
+                                v-model.trim="passwordForm.confirmationPassword"
+                                :class="{'is-invalid': passwordFormErrors.confirmationPassword}"
+                                :disabled="passwordChanging || isPasswordSubmitting"
+                                autocomplete="new-password"
+                            />
+                            <ErrorMessage name="confirmationPassword" class="invalid-feedback" />
                         </div>
                         <div class="col-12">
                             <small class="text-muted">Mật khẩu mới tối thiểu 6 ký tự, nên bao gồm chữ hoa, chữ thường và số.</small>
                         </div>
                     </div>
                     <div class="profile-form__actions">
-                        <button class="btn btn-outline-secondary" type="button" :disabled="passwordChanging" @click="resetPasswordForm">Đặt lại</button>
-                        <button class="btn btn-primary" type="submit" :disabled="passwordChanging">
-                            <span v-if="passwordChanging" class="spinner-border spinner-border-sm me-2"></span>
+                        <button class="btn btn-outline-secondary" type="button" :disabled="passwordChanging || isPasswordSubmitting" @click="resetPasswordForm">Đặt lại</button>
+                        <button class="btn btn-primary" type="submit" :disabled="passwordChanging || isPasswordSubmitting">
+                            <span v-if="passwordChanging || isPasswordSubmitting" class="spinner-border spinner-border-sm me-2"></span>
                             Đổi mật khẩu
                         </button>
                     </div>
-                </form>
+                </Form>
             </section>
         </div>
 
@@ -154,6 +237,8 @@
 import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue'
 import {useRouter} from 'vue-router'
 import {storeToRefs} from 'pinia'
+import {Form, Field, ErrorMessage} from 'vee-validate'
+import * as yup from 'yup'
 import {useAuthStore} from '@/store/auth'
 import {useProfileStore} from '@/store/profile'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -186,6 +271,57 @@ const passwordForm = reactive({
     currentPassword: '',
     newPassword: '',
     confirmationPassword: ''
+})
+
+// Yup validation schemas
+const phoneRegex = /^(\+?84|0)\d{9}$/
+
+const profileSchema = computed(() => {
+    const baseSchema = {
+        fullName: yup.string().trim().required('Họ tên là bắt buộc.').max(120, 'Họ tên tối đa 120 ký tự.'),
+        phone: yup
+            .string()
+            .trim()
+            .required('Số điện thoại là bắt buộc.')
+            .matches(phoneRegex, 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại 10 số, bắt đầu bằng 0 hoặc +84.'),
+        email: yup
+            .string()
+            .trim()
+            .nullable()
+            .transform((value) => (value === '' ? null : value))
+            .email('Email không hợp lệ.')
+            .max(120, 'Email tối đa 120 ký tự.'),
+        status: yup.string().oneOf(['ACTIVE', 'INACTIVE'], 'Trạng thái không hợp lệ.').required('Trạng thái là bắt buộc.'),
+        address: yup
+            .string()
+            .trim()
+            .nullable()
+            .transform((value) => (value === '' ? null : value))
+            .max(255, 'Địa chỉ tối đa 255 ký tự.')
+    }
+
+    // Nếu là admin, thêm validation cho roleIds
+    if (isAdmin.value) {
+        baseSchema.roleIds = yup
+            .array()
+            .of(yup.number())
+            .min(1, 'Phải chọn ít nhất một quyền.')
+            .required('Quyền là bắt buộc.')
+    }
+
+    return yup.object(baseSchema)
+})
+
+const passwordSchema = yup.object({
+    currentPassword: yup.string().required('Vui lòng nhập mật khẩu hiện tại.'),
+    newPassword: yup
+        .string()
+        .required('Vui lòng nhập mật khẩu mới.')
+        .min(6, 'Mật khẩu mới tối thiểu 6 ký tự.'),
+    confirmationPassword: yup
+        .string()
+        .required('Vui lòng nhập lại mật khẩu mới.')
+        .oneOf([yup.ref('newPassword')], 'Mật khẩu xác nhận không khớp.')
 })
 
 const errors = reactive({})
@@ -240,77 +376,6 @@ const clearPasswordErrors = () => {
     Object.keys(passwordErrors).forEach((key) => {
         passwordErrors[key] = ''
     })
-}
-
-const validateForm = () => {
-    clearErrors()
-    let valid = true
-
-    if (!form.fullName) {
-        errors.fullName = 'Họ tên là bắt buộc.'
-        valid = false
-    }
-
-    if (!form.phone) {
-        errors.phone = 'Số điện thoại là bắt buộc.'
-        valid = false
-    } else if (!/^(\+?84|0)\d{9}$/.test(form.phone)) {
-        errors.phone = 'Số điện thoại không hợp lệ.'
-        valid = false
-    }
-
-    if (form.email) {
-        const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/
-        if (!emailRegex.test(form.email)) {
-            errors.email = 'Email không hợp lệ.'
-            valid = false
-        }
-    }
-
-    if (!form.status) {
-        errors.status = 'Trạng thái là bắt buộc.'
-        valid = false
-    }
-
-    if (form.address && form.address.length > 255) {
-        errors.address = 'Địa chỉ tối đa 255 ký tự.'
-        valid = false
-    }
-
-    if (isAdmin.value && (!form.roleIds || !form.roleIds.length)) {
-        errors.roleIds = 'Phải chọn ít nhất một quyền.'
-        valid = false
-    }
-
-    return valid
-}
-
-const validatePasswordForm = () => {
-    clearPasswordErrors()
-    let valid = true
-
-    if (!passwordForm.currentPassword) {
-        passwordErrors.currentPassword = 'Vui lòng nhập mật khẩu hiện tại.'
-        valid = false
-    }
-
-    if (!passwordForm.newPassword) {
-        passwordErrors.newPassword = 'Vui lòng nhập mật khẩu mới.'
-        valid = false
-    } else if (passwordForm.newPassword.length < 6) {
-        passwordErrors.newPassword = 'Mật khẩu mới tối thiểu 6 ký tự.'
-        valid = false
-    }
-
-    if (!passwordForm.confirmationPassword) {
-        passwordErrors.confirmationPassword = 'Vui lòng nhập lại mật khẩu mới.'
-        valid = false
-    } else if (passwordForm.newPassword && passwordForm.newPassword !== passwordForm.confirmationPassword) {
-        passwordErrors.confirmationPassword = 'Mật khẩu xác nhận không khớp.'
-        valid = false
-    }
-
-    return valid
 }
 
 const toggleRole = (roleId) => {
@@ -392,8 +457,8 @@ const handleAvatarEditorClosed = () => {
     avatarEditorPaused.value = false
 }
 
-const handleSubmit = async () => {
-    if (!validateForm()) return
+const handleSubmit = async (values) => {
+    // values từ vee-validate đã được validate, nhưng cần merge với form state để lấy roleIds
     const userId = authStore.user?.id
     if (!userId) {
         toast.error('Không xác định được người dùng hiện tại.')
@@ -414,14 +479,15 @@ const handleSubmit = async () => {
             removeFlag = false
         }
 
+        // Merge values từ vee-validate với form state (để lấy roleIds và các field không có trong schema)
         const payload = {
-            fullName: form.fullName.trim(),
-            phone: form.phone.trim(),
-            email: form.email?.trim() || null,
-            status: form.status,
-            roleIds: [...form.roleIds],
+            fullName: (values?.fullName || form.fullName || '').trim(),
+            phone: (values?.phone || form.phone || '').trim(),
+            email: (values?.email || form.email || '')?.trim() || null,
+            status: values?.status || form.status,
+            roleIds: isAdmin.value ? (values?.roleIds || [...form.roleIds]) : [...form.roleIds],
             avatarUrl: removeFlag ? null : avatarUrl,
-            address: form.address?.trim() || null,
+            address: (values?.address || form.address || '')?.trim() || null,
             removeAvatar: removeFlag
         }
 
@@ -466,11 +532,14 @@ const mapApiErrors = (err) => {
     }
 }
 
-const handlePasswordSubmit = async () => {
-    if (!validatePasswordForm()) return
-
+const handlePasswordSubmit = async (values) => {
+    // values từ vee-validate đã được validate
     try {
-        await profileStore.changePassword({...passwordForm})
+        await profileStore.changePassword({
+            currentPassword: values.currentPassword,
+            newPassword: values.newPassword,
+            confirmationPassword: values.confirmationPassword
+        })
         toast.success('Đã đổi mật khẩu thành công.')
         resetPasswordForm()
     } catch (err) {

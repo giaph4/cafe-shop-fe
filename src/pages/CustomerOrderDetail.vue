@@ -283,7 +283,6 @@ const fetchHistory = async () => {
         pagination.totalPages = Number(response?.totalPages) || 0
         pagination.totalElements = Number(response?.totalElements) || 0
     } catch (err) {
-        console.error('Failed to fetch customer purchase history', err)
         error.value = err?.response?.data?.message || 'Không thể tải lịch sử mua hàng. Vui lòng thử lại.'
         orders.value = []
         summary.customerName = ''

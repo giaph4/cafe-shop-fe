@@ -274,7 +274,6 @@ const clearImage = async () => {
             form.value.imageUrl = null
             toast.success('Đã xóa ảnh sản phẩm')
         } catch (error) {
-            console.error(error)
             toast.error(error.response?.data?.message || 'Không thể xóa ảnh. Vui lòng thử lại.')
             return
         } finally {
@@ -329,7 +328,6 @@ const handleSubmit = async () => {
         emit('saved', action)
         hide()
     } catch (error) {
-        console.error(error)
         const message = error.response?.data?.message || 'Không thể lưu sản phẩm. Vui lòng thử lại.'
         toast.error(message)
     } finally {

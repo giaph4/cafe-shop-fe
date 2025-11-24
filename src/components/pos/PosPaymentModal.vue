@@ -129,6 +129,7 @@ import { Modal } from 'bootstrap'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import { printInvoiceToWindow } from '@/utils/invoicePrinter'
 import { toast } from 'vue3-toastify'
+import logger from '@/utils/logger'
 
 const props = defineProps({
     order: { type: Object, default: null },
@@ -233,7 +234,7 @@ const handlePrint = async () => {
             toast.success('Đã gửi lệnh in hóa đơn.')
         }
     } catch (error) {
-        console.error(error)
+        logger.error('Failed to print receipt:', error)
         toast.error('Không thể in hóa đơn. Vui lòng thử lại.')
     } finally {
         printing.value = false

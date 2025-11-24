@@ -19,7 +19,14 @@
                     <h5>Doanh thu theo ngày</h5>
                     <p>Biến động doanh thu trong giai đoạn đã chọn</p>
                 </div>
-                <ApexChart type="area" height="320" :series="revenueSeries" :options="revenueOptions"/>
+                <ApexChart 
+                    v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
+                    type="area" 
+                    height="320" 
+                    :series="revenueSeries" 
+                    :options="revenueOptions"
+                />
+                <EmptyState v-else message="Chưa có dữ liệu doanh thu"/>
             </div>
 
             <div class="card chart-card">
@@ -104,7 +111,7 @@
 </template>
 
 <script setup>
-import {computed} from 'vue'
+import {computed, ref, onMounted, nextTick} from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import {formatCurrency} from '@/utils/formatters'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -120,6 +127,12 @@ const props = defineProps({
 
 const authStore = useAuthStore()
 const ApexChart = VueApexCharts
+const isMounted = ref(false)
+
+onMounted(async () => {
+    await nextTick()
+    isMounted.value = true
+})
 const quickActions = computed(() => {
     const roles = authStore.userRoles ?? []
     const actions = []

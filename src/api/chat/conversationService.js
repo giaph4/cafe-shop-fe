@@ -1,21 +1,11 @@
 import api from '@/api/axios'
+import { buildApiError } from '@/api/utils/errorHandler'
 import { normalizePage } from './transformers'
 import {
     normalizeConversation,
     normalizeConversationList,
     normalizeMemberList
 } from './normalizers'
-
-const buildError = (error) => {
-    const status = error?.response?.status
-    const { code, message, details } = error?.response?.data || {}
-    return {
-        status,
-        code: code || null,
-        message: message || error?.message || 'Đã xảy ra lỗi không xác định.',
-        details: details || null
-    }
-}
 
 /**
  * @param {{ page?: number, size?: number }} [params]
@@ -31,7 +21,7 @@ export const listConversations = async (params = {}) => {
         const items = normalizeConversationList(normalized.items)
         return { ...normalized, items }
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -44,7 +34,7 @@ export const getConversation = async (conversationId) => {
         const { data } = await api.get(`/api/chat/conversations/${conversationId}`)
         return normalizeConversation(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -57,7 +47,7 @@ export const createDirectConversation = async (targetUserId) => {
         const { data } = await api.post(`/api/chat/conversations/direct/${targetUserId}`)
         return normalizeConversation(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -74,7 +64,7 @@ export const createGroupConversation = async (payload) => {
         const { data } = await api.post('/api/chat/conversations/group', body)
         return normalizeConversation(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -87,7 +77,7 @@ export const listMembers = async (conversationId) => {
         const { data } = await api.get(`/api/chat/conversations/${conversationId}/members`)
         return normalizeMemberList(data)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -102,7 +92,7 @@ export const pinConversation = async (conversationId, pinned) => {
             params: { pinned }
         })
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -115,7 +105,7 @@ export const addMembers = async (conversationId, memberIds) => {
     try {
         await api.post(`/api/chat/conversations/${conversationId}/members`, memberIds)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -128,7 +118,7 @@ export const removeMember = async (conversationId, memberId) => {
     try {
         await api.delete(`/api/chat/conversations/${conversationId}/members/${memberId}`)
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -144,7 +134,7 @@ export const updateMemberRole = async (conversationId, memberId, role) => {
             params: { role }
         })
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }
 
@@ -159,6 +149,6 @@ export const togglePinned = async (conversationId, pinned) => {
             params: { pinned }
         })
     } catch (error) {
-        throw buildError(error)
+        throw buildApiError(error)
     }
 }

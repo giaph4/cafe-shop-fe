@@ -41,6 +41,12 @@ export const useChatStore = defineStore('chat', () => {
     const pendingMessages = shallowReactive(new Map())
     const typingStates = shallowReactive(new Map())
     const typingTimers = new Map()
+    
+    // Retry logic cho failed messages
+    const retryTimers = new Map()
+    const MAX_RETRY_ATTEMPTS = 3
+    const INITIAL_RETRY_DELAY = 1000 // 1 second
+    const MAX_RETRY_DELAY = 10000 // 10 seconds
 
     const conversationMembers = shallowReactive(new Map())
     const membersLoading = shallowReactive(new Map())
@@ -264,14 +270,109 @@ export const useChatStore = defineStore('chat', () => {
         upsertConversation({ id: conversationId, lastMessage: normalized, updatedAt: normalized.updatedAt || normalized.createdAt })
     }
 
+    /**
+     * Tính toán delay cho retry với exponential backoff
+     * @param {number} attempt - Số lần retry (bắt đầu từ 0)
+     * @returns {number} Delay tính bằng milliseconds
+     */
+    const calculateRetryDelay = (attempt) => {
+        // Exponential backoff: delay = INITIAL_RETRY_DELAY * (2 ^ attempt)
+        const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt)
+        // Giới hạn delay tối đa
+        return Math.min(delay, MAX_RETRY_DELAY)
+    }
+
+    /**
+     * Retry gửi message đã thất bại
+     * @param {number} conversationId - ID của conversation
+     * @param {string} tempId - Temporary ID của message
+     * @param {Function} sendFn - Function để gửi message (async)
+     * @param {number} attempt - Số lần retry hiện tại (mặc định 0)
+     */
+    const retryFailedMessage = async (conversationId, tempId, sendFn, attempt = 0) => {
+        if (attempt >= MAX_RETRY_ATTEMPTS) {
+            // Đã retry quá số lần cho phép, đánh dấu là failed vĩnh viễn
+            const pending = getPendingMessages(conversationId)
+            const index = pending.findIndex((item) => item.tempId === tempId)
+            if (index !== -1) {
+                pending[index].status = 'failed'
+                pending[index].retryAttempts = attempt
+                pendingMessages.set(conversationId, [...pending])
+            }
+            return
+        }
+
+        // Tính delay cho lần retry này
+        const delay = calculateRetryDelay(attempt)
+        
+        // Lưu timer để có thể cancel nếu cần
+        const timerKey = `${conversationId}-${tempId}`
+        
+        // Xóa timer cũ nếu có (trong trường hợp retry lại)
+        const existingTimer = retryTimers.get(timerKey)
+        if (existingTimer) {
+            clearTimeout(existingTimer)
+        }
+        
+        const timerId = setTimeout(async () => {
+            try {
+                // Cập nhật status thành 'retrying'
+                updatePendingMessage(conversationId, tempId, {
+                    status: 'retrying',
+                    retryAttempts: attempt + 1
+                })
+
+                // Thử gửi lại message
+                const message = await sendFn()
+                
+                // Nếu thành công, resolve message
+                resolvePendingMessage(conversationId, tempId, message)
+                
+                // Xóa timer
+                retryTimers.delete(timerKey)
+            } catch (retryError) {
+                // Retry thất bại, thử lại lần sau
+                // Xóa timer hiện tại trước khi retry lại
+                retryTimers.delete(timerKey)
+                retryFailedMessage(conversationId, tempId, sendFn, attempt + 1)
+            }
+        }, delay)
+        
+        retryTimers.set(timerKey, timerId)
+    }
+
     const failPendingMessage = (conversationId, tempId, error) => {
         const pending = getPendingMessages(conversationId)
         const index = pending.findIndex((item) => item.tempId === tempId)
         if (index !== -1) {
             pending[index].error = error
             pending[index].status = 'failed'
+            pending[index].retryAttempts = 0
         }
         pendingMessages.set(conversationId, [...pending])
+        
+        // Tự động retry message đã thất bại với exponential backoff
+        // Lưu thông tin về message để có thể retry
+        const failedMessage = pending[index]
+        if (failedMessage) {
+            // Tạo send function dựa trên message type
+            // Function này sẽ được gọi mỗi lần retry
+            const sendFn = async () => {
+                if (failedMessage.contentType === 'TEXT' && failedMessage.content) {
+                    return await chatMessages.sendTextMessage(conversationId, failedMessage.content)
+                } else if (failedMessage.contentType === 'EMOJI' && failedMessage.content) {
+                    return await chatMessages.sendEmojiMessage(conversationId, failedMessage.content)
+                } else if (failedMessage.contentType === 'IMAGE' || failedMessage.contentType === 'FILE') {
+                    // Attachment messages cần files, không thể retry tự động
+                    // User cần retry manually
+                    throw new Error('Attachment messages cannot be auto-retried')
+                }
+                throw new Error('Unknown message type')
+            }
+            
+            // Bắt đầu retry với exponential backoff
+            retryFailedMessage(conversationId, tempId, sendFn, 0)
+        }
     }
 
     const updatePendingMessage = (conversationId, tempId, patch) => {
@@ -441,6 +542,9 @@ export const useChatStore = defineStore('chat', () => {
             conversationTimers.forEach((timeoutId) => clearTimeout(timeoutId))
         })
         typingTimers.clear()
+        // Cleanup retry timers
+        retryTimers.forEach((timerId) => clearTimeout(timerId))
+        retryTimers.clear()
         conversationMembers.clear()
         membersLoading.clear()
         membersError.clear()

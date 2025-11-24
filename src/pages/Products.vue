@@ -74,15 +74,8 @@
 
         <div class="card tabs-card">
             <div class="card-body">
-                <div v-if="loading" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        {{ error }}
-                    </div>
-                </div>
+                <LoadingState v-if="loading" />
+                <ErrorState v-else-if="error" :message="error" @retry="fetchProducts" />
                 <EmptyState
                     v-else-if="!products.length"
                     title="Chưa có sản phẩm"
@@ -250,13 +243,14 @@ import * as categoryService from '@/api/categoryService'
 import {formatCurrency} from '@/utils/formatters'
 import Pagination from '@/components/common/Pagination.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import ProductModal from '@/components/products/ProductModal.vue'
 import ProductDetailModal from '@/components/products/ProductDetailModal.vue'
 import ProductRecipeModal from '@/components/products/ProductRecipeModal.vue'
 import {PaginationMode, usePagination} from '@/composables/usePagination'
 import {useAuthStore} from '@/store/auth'
-import {useLoading} from '@/composables/useLoading'
-import {useErrorHandler} from '@/composables/useErrorHandler'
+import {useAsyncOperation} from '@/composables/useAsyncOperation'
 
 const authStore = useAuthStore()
 const {isAdmin, isManager, isStaff} = storeToRefs(authStore)
@@ -267,9 +261,7 @@ const canEdit = computed(() => isAdmin.value || isManager.value || isStaff.value
 const canToggle = computed(() => isAdmin.value || isManager.value || isStaff.value)
 const canDelete = computed(() => isAdmin.value || isManager.value) // Only Admin and Manager can delete
 
-const {loading, withLoading} = useLoading(true)
-const {handleError, extractErrorMessage} = useErrorHandler({context: 'Products'})
-const error = ref(null)
+const {loading, error, execute} = useAsyncOperation({context: 'Products'})
 
 const products = ref([])
 const categories = ref([])
@@ -343,42 +335,37 @@ const isToggling = (id) => Boolean(togglingAvailability[id])
 let suppressWatcherFetch = false
 
 const fetchProducts = async () => {
-    error.value = null
     const requestedPage = zeroBasedPage.value
     
-    await withLoading(async () => {
-        try {
-            const response = await productService.getProducts({
-                name: filters.name,
-                categoryId: filters.categoryId,
-                available: filters.available,
-                page: requestedPage,
-                size: pageSize.value
-            })
-            products.value = response.content || []
-            suppressWatcherFetch = true
-            const {adjusted} = updateFromResponse({
-                page: response.number,
-                totalPages: response.totalPages,
-                totalElements: response.totalElements
-            })
-            suppressWatcherFetch = false
-            if (adjusted) {
-                toast.info('Trang đang xem đã được điều chỉnh theo số trang khả dụng.', {autoClose: 2500})
-            }
-        } catch (err) {
-            error.value = handleError(err, 'Không thể tải danh sách sản phẩm.')
+    await execute(async () => {
+        const response = await productService.getProducts({
+            name: filters.name,
+            categoryId: filters.categoryId,
+            available: filters.available,
+            page: requestedPage,
+            size: pageSize.value
+        })
+        products.value = response.content || []
+        suppressWatcherFetch = true
+        const {adjusted} = updateFromResponse({
+            page: response.number,
+            totalPages: response.totalPages,
+            totalElements: response.totalElements
+        })
+        suppressWatcherFetch = false
+        if (adjusted) {
+            toast.info('Trang đang xem đã được điều chỉnh theo số trang khả dụng.', {autoClose: 2500})
         }
-    })
+    }, 'Không thể tải danh sách sản phẩm.')
 }
 
 const fetchCategories = async () => {
-    try {
+    await execute(async () => {
         const response = await categoryService.getCategories()
         categories.value = Array.isArray(response?.content) ? response.content : response
-    } catch (err) {
-        handleError(err, 'Không thể tải danh mục. Vui lòng thử lại.')
-    }
+    }, 'Không thể tải danh mục. Vui lòng thử lại.', {
+        showToast: false // Không hiển thị toast cho categories, chỉ log error
+    })
 }
 
 const debouncedFetchProducts = debounce(() => {
@@ -421,31 +408,31 @@ const deleteProduct = async (product) => {
     const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa "${product.name}"?`)
     if (!confirmDelete) return
 
-    try {
+    await execute(async () => {
         await productService.deleteProduct(product.id)
         toast.success('Đã xóa sản phẩm thành công')
         fetchProducts()
-    } catch (err) {
-        handleError(err, 'Không thể xóa sản phẩm. Vui lòng thử lại.')
-    }
+    }, 'Không thể xóa sản phẩm. Vui lòng thử lại.')
 }
 
 const handleToggleAvailability = async (product) => {
     if (!product?.id) return
     togglingAvailability[product.id] = true
     try {
-        const updated = await productService.toggleProductAvailability(product.id)
-        toast.success(updated.available ? 'Sản phẩm đã mở bán trở lại' : 'Sản phẩm đã ngừng bán')
-        if (filters.available !== null && updated.available !== filters.available) {
-            fetchProducts()
-        } else {
-            const index = products.value.findIndex((item) => item.id === updated.id)
-            if (index !== -1) {
-                products.value.splice(index, 1, {...products.value[index], ...updated})
+        await execute(async () => {
+            const updated = await productService.toggleProductAvailability(product.id)
+            toast.success(updated.available ? 'Sản phẩm đã mở bán trở lại' : 'Sản phẩm đã ngừng bán')
+            if (filters.available !== null && updated.available !== filters.available) {
+                fetchProducts()
+            } else {
+                const index = products.value.findIndex((item) => item.id === updated.id)
+                if (index !== -1) {
+                    products.value.splice(index, 1, {...products.value[index], ...updated})
+                }
             }
-        }
-    } catch (err) {
-        handleError(err, 'Không thể thay đổi trạng thái. Vui lòng thử lại.')
+        }, 'Không thể thay đổi trạng thái. Vui lòng thử lại.', {
+            showToast: false // Đã có toast riêng
+        })
     } finally {
         delete togglingAvailability[product.id]
     }

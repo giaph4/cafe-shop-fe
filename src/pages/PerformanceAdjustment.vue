@@ -130,13 +130,12 @@ const fetchAssignmentOptions = async () => {
                     })
                 }
             } catch (err) {
-                console.warn(`Failed to fetch assignments for shift ${shift.id}`, err)
+                // Bỏ qua lỗi khi fetch assignments cho shift đơn lẻ
             }
         }
         
         assignmentOptions.value = allAssignments
     } catch (err) {
-        console.error(err)
         assignmentOptions.value = []
     }
 }
@@ -172,7 +171,6 @@ const fetchAdjustments = async () => {
         
         adjustments.value = fetched
     } catch (err) {
-        console.error(err)
         error.value = err.response?.data?.message || 'Không thể tải danh sách điều chỉnh.'
         adjustments.value = []
     } finally {
@@ -206,7 +204,6 @@ const handleFormSubmit = async (payload) => {
         editingAdjustment.value = null
         await fetchAdjustments()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể lưu điều chỉnh.')
     } finally {
         formSubmitting.value = false
@@ -225,7 +222,6 @@ const handleRevoke = async (adjustment) => {
         toast.success('Đã thu hồi điều chỉnh.')
         await fetchAdjustments()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể thu hồi điều chỉnh.')
     }
 }
@@ -238,7 +234,6 @@ const handleRemove = async (adjustment) => {
         toast.success('Đã xóa điều chỉnh.')
         await fetchAdjustments()
     } catch (err) {
-        console.error(err)
         toast.error(err.response?.data?.message || 'Không thể xóa điều chỉnh.')
     }
 }

@@ -22,18 +22,24 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
-import { getTables } from '@/api/tableService.js'
+import { computed, onMounted } from 'vue'
+import { useTableStore } from '@/store/tables'
 
 const emit = defineEmits(['table-selected'])
 
-const { data: tablesRaw, isLoading, isError } = useQuery({
-    queryKey: ['tables'],
-    queryFn: getTables,
-})
+const tableStore = useTableStore()
 
-const tables = computed(() => Array.isArray(tablesRaw.value) ? tablesRaw.value : [])
+// Use tables from store (with real-time updates)
+const tables = computed(() => tableStore.tables)
+const isLoading = computed(() => tableStore.loading)
+const isError = computed(() => !!tableStore.error)
+
+onMounted(async () => {
+    // Load tables if not already loaded
+    await tableStore.loadTables()
+    // Connect WebSocket for real-time updates
+    tableStore.connectWebSocket()
+})
 
 const selectT = (table) => {
     emit('table-selected', table)

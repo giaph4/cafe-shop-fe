@@ -1,24 +1,16 @@
 import api from './axios'
+import { buildApiError } from './utils/errorHandler'
+import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/customers'
 
-const buildSearchParams = ({ keyword = '', page = 0, size = 15, sort } = {}) => {
-    const params = {
-        keyword,
-        page,
-        size,
-    }
-    if (sort) {
-        params.sort = sort
-    }
-    return params
-}
+// Sử dụng cleanParams từ utils thay vì buildSearchParams
 
 /**
  * 7.1. Lấy danh sách khách hàng (phân trang)
  */
 export const getCustomers = async ({ keyword = '', page = 0, size = 15, sort } = {}) => {
-    const params = buildSearchParams({ keyword, page, size, sort })
+    const params = cleanParams({ keyword, page, size, sort })
     const { data } = await api.get(BASE_URL, { params })
     return data
 }
@@ -57,14 +49,6 @@ export const getCustomerById = async (id) => {
 }
 
 /**
- * 7.5. Lấy khách hàng theo số điện thoại
- */
-export const getCustomerByPhone = async (phone) => {
-    const { data } = await api.get(`${BASE_URL}/phone/${phone}`)
-    return data
-}
-
-/**
  * 7.6. Cập nhật khách hàng
  */
 export const updateCustomer = async ({ id, data: customerData }) => {
@@ -96,13 +80,13 @@ export const getCustomerPurchaseHistory = async ({
     page = 0,
     size = 10,
 } = {}) => {
-    const params = {
+    const params = cleanParams({
         page,
         size,
-    }
-    if (startDate) params.startDate = startDate
-    if (endDate) params.endDate = endDate
-    if (status) params.status = status
+        startDate,
+        endDate,
+        status
+    })
 
     const { data } = await api.get(`${BASE_URL}/${id}/purchase-history`, { params })
     return data

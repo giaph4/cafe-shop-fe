@@ -1,4 +1,6 @@
 import api from './axios'
+import { buildApiError } from './utils/errorHandler'
+import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/expenses'
 
@@ -13,19 +15,12 @@ export const createExpense = async (expenseData) => {
 /**
  * 13.2 Lấy danh sách chi phí (có lọc)
  */
-export const getExpenses = async (filters) => {
-    const params = {
+export const getExpenses = async (filters = {}) => {
+    const params = cleanParams({
         page: filters.page || 0,
         size: filters.size || 10,
-        startDate: filters.startDate || null,
-        endDate: filters.endDate || null,
-    }
-
-    // Xóa các param rỗng hoặc null
-    Object.keys(params).forEach(key => {
-        if (params[key] === null || params[key] === '') {
-            delete params[key]
-        }
+        startDate: filters.startDate,
+        endDate: filters.endDate
     })
 
     const { data } = await api.get(BASE_URL, { params })

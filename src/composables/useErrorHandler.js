@@ -4,6 +4,7 @@
  */
 
 import { toast } from 'vue3-toastify'
+import logger from '@/utils/logger'
 
 /**
  * Extract error message from error object
@@ -47,7 +48,7 @@ export function handleApiError(error, options = {}) {
 
     // Log error in development
     if (import.meta.env.DEV) {
-        console.error(`[${context}]`, error)
+        logger.error(`[${context}]`, error)
     }
 
     // Show toast notification

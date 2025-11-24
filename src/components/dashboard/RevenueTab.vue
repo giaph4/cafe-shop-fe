@@ -6,7 +6,14 @@
                     <h5>Doanh thu theo ngày</h5>
                     <p>Trực quan hóa doanh thu trong giai đoạn đã chọn</p>
                 </div>
-                <apexchart type="area" height="320" :series="revenueSeries" :options="revenueOptions"/>
+                <apexchart 
+                    v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
+                    type="area" 
+                    height="320" 
+                    :series="revenueSeries" 
+                    :options="revenueOptions"
+                />
+                <EmptyState v-else message="Chưa có dữ liệu doanh thu"/>
             </div>
 
             <div class="card chart-card">
@@ -14,7 +21,14 @@
                     <h5>Lợi nhuận</h5>
                     <p>So sánh doanh thu và lợi nhuận trong kỳ</p>
                 </div>
-                <apexchart type="bar" height="320" :series="profitSeries" :options="profitOptions"/>
+                <apexchart 
+                    v-if="isMounted && profitSeries && profitSeries.length > 0 && profitOptions"
+                    type="bar" 
+                    height="320" 
+                    :series="profitSeries" 
+                    :options="profitOptions"
+                />
+                <EmptyState v-else message="Chưa có dữ liệu lợi nhuận"/>
             </div>
         </div>
 
@@ -99,12 +113,18 @@
 </template>
 
 <script setup>
-import {computed} from 'vue'
+import {computed, ref, onMounted, nextTick} from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import EmptyState from '@/components/common/EmptyState.vue'
 import {formatCurrency} from '@/utils/formatters'
 
 const apexchart = VueApexCharts
+const isMounted = ref(false)
+
+onMounted(async () => {
+    await nextTick()
+    isMounted.value = true
+})
 
 const props = defineProps({
     revenueSeries: {type: Array, default: () => []},

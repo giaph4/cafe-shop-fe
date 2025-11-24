@@ -131,6 +131,7 @@ import { Modal } from 'bootstrap'
 import { toast } from 'vue3-toastify'
 import { getProductRecipe, updateProductRecipe } from '@/api/productService'
 import { getIngredients } from '@/api/ingredientService'
+import logger from '@/utils/logger'
 
 const props = defineProps({
     product: {
@@ -178,22 +179,49 @@ const removeIngredientRow = (index) => {
 
 const validateRecipe = () => {
     let valid = true
+    const usedIngredientIds = new Set()
+    
     recipeItems.forEach((item, index) => {
         item.errors = {}
         
+        // Validate ingredient selection
         if (!item.ingredientId) {
             item.errors.ingredientId = 'Vui lòng chọn nguyên liệu.'
             valid = false
-        } else if (isIngredientUsed(item.ingredientId, index)) {
+        } else if (usedIngredientIds.has(item.ingredientId)) {
             item.errors.ingredientId = 'Nguyên liệu này đã được thêm vào công thức.'
+            valid = false
+        } else {
+            usedIngredientIds.add(item.ingredientId)
+        }
+        
+        // Validate quantity
+        const quantity = Number(item.quantityNeeded)
+        if (!item.quantityNeeded || isNaN(quantity) || quantity <= 0) {
+            item.errors.quantityNeeded = 'Số lượng phải lớn hơn 0.'
+            valid = false
+        } else if (quantity > 1000000) {
+            // Giới hạn số lượng hợp lý (tránh nhập sai)
+            item.errors.quantityNeeded = 'Số lượng quá lớn. Vui lòng kiểm tra lại.'
             valid = false
         }
         
-        if (!item.quantityNeeded || item.quantityNeeded <= 0) {
-            item.errors.quantityNeeded = 'Số lượng phải lớn hơn 0.'
-            valid = false
-        }
+        // Validate unit consistency (nếu có yêu cầu)
+        // Có thể thêm logic check unit consistency ở đây nếu cần
+        // Ví dụ: tất cả ingredients phải cùng unit, hoặc convert unit
     })
+    
+    // Validate tổng số lượng (nếu cần)
+    // Có thể thêm validation tổng quantity không vượt quá một giá trị nào đó
+    const totalQuantity = recipeItems.reduce((sum, item) => {
+        const qty = Number(item.quantityNeeded) || 0
+        return sum + qty
+    }, 0)
+    
+    if (totalQuantity <= 0 && recipeItems.length > 0) {
+        // Nếu có items nhưng tổng quantity = 0, có lỗi
+        valid = false
+    }
     
     return valid
 }
@@ -203,7 +231,7 @@ const loadIngredients = async () => {
         const data = await getIngredients({ page: 0, size: 1000 })
         ingredients.value = data?.content || []
     } catch (err) {
-        console.error('Failed to load ingredients:', err)
+        logger.error('Failed to load ingredients:', err)
         toast.error('Không thể tải danh sách nguyên liệu.')
     }
 }
@@ -229,7 +257,7 @@ const loadRecipe = async () => {
             })
         }
     } catch (err) {
-        console.error('Failed to load recipe:', err)
+        logger.error('Failed to load recipe:', err)
         error.value = err.response?.data?.message || 'Không thể tải công thức sản phẩm.'
         recipeItems.splice(0, recipeItems.length)
     } finally {
@@ -258,7 +286,7 @@ const handleSave = async () => {
         emit('saved')
         hide()
     } catch (err) {
-        console.error('Failed to save recipe:', err)
+        logger.error('Failed to save recipe:', err)
         toast.error(err.response?.data?.message || 'Không thể lưu công thức sản phẩm.')
     } finally {
         submitting.value = false

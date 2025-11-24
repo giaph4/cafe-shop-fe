@@ -2,6 +2,7 @@ import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { ref } from 'vue'
 import { getAccessToken } from '@/utils/tokenStorage'
+import logger from '@/utils/logger'
 
 if (typeof window !== 'undefined' && typeof window.global === 'undefined') {
     window.global = window
@@ -16,7 +17,7 @@ const appendTokenParam = (baseUrl, token) => {
         url.searchParams.set('token', token)
         return url.toString()
     } catch (error) {
-        console.warn('Failed to build WebSocket URL, fallback to manual concat', error)
+        logger.warn('Failed to build WebSocket URL, fallback to manual concat', error)
         const separator = baseUrl.includes('?') ? '&' : '?'
         return `${baseUrl}${separator}token=${encodeURIComponent(token)}`
     }
@@ -46,7 +47,7 @@ export const useShiftSessionEvents = (handleEvent) => {
             try {
                 subscription.unsubscribe()
             } catch (error) {
-                console.warn('Failed to unsubscribe from shift session events', error)
+                logger.warn('Failed to unsubscribe from shift session events', error)
             }
             subscription = null
         }
@@ -58,7 +59,7 @@ export const useShiftSessionEvents = (handleEvent) => {
             try {
                 await client.value.deactivate()
             } catch (error) {
-                console.warn('Failed to deactivate shift session STOMP client', error)
+                logger.warn('Failed to deactivate shift session STOMP client', error)
             }
             client.value = null
         }
@@ -84,7 +85,7 @@ export const useShiftSessionEvents = (handleEvent) => {
             reconnectDelay: 5000,
             heartbeatIncoming: 10000,
             heartbeatOutgoing: 10000,
-            debug: import.meta.env.MODE === 'development' ? console.log : undefined
+            debug: import.meta.env.DEV ? logger.debug : undefined
         })
 
         instance.beforeConnect = () => {
@@ -105,19 +106,19 @@ export const useShiftSessionEvents = (handleEvent) => {
                         handleEvent(payload)
                     }
                 } catch (error) {
-                    console.warn('Failed to parse shift session event payload', error)
+                    logger.warn('Failed to parse shift session event payload', error)
                 }
             })
         }
 
         instance.onStompError = (frame) => {
             lastError.value = frame
-            console.warn('STOMP error received for shift session events', frame)
+            logger.warn('STOMP error received for shift session events', frame)
         }
 
         instance.onWebSocketError = (event) => {
             lastError.value = event
-            console.warn('WebSocket error for shift session events', event)
+            logger.warn('WebSocket error for shift session events', event)
         }
 
         instance.onWebSocketClose = (event) => {

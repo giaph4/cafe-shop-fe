@@ -1,4 +1,6 @@
 import api from './axios'
+import { buildApiError } from './utils/errorHandler'
+import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/purchase-orders'
 
@@ -13,21 +15,14 @@ export const createPurchaseOrder = async (orderData) => {
 /**
  * 12.2 Lấy danh sách phiếu nhập (có lọc)
  */
-export const getPurchaseOrders = async (filters) => {
-    const params = {
+export const getPurchaseOrders = async (filters = {}) => {
+    const params = cleanParams({
         page: filters.page || 0,
         size: filters.size || 10,
-        status: filters.status || null,
-        supplierId: filters.supplierId || null,
-        startDate: filters.startDate || null,
-        endDate: filters.endDate || null,
-    }
-
-    // Xóa các param rỗng hoặc null
-    Object.keys(params).forEach(key => {
-        if (params[key] === null || params[key] === '') {
-            delete params[key]
-        }
+        status: filters.status,
+        supplierId: filters.supplierId,
+        startDate: filters.startDate,
+        endDate: filters.endDate
     })
 
     const { data } = await api.get(BASE_URL, { params })
@@ -55,5 +50,35 @@ export const markOrderAsCompleted = async (id) => {
  */
 export const cancelPurchaseOrder = async (id) => {
     const { data } = await api.post(`${BASE_URL}/${id}/cancel`)
+    return data
+}
+
+/**
+ * 12.6 Cập nhật phiếu nhập hàng
+ * @param {string|number} id - ID của phiếu nhập cần cập nhật
+ * @param {Object} updateData - Dữ liệu cần cập nhật
+ * @param {number} [updateData.supplierId] - ID nhà cung cấp
+ * @param {string} [updateData.note] - Ghi chú
+ * @param {Array} [updateData.items] - Danh sách items (nếu cần cập nhật)
+ * @returns {Promise<Object>} Purchase order đã được cập nhật
+ */
+export const updatePurchaseOrder = async (id, updateData) => {
+    if (!id) {
+        throw new Error('Purchase order ID is required')
+    }
+    
+    // Chuẩn hóa payload: chỉ gửi các trường có giá trị
+    const body = {}
+    if (updateData.supplierId !== undefined) {
+        body.supplierId = updateData.supplierId
+    }
+    if (updateData.note !== undefined) {
+        body.note = typeof updateData.note === 'string' ? updateData.note.trim() : updateData.note
+    }
+    if (Array.isArray(updateData.items)) {
+        body.items = updateData.items
+    }
+    
+    const { data } = await api.put(`${BASE_URL}/${id}`, body)
     return data
 }

@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {computed, ref} from 'vue'
+import logger from '@/utils/logger'
 
 const COLLAPSE_KEY = 'ui.sidebar.isCollapsed'
 const EXPANDED_KEY = 'ui.sidebar.expanded'
@@ -24,7 +25,7 @@ const readArray = (key) => {
         const parsed = JSON.parse(raw)
         return Array.isArray(parsed) ? parsed : []
     } catch (err) {
-        console.warn('[sidebar-store] Failed to read array state', err)
+        logger.warn('[sidebar-store] Failed to read array state', err)
         return []
     }
 }

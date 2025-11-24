@@ -10,7 +10,7 @@
                             :key="preset.value"
                             class="btn btn-outline-primary"
                             :class="{ active: rangePreset === preset.value }"
-                            @click="applyPreset(preset.value)"
+                            @click="handlePresetClick(preset.value)"
                         >
                             {{ preset.label }}
                         </button>
@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted} from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import OverviewTab from '@/components/dashboard/OverviewTab.vue'
 import RevenueTab from '@/components/dashboard/RevenueTab.vue'
 import CustomersTab from '@/components/dashboard/CustomersTab.vue'
@@ -116,42 +116,22 @@ import {
     getTotalExpenses,
     getTotalImportedIngredientCost
 } from '@/api/reportService'
-import {formatCurrency} from '@/utils/formatters'
+import { formatCurrency } from '@/utils/formatters'
+import { useDashboardEvents } from '@/composables/useDashboardEvents'
+import { useAsyncOperation } from '@/composables/useAsyncOperation'
+import { useDateRangeFilter } from '@/composables/useDateRangeFilter'
 
-const today = () => new Date().toISOString().split('T')[0]
-const shiftDateFrom = (baseDate, daysDiff) => {
-    const date = new Date(baseDate)
-    date.setDate(date.getDate() + daysDiff)
-    return date
-}
-const formatDate = (date) => date.toISOString().split('T')[0]
-const shiftDate = (days) => formatDate(shiftDateFrom(new Date(), days))
-
-const computePreviousRange = () => {
-    const start = new Date(`${filters.value.startDate}T00:00:00`)
-    const end = new Date(`${filters.value.endDate}T00:00:00`)
-    const diffDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)))
-    const previousEnd = shiftDateFrom(start, -1)
-    const previousStart = shiftDateFrom(previousEnd, -diffDays)
-    return {
-        previousStart: formatDate(previousStart),
-        previousEnd: formatDate(previousEnd)
-    }
-}
-
-const presets = [
-    {value: '7', label: '7 ngày'},
-    {value: '30', label: '30 ngày'},
-    {value: '90', label: '90 ngày'}
-]
-
-const filters = ref({
-    startDate: shiftDate(-7),
-    endDate: today()
-})
+const { filters, presets, applyPreset, computePreviousRange, validate } = useDateRangeFilter(7)
 
 const rangePreset = ref('7')
 const activeTab = ref('overview')
+
+// Apply preset handler
+const handlePresetClick = (presetValue) => {
+    rangePreset.value = presetValue
+    applyPreset(presetValue)
+    fetchData()
+}
 
 const tabs = [
     {key: 'overview', label: 'Tổng quan', icon: 'bi bi-speedometer2'},
@@ -174,27 +154,61 @@ const productSummary = ref(null)
 const totalExpenses = ref(null)
 const totalImportedCost = ref(null)
 
-const loading = ref(true)
-const error = ref(null)
+const { loading, error, execute } = useAsyncOperation({ context: 'Dashboard' })
 
-const applyPreset = (preset) => {
-    rangePreset.value = preset
-    filters.value = {
-        startDate: shiftDate(-Number(preset)),
-        endDate: today()
+// Real-time updates với WebSocket
+const handleDashboardEvent = (payload) => {
+    // Xử lý các loại events từ backend
+    // Ví dụ: ORDER_CREATED, ORDER_PAID, EXPENSE_ADDED, etc.
+    const eventType = payload?.eventType || payload?.type
+    
+    if (!eventType) return
+    
+    // Nếu có event mới, refresh data (có thể chỉ refresh một phần để tối ưu)
+    // Hoặc update trực tiếp data dựa trên event type
+    switch (eventType) {
+        case 'ORDER_CREATED':
+        case 'ORDER_PAID':
+        case 'ORDER_CANCELLED':
+            // Refresh stats và revenue data
+            fetchData()
+            break
+        case 'EXPENSE_ADDED':
+        case 'EXPENSE_UPDATED':
+            // Refresh expenses data
+            fetchData()
+            break
+        case 'DASHBOARD_STATS_UPDATED':
+            // Update stats trực tiếp từ payload
+            if (payload.stats) {
+                stats.value = payload.stats
+            }
+            break
+        default:
+            // Refresh toàn bộ data cho các event khác
+            fetchData()
     }
-    fetchData()
 }
+
+const {
+    connected: realtimeConnected,
+    connecting: realtimeConnecting,
+    lastError: realtimeError,
+    connect: connectRealtime,
+    disconnect: disconnectRealtime,
+    ensureConnected: ensureRealtime
+} = useDashboardEvents(handleDashboardEvent)
+
+// applyPreset đã được thay thế bởi handlePresetClick sử dụng useDateRangeFilter
 
 const fetchData = async () => {
     if (filters.value.startDate > filters.value.endDate) {
         error.value = 'Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.'
         return
     }
-    loading.value = true
-    error.value = null
-    try {
-        const {previousStart, previousEnd} = computePreviousRange()
+
+    await execute(async () => {
+        const { previousStart, previousEnd } = computePreviousRange()
         const [
             dashboardData,
             revenueData,
@@ -237,23 +251,18 @@ const fetchData = async () => {
         const revenueDates = revenueData?.labels ?? []
         const revenueValues = revenueData?.values ?? []
 
-        revenueSeries.value = [{name: 'Doanh thu', data: revenueValues}]
+        revenueSeries.value = [{ name: 'Doanh thu', data: revenueValues }]
         revenueOptions.value = buildRevenueOptions(revenueDates)
 
         const profitRevenue = profitData?.totalRevenue || 0
         const profitTotal = profitData?.totalProfit || 0
 
         profitSeries.value = [
-            {name: 'Doanh thu', data: [profitRevenue]},
-            {name: 'Lợi nhuận', data: [profitTotal]}
+            { name: 'Doanh thu', data: [profitRevenue] },
+            { name: 'Lợi nhuận', data: [profitTotal] }
         ]
         profitOptions.value = buildProfitOptions()
-
-    } catch (err) {
-        error.value = 'Không thể tải dữ liệu báo cáo. Vui lòng thử lại.'
-    } finally {
-        loading.value = false
-    }
+    }, 'Không thể tải dữ liệu báo cáo. Vui lòng thử lại.')
 }
 
 const buildRevenueOptions = (categories) => ({
@@ -288,7 +297,16 @@ const buildProfitOptions = () => ({
     colors: ['#4f46e5', '#22c55e']
 })
 
-onMounted(fetchData)
+onMounted(() => {
+    fetchData()
+    // Kết nối WebSocket để nhận real-time updates
+    ensureRealtime()
+})
+
+onBeforeUnmount(() => {
+    // Disconnect WebSocket khi component unmount
+    disconnectRealtime()
+})
 </script>
 
 <style scoped>

@@ -1,4 +1,5 @@
 import api from './axios'
+import { buildApiError } from './utils/errorHandler'
 
 const BASE_URL = '/api/v1/categories'
 

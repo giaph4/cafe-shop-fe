@@ -163,6 +163,18 @@
                             <i v-else class="bi bi-x-circle me-1"></i>
                             Vô hiệu hóa
                         </button>
+                        <button class="btn btn-sm btn-primary" type="button" @click="handleBulkAssignRoles"
+                            :disabled="bulkProcessing">
+                            <span v-if="bulkProcessing" class="spinner-border spinner-border-sm me-1"></span>
+                            <i v-else class="bi bi-person-badge me-1"></i>
+                            Gán quyền
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" type="button" @click="handleBulkExport"
+                            :disabled="bulkProcessing || exporting">
+                            <span v-if="exporting" class="spinner-border spinner-border-sm me-1"></span>
+                            <i v-else class="bi bi-download me-1"></i>
+                            Xuất Excel
+                        </button>
                         <button class="btn btn-sm btn-outline-secondary" type="button" @click="clearSelection"
                             :disabled="bulkProcessing">
                             <i class="bi bi-x-lg me-1"></i>
@@ -175,10 +187,8 @@
 
         <div class="card data-card mb-4">
             <div class="card-body">
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-                <div v-else-if="error" class="alert alert-warning">{{ error }}</div>
+                <LoadingState v-if="loading" />
+                <ErrorState v-else-if="error" :message="error" @retry="fetchUsers" />
                 <template v-else>
                     <div v-if="viewMode === 'table'">
                         <div v-if="!filteredUsers.length">
@@ -562,15 +572,15 @@ import StaffCreateModal from '@/components/staff/StaffCreateModal.vue'
 import LoginHistoryModal from '@/components/staff/LoginHistoryModal.vue'
 import AvatarEditorModal from '@/components/staff/AvatarEditorModal.vue'
 import { defineAsyncComponent } from 'vue'
-import { getUsers, updateUser, getAllRoles, getUserById } from '@/api/userService'
-import { register } from '@/api/authService'
+import { getUsers, updateUser, getAllRoles, getUserById, createUser, adminResetPassword, getUserActivityLogs } from '@/api/userService'
 import { uploadFile, deleteFile, extractFileName } from '@/api/fileService'
 import { getStaffDashboard } from '@/api/staffDashboardService'
 import { formatDateTime, formatNumber } from '@/utils/formatters'
 import { PaginationMode, usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/store/auth'
-import { useLoading } from '@/composables/useLoading'
-import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useAsyncOperation } from '@/composables/useAsyncOperation'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => authStore.user?.id)
@@ -595,9 +605,7 @@ const filters = reactive({
     lastSeen: ''
 })
 const showAdvancedFilters = ref(false)
-const { loading, withLoading } = useLoading(false)
-const { handleError } = useErrorHandler({ context: 'Staff' })
-const error = ref('')
+const { loading, error, execute } = useAsyncOperation({ context: 'Staff' })
 
 const users = ref([])
 const selectedUsers = ref([])
@@ -910,29 +918,26 @@ onBeforeRouteLeave(() => {
 let suppressWatcherFetch = false
 
 const fetchUsers = async () => {
-    error.value = ''
-    
-    await withLoading(async () => {
-        try {
-            const data = await getUsers({
-                page: zeroBasedPage.value,
-                size: pageSize.value,
-                search: filters.search || undefined,
-                status: filters.status || undefined,
-                role: filters.role || undefined
-            })
-            users.value = data?.content || []
-            totalElements.value = data?.totalElements || 0
+    await execute(async () => {
+        const data = await getUsers({
+            page: zeroBasedPage.value,
+            size: pageSize.value,
+            search: filters.search || undefined,
+            status: filters.status || undefined,
+            role: filters.role || undefined
+        })
+        users.value = data?.content || []
+        totalElements.value = data?.totalElements || 0
 
-            suppressWatcherFetch = true
-            const { adjusted } = updateFromResponse({
-                page: data?.number,
-                totalPages: data?.totalPages,
-                totalElements: data?.totalElements
-            })
-            suppressWatcherFetch = false
-        } catch (err) {
-            error.value = handleError(err, 'Không thể tải danh sách nhân viên.')
+        suppressWatcherFetch = true
+        const { adjusted } = updateFromResponse({
+            page: data?.number,
+            totalPages: data?.totalPages,
+            totalElements: data?.totalElements
+        })
+        suppressWatcherFetch = false
+    }, 'Không thể tải danh sách nhân viên.', {
+        onError: () => {
             users.value = []
         }
     })
@@ -1008,9 +1013,11 @@ const loadRoles = async () => {
     if (roles.value.length) return
     rolesLoading.value = true
     try {
-        roles.value = await getAllRoles()
-    } catch (err) {
-        handleError(err, 'Không thể tải danh sách quyền.')
+        await execute(async () => {
+            roles.value = await getAllRoles()
+        }, 'Không thể tải danh sách quyền.', {
+            showToast: false // Không hiển thị toast cho roles
+        })
     } finally {
         rolesLoading.value = false
     }
@@ -1024,7 +1031,9 @@ const openCreateModal = async () => {
 const handleCreateSubmit = async (payload) => {
     createSubmitting.value = true
     try {
-        await register(payload)
+        // Sử dụng createUser từ userService thay vì register từ authService
+        // Điều này cho phép admin tạo user với đầy đủ quyền kiểm soát (bao gồm roleIds)
+        await createUser(payload)
         toast.success('Đã tạo tài khoản nhân viên mới.')
         createModalRef.value?.hide()
         rememberCurrent()
@@ -1413,13 +1422,10 @@ const submitResetPassword = async () => {
     
     resetPasswordSubmitting.value = true
     try {
-        // Note: Backend may need a new endpoint for admin reset password
-        // For now, we'll use the changePassword endpoint with a workaround
-        // This might need backend support
-        toast.warning('Tính năng đặt lại mật khẩu cần hỗ trợ từ backend. Vui lòng liên hệ admin.')
-        // await adminResetPassword(resetPasswordForm.userId, resetPasswordForm.newPassword)
-        // toast.success('Đã đặt lại mật khẩu thành công.')
-        // hideResetPasswordModal()
+        // Gọi API admin reset password
+        await adminResetPassword(resetPasswordForm.userId, resetPasswordForm.newPassword)
+        toast.success('Đã đặt lại mật khẩu thành công.')
+        hideResetPasswordModal()
     } catch (err) {
         handleError(err, 'Không thể đặt lại mật khẩu.')
     } finally {
@@ -1435,14 +1441,22 @@ const openUserActivityLog = async (user) => {
     userActivityLogModalInstance?.show()
     
     try {
-        // Note: Backend may need an endpoint to get audit logs for a user
-        // For now, we'll show a placeholder message
-        // This would typically call: await getAuditLogsByUserId(user.id)
-        toast.info('Tính năng lịch sử hoạt động cần hỗ trợ từ backend.')
-        // const logs = await getAuditLogsByUserId(user.id)
-        // activityLogs.value = logs
+        // Gọi API lấy activity logs của user
+        const response = await getUserActivityLogs(user.id, { page: 0, size: 50 })
+        
+        // Xử lý response: có thể là Page object hoặc Array
+        if (Array.isArray(response)) {
+            activityLogs.value = response
+        } else if (Array.isArray(response?.content)) {
+            activityLogs.value = response.content
+        } else if (Array.isArray(response?.items)) {
+            activityLogs.value = response.items
+        } else {
+            activityLogs.value = []
+        }
     } catch (err) {
         handleError(err, 'Không thể tải lịch sử hoạt động.')
+        activityLogs.value = []
     } finally {
         activityLogLoading.value = false
     }

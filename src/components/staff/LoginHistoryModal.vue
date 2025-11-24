@@ -102,6 +102,7 @@ import {Modal} from 'bootstrap'
 import {toast} from 'vue3-toastify'
 import {formatDateTime} from '@/utils/formatters'
 import {getLoginHistory} from '@/api/loginHistoryService'
+import logger from '@/utils/logger'
 
 const props = defineProps({
     username: {type: String, default: ''}
@@ -157,7 +158,7 @@ const fetchHistory = async () => {
         page.totalPages = data?.totalPages ?? 0
         page.size = data?.size ?? 20
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to load login history:', err)
         error.value = err.response?.data?.message || 'Không thể tải lịch sử đăng nhập.'
         history.value = []
     } finally {

@@ -4,7 +4,10 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Chi tiết đơn hàng #{{ order?.id }}</h5>
+                    <div>
+                        <h5 class="modal-title">Chi tiết đơn hàng #{{ order?.id }}</h5>
+                        <p class="mb-0 text-muted small">Xem thông tin chi tiết và in hóa đơn cho đơn hàng.</p>
+                    </div>
                     <div class="d-flex align-items-center gap-2">
                         <button
                             v-if="order?.status === 'PAID'"
@@ -17,7 +20,7 @@
                             <i v-else class="bi bi-printer me-1"></i>
                             In hóa đơn
                         </button>
-                        <button type="button" class="btn-close" @click="hide"></button>
+                        <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
                     </div>
                 </div>
                 <div class="modal-body">
@@ -82,7 +85,7 @@
                     </template>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @click="hide">Đóng</button>
+                    <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
                 </div>
                 </div>
             </div>
@@ -173,6 +176,41 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
+.order-detail-modal :global(.modal-content) {
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+}
+
+.order-detail-modal :global(.modal-header) {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    background: #ffffff;
+}
+
+.order-detail-modal :global(.modal-header .modal-title) {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.order-detail-modal :global(.modal-header .text-muted.small) {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.order-detail-modal :global(.modal-body) {
+    padding: 1.5rem;
+}
+
+.order-detail-modal :global(.modal-footer) {
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+}
+
 .order-detail-modal :global(.modal-backdrop.show) {
     backdrop-filter: none !important;
     filter: none !important;

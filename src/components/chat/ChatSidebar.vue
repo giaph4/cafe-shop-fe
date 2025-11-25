@@ -1,135 +1,186 @@
 <template>
-    <aside class="chat-sidebar">
-        <header class="chat-sidebar__header">
-            <h2>Trò chuyện</h2>
-            <button type="button" class="chat-sidebar__new-btn" @click="$emit('create')">
-                <i class="bi bi-plus-lg"></i>
+    <div class="chat-sidebar">
+        <div class="chat-sidebar__header">
+            <h5 class="chat-sidebar__title">Hội thoại</h5>
+            <button class="btn btn-sm btn-primary" @click="$emit('create-conversation')">
+                <i class="bi bi-plus-lg me-1"></i>
+                Tạo mới
             </button>
-        </header>
+        </div>
 
         <div class="chat-sidebar__search">
-            <i class="bi bi-search"></i>
-            <input
-                type="text"
-                placeholder="Tìm kiếm hội thoại hoặc người dùng"
-                v-model="searchTerm"
-            />
+            <div class="input-group">
+                <span class="input-group-text bg-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Tìm kiếm hội thoại..."
+                    v-model="searchQuery"
+                    @input="handleSearch"
+                />
+            </div>
         </div>
 
-        <div class="chat-sidebar__filters">
-            <button
-                v-for="filter in filters"
-                :key="filter.value"
-                type="button"
-                class="chat-sidebar__filter"
-                :class="{ 'chat-sidebar__filter--active': activeFilter === filter.value }"
-                @click="activeFilter = filter.value"
-            >
-                {{ filter.label }}
-            </button>
-        </div>
-
-        <div class="chat-sidebar__list">
+        <div class="chat-sidebar__list" v-if="!loading">
             <div
                 v-for="conversation in filteredConversations"
                 :key="conversation.id"
-                class="chat-sidebar__item"
-                :class="{ 'chat-sidebar__item--active': conversation.id === activeConversationId }"
-                @click="$emit('select', conversation.id)"
+                class="conversation-item"
+                :class="{
+                    'conversation-item--active': selectedConversationId === conversation.id,
+                    'conversation-item--pinned': conversation.pinned
+                }"
+                @click="$emit('select', conversation)"
             >
-                <div class="chat-sidebar__avatar">
-                    <img v-if="conversation.avatarUrl" :src="conversation.avatarUrl" :alt="conversation.name" />
-                    <span v-else>{{ getInitials(conversation.name) }}</span>
-                </div>
-                <div class="chat-sidebar__content">
-                    <div class="chat-sidebar__name">{{ conversation.name }}</div>
-                    <div class="chat-sidebar__preview">{{ conversation.lastMessage?.content || 'Chưa có tin nhắn' }}</div>
-                </div>
-                <div class="chat-sidebar__meta">
-                    <div class="chat-sidebar__time">{{ formatTime(conversation.lastMessage?.createdAt) }}</div>
-                    <div v-if="conversation.unreadCount > 0" class="chat-sidebar__badge">
-                        {{ conversation.unreadCount }}
+                <div class="conversation-item__avatar">
+                    <img
+                        v-if="getConversationAvatar(conversation)"
+                        :src="getConversationAvatar(conversation)"
+                        :alt="getConversationName(conversation)"
+                    />
+                    <div v-else class="conversation-item__avatar-placeholder">
+                        {{ getConversationInitials(conversation) }}
                     </div>
+                </div>
+                <div class="conversation-item__content">
+                    <div class="conversation-item__header">
+                        <h6 class="conversation-item__name">{{ getConversationName(conversation) }}</h6>
+                        <span class="conversation-item__time" v-if="conversation.lastMessage">
+                            {{ formatTime(conversation.lastMessage.createdAt) }}
+                        </span>
+                    </div>
+                    <div class="conversation-item__preview">
+                        <span class="conversation-item__last-message" v-if="conversation.lastMessage">
+                            <span v-if="conversation.lastMessage.recalled" class="text-muted fst-italic">
+                                Tin nhắn đã được thu hồi
+                            </span>
+                            <span v-else-if="conversation.lastMessage.status === 'RECALLED'" class="text-muted fst-italic">
+                                Tin nhắn đã được thu hồi
+                            </span>
+                            <span v-else-if="conversation.lastMessage.contentType === 'TEXT'">
+                                {{ conversation.lastMessage.content }}
+                            </span>
+                            <span v-else-if="conversation.lastMessage.contentType === 'EMOJI'">
+                                {{ conversation.lastMessage.metadata || conversation.lastMessage.content }}
+                            </span>
+                            <span v-else-if="['IMAGE', 'VIDEO', 'AUDIO', 'FILE'].includes(conversation.lastMessage.contentType)">
+                                <i class="bi bi-paperclip me-1"></i>
+                                {{ conversation.lastMessage.attachments?.length || 0 }} tệp đính kèm
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="conversation-item__badges">
+                    <span
+                        v-if="conversation.unreadCount > 0"
+                        class="badge bg-primary rounded-pill"
+                    >
+                        {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
+                    </span>
+                </div>
+                <div class="conversation-item__actions" @click.stop>
+                    <button
+                        class="btn btn-sm btn-link text-muted p-1"
+                        @click="$emit('toggle-pin', conversation)"
+                        :title="conversation.pinned ? 'Bỏ ghim' : 'Ghim'"
+                    >
+                        <i :class="conversation.pinned ? 'bi bi-pin-angle-fill text-warning' : 'bi bi-pin-angle'"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </aside>
+
+        <div class="chat-sidebar__loading" v-if="loading">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+            <span class="ms-2">Đang tải...</span>
+        </div>
+
+        <div class="chat-sidebar__empty" v-if="!loading && filteredConversations.length === 0">
+            <i class="bi bi-chat-dots fs-1 text-muted"></i>
+            <p class="text-muted mb-0">Chưa có hội thoại nào</p>
+        </div>
+
+        <div class="chat-sidebar__pagination" v-if="hasMore">
+            <button class="btn btn-sm btn-outline-primary w-100" @click="$emit('load-more')" :disabled="loadingMore">
+                <span v-if="loadingMore" class="spinner-border spinner-border-sm me-2"></span>
+                Tải thêm
+            </button>
+        </div>
+    </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { formatDateTime } from '@/utils/formatters'
 
 const props = defineProps({
     conversations: {
         type: Array,
         default: () => []
     },
-    activeConversationId: {
-        type: [String, Number],
+    selectedConversationId: {
+        type: Number,
         default: null
     },
-    currentUserId: {
-        type: [String, Number],
-        required: true
+    loading: {
+        type: Boolean,
+        default: false
+    },
+    loadingMore: {
+        type: Boolean,
+        default: false
+    },
+    hasMore: {
+        type: Boolean,
+        default: false
     }
 })
 
-defineEmits(['select', 'create'])
+const emit = defineEmits(['select', 'create-conversation', 'load-more', 'search', 'toggle-pin'])
 
-const searchTerm = ref('')
-const activeFilter = ref('all')
-
-const filters = [
-    { label: 'Tất cả', value: 'all' },
-    { label: 'Đã ghim', value: 'pinned' },
-    { label: 'Chưa đọc', value: 'unread' }
-]
+const searchQuery = ref('')
 
 const filteredConversations = computed(() => {
-    let result = [...props.conversations]
-
-    // Filter by search term
-    if (searchTerm.value) {
-        const term = searchTerm.value.toLowerCase()
-        result = result.filter(c => 
-            c.name?.toLowerCase().includes(term) ||
-            c.lastMessage?.content?.toLowerCase().includes(term)
-        )
+    if (!searchQuery.value.trim()) {
+        return props.conversations
     }
-
-    // Filter by active filter
-    if (activeFilter.value === 'pinned') {
-        result = result.filter(c => c.pinned)
-    } else if (activeFilter.value === 'unread') {
-        result = result.filter(c => c.unreadCount > 0)
-    }
-
-    // Sort: pinned first, then by last message time
-    result.sort((a, b) => {
-        if (a.pinned && !b.pinned) return -1
-        if (!a.pinned && b.pinned) return 1
-        const timeA = a.lastMessage?.createdAt || 0
-        const timeB = b.lastMessage?.createdAt || 0
-        return timeB - timeA
+    const query = searchQuery.value.toLowerCase()
+    return props.conversations.filter(conv => {
+        const name = getConversationName(conv).toLowerCase()
+        const lastMessage = conv.lastMessage?.content?.toLowerCase() || ''
+        return name.includes(query) || lastMessage.includes(query)
     })
-
-    return result
 })
 
-const getInitials = (name) => {
-    if (!name) return 'U'
+const getConversationName = (conversation) => {
+    if (conversation.type === 'DIRECT') {
+        return conversation.otherMember?.fullName || conversation.otherMember?.username || 'Người dùng'
+    }
+    return conversation.title || 'Nhóm không tên'
+}
+
+const getConversationAvatar = (conversation) => {
+    if (conversation.type === 'DIRECT') {
+        return conversation.otherMember?.avatarUrl
+    }
+    return conversation.avatarUrl
+}
+
+const getConversationInitials = (conversation) => {
+    const name = getConversationName(conversation)
     return name
         .split(' ')
-        .filter(Boolean)
+        .map(word => word[0])
         .slice(0, 2)
-        .map(s => s[0])
         .join('')
         .toUpperCase()
 }
 
-const formatTime = (timestamp) => {
-    if (!timestamp) return ''
-    const date = new Date(timestamp)
+const formatTime = (dateString) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
     const now = new Date()
     const diff = now - date
     const minutes = Math.floor(diff / 60000)
@@ -137,174 +188,173 @@ const formatTime = (timestamp) => {
     const days = Math.floor(diff / 86400000)
 
     if (minutes < 1) return 'Vừa xong'
-    if (minutes < 60) return `${minutes} phút trước`
-    if (hours < 24) return `${hours} giờ trước`
-    if (days < 7) return `${days} ngày trước`
-    return date.toLocaleDateString('vi-VN')
+    if (minutes < 60) return `${minutes} phút`
+    if (hours < 24) return `${hours} giờ`
+    if (days < 7) return `${days} ngày`
+    return formatDateTime(dateString, 'DD/MM/YYYY')
+}
+
+const handleSearch = () => {
+    emit('search', searchQuery.value)
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .chat-sidebar {
     display: flex;
     flex-direction: column;
     height: 100%;
     background: #ffffff;
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    border-right: 1px solid #e2e8f0;
 }
 
 .chat-sidebar__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
+    padding: 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 
-.chat-sidebar__header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #050505;
-}
+    .chat-sidebar__title {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: white;
+    }
 
-.chat-sidebar__new-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    background: #e4e6eb;
-    color: #050505;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
+    .btn {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: white;
 
-.chat-sidebar__new-btn:hover {
-    background: #d0d2d6;
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+    }
 }
 
 .chat-sidebar__search {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
 
-.chat-sidebar__search i {
-    color: #65676b;
-}
+    .input-group-text {
+        border-right: none;
+        border-color: #e2e8f0;
+    }
 
-.chat-sidebar__search input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: 0.9375rem;
-    color: #050505;
-}
+    .form-control {
+        border-left: none;
+        border-color: #e2e8f0;
 
-.chat-sidebar__search input::placeholder {
-    color: #65676b;
-}
-
-.chat-sidebar__filters {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.chat-sidebar__filter {
-    padding: 0.5rem 1rem;
-    border: none;
-    background: transparent;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #65676b;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.chat-sidebar__filter:hover {
-    background: #f0f2f5;
-}
-
-.chat-sidebar__filter--active {
-    background: #1877f2;
-    color: #ffffff;
+        &:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    }
 }
 
 .chat-sidebar__list {
     flex: 1;
     overflow-y: auto;
+    padding: 0.5rem 0;
 }
 
-.chat-sidebar__item {
+.conversation-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1.25rem;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f1f5f9;
+
+    &:hover {
+        background: #f8fafc;
+    }
+
+    &--active {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.1), transparent);
+        border-left: 3px solid #667eea;
+    }
+
+    &--pinned {
+        background: #fffbf0;
+    }
 }
 
-.chat-sidebar__item:hover {
-    background: #f0f2f5;
-}
-
-.chat-sidebar__item--active {
-    background: #e7f3ff;
-}
-
-.chat-sidebar__avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #e4e6eb;
+.conversation-item__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    color: #050505;
-    flex-shrink: 0;
-    overflow: hidden;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 }
 
-.chat-sidebar__avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.conversation-item__avatar-placeholder {
+    color: white;
+    font-weight: 700;
+    font-size: 1.125rem;
 }
 
-.chat-sidebar__content {
+.conversation-item__content {
     flex: 1;
     min-width: 0;
 }
 
-.chat-sidebar__name {
+.conversation-item__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.conversation-item__name {
+    margin: 0;
     font-size: 0.9375rem;
     font-weight: 600;
-    color: #050505;
-    margin-bottom: 0.25rem;
+    color: #1e293b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.chat-sidebar__preview {
+.conversation-item__time {
+    font-size: 0.75rem;
+    color: #64748b;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.conversation-item__preview {
+    display: flex;
+    align-items: center;
+}
+
+.conversation-item__last-message {
     font-size: 0.8125rem;
-    color: #65676b;
+    color: #64748b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
 }
 
-.chat-sidebar__meta {
+.conversation-item__badges {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -312,22 +362,33 @@ const formatTime = (timestamp) => {
     flex-shrink: 0;
 }
 
-.chat-sidebar__time {
-    font-size: 0.75rem;
-    color: #65676b;
-}
-
-.chat-sidebar__badge {
-    min-width: 20px;
-    height: 20px;
-    padding: 0 0.375rem;
-    border-radius: 10px;
-    background: #1877f2;
-    color: #ffffff;
-    font-size: 0.75rem;
-    font-weight: 600;
+.conversation-item__actions {
     display: flex;
     align-items: center;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.conversation-item:hover .conversation-item__actions {
+    opacity: 1;
+}
+
+.chat-sidebar__loading,
+.chat-sidebar__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    padding: 3rem 1.5rem;
+    color: #64748b;
+}
+
+.chat-sidebar__pagination {
+    padding: 1rem;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
 }
 </style>
+

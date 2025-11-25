@@ -65,6 +65,13 @@ export const sidebarMenu = [
                 ]
             },
             {
+                id: 'vouchers',
+                label: 'Quản lý voucher',
+                icon: 'voucher',
+                to: '/vouchers',
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+            },
+            {
                 id: 'sales-analytics',
                 label: 'Báo cáo & Phân tích',
                 icon: 'reports',
@@ -138,13 +145,6 @@ export const sidebarMenu = [
                         label: 'Đơn nhập hàng',
                         icon: 'purchaseOrders',
                         to: '/purchase-orders',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'purchase-orders-create',
-                        label: 'Tạo đơn nhập',
-                        icon: 'purchaseCreate',
-                        to: '/purchase-orders/new',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     },
                     {

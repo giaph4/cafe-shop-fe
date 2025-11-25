@@ -1,32 +1,34 @@
 <template>
     <div class="page-container container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Sản phẩm</h2>
-                <p class="page-subtitle">Theo dõi trạng thái, giá và công thức sản phẩm với bố cục linh hoạt.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <div class="btn-group layout-toggle" role="group" aria-label="Chọn bố cục hiển thị">
-                    <button
-                        type="button"
-                        class="btn"
-                        :class="layoutMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
-                        @click="setLayout('table')"
-                    >
-                        <i class="bi bi-table me-2"></i>Bảng
-                    </button>
-                    <button
-                        type="button"
-                        class="btn"
-                        :class="layoutMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
-                        @click="setLayout('grid')"
-                    >
-                        <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
+        <div class="products-header">
+            <div class="products-header__content">
+                <div class="products-header__title-section">
+                    <h2 class="products-header__title">Quản lý Sản phẩm</h2>
+                    <p class="products-header__subtitle">Theo dõi trạng thái, giá và công thức sản phẩm với bố cục linh hoạt.</p>
+                </div>
+                <div class="products-header__actions">
+                    <div class="btn-group layout-toggle" role="group" aria-label="Chọn bố cục hiển thị">
+                        <button
+                            type="button"
+                            class="btn btn-sm"
+                            :class="layoutMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="setLayout('table')"
+                        >
+                            <i class="bi bi-table me-2"></i>Bảng
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-sm"
+                            :class="layoutMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="setLayout('grid')"
+                        >
+                            <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
+                        </button>
+                    </div>
+                    <button v-if="canCreate" class="btn btn-primary btn-sm" @click="openModal()">
+                        <i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm
                     </button>
                 </div>
-                <button v-if="canCreate" class="btn btn-primary" @click="openModal()">
-                    <i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm
-                </button>
             </div>
         </div>
 
@@ -512,30 +514,31 @@ fetchCategories()
 }
 
 .action-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
+    justify-content: center;
 }
 
 .action-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    width: 100%;
-    padding: 0.45rem 0.75rem;
-    border-radius: 12px;
-    border: 1px solid rgba(99, 102, 241, 0.28);
-    background: var(--color-button-muted-bg);
-    color: var(--color-primary);
-    font-size: 0.85rem;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    background: #ffffff;
+    color: #a855f7;
+    font-size: 0.875rem;
     font-weight: 600;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-button-muted-hover);
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.18);
+    background: rgba(168, 85, 247, 0.05);
+    border-color: rgba(168, 85, 247, 0.5);
     transform: translateY(-1px);
 }
 
@@ -545,43 +548,44 @@ fetchCategories()
 }
 
 .action-button--success {
-    border-color: rgba(16, 185, 129, 0.32);
-    color: var(--color-success);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10b981;
 }
 
 .action-button--success:hover:not(:disabled) {
-    background: rgba(16, 185, 129, 0.12);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.18);
+    background: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.5);
 }
 
 .action-button--warning {
-    border-color: rgba(249, 115, 22, 0.32);
-    color: var(--color-warning);
+    border-color: rgba(249, 115, 22, 0.3);
+    color: #f97316;
 }
 
 .action-button--warning:hover:not(:disabled) {
-    background: rgba(249, 115, 22, 0.12);
-    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.18);
+    background: rgba(249, 115, 22, 0.05);
+    border-color: rgba(249, 115, 22, 0.5);
 }
 
 .action-button--info {
-    border-color: rgba(13, 202, 240, 0.32);
-    color: var(--color-info, #0dcaf0);
+    border-color: rgba(168, 85, 247, 0.3);
+    color: #a855f7;
 }
 
 .action-button--info:hover:not(:disabled) {
-    background: rgba(13, 202, 240, 0.12);
-    box-shadow: 0 6px 16px rgba(13, 202, 240, 0.18);
+    background: rgba(168, 85, 247, 0.05);
+    border-color: rgba(168, 85, 247, 0.5);
 }
 
 .action-button--danger {
-    border-color: rgba(239, 68, 68, 0.32);
-    color: var(--color-danger);
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.12);
-    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.18);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
 }
 
 .product-grid {
@@ -678,9 +682,60 @@ fetchCategories()
     width: 100%;
 }
 
+.products-header {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+}
+
+.products-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.products-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.products-header__title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.products-header__subtitle {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.products-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
 @media (max-width: 768px) {
-    .page-header {
-        padding: 1.25rem 1.5rem;
+    .products-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .products-header__actions {
+        width: 100%;
+        justify-content: flex-start;
     }
 
     .product-card__actions {
@@ -688,7 +743,7 @@ fetchCategories()
     }
 
     .action-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
     }
 }
 

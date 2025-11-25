@@ -48,10 +48,12 @@
                         </div>
                     </div>
                     <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-outline-secondary" @click="closeModal">Huỷ</button>
+                        <button type="button" class="btn btn-outline-secondary" @click="closeModal">Hủy</button>
                         <button type="submit" class="btn btn-primary"
                             :disabled="createMutation.isPending.value || updateMutation.isPending.value">
-                            {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
+                            <span v-if="createMutation.isPending.value || updateMutation.isPending.value"
+                                class="spinner-border spinner-border-sm me-2"></span>
+                            Lưu thay đổi
                         </button>
                     </div>
                 </Form>
@@ -60,19 +62,21 @@
     </div>
 
     <div class="suppliers-page container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Nhà cung cấp</h2>
-                <p class="page-subtitle">Theo dõi thông tin liên hệ và hợp tác chặt chẽ với đối tác cung ứng.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-outline-primary" type="button" @click="refetch" :disabled="isFetching">
-                    <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
-                <button class="btn btn-primary" type="button" @click="openModal()">
-                    <i class="bi bi-plus-lg me-2"></i>Thêm nhà cung cấp
-                </button>
+        <div class="suppliers-header">
+            <div class="suppliers-header__content">
+                <div class="suppliers-header__title-section">
+                    <h2 class="suppliers-header__title">Quản lý Nhà cung cấp</h2>
+                    <p class="suppliers-header__subtitle">Theo dõi thông tin liên hệ và hợp tác chặt chẽ với đối tác cung ứng.</p>
+                </div>
+                <div class="suppliers-header__actions">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">
+                        <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
+                        Làm mới
+                    </button>
+                    <button class="btn btn-primary btn-sm" type="button" @click="openModal()">
+                        <i class="bi bi-plus-lg me-2"></i>Thêm nhà cung cấp
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -139,12 +143,14 @@
                                 <td>{{ supplier.email || '—' }}</td>
                                 <td>{{ supplier.address || '—' }}</td>
                                 <td class="text-end">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button class="btn btn-outline-secondary" type="button" @click="openModal(supplier)">
+                                    <div class="action-buttons">
+                                        <button class="action-button" type="button" @click="openModal(supplier)">
                                             <i class="bi bi-pencil"></i>
+                                            <span>Chỉnh sửa</span>
                                         </button>
-                                        <button class="btn btn-outline-danger" type="button" @click="handleDelete(supplier)">
+                                        <button class="action-button action-button--danger" type="button" @click="handleDelete(supplier)">
                                             <i class="bi bi-trash"></i>
+                                            <span>Xóa</span>
                                         </button>
                                     </div>
                                 </td>
@@ -468,11 +474,151 @@ const handlePageChange = (page) => {
     font-size: 0.9rem;
 }
 
-.btn-group .btn + .btn {
-    margin-left: 0.25rem;
+.suppliers-header {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+}
+
+.suppliers-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.suppliers-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.suppliers-header__title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.suppliers-header__subtitle {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.suppliers-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    background: #ffffff;
+    color: #a855f7;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.action-button:hover:not(:disabled) {
+    background: rgba(168, 85, 247, 0.05);
+    border-color: rgba(168, 85, 247, 0.5);
+    transform: translateY(-1px);
+}
+
+.action-button:disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.action-button--danger {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.action-button--danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+:deep(.form-modal) {
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+}
+
+:deep(.form-modal .modal-header) {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    background: #ffffff;
+}
+
+:deep(.form-modal .modal-title) {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+:deep(.form-modal .modal-subtitle) {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+:deep(.form-modal .modal-body) {
+    padding: 1.5rem;
+}
+
+:deep(.form-modal .modal-footer) {
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    background: #ffffff;
 }
 
 @media (max-width: 768px) {
+    .suppliers-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .suppliers-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
+    }
+
     .stat-card {
         flex-direction: row;
     }

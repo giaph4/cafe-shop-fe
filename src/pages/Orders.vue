@@ -1,15 +1,38 @@
 <template>
     <div class="page-container container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Đơn hàng</h2>
-                <p class="page-subtitle">Theo dõi đơn hàng, thanh toán và trạng thái vận hành.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
+        <div class="orders-header">
+            <div class="orders-header__content">
+                <div class="orders-header__title-section">
+                    <h2 class="orders-header__title">Quản lý Đơn hàng</h2>
+                    <p class="orders-header__subtitle">Theo dõi đơn hàng, thanh toán và trạng thái vận hành.</p>
+                </div>
+                <div class="orders-header__actions">
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="autoRefreshSwitch"
+                            v-model="autoRefresh"
+                        >
+                        <label class="form-check-label" for="autoRefreshSwitch">Tự động làm mới</label>
+                    </div>
+                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        Làm mới
+                    </button>
+                    <button 
+                        v-if="canExport"
+                        class="btn btn-primary" 
+                        type="button" 
+                        @click="handleExport" 
+                        :disabled="loading || exporting"
+                    >
+                        <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-download me-2"></i>
+                        Xuất Excel
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -104,7 +127,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, computed } from 'vue'
+import { reactive, ref, watch, computed, onBeforeUnmount } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
@@ -145,6 +168,9 @@ const tabs = [
     { key: 'list', label: 'Danh sách', icon: 'bi bi-list-ul' },
     { key: 'statistics', label: 'Thống kê', icon: 'bi bi-graph-up' }
 ]
+
+const autoRefresh = ref(false)
+let autoRefreshInterval = null
 
 const { loading, error, execute } = useAsyncOperation({ context: 'Orders' })
 
@@ -460,8 +486,97 @@ watch(
         }
     }
 )
+
+watch(autoRefresh, (enabled) => {
+    if (enabled) {
+        // Auto refresh every 30 seconds
+        autoRefreshInterval = setInterval(() => {
+            fetchData()
+        }, 30000)
+    } else {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval)
+            autoRefreshInterval = null
+        }
+    }
+})
+
+onBeforeUnmount(() => {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval)
+    }
+})
 </script>
 
 <style scoped>
-/* Page-specific styles only - Global styles (.card-shadow, .filter-card, .tabs-card, .reports-tabs, .state-block) are in components.scss */
+.orders-header {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+}
+
+.orders-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.orders-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.orders-header__title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.orders-header__subtitle {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.orders-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.orders-header__actions .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
+.orders-header__actions .form-check-label {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .orders-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .orders-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
 </style>

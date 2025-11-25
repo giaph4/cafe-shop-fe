@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <div class="card tabs-card mb-4">
+        <div class="card tabs-card mb-4 mt-4">
             <div class="card-body">
                 <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
                     <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">

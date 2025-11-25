@@ -533,6 +533,7 @@ label {
 .modal-backdrop.show {
     opacity: 1;
     background: rgba(15, 23, 42, 0.45) !important;
+    -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     filter: none !important;
 }
@@ -600,6 +601,7 @@ label {
 .navbar {
     background: var(--bs-navbar-bg);
     border-bottom: 1px solid var(--color-border);
+    -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
 }
 
@@ -676,4 +678,304 @@ label {
     .card {
         padding: 1.25rem;
     }
+}
+
+/* PrimeVue Components Base Styles */
+.p-dialog {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
+    border: 1px solid #e5e7eb;
+    background: #ffffff !important;
+}
+
+.p-dialog-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff !important;
+}
+
+.p-dialog-content {
+    padding: 1.5rem;
+    background: #ffffff !important;
+}
+
+.p-dialog-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background: #ffffff !important;
+}
+
+.p-tabview-nav {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.p-tabview-nav li {
+    margin-right: 0.5rem;
+}
+
+.p-tabview-nav-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.p-tabview-nav-link.p-highlight {
+    border-bottom-color: #667eea;
+    color: #667eea;
+}
+
+.p-tabview-panels {
+    padding: 0;
+}
+
+.p-dropdown {
+    display: inline-flex;
+    width: 100%;
+    position: relative;
+}
+
+.p-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.p-dropdown-label {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+}
+
+.p-dropdown-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 100%;
+    z-index: 1000;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    margin-top: 0.25rem;
+}
+
+.p-dropdown-items {
+    padding: 0.5rem;
+    list-style: none;
+    margin: 0;
+}
+
+.p-dropdown-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.p-dropdown-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.p-dropdown-item.p-highlight {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+}
+
+.p-inputswitch {
+    position: relative;
+    display: inline-block;
+    width: 3rem;
+    height: 1.75rem;
+}
+
+.p-inputswitch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db;
+    transition: 0.2s;
+    border-radius: 30px;
+}
+
+.p-inputswitch-slider:before {
+    position: absolute;
+    content: "";
+    height: 1.25rem;
+    width: 1.25rem;
+    left: 0.25rem;
+    bottom: 0.25rem;
+    background-color: white;
+    transition: 0.2s;
+    border-radius: 50%;
+}
+
+.p-inputswitch-checked .p-inputswitch-slider {
+    background-color: #667eea;
+}
+
+.p-inputswitch-checked .p-inputswitch-slider:before {
+    transform: translateX(1.25rem);
+}
+
+.p-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.p-button-primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.p-button-primary:hover:not(:disabled) {
+    background: #5568d3;
+    border-color: #5568d3;
+}
+
+.p-button-secondary {
+    background: white;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.p-button-secondary:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.p-button-outlined {
+    background: transparent;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.p-button-outlined:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.p-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.p-dialog-mask {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 1000 !important;
+    -webkit-backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.p-dialog {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 90vh !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2) !important;
+    border: 1px solid #e5e7eb !important;
+    animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    transform-origin: center center !important;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.p-dialog-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #ffffff !important;
+    padding: 1.5rem !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.p-dialog-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.p-dialog-header-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.p-dialog-header-icon:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.p-dialog-content {
+    overflow-y: auto !important;
+    flex: 1 !important;
+    background: #ffffff !important;
+    padding: 1.5rem !important;
+}
+
+.p-dropdown-label-empty {
+    color: #9ca3af;
 }

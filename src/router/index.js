@@ -194,6 +194,12 @@ const routes = [
                 meta: { requiresAuth: true }
             },
             {
+                path: 'settings',
+                name: 'Cài đặt hệ thống',
+                component: () => import('../pages/Settings.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN] }
+            },
+            {
                 path: 'login-history',
                 name: 'Lịch sử đăng nhập',
                 component: () => import('../pages/LoginHistory.vue'),

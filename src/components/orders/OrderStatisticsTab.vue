@@ -2,57 +2,53 @@
     <div class="order-statistics-tab">
         <div class="row g-3 mb-4">
             <div class="col-lg-3 col-md-6">
-                <div class="card card-shadow h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="text-muted small">Tổng đơn hàng</span>
-                            <i class="bi bi-receipt text-primary fs-4"></i>
-                        </div>
-                        <h3 class="mb-0">{{ formatNumber(totalOrders) }}</h3>
-                        <small class="text-muted">Tất cả thời gian</small>
+                <div class="stat-card stat-card--orange">
+                    <div class="stat-icon stat-icon--orange">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Tổng đơn hàng</div>
+                        <div class="stat-value">{{ formatNumber(totalOrders) }}</div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="card card-shadow h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="text-muted small">Tổng doanh thu</span>
-                            <i class="bi bi-cash-stack text-success fs-4"></i>
-                        </div>
-                        <h3 class="mb-0">{{ formatCurrency(totalRevenue) }}</h3>
-                        <small class="text-muted">Từ đơn đã thanh toán</small>
+                <div class="stat-card stat-card--green">
+                    <div class="stat-icon stat-icon--green">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Tổng doanh thu</div>
+                        <div class="stat-value">{{ formatCurrency(totalRevenue) }}</div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="card card-shadow h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="text-muted small">Đơn trung bình</span>
-                            <i class="bi bi-graph-up text-info fs-4"></i>
-                        </div>
-                        <h3 class="mb-0">{{ formatCurrency(averageOrderValue) }}</h3>
-                        <small class="text-muted">Giá trị trung bình</small>
+                <div class="stat-card stat-card--light-blue">
+                    <div class="stat-icon stat-icon--light-blue">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Giá trị đơn trung bình</div>
+                        <div class="stat-value">{{ formatCurrency(averageOrderValue) }}</div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="card card-shadow h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="text-muted small">Tỷ lệ thanh toán</span>
-                            <i class="bi bi-percent text-primary fs-4"></i>
-                        </div>
-                        <h3 class="mb-0">{{ formatPercent(paidRate) }}</h3>
-                        <small class="text-muted">{{ paidOrders }}/{{ totalOrders }} đơn</small>
+                <div class="stat-card stat-card--purple">
+                    <div class="stat-icon stat-icon--purple">
+                        <i class="bi bi-percent"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Tỷ lệ thanh toán</div>
+                        <div class="stat-value">{{ formatPercent(paidRate) }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="row g-3">
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <div class="card card-shadow">
                     <div class="card-header bg-white">
                         <h5 class="mb-0">Phân bổ theo trạng thái</h5>
@@ -76,37 +72,6 @@
                                     <div
                                         class="progress-bar"
                                         :class="getStatusProgressClass(item.status)"
-                                        :style="{ width: `${item.percentage}%` }"
-                                    ></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card card-shadow">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Đơn hàng theo tháng</h5>
-                    </div>
-                    <div class="card-body">
-                        <div v-if="monthlyOrders.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-bar-chart fs-3 d-block mb-2"></i>
-                            <p class="mb-0">Chưa có dữ liệu</p>
-                        </div>
-                        <div v-else>
-                            <div
-                                v-for="item in monthlyOrders"
-                                :key="item.month"
-                                class="mb-3"
-                            >
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="small fw-semibold">{{ item.monthLabel }}</span>
-                                    <span class="small text-muted">{{ item.count }} đơn • {{ formatCurrency(item.revenue) }}</span>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div
-                                        class="progress-bar bg-primary"
                                         :style="{ width: `${item.percentage}%` }"
                                     ></div>
                                 </div>
@@ -169,49 +134,15 @@ const statusDistribution = computed(() => {
         distribution[order.status] = (distribution[order.status] || 0) + 1
     })
 
-    const maxCount = Math.max(...Object.values(distribution), 1)
-
     return Object.entries(distribution).map(([status, count]) => {
         const meta = STATUS_METADATA[status] || { label: status, progressClass: 'bg-secondary' }
         return {
             status,
             label: meta.label,
             count,
-            percentage: (count / maxCount) * 100
+            percentage: totalOrders.value > 0 ? (count / totalOrders.value) * 100 : 0
         }
     }).sort((a, b) => b.count - a.count)
-})
-
-const monthlyOrders = computed(() => {
-    const monthly = {}
-    props.orders.forEach(order => {
-        const date = new Date(order.createdAt)
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-        if (!monthly[monthKey]) {
-            monthly[monthKey] = { count: 0, revenue: 0 }
-        }
-        monthly[monthKey].count++
-        if (order.status === 'PAID') {
-            monthly[monthKey].revenue += Number(order.totalAmount) || 0
-        }
-    })
-
-    const maxCount = Math.max(...Object.values(monthly).map(m => m.count), 1)
-
-    return Object.entries(monthly)
-        .map(([month, data]) => {
-            const [year, monthNum] = month.split('-')
-            const date = new Date(parseInt(year), parseInt(monthNum) - 1)
-            return {
-                month,
-                monthLabel: date.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }),
-                count: data.count,
-                revenue: data.revenue,
-                percentage: (data.count / maxCount) * 100
-            }
-        })
-        .sort((a, b) => a.month.localeCompare(b.month))
-        .slice(-6) // Last 6 months
 })
 
 const getStatusProgressClass = (status) => {
@@ -220,6 +151,75 @@ const getStatusProgressClass = (status) => {
 </script>
 
 <style scoped>
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: #ffffff;
+    border: 2px solid;
+}
+
+.stat-icon--orange {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border-color: #f97316;
+}
+
+.stat-icon--green {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+}
+
+.stat-icon--light-blue {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    border-color: #06b6d4;
+}
+
+.stat-icon--purple {
+    background: linear-gradient(135deg, #a855f7, #9333ea);
+    border-color: #a855f7;
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
 .card-shadow {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: none;

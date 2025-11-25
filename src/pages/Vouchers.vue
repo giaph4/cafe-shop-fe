@@ -176,24 +176,30 @@
         </div>
     </Teleport>
 
-    <section class="vouchers-page" data-aos="fade-up">
-        <header class="vouchers-header">
-            <div>
-                <h2>Quản lý voucher</h2>
-                <p class="text-muted mb-0">Theo dõi, tạo và kiểm soát voucher theo đúng chuẩn API backend.</p>
+    <section class="page-container container-fluid vouchers-page" data-aos="fade-up">
+        <div class="vouchers-header">
+            <div class="vouchers-header__content">
+                <div class="vouchers-header__title-section">
+                    <h2 class="page-title">Quản lý voucher</h2>
+                    <p class="page-subtitle">Theo dõi, tạo và kiểm soát voucher theo đúng chuẩn API backend.</p>
             </div>
-            <div class="header-actions">
+                <div class="vouchers-header__actions">
                 <button class="btn btn-outline-secondary" type="button" @click="handleRefresh" :disabled="loading">
-                    <i class="bi bi-arrow-clockwise me-2"></i>Làm mới
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
                 </button>
                 <button class="btn btn-outline-primary" type="button" @click="exportCurrentPage" :disabled="!items.length">
-                    <i class="bi bi-file-earmark-arrow-down me-2"></i>Xuất CSV
+                        <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                        Xuất CSV
                 </button>
                 <button v-if="canManage" class="btn btn-primary" type="button" @click="openCreateModal" :disabled="voucherStore.saving || formLoading">
-                    <i class="bi bi-plus-lg me-2"></i>Thêm voucher
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Thêm voucher
                 </button>
             </div>
-        </header>
+            </div>
+        </div>
 
         <div class="summary-grid" v-if="summaryLoading">
             <article class="summary-card text-center justify-content-center">
@@ -245,7 +251,8 @@
             {{ errorMessage }}
         </div>
 
-        <div class="filter-card">
+        <div class="card filter-card mb-4">
+            <div class="card-body">
             <div class="filter-grid">
                 <div class="filter-item">
                     <label class="form-label">Tìm theo mã</label>
@@ -284,6 +291,7 @@
                     <button class="btn btn-primary" type="button" @click="handleFilterApply" :disabled="loading">
                         Áp dụng
                     </button>
+                </div>
                 </div>
             </div>
         </div>
@@ -347,25 +355,30 @@
                             </td>
                             <td>{{ formatDateTime(voucher.updatedAt || voucher.createdAt) }}</td>
                             <td class="text-end">
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm btn-outline-primary" type="button" @click="openEditModal(voucher)">
+                                <div class="action-buttons">
+                                    <button class="action-button action-button--primary" type="button" @click="openEditModal(voucher)" title="Chỉnh sửa">
                                         <i class="bi bi-pencil"></i>
+                                        <span>Chỉnh sửa</span>
                                     </button>
                                     <button
-                                        class="btn btn-sm btn-outline-warning"
+                                        class="action-button action-button--warning"
                                         type="button"
                                         @click="handleToggle(voucher)"
                                         :disabled="voucherStore.toggling"
+                                        :title="voucher.active ? 'Tạm ngưng' : 'Kích hoạt'"
                                     >
                                         <i class="bi" :class="voucher.active ? 'bi-pause-circle' : 'bi-play-circle'"></i>
+                                        <span>{{ voucher.active ? 'Tạm ngưng' : 'Kích hoạt' }}</span>
                                     </button>
                                     <button
-                                        class="btn btn-sm btn-outline-danger"
+                                        class="action-button action-button--danger"
                                         type="button"
                                         @click="handleDelete(voucher)"
                                         :disabled="voucher.timesUsed > 0 || voucherStore.deleting"
+                                        title="Xóa"
                                     >
                                         <i class="bi bi-trash"></i>
+                                        <span>Xóa</span>
                                     </button>
                                 </div>
                             </td>
@@ -757,29 +770,115 @@ onUnmounted(() => {
     padding-bottom: 3rem;
 }
 
+/* Header Styles */
 .vouchers-header {
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.vouchers-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
-}
-
-.vouchers-header h2 {
-    font-weight: 700;
-    color: var(--color-heading);
-    margin-bottom: 0.25rem;
-}
-
-.header-actions {
-    display: flex;
-    gap: 0.75rem;
+    gap: 1.5rem;
     flex-wrap: wrap;
+}
+
+.vouchers-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.vouchers-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
     justify-content: flex-end;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--color-heading, #1e293b);
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.page-subtitle {
+    margin-bottom: 0;
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid;
+    background: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.action-button--primary {
+    border-color: #a855f7;
+    color: #a855f7;
+    background: #ffffff;
+}
+
+.action-button--primary:hover {
+    background: #faf5ff;
+    border-color: #9333ea;
+    color: #9333ea;
+}
+
+.action-button--warning {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background: #ffffff;
+}
+
+.action-button--warning:hover {
+    background: #fffbeb;
+    border-color: #d97706;
+    color: #d97706;
+}
+
+.action-button--danger {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: #ffffff;
+}
+
+.action-button--danger:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+.action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .summary-grid {
@@ -876,14 +975,24 @@ onUnmounted(() => {
 }
 
 @media (max-width: 992px) {
-    .vouchers-header {
+    .vouchers-header__content {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .header-actions {
+    .vouchers-header__actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
+        justify-content: center;
     }
 
     .table-card {

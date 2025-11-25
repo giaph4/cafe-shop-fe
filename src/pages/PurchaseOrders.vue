@@ -8,19 +8,21 @@
     />
 
     <div class="page-container container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Nhập hàng</h2>
-                <p class="page-subtitle">Theo dõi tiến độ xử lý, trạng thái và chi phí nhập kho.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-outline-primary" type="button" @click="refetch" :disabled="isFetching">
-                    <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
-                <router-link to="/purchase-orders/new" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2"></i>Tạo đơn nhập hàng
-                </router-link>
+        <div class="purchase-orders-header">
+            <div class="purchase-orders-header__content">
+                <div class="purchase-orders-header__title-section">
+                    <h2 class="purchase-orders-header__title">Quản lý Nhập hàng</h2>
+                    <p class="purchase-orders-header__subtitle">Theo dõi tiến độ xử lý, trạng thái và chi phí nhập kho.</p>
+                </div>
+                <div class="purchase-orders-header__actions">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">
+                        <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
+                        Làm mới
+                    </button>
+                    <router-link to="/purchase-orders/new" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg me-2"></i>Tạo đơn nhập hàng
+                    </router-link>
+                </div>
             </div>
         </div>
 
@@ -117,25 +119,29 @@
                             </td>
                             <td class="text-end fw-semibold">{{ formatCurrency(order.totalAmount) }}</td>
                             <td class="text-end">
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn btn-outline-info" type="button"
+                                <div class="action-buttons">
+                                    <button class="action-button" type="button"
                                             @click="selectedOrderId = order.id">
                                         <i class="bi bi-eye"></i>
+                                        <span>Chi tiết</span>
                                     </button>
-                                    <button class="btn btn-outline-primary" type="button"
+                                    <button class="action-button" type="button"
                                             v-if="order.status === 'PENDING'"
                                             @click="handleUpdate(order)">
                                         <i class="bi bi-pencil"></i>
+                                        <span>Chỉnh sửa</span>
                                     </button>
-                                    <button class="btn btn-outline-success" type="button"
+                                    <button class="action-button action-button--success" type="button"
                                             v-if="order.status === 'PENDING'"
                                             :disabled="completeMutation.isPending.value" @click="handleComplete(order)">
                                         <i class="bi bi-check2"></i>
+                                        <span>Hoàn thành</span>
                                     </button>
-                                    <button class="btn btn-outline-danger" type="button"
+                                    <button class="action-button action-button--danger" type="button"
                                             v-if="order.status === 'PENDING'"
                                             :disabled="cancelMutation.isPending.value" @click="handleCancel(order)">
                                         <i class="bi bi-x"></i>
+                                        <span>Hủy</span>
                                     </button>
                                 </div>
                             </td>
@@ -368,6 +374,107 @@ const statusLabel = (status) => {
 </script>
 
 <style scoped>
+.purchase-orders-header {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+}
+
+.purchase-orders-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.purchase-orders-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.purchase-orders-header__title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.purchase-orders-header__subtitle {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.purchase-orders-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    background: #ffffff;
+    color: #a855f7;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.action-button:hover:not(:disabled) {
+    background: rgba(168, 85, 247, 0.05);
+    border-color: rgba(168, 85, 247, 0.5);
+    transform: translateY(-1px);
+}
+
+.action-button:disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.action-button--success {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.action-button--success:hover:not(:disabled) {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.action-button--danger {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.action-button--danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
 /* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card, .state-block) are in components.scss */
 
 .stat-card {
@@ -455,8 +562,23 @@ const statusLabel = (status) => {
 }
 
 @media (max-width: 768px) {
-    .card-shadow {
-        padding: 1.25rem;
+    .purchase-orders-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .purchase-orders-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
     }
 }
 </style>

@@ -13,6 +13,8 @@ import 'vue3-toastify/dist/index.css'
 import './style.css'
 import './assets/dynamic-island-toast.css'
 
+// PrimeVue
+import PrimeVue from 'primevue/config'
 
 import Toast from 'vue3-toastify'
 import AOS from 'aos'
@@ -27,6 +29,7 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(VueQueryPlugin)
 app.use(router)
+app.use(PrimeVue)
 
 app.use(Toast, {
     position: 'top-center',

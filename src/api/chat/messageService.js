@@ -1,133 +1,87 @@
-import api from '@/api/axios'
-import { buildApiError } from '@/api/utils/errorHandler'
-import { normalizePage } from './transformers'
-import { normalizeMessage, normalizeMessageList } from './normalizers'
+import api from '../axios'
+
+const BASE_URL = '/api/chat'
 
 /**
- * @param {number} conversationId
- * @param {{ beforeMessageId?: number, page?: number, size?: number }} [params]
- * @returns {Promise<import('./types').MessagePage>}
- */
-export const listMessages = async (conversationId, params = {}) => {
-    const { beforeMessageId, page = 0, size = 20 } = params
-    try {
-        const { data } = await api.get(`/api/chat/conversations/${conversationId}/messages`, {
-            params: {
-                beforeMessageId,
-                page,
-                size
-            }
-        })
-        const normalized = normalizePage(data)
-        const items = normalizeMessageList(normalized.items)
-        return { ...normalized, items }
-    } catch (error) {
-        throw buildApiError(error)
-    }
-}
-
-/**
- * @param {number} conversationId
- * @param {string} content
- * @returns {Promise<import('./types').Message>}
+ * Gửi tin nhắn văn bản
+ * @param {number} conversationId - ID hội thoại
+ * @param {string} content - Nội dung tin nhắn
+ * @returns {Promise<Object>} MessageDTO
  */
 export const sendTextMessage = async (conversationId, content) => {
-    const body = new URLSearchParams({ content: content?.trim?.() ?? '' })
-    try {
-        const { data } = await api.post(`/api/chat/conversations/${conversationId}/messages/text`, body, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        })
-        return normalizeMessage(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    const { data } = await api.post(`${BASE_URL}/conversations/${conversationId}/messages/text`, null, {
+        params: { content }
+    })
+    return data
 }
 
 /**
- * @param {number} conversationId
- * @param {string} code
- * @returns {Promise<import('./types').Message>}
+ * Gửi tin nhắn emoji
+ * @param {number} conversationId - ID hội thoại
+ * @param {string} code - Mã emoji (ví dụ: "😀", "👍")
+ * @returns {Promise<Object>} MessageDTO
  */
 export const sendEmojiMessage = async (conversationId, code) => {
-    const body = new URLSearchParams({ code })
-    try {
-        const { data } = await api.post(`/api/chat/conversations/${conversationId}/messages/emoji`, body, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        })
-        return normalizeMessage(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    const { data } = await api.post(`${BASE_URL}/conversations/${conversationId}/messages/emoji`, null, {
+        params: { code }
+    })
+    return data
 }
 
 /**
- * @param {number} conversationId
- * @param {{ files: File[], messageText?: string }} payload
- * @param {(progress: number) => void} [onProgress]
- * @returns {Promise<import('./types').Message>}
+ * Gửi tin nhắn đính kèm file
+ * @param {number} conversationId - ID hội thoại
+ * @param {string} messageText - Nội dung tin nhắn (optional)
+ * @param {File[]} files - Danh sách file cần đính kèm
+ * @returns {Promise<Object>} MessageDTO
  */
-export const sendAttachmentMessage = async (conversationId, payload, onProgress) => {
-    const form = new FormData()
-    if (payload?.messageText) {
-        form.append('messageText', payload.messageText)
+export const sendAttachmentMessage = async (conversationId, messageText, files) => {
+    const formData = new FormData()
+    if (messageText) {
+        formData.append('messageText', messageText)
     }
-    if (Array.isArray(payload?.files)) {
-        payload.files.forEach((file) => {
-            if (file) {
-                form.append('files', file)
+    files.forEach(file => {
+        formData.append('files', file)
+    })
+    
+    const { data } = await api.post(
+        `${BASE_URL}/conversations/${conversationId}/messages/attachments`,
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data'
             }
-        })
-    }
-
-    try {
-        const { data } = await api.post(`/api/chat/conversations/${conversationId}/messages/attachments`, form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            onUploadProgress: (event) => {
-                if (!onProgress || !event?.total) return
-                const percentage = Math.round((event.loaded / event.total) * 100)
-                onProgress(percentage)
-            }
-        })
-        return normalizeMessage(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+        }
+    )
+    return data
 }
 
 /**
- * @param {number} messageId
- * @returns {Promise<import('./types').Message>}
+ * Thu hồi tin nhắn
+ * @param {number} messageId - ID tin nhắn
+ * @returns {Promise<Object>} MessageDTO
  */
 export const recallMessage = async (messageId) => {
-    try {
-        const { data } = await api.post(`/api/chat/messages/${messageId}/recall`)
-        return normalizeMessage(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    const { data } = await api.post(`${BASE_URL}/messages/${messageId}/recall`)
+    return data
 }
 
 /**
- * @param {number} messageId
+ * Xóa tin nhắn cho người dùng hiện tại
+ * @param {number} messageId - ID tin nhắn
  * @returns {Promise<void>}
  */
-export const deleteMessageForCurrentUser = async (messageId) => {
-    try {
-        await api.delete(`/api/chat/messages/${messageId}`)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+export const deleteMessage = async (messageId) => {
+    await api.delete(`${BASE_URL}/messages/${messageId}`)
 }
 
 /**
- * @param {number} conversationId
- * @param {number} messageId
+ * Đánh dấu tin nhắn đã đọc
+ * @param {number} conversationId - ID hội thoại
+ * @param {number} messageId - ID tin nhắn
  * @returns {Promise<void>}
  */
-export const markSeen = async (conversationId, messageId) => {
-    try {
-        await api.post(`/api/chat/conversations/${conversationId}/messages/${messageId}/seen`)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+export const markMessageSeen = async (conversationId, messageId) => {
+    await api.post(`${BASE_URL}/conversations/${conversationId}/messages/${messageId}/seen`)
 }
+

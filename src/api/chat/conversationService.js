@@ -1,154 +1,123 @@
-import api from '@/api/axios'
-import { buildApiError } from '@/api/utils/errorHandler'
-import { normalizePage } from './transformers'
-import {
-    normalizeConversation,
-    normalizeConversationList,
-    normalizeMemberList
-} from './normalizers'
+import api from '../axios'
+
+const BASE_URL = '/api/chat/conversations'
 
 /**
- * @param {{ page?: number, size?: number }} [params]
- * @returns {Promise<import('./types').ConversationPage>}
+ * Lấy danh sách hội thoại của người dùng (phân trang)
+ * @param {number} page - Trang hiện tại, mặc định 0
+ * @param {number} size - Số lượng hội thoại trên mỗi trang, mặc định 20, giới hạn 1-100
+ * @returns {Promise<Object>} Page<ConversationSummaryDTO>
  */
-export const listConversations = async (params = {}) => {
-    const { page = 0, size = 20 } = params
-    try {
-        const { data } = await api.get('/api/chat/conversations', {
-            params: { page, size }
-        })
-        const normalized = normalizePage(data)
-        const items = normalizeConversationList(normalized.items)
-        return { ...normalized, items }
-    } catch (error) {
-        throw buildApiError(error)
-    }
+export const listConversations = async (page = 0, size = 20) => {
+    const { data } = await api.get(BASE_URL, {
+        params: { page, size }
+    })
+    return data
 }
 
 /**
- * @param {number} conversationId
- * @returns {Promise<import('./types').ConversationSummary>}
+ * Lấy thông tin chi tiết hội thoại
+ * @param {number} conversationId - ID hội thoại
+ * @returns {Promise<Object>} ConversationSummaryDTO
  */
 export const getConversation = async (conversationId) => {
-    try {
-        const { data } = await api.get(`/api/chat/conversations/${conversationId}`)
-        return normalizeConversation(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    const { data } = await api.get(`${BASE_URL}/${conversationId}`)
+    return data
 }
 
 /**
- * @param {number} targetUserId
- * @returns {Promise<import('./types').ConversationSummary>}
+ * Tạo hội thoại trực tiếp (1-1)
+ * @param {number} targetUserId - ID người dùng đích
+ * @returns {Promise<Object>} ConversationSummaryDTO
  */
 export const createDirectConversation = async (targetUserId) => {
-    try {
-        const { data } = await api.post(`/api/chat/conversations/direct/${targetUserId}`)
-        return normalizeConversation(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    const { data } = await api.post(`${BASE_URL}/direct/${targetUserId}`)
+    return data
 }
 
 /**
- * @param {{ title: string, memberIds?: number[] }} payload
- * @returns {Promise<import('./types').ConversationSummary>}
+ * Tạo hội thoại nhóm
+ * @param {string} title - Tiêu đề nhóm
+ * @param {number[]} memberIds - Danh sách ID thành viên
+ * @returns {Promise<Object>} ConversationSummaryDTO
  */
-export const createGroupConversation = async (payload) => {
-    const body = {
-        title: payload?.title ?? '',
-        memberIds: Array.isArray(payload?.memberIds) ? payload.memberIds : []
-    }
-    try {
-        const { data } = await api.post('/api/chat/conversations/group', body)
-        return normalizeConversation(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+export const createGroupConversation = async (title, memberIds) => {
+    const { data } = await api.post(`${BASE_URL}/group`, {
+        title,
+        memberIds
+    })
+    return data
 }
 
 /**
- * @param {number} conversationId
- * @returns {Promise<import('./types').ConversationMember[]>}
+ * Lấy danh sách thành viên của hội thoại
+ * @param {number} conversationId - ID hội thoại
+ * @returns {Promise<Array>} List<ConversationMemberDTO>
  */
 export const listMembers = async (conversationId) => {
-    try {
-        const { data } = await api.get(`/api/chat/conversations/${conversationId}/members`)
-        return normalizeMemberList(data)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    const { data } = await api.get(`${BASE_URL}/${conversationId}/members`)
+    return data
 }
 
 /**
- * @param {number} conversationId
- * @param {boolean} pinned
- * @returns {Promise<void>}
- */
-export const pinConversation = async (conversationId, pinned) => {
-    try {
-        await api.patch(`/api/chat/conversations/${conversationId}/pin`, null, {
-            params: { pinned }
-        })
-    } catch (error) {
-        throw buildApiError(error)
-    }
-}
-
-/**
- * @param {number} conversationId
- * @param {number[]} memberIds
+ * Thêm thành viên vào hội thoại
+ * @param {number} conversationId - ID hội thoại
+ * @param {number[]} memberIds - Danh sách ID thành viên cần thêm (tối đa 100)
  * @returns {Promise<void>}
  */
 export const addMembers = async (conversationId, memberIds) => {
-    try {
-        await api.post(`/api/chat/conversations/${conversationId}/members`, memberIds)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    await api.post(`${BASE_URL}/${conversationId}/members`, memberIds)
 }
 
 /**
- * @param {number} conversationId
- * @param {number} memberId
+ * Xóa thành viên khỏi hội thoại
+ * @param {number} conversationId - ID hội thoại
+ * @param {number} memberId - ID thành viên cần xóa
  * @returns {Promise<void>}
  */
 export const removeMember = async (conversationId, memberId) => {
-    try {
-        await api.delete(`/api/chat/conversations/${conversationId}/members/${memberId}`)
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    await api.delete(`${BASE_URL}/${conversationId}/members/${memberId}`)
 }
 
 /**
- * @param {number} conversationId
- * @param {number} memberId
- * @param {'OWNER' | 'ADMIN' | 'MEMBER'} role
+ * Cập nhật vai trò thành viên
+ * @param {number} conversationId - ID hội thoại
+ * @param {number} memberId - ID thành viên
+ * @param {string} role - Vai trò mới (ADMIN, MEMBER)
  * @returns {Promise<void>}
  */
 export const updateMemberRole = async (conversationId, memberId, role) => {
-    try {
-        await api.patch(`/api/chat/conversations/${conversationId}/members/${memberId}/role`, null, {
-            params: { role }
-        })
-    } catch (error) {
-        throw buildApiError(error)
-    }
+    await api.patch(`${BASE_URL}/${conversationId}/members/${memberId}/role`, null, {
+        params: { role }
+    })
 }
 
 /**
- * @param {number} conversationId
- * @param {boolean} pinned
+ * Pin/Unpin hội thoại
+ * @param {number} conversationId - ID hội thoại
+ * @param {boolean} pinned - true để pin, false để unpin
  * @returns {Promise<void>}
  */
-export const togglePinned = async (conversationId, pinned) => {
-    try {
-        await api.patch(`/api/chat/conversations/${conversationId}/pin`, null, {
-            params: { pinned }
-        })
-    } catch (error) {
-        throw buildApiError(error)
-    }
+export const pinConversation = async (conversationId, pinned) => {
+    await api.patch(`${BASE_URL}/${conversationId}/pin`, null, {
+        params: { pinned }
+    })
 }
+
+/**
+ * Lấy danh sách tin nhắn của hội thoại (phân trang)
+ * @param {number} conversationId - ID hội thoại
+ * @param {number} page - Trang hiện tại, mặc định 0
+ * @param {number} size - Số lượng tin nhắn trên mỗi trang, mặc định 20, giới hạn 1-100
+ * @param {number} beforeMessageId - ID tin nhắn để lấy tin nhắn trước đó (optional)
+ * @returns {Promise<Object>} Page<MessageDTO>
+ */
+export const listMessages = async (conversationId, page = 0, size = 20, beforeMessageId = null) => {
+    const params = { page, size }
+    if (beforeMessageId) {
+        params.beforeMessageId = beforeMessageId
+    }
+    const { data } = await api.get(`${BASE_URL}/${conversationId}/messages`, { params })
+    return data
+}
+

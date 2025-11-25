@@ -1,18 +1,21 @@
 <template>
     <div class="shift-assignment-page container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Phân công Ca làm</h2>
-                <p class="page-subtitle">Phân công nhân viên vào ca làm, quản lý thời gian và lương theo ca.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-primary" type="button" @click="openCreateModal" v-if="activeTab === 'list'">
-                    <i class="bi bi-plus-lg me-2"></i>Tạo phân công mới
-                </button>
-                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
+        <div class="shift-assignment-header">
+            <div class="shift-assignment-header__content">
+                <div class="shift-assignment-header__title-section">
+                    <h2 class="page-title">Quản lý Phân công Ca làm</h2>
+                    <p class="page-subtitle">Phân công nhân viên vào ca làm, quản lý thời gian và lương theo ca.</p>
+                </div>
+                <div class="shift-assignment-header__actions">
+                    <button class="btn btn-primary" type="button" @click="openCreateModal" v-if="activeTab === 'list'">
+                        <i class="bi bi-plus-lg me-2"></i>Tạo phân công mới
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -72,6 +75,12 @@
             :submitting="formSubmitting"
             @submit="handleFormSubmit"
         />
+
+        <ShiftAssignmentStatusUpdateModal
+            ref="statusModal"
+            :status-options="ASSIGNMENT_STATUSES"
+            @submit="handleStatusUpdateSubmit"
+        />
     </div>
 </template>
 
@@ -82,6 +91,7 @@ import { useAuthStore } from '@/store/auth'
 import ShiftAssignmentListTab from '@/components/shift-assignments/ShiftAssignmentListTab.vue'
 import ShiftAssignmentMyTab from '@/components/shift-assignments/ShiftAssignmentMyTab.vue'
 import ShiftAssignmentFormModal from '@/components/shift-assignments/ShiftAssignmentFormModal.vue'
+import ShiftAssignmentStatusUpdateModal from '@/components/shifts/ShiftAssignmentStatusUpdateModal.vue'
 import {
     ASSIGNMENT_STATUSES,
     getAssignmentsForCurrentUser,
@@ -123,7 +133,9 @@ const shiftOptions = ref([])
 const staffOptions = ref([])
 
 const formModal = ref(null)
+const statusModal = ref(null)
 const editingAssignment = ref(null)
+const updatingStatusAssignment = ref(null)
 const formSubmitting = ref(false)
 
 const fetchShiftOptions = async () => {
@@ -260,19 +272,22 @@ const handleFormSubmit = async (payload) => {
 }
 
 const handleUpdateStatus = async (assignment) => {
-    const nextStatus = window.prompt('Nhập trạng thái mới (SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED):', assignment.status)
-    if (!nextStatus) return
-    if (!ASSIGNMENT_STATUSES.some((item) => item.value === nextStatus)) {
-        toast.warning('Trạng thái không hợp lệ.')
-        return
-    }
+    updatingStatusAssignment.value = assignment
+    statusModal.value?.show(assignment)
+}
+
+const handleStatusUpdateSubmit = async (payload) => {
+    if (!updatingStatusAssignment.value) return
+    statusModal.value?.setSubmitting(true)
     try {
-        await updateShiftAssignmentStatus(assignment.id, { status: nextStatus, notes: assignment.notes || null })
+        await updateShiftAssignmentStatus(updatingStatusAssignment.value.id, payload)
         toast.success('Đã cập nhật trạng thái phân công.')
         await fetchAssignments()
         await fetchMyAssignments()
+        statusModal.value?.setSubmitting(false)
     } catch (err) {
         toast.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.')
+        statusModal.value?.setSubmitting(false)
     }
 }
 
@@ -336,27 +351,50 @@ onMounted(() => {
     padding-bottom: 2rem;
 }
 
-.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
-    border: 1px solid var(--color-border);
+.shift-assignment-header {
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    border: 1px solid #e2e8f0;
     border-radius: 20px;
-    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.shift-assignment-header__content {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.shift-assignment-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.shift-assignment-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .page-title {
     font-weight: 700;
-    color: var(--color-heading);
+    color: var(--color-heading, #1e293b);
     margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
 }
 
 .page-subtitle {
     margin-bottom: 0;
-    color: var(--color-text-muted);
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .tabs-card {
@@ -392,8 +430,14 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-    .card-shadow {
-        padding: 1.25rem;
+    .shift-assignment-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .shift-assignment-header__actions {
+        width: 100%;
+        justify-content: flex-start;
     }
 }
 </style>

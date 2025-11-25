@@ -159,18 +159,22 @@
                                                     <span class="badge" :class="statusClass(assignment.status)">{{ translateAssignmentStatus(assignment.status) }}</span>
                                                 </td>
                                                 <td class="text-end">
-                                                    <div class="btn-group">
-                                                        <button class="btn btn-sm btn-outline-secondary" @click="toggleAssignmentDetails(assignment)">
+                                                    <div class="action-buttons">
+                                                        <button class="action-button action-button--secondary" @click="toggleAssignmentDetails(assignment)" :title="expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng'">
                                                             <i class="bi" :class="expandedAssignmentId === assignment.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                                                            <span>{{ expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng' }}</span>
                                                         </button>
-                                                        <button class="btn btn-sm btn-outline-primary" @click="editAssignment(assignment)">
+                                                        <button class="action-button action-button--primary" @click="editAssignment(assignment)" title="Chỉnh sửa">
                                                             <i class="bi bi-pencil"></i>
+                                                            <span>Chỉnh sửa</span>
                                                         </button>
-                                                        <button class="btn btn-sm btn-outline-success" @click="promptStatusChange(assignment)">
+                                                        <button class="action-button action-button--info" @click="openStatusModal(assignment)" title="Cập nhật trạng thái">
                                                             <i class="bi bi-arrow-repeat"></i>
+                                                            <span>Trạng thái</span>
                                                         </button>
-                                                        <button class="btn btn-sm btn-outline-danger" @click="removeAssignment(assignment)">
+                                                        <button class="action-button action-button--danger" @click="removeAssignment(assignment)" title="Xóa">
                                                             <i class="bi bi-trash"></i>
+                                                            <span>Xóa</span>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -390,11 +394,17 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
                     </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </Teleport>
-</template>
+        </Teleport>
+
+        <ShiftAssignmentStatusUpdateModal
+            ref="assignmentStatusModal"
+            :status-options="ASSIGNMENT_STATUSES"
+            @submit="handleAssignmentStatusUpdate"
+        />
+    </template>
 
 <script setup>
 import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue'
@@ -402,6 +412,7 @@ import {storeToRefs} from 'pinia'
 import {Modal} from 'bootstrap'
 import {toast} from 'vue3-toastify'
 import EmptyState from '@/components/common/EmptyState.vue'
+import ShiftAssignmentStatusUpdateModal from '@/components/shifts/ShiftAssignmentStatusUpdateModal.vue'
 import {
     ASSIGNMENT_STATUSES,
     ADJUSTMENT_TYPES,
@@ -1036,5 +1047,87 @@ onBeforeUnmount(() => modalInstance?.dispose())
 .session-card .list-group-item {
     border: 1px solid var(--color-border-subtle);
     border-radius: 12px;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid;
+    background: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.action-button--primary {
+    border-color: #a855f7;
+    color: #a855f7;
+    background: #ffffff;
+}
+
+.action-button--primary:hover {
+    background: #faf5ff;
+    border-color: #9333ea;
+    color: #9333ea;
+}
+
+.action-button--secondary {
+    border-color: #64748b;
+    color: #64748b;
+    background: #ffffff;
+}
+
+.action-button--secondary:hover {
+    background: #f1f5f9;
+    border-color: #475569;
+    color: #475569;
+}
+
+.action-button--info {
+    border-color: #06b6d4;
+    color: #06b6d4;
+    background: #ffffff;
+}
+
+.action-button--info:hover {
+    background: #ecfeff;
+    border-color: #0891b2;
+    color: #0891b2;
+}
+
+.action-button--danger {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: #ffffff;
+}
+
+.action-button--danger:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>

@@ -98,19 +98,27 @@ export const createUser = async (userData) => {
 }
 
 export const buildUserUpdatePayload = (payload = {}) => {
-    const safeTrim = (value) => (typeof value === 'string' ? value.trim() : value)
+    const safeTrim = (value) => {
+        if (value === null || value === undefined) return null
+        if (typeof value === 'string') {
+            const trimmed = value.trim()
+            return trimmed === '' ? null : trimmed
+        }
+        return value
+    }
 
     const body = {
         fullName: safeTrim(payload.fullName) || '',
         phone: safeTrim(payload.phone) || '',
-        email: safeTrim(payload.email) || null,
-        status: payload.status,
-        roleIds: Array.isArray(payload.roleIds) ? payload.roleIds : [],
-        avatarUrl: safeTrim(payload.avatarUrl) || null,
-        address: safeTrim(payload.address) || null,
+        email: safeTrim(payload.email),
+        status: payload.status || 'ACTIVE',
+        roleIds: Array.isArray(payload.roleIds) ? payload.roleIds.filter(id => Number.isInteger(id) && id > 0) : [],
+        avatarUrl: safeTrim(payload.avatarUrl),
+        address: safeTrim(payload.address),
         removeAvatar: Boolean(payload.removeAvatar)
     }
 
+    // Nếu removeAvatar là true, set avatarUrl thành null
     if (body.removeAvatar) {
         body.avatarUrl = null
     }

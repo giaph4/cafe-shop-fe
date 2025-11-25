@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="card filter-card mb-4">
+        <div class="card filter-card mb-4 mt-4">
             <div class="card-body">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-3 col-md-4">

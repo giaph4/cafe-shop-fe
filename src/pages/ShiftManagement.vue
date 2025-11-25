@@ -1,18 +1,21 @@
 <template>
     <div class="shift-management-page container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Ca làm</h2>
-                <p class="page-subtitle">Theo dõi ca làm, phân công nhân viên và trạng thái thực hiện.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-primary" type="button" @click="openCreateInstance" v-if="activeTab === 'instances'">
-                    <i class="bi bi-plus-lg me-2"></i>Tạo ca làm mới
-                </button>
-                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
+        <div class="shift-management-header">
+            <div class="shift-management-header__content">
+                <div class="shift-management-header__title-section">
+                    <h2 class="page-title">Quản lý Ca làm</h2>
+                    <p class="page-subtitle">Theo dõi ca làm, phân công nhân viên và trạng thái thực hiện.</p>
+                </div>
+                <div class="shift-management-header__actions">
+                    <button class="btn btn-primary" type="button" @click="openCreateInstance" v-if="activeTab === 'instances'">
+                        <i class="bi bi-plus-lg me-2"></i>Tạo ca làm mới
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -97,6 +100,12 @@
         />
 
         <ShiftInstanceDetailModal ref="detailModal" />
+
+        <ShiftStatusUpdateModal
+            ref="statusModal"
+            :status-options="SHIFT_STATUSES"
+            @submit="handleStatusUpdate"
+        />
     </div>
 </template>
 
@@ -110,6 +119,7 @@ import ShiftTemplatesTab from '@/components/shifts/ShiftTemplatesTab.vue'
 import ShiftInstanceFormModal from '@/components/shifts/ShiftInstanceFormModal.vue'
 import ShiftTemplateFormModal from '@/components/shifts/ShiftTemplateFormModal.vue'
 import ShiftInstanceDetailModal from '@/components/shifts/ShiftInstanceDetailModal.vue'
+import ShiftStatusUpdateModal from '@/components/shifts/ShiftStatusUpdateModal.vue'
 import {
     SHIFT_STATUSES,
     listShiftInstances,
@@ -170,7 +180,9 @@ const templateOptions = ref([])
 const formModal = ref(null)
 const templateModal = ref(null)
 const detailModal = ref(null)
+const statusModal = ref(null)
 const editingInstance = ref(null)
+const updatingStatusInstance = ref(null)
 const formSubmitting = ref(false)
 const editingTemplate = ref(null)
 const templateSubmitting = ref(false)
@@ -606,19 +618,22 @@ const handleFormSubmit = async (payload) => {
 }
 
 const promptStatusUpdate = async (instance) => {
-    const nextStatus = window.prompt('Nhập trạng thái mới (PLANNED, LOCKED, IN_PROGRESS, DONE, CANCELLED):', instance.status)
-    if (!nextStatus) return
-    if (!SHIFT_STATUSES.some((item) => item.value === nextStatus)) {
-        toast.warning('Trạng thái không hợp lệ.')
-        return
-    }
+    updatingStatusInstance.value = instance
+    statusModal.value?.show(instance)
+}
+
+const handleStatusUpdate = async (payload) => {
+    if (!updatingStatusInstance.value) return
+    statusModal.value?.setSubmitting(true)
     try {
-        await updateShiftInstanceStatus(instance.id, { status: nextStatus, notes: instance.notes || null })
+        await updateShiftInstanceStatus(updatingStatusInstance.value.id, payload)
         toast.success('Đã cập nhật trạng thái ca làm.')
         await fetchInstances()
         await fetchCalendarData()
+        statusModal.value?.setSubmitting(false)
     } catch (err) {
         toast.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.')
+        statusModal.value?.setSubmitting(false)
     }
 }
 
@@ -804,27 +819,50 @@ onMounted(() => {
     padding-bottom: 2rem;
 }
 
-.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
-    border: 1px solid var(--color-border);
+.shift-management-header {
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    border: 1px solid #e2e8f0;
     border-radius: 20px;
-    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.shift-management-header__content {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.shift-management-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.shift-management-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .page-title {
     font-weight: 700;
-    color: var(--color-heading);
+    color: var(--color-heading, #1e293b);
     margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
 }
 
 .page-subtitle {
     margin-bottom: 0;
-    color: var(--color-text-muted);
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .tabs-card {

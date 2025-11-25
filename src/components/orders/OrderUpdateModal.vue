@@ -4,8 +4,11 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Cập nhật đơn hàng #{{ orderId }}</h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
+                        <div>
+                            <h5 class="modal-title">Cập nhật đơn hàng #{{ orderId }}</h5>
+                            <p class="mb-0 text-muted small">Cập nhật thông tin khách hàng, bàn và trạng thái đơn hàng.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form @submit.prevent="handleSubmit">
@@ -85,7 +88,7 @@
                     <div class="modal-footer">
                         <button 
                             type="button" 
-                            class="btn btn-secondary" 
+                            class="btn btn-outline-secondary" 
                             @click="hide"
                             :disabled="submitting"
                         >
@@ -98,7 +101,7 @@
                             :disabled="submitting"
                         >
                             <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                            Cập nhật
+                            Lưu thay đổi
                         </button>
                     </div>
                 </div>
@@ -247,9 +250,83 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
+:deep(.modal-content) {
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    background: #ffffff;
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+:deep(.modal-header .text-muted.small) {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
 .modal-body {
     max-height: 70vh;
     overflow-y: auto;
+    padding: 1.5rem;
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+}
+
+:deep(.form-label) {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+:deep(.form-control),
+:deep(.form-select) {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
+}
+
+:deep(.form-control:focus),
+:deep(.form-select:focus) {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+:deep(.btn-primary) {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border: none;
+    border-radius: 12px;
+    padding: 0.625rem 1.5rem;
+    font-weight: 600;
+}
+
+:deep(.btn-outline-secondary) {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.625rem 1.5rem;
+    color: #64748b;
+    background: #ffffff;
+}
+
+:deep(.btn-outline-secondary:hover) {
+    background: #f8fafc;
+    border-color: #cbd5e1;
 }
 </style>
 

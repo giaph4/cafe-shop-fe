@@ -46,12 +46,14 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="closeModal">Huỷ</button>
+                        <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value">
+                            Hủy
+                        </button>
                         <button type="submit" class="btn btn-primary"
                             :disabled="createMutation.isPending.value || updateMutation.isPending.value">
                             <span v-if="createMutation.isPending.value || updateMutation.isPending.value"
                                 class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Lưu
+                            Lưu thay đổi
                         </button>
                     </div>
                 </Form>
@@ -59,18 +61,32 @@
         </div>
     </div>
 
-    <div data-aos="fade-up">
-        <div class="page-header d-flex justify-content-between align-items-center mb-4">
-            <h2 class="page-title">Quản lý Chi phí</h2>
-            <button class="btn btn-primary" @click="openModal()">
-                <i class="bi bi-plus-lg me-2"></i> Ghi nhận chi phí
-            </button>
+    <div class="page-container container-fluid" data-aos="fade-up">
+        <div class="expenses-header">
+            <div class="expenses-header__content">
+                <div class="expenses-header__title-section">
+                    <h2 class="page-title">Quản lý Chi phí</h2>
+                    <p class="page-subtitle">Theo dõi và quản lý các khoản chi phí hoạt động của cửa hàng.</p>
+                </div>
+                <div class="expenses-header__actions">
+                    <button class="btn btn-outline-secondary" type="button" @click="queryClient.invalidateQueries(['expenses'])" :disabled="isLoading">
+                        <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
+                    </button>
+                    <button class="btn btn-primary" type="button" @click="openModal()">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Ghi nhận chi phí
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="card mb-4">
+        <div class="card filter-card mb-4">
             <div class="card-body">
-                <div class="row g-3">
+                <div class="row g-3 align-items-end">
                     <div class="col-md-4">
+                        <label class="form-label">Tìm kiếm</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control" placeholder="Tìm theo hạng mục, mô tả, người tạo..."
@@ -78,21 +94,23 @@
                         </div>
                     </div>
                     <div class="col-md-3">
+                        <label class="form-label">Từ ngày</label>
                         <input type="date" class="form-control" v-model="startDate">
                     </div>
                     <div class="col-md-3">
+                        <label class="form-label">Đến ngày</label>
                         <input type="date" class="form-control" v-model="endDate">
                     </div>
-                    <div class="col-md-2 d-grid">
-                        <button class="btn btn-outline-secondary" @click="clearDateFilters">
-                            <i class="bi bi-x-lg me-1"></i> Xoá lọc
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" @click="clearDateFilters">
+                            <i class="bi bi-x-lg me-1"></i> Xóa lọc
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card table-card">
             <div class="card-body">
 
                 <div v-if="isLoading" class="text-center my-5">
@@ -127,12 +145,16 @@
                                 <td>{{ expense.username }}</td>
                                 <td class="text-muted">{{ expense.description || 'N/A' }}</td>
                                 <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary me-2" @click="openModal(expense)">
-                                        <i class="bi bi-pencil-fill"></i> Sửa
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" @click="handleDelete(expense)">
-                                        <i class="bi bi-trash-fill"></i> Xoá
-                                    </button>
+                                    <div class="action-buttons">
+                                        <button class="action-button action-button--primary" @click="openModal(expense)" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                            <span>Chỉnh sửa</span>
+                                        </button>
+                                        <button class="action-button action-button--danger" @click="handleDelete(expense)" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                            <span>Xóa</span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <tr v-if="filteredExpenses.length === 0">
@@ -374,8 +396,191 @@ const handleDelete = (expense) => {
 </script>
 
 <style scoped>
+/* Header Styles */
+.expenses-header {
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.expenses-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.expenses-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.expenses-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--color-heading, #1e293b);
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.page-subtitle {
+    margin-bottom: 0;
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid;
+    background: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.action-button--primary {
+    border-color: #a855f7;
+    color: #a855f7;
+    background: #ffffff;
+}
+
+.action-button--primary:hover {
+    background: #faf5ff;
+    border-color: #9333ea;
+    color: #9333ea;
+}
+
+.action-button--danger {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: #ffffff;
+}
+
+.action-button--danger:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+    background: #ffffff;
+}
+
+.modal-header {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.5rem;
+}
+
+.modal-title {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.25rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 1.5rem;
+}
+
+.form-control,
+.form-select {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 0.2rem rgba(168, 85, 247, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #a855f7, #9333ea);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #9333ea, #7e22ce);
+}
+
+.btn-outline-secondary {
+    border-radius: 12px;
+    border-color: #e2e8f0;
+}
+
+.filter-card,
+.table-card {
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.filter-card .card-body {
+    padding: 1.75rem;
+}
 
 .table-hover tbody tr:hover {
     background-color: #fdfaf7;
+}
+
+@media (max-width: 768px) {
+    .expenses-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .expenses-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>

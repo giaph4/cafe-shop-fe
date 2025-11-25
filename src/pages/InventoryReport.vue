@@ -1,30 +1,47 @@
 <template>
     <div class="page-container container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Báo cáo tồn kho</h2>
-                <p class="page-subtitle">Theo dõi tồn kho hiện tại, điểm đặt lại và xu hướng thiếu hụt.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <div class="form-check form-switch align-self-center">
-                    <input class="form-check-input" type="checkbox" role="switch" id="lowStockSwitch" v-model="filters.lowStockOnly">
-                    <label class="form-check-label" for="lowStockSwitch">Chỉ hiển thị nguyên liệu thiếu hụt</label>
+        <div class="inventory-report-header">
+            <div class="inventory-report-header__content">
+                <div class="inventory-report-header__title-section">
+                    <h2 class="inventory-report-header__title">Báo cáo tồn kho</h2>
+                    <p class="inventory-report-header__subtitle">Theo dõi tồn kho hiện tại, điểm đặt lại và xu hướng thiếu hụt.</p>
                 </div>
-                <button class="btn btn-outline-secondary" type="button" @click="refetch" :disabled="isFetching">
-                    <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
-                <button class="btn btn-primary" type="button" @click="handleExport" :disabled="isExporting">
-                    <span v-if="isExporting" class="spinner-border spinner-border-sm me-2"></span>
-                    Xuất Excel
-                </button>
+                <div class="inventory-report-header__actions">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="lowStockSwitch" v-model="filters.lowStockOnly">
+                        <label class="form-check-label" for="lowStockSwitch">Chỉ hiển thị nguyên liệu thiếu hụt</label>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">
+                        <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
+                        Làm mới
+                    </button>
+                    <button class="btn btn-primary btn-sm" type="button" @click="handleExport" :disabled="isExporting">
+                        <span v-if="isExporting" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-download me-2"></i>
+                        Xuất Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-4 col-md-4 col-sm-6" v-for="stat in stats" :key="stat.label">
+                <div class="stat-card">
+                    <div class="stat-icon" :class="stat.variant">
+                        <i :class="stat.icon"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label mb-1">{{ stat.label }}</p>
+                        <h4 class="stat-value mb-0">{{ stat.value }}</h4>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="card filter-card mb-4">
             <div class="card-body">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-6 col-md-6">
                         <label class="form-label">Tìm kiếm</label>
                         <div class="input-group search-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -32,24 +49,11 @@
                                 v-model="searchQuery" />
                         </div>
                     </div>
-                    <div class="col-lg-2 col-md-3">
+                    <div class="col-lg-3 col-md-3">
                         <label class="form-label">Số dòng / trang</label>
                         <select class="form-select" :value="pageSize" @change="updatePageSize($event.target.value)">
                             <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
                         </select>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="stats-row">
-                            <div class="stat-card" v-for="stat in stats" :key="stat.label">
-                                <div class="stat-icon" :class="stat.variant">
-                                    <i :class="stat.icon"></i>
-                                </div>
-                                <div>
-                                    <p class="stat-label mb-1">{{ stat.label }}</p>
-                                    <h4 class="stat-value mb-0">{{ stat.value }}</h4>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -113,8 +117,8 @@
                     </table>
                 </div>
             </div>
-            <div class="card-footer bg-transparent" v-if="totalPages > 1">
-                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
+            <div class="card-footer bg-transparent" v-if="pagination.totalPages > 1">
+                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="pagination.totalPages"
                     @page-change="handlePageChange" />
             </div>
         </div>
@@ -144,7 +148,7 @@ const isExporting = ref(false)
 const pageSizeOptions = [10, 25, 50]
 
 const pagination = usePagination({ mode: PaginationMode.ZERO_BASED, pageSize: pageSizeOptions[0] })
-const { pageSize, zeroBasedPage, setPage, updatePageSize, resetPage } = pagination
+const { pageSize, zeroBasedPage, setPage, updatePageSize, resetPage, updateFromResponse } = pagination
 
 let searchTimeoutId
 watch(searchQuery, (value) => {
@@ -183,6 +187,8 @@ const baseItems = computed(() => {
     })
 })
 
+const totalElements = computed(() => baseItems.value.length)
+
 const totalPages = computed(() => {
     if (!baseItems.value.length) return 0
     return Math.ceil(baseItems.value.length / pageSize.value)
@@ -192,6 +198,15 @@ const tableData = computed(() => {
     const start = zeroBasedPage.value * pageSize.value
     return baseItems.value.slice(start, start + pageSize.value)
 })
+
+// Cập nhật pagination từ computed values
+watch([totalElements, totalPages], ([elements, pages]) => {
+    pagination.updateFromResponse({
+        page: zeroBasedPage.value,
+        totalPages: pages,
+        totalElements: elements
+    })
+}, { immediate: true })
 
 const summary = computed(() => data.value?.summary ?? {
     totalItems: 0,
@@ -305,58 +320,64 @@ const statusLabel = (status) => {
     border-left: none;
 }
 
-.stats-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: flex-end;
-}
-
 .stat-card {
     display: flex;
     align-items: center;
     gap: 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    padding: 1rem 1.25rem;
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    min-width: 190px;
-    min-height: 140px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.25rem;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
 }
 
 .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 1.35rem;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    border: 2px solid;
 }
 
 .variant-primary {
-    background: linear-gradient(140deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-color: #3b82f6;
 }
 
 .variant-warning {
-    background: linear-gradient(140deg, #f97316, #fb923c);
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border-color: #f97316;
 }
 
 .variant-success {
-    background: linear-gradient(140deg, #22c55e, #4ade80);
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
 }
 
 .stat-label {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
 }
 
 .stat-value {
+    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-heading);
+    color: #1e293b;
+    line-height: 1.2;
 }
 
 .analytics-grid {
@@ -398,7 +419,76 @@ const statusLabel = (status) => {
     vertical-align: middle;
 }
 
+.inventory-report-header {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+}
+
+.inventory-report-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.inventory-report-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.inventory-report-header__title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.inventory-report-header__subtitle {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.inventory-report-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.inventory-report-header__actions .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
+.inventory-report-header__actions .form-check-label {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
 @media (max-width: 768px) {
+    .inventory-report-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .inventory-report-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
     .stats-row {
         justify-content: flex-start;
     }

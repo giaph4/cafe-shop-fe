@@ -1,15 +1,27 @@
 <template>
     <div class="page-container container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Khách hàng</h2>
-                <p class="page-subtitle">Theo dõi thông tin, lịch sử mua hàng và điểm thưởng của khách hàng.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
+        <div class="customers-header">
+            <div class="customers-header__content">
+                <div class="customers-header__title-section">
+                    <h2 class="customers-header__title">Quản lý Khách hàng</h2>
+                    <p class="customers-header__subtitle">Theo dõi thông tin, lịch sử mua hàng và điểm thưởng của khách hàng.</p>
+                </div>
+                <div class="customers-header__actions">
+                    <div class="form-check form-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="autoRefreshSwitch"
+                            v-model="autoRefresh"
+                        >
+                        <label class="form-check-label" for="autoRefreshSwitch">Tự động làm mới</label>
+                    </div>
+                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        Làm mới
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -118,10 +130,9 @@
             </div>
         </div>
 
-        <CustomerDetailDrawer
+        <CustomerDetailModal
+            ref="customerDetailModalRef"
             :customer-id="detailState.customerId"
-            :visible="detailState.visible"
-            :initial-tab="detailState.initialTab"
             @close="handleDetailClose"
             @edit="handleDetailEdit"
         />
@@ -174,7 +185,7 @@ import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
 
 import CustomerFormModal from '@/components/customers/CustomerFormModal.vue'
-import CustomerDetailDrawer from '@/components/customers/CustomerDetailDrawer.vue'
+import CustomerDetailModal from '@/components/customers/CustomerDetailModal.vue'
 import CustomerOverviewTab from '@/components/customers/CustomerOverviewTab.vue'
 import CustomerListTab from '@/components/customers/CustomerListTab.vue'
 import CustomerStatisticsTab from '@/components/customers/CustomerStatisticsTab.vue'
@@ -208,6 +219,9 @@ const tabs = [
     { key: 'statistics', label: 'Thống kê', icon: 'bi bi-graph-up' }
 ]
 
+const autoRefresh = ref(false)
+let autoRefreshInterval = null
+
 const filters = reactive({
     keyword: typeof route.query.keyword === 'string' ? route.query.keyword : '',
     minLoyaltyPoints: null,
@@ -230,12 +244,11 @@ const formState = reactive({
 })
 
 const detailState = reactive({
-    visible: false,
-    customerId: null,
-    initialTab: 'overview'
+    customerId: null
 })
 
 const customerFormModalRef = ref(null)
+const customerDetailModalRef = ref(null)
 const deleteTarget = ref(null)
 const deleting = ref(false)
 const deleteModalRef = ref(null)
@@ -619,20 +632,15 @@ const handleFormSubmit = async (payload) => {
 
 const openDetailDrawer = (customerId, initialTab = 'overview') => {
     detailState.customerId = customerId
-    detailState.initialTab = initialTab
-    detailState.visible = true
+    customerDetailModalRef.value?.show()
 }
 
-
-
 const handleDetailClose = () => {
-    detailState.visible = false
     detailState.customerId = null
 }
 
 const handleDetailEdit = (customer) => {
     if (!canManage.value || !customer) return
-    detailState.visible = false
     detailState.customerId = null
     openEditModal(customer)
 }
@@ -727,9 +735,26 @@ watch(
     { immediate: true }
 )
 
+watch(autoRefresh, (enabled) => {
+    if (enabled) {
+        autoRefreshInterval = setInterval(() => {
+            fetchData()
+            toast.info('Dữ liệu khách hàng đã được tự động làm mới.', { autoClose: 2000 })
+        }, 30000)
+    } else {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval)
+            autoRefreshInterval = null
+        }
+    }
+})
+
 onBeforeUnmount(() => {
     if (keywordDebounceId) {
         clearTimeout(keywordDebounceId)
+    }
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval)
     }
     if (deleteModalInstance) {
         deleteModalInstance.hide()
@@ -738,6 +763,79 @@ onBeforeUnmount(() => {
     }
 })
 </script>
+
+<style scoped>
+.customers-header {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+}
+
+.customers-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.customers-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.customers-header__title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.customers-header__subtitle {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.customers-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.customers-header__actions .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
+.customers-header__actions .form-check-label {
+    margin-bottom: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .customers-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .customers-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+</style>
 
 <style scoped>
 /* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card, .tabs-card, .reports-tabs, .state-block) are in components.scss */

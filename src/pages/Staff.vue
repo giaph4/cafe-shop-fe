@@ -1,69 +1,85 @@
 <template>
     <div class="page-container container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Nhân viên</h2>
-                <p class="page-subtitle">Theo dõi thông tin nhân sự, hiệu suất và lịch sử đăng nhập.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <div class="btn-group" role="group" aria-label="Chế độ hiển thị">
-                    <button class="btn btn-outline-secondary" :class="{ active: viewMode === 'grid' }"
-                        @click="viewMode = 'grid'">
-                        <i class="bi bi-grid-3x3-gap"></i>
+        <div class="staff-header">
+            <div class="staff-header__content">
+                <div class="staff-header__title-section">
+                    <h2 class="page-title">Quản lý Nhân viên</h2>
+                    <p class="page-subtitle">Theo dõi thông tin nhân sự, hiệu suất và lịch sử đăng nhập.</p>
+                </div>
+                <div class="staff-header__actions">
+                    <div class="btn-group" role="group" aria-label="Chế độ hiển thị">
+                        <button class="btn btn-outline-secondary" :class="{ active: viewMode === 'grid' }"
+                            @click="viewMode = 'grid'">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" :class="{ active: viewMode === 'table' }"
+                            @click="viewMode = 'table'">
+                            <i class="bi bi-list"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-outline-secondary" type="button" @click="fetchUsers" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
                     </button>
-                    <button class="btn btn-outline-secondary" :class="{ active: viewMode === 'table' }"
-                        @click="viewMode = 'table'">
-                        <i class="bi bi-list"></i>
+                    <button class="btn btn-outline-success" type="button" @click="handleExport"
+                        :disabled="exporting || !users.length">
+                        <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-file-earmark-excel me-2"></i>
+                        Xuất Excel
+                    </button>
+                    <button class="btn btn-primary" type="button" @click="openCreateModal" :disabled="rolesLoading">
+                        <span v-if="rolesLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-person-plus me-2"></i>
+                        Thêm nhân viên
                     </button>
                 </div>
-                <button class="btn btn-outline-success" type="button" @click="handleExport"
-                    :disabled="exporting || !users.length">
-                    <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-file-earmark-excel me-1"></i>
-                    Xuất Excel
-                </button>
-                <button class="btn btn-primary" type="button" @click="openCreateModal" :disabled="rolesLoading">
-                    <span v-if="rolesLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class="bi bi-person-plus me-1"></i>Thêm nhân viên
-                </button>
             </div>
         </div>
 
         <!-- Statistics Cards -->
-        <div class="row g-4 mb-4" v-if="!loading && users.length > 0">
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="card metric-card metric-card--primary w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Tổng số nhân viên</div>
-                        <div class="metric-value">{{ formatNumber(totalUsers) }}</div>
-                        <div class="metric-detail">Trên tổng số {{ formatNumber(totalElements) }} người dùng</div>
+        <div class="row g-3 mb-4" v-if="!loading && users.length > 0">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card stat-card--blue">
+                    <div class="stat-icon stat-icon--blue">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Tổng số nhân viên</div>
+                        <div class="stat-value">{{ formatNumber(totalUsers) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="card metric-card metric-card--success w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Đang hoạt động</div>
-                        <div class="metric-value">{{ formatNumber(activeUsersCount) }}</div>
-                        <div class="metric-detail">{{ formatNumber(inactiveUsersCount) }} đã khóa</div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card stat-card--green">
+                    <div class="stat-icon stat-icon--green">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Đang hoạt động</div>
+                        <div class="stat-value">{{ formatNumber(activeUsersCount) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="card metric-card metric-card--info w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Theo quyền</div>
-                        <div class="metric-value">{{ formatNumber(usersByRoleCount) }}</div>
-                        <div class="metric-detail">{{ roleFilterOptions.length }} loại quyền</div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card stat-card--purple">
+                    <div class="stat-icon stat-icon--purple">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Theo quyền</div>
+                        <div class="stat-value">{{ formatNumber(usersByRoleCount) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="card metric-card metric-card--warning w-100">
-                    <div class="card-body">
-                        <div class="metric-label">Hoạt động gần đây</div>
-                        <div class="metric-value">{{ formatNumber(recentlyActiveCount) }}</div>
-                        <div class="metric-detail">Trong 7 ngày qua</div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card stat-card--orange">
+                    <div class="stat-icon stat-icon--orange">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Hoạt động gần đây</div>
+                        <div class="stat-value">{{ formatNumber(recentlyActiveCount) }}</div>
                     </div>
                 </div>
             </div>
@@ -250,24 +266,27 @@
                                         </td>
                                         <td>{{ formatDateTime(user.createdAt) }}</td>
                                         <td class="text-end">
-                                            <div class="staff-action-group" role="group"
-                                                aria-label="Thao tác nhân viên">
-                                                <button class="staff-action-btn staff-action-btn--primary" type="button"
+                                            <div class="action-buttons">
+                                                <button class="action-button action-button--primary" type="button"
                                                     @click="openDetail(user)" title="Xem chi tiết">
                                                     <i class="bi bi-eye"></i>
+                                                    <span>Chi tiết</span>
                                                 </button>
-                                                <button class="staff-action-btn" type="button"
+                                                <button class="action-button action-button--primary" type="button"
                                                     @click="openEditModal(user)" title="Chỉnh sửa">
                                                     <i class="bi bi-pencil"></i>
+                                                    <span>Chỉnh sửa</span>
                                                 </button>
-                                                <button class="staff-action-btn staff-action-btn--muted" type="button"
+                                                <button class="action-button action-button--info" type="button"
                                                     @click="openLoginHistory(user)" title="Lịch sử đăng nhập">
                                                     <i class="bi bi-clock-history"></i>
+                                                    <span>Lịch sử</span>
                                                 </button>
-                                                <button class="staff-action-btn staff-action-btn--muted" type="button"
+                                                <button class="action-button action-button--warning" type="button"
                                                     @click="openResetPasswordModal(user)" title="Đặt lại mật khẩu"
                                                     :disabled="isCurrentUser(user.id)">
                                                     <i class="bi bi-key"></i>
+                                                    <span>Đặt lại mật khẩu</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -1040,7 +1059,7 @@ const handleCreateSubmit = async (payload) => {
         setPageFromZero(0)
         await fetchUsers()
     } catch (err) {
-        handleError(err, 'Không thể tạo nhân viên mới.')
+        toast.error(err.response?.data?.message || 'Không thể tạo nhân viên mới.')
     } finally {
         createSubmitting.value = false
     }
@@ -1068,7 +1087,7 @@ const openDetail = async (user) => {
     try {
         dashboardData.value = await getStaffDashboard(user.id)
     } catch (err) {
-        handleError(err, 'Không thể tải dữ liệu hiệu suất.')
+        toast.error(err.response?.data?.message || 'Không thể tải dữ liệu hiệu suất.')
         dashboardData.value = null
     } finally {
         dashboardLoading.value = false
@@ -1222,7 +1241,7 @@ const submitEditForm = async () => {
         hideEditModal()
         await fetchUsers()
     } catch (err) {
-        handleError(err, 'Không thể cập nhật thông tin nhân viên.')
+        toast.error(err.response?.data?.message || 'Không thể cập nhật thông tin nhân viên.')
         if (uploadedFileName) {
             try {
                 await deleteFile(uploadedFileName)
@@ -1278,7 +1297,7 @@ const handleBulkActivate = async () => {
         clearSelection()
         await fetchUsers()
     } catch (err) {
-        handleError(err, 'Không thể kích hoạt một số nhân viên.')
+        toast.error(err.response?.data?.message || 'Không thể kích hoạt một số nhân viên.')
     } finally {
         bulkProcessing.value = false
     }
@@ -1304,7 +1323,7 @@ const handleBulkDeactivate = async () => {
         clearSelection()
         await fetchUsers()
     } catch (err) {
-        handleError(err, 'Không thể vô hiệu hóa một số nhân viên.')
+        toast.error(err.response?.data?.message || 'Không thể vô hiệu hóa một số nhân viên.')
     } finally {
         bulkProcessing.value = false
     }
@@ -1362,7 +1381,7 @@ const handleExport = async () => {
 
         toast.success('Đã xuất danh sách nhân viên thành công!')
     } catch (err) {
-        handleError(err, 'Không thể xuất danh sách nhân viên.')
+        toast.error(err.response?.data?.message || 'Không thể xuất danh sách nhân viên.')
     } finally {
         exporting.value = false
     }
@@ -1427,7 +1446,7 @@ const submitResetPassword = async () => {
         toast.success('Đã đặt lại mật khẩu thành công.')
         hideResetPasswordModal()
     } catch (err) {
-        handleError(err, 'Không thể đặt lại mật khẩu.')
+        toast.error(err.response?.data?.message || 'Không thể đặt lại mật khẩu.')
     } finally {
         resetPasswordSubmitting.value = false
     }
@@ -1455,7 +1474,7 @@ const openUserActivityLog = async (user) => {
             activityLogs.value = []
         }
     } catch (err) {
-        handleError(err, 'Không thể tải lịch sử hoạt động.')
+        toast.error(err.response?.data?.message || 'Không thể tải lịch sử hoạt động.')
         activityLogs.value = []
     } finally {
         activityLogLoading.value = false
@@ -1471,7 +1490,187 @@ const hideUserActivityLogModal = () => {
 </script>
 
 <style scoped>
-/* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card) are in components.scss */
+/* Header Styles */
+.staff-header {
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.staff-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.staff-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.staff-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--color-heading, #1e293b);
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.page-subtitle {
+    margin-bottom: 0;
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Stat Cards */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: #ffffff;
+    border: 2px solid;
+}
+
+.stat-icon--blue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-color: #3b82f6;
+}
+
+.stat-icon--green {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+}
+
+.stat-icon--purple {
+    background: linear-gradient(135deg, #a855f7, #9333ea);
+    border-color: #a855f7;
+}
+
+.stat-icon--orange {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border-color: #f97316;
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid;
+    background: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.action-button--primary {
+    border-color: #a855f7;
+    color: #a855f7;
+    background: #ffffff;
+}
+
+.action-button--primary:hover {
+    background: #faf5ff;
+    border-color: #9333ea;
+    color: #9333ea;
+}
+
+.action-button--info {
+    border-color: #06b6d4;
+    color: #06b6d4;
+    background: #ffffff;
+}
+
+.action-button--info:hover {
+    background: #ecfeff;
+    border-color: #0891b2;
+    color: #0891b2;
+}
+
+.action-button--warning {
+    border-color: #f97316;
+    color: #f97316;
+    background: #ffffff;
+}
+
+.action-button--warning:hover {
+    background: #fff7ed;
+    border-color: #ea580c;
+    color: #ea580c;
+}
+
+.action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 .filter-card .card-body {
     padding: 1.75rem;
@@ -1579,152 +1778,25 @@ const hideUserActivityLogModal = () => {
     font-weight: 600;
 }
 
-.staff-action-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.25rem;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.32);
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), 0 10px 26px rgba(15, 23, 42, 0.12);
-    transition: border-color var(--transition-all), background-color var(--transition-all), box-shadow var(--transition-all);
-}
+@media (max-width: 768px) {
+    .staff-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-.dark-theme .staff-action-group {
-    border-color: rgba(129, 140, 248, 0.28);
-    background: rgba(37, 45, 71, 0.6);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 18px 30px rgba(5, 10, 25, 0.55);
-}
+    .staff-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
 
-.staff-action-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: var(--color-card-muted);
-    color: var(--color-text-muted);
-    display: grid;
-    place-items: center;
-    font-size: 1.05rem;
-    transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
-}
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
 
-.staff-action-btn:hover,
-.staff-action-btn:focus-visible {
-    transform: translateY(-1px);
-    border-color: rgba(99, 102, 241, 0.32);
-    background: rgba(99, 102, 241, 0.12);
-    color: var(--color-primary);
-    box-shadow: 0 10px 18px rgba(99, 102, 241, 0.18);
-}
-
-.staff-action-btn--primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-primary-contrast, #fff);
-    border-color: transparent;
-    box-shadow: 0 12px 22px rgba(79, 70, 229, 0.28);
-}
-
-.staff-action-btn--primary:hover,
-.staff-action-btn--primary:focus-visible {
-    color: var(--color-primary-contrast, #fff);
-    box-shadow: 0 16px 26px rgba(79, 70, 229, 0.32);
-}
-
-.staff-action-btn--muted {
-    background: rgba(99, 102, 241, 0.08);
-    color: var(--color-text);
-}
-
-.staff-action-btn--muted:hover,
-.staff-action-btn--muted:focus-visible {
-    background: rgba(99, 102, 241, 0.14);
-    color: var(--color-primary);
-}
-
-.dark-theme .staff-action-btn {
-    border-color: rgba(129, 140, 248, 0.35);
-    background: rgba(30, 41, 59, 0.78);
-    color: rgba(219, 234, 254, 0.85);
-}
-
-.dark-theme .staff-action-btn:hover,
-.dark-theme .staff-action-btn:focus-visible {
-    background: rgba(129, 140, 248, 0.22);
-    border-color: rgba(129, 140, 248, 0.48);
-    color: #e0e7ff;
-    box-shadow: 0 16px 24px rgba(15, 23, 42, 0.45);
-}
-
-.comfort-theme .staff-action-group {
-    border-color: rgba(95, 111, 148, 0.28);
-    background: rgba(245, 241, 235, 0.55);
-}
-
-.comfort-theme .staff-action-btn {
-    border-color: rgba(95, 111, 148, 0.28);
-    background: rgba(241, 236, 228, 0.86);
-    color: #4b5563;
-}
-
-.comfort-theme .staff-action-btn:hover,
-.comfort-theme .staff-action-btn:focus-visible {
-    background: rgba(95, 111, 148, 0.22);
-    border-color: rgba(95, 111, 148, 0.4);
-    color: var(--color-primary);
-    box-shadow: 0 16px 24px rgba(95, 111, 148, 0.22);
-}
-
-.metric-card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    transition: all 0.2s ease;
-    height: 100%;
-    min-height: 140px;
-}
-
-.metric-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 20px 35px rgba(15, 23, 42, 0.12);
-}
-
-.metric-card--primary {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-primary));
-}
-
-.metric-card--success {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-success));
-}
-
-.metric-card--info {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-info));
-}
-
-.metric-card--warning {
-    background: linear-gradient(170deg, var(--color-card), var(--color-soft-warning));
-}
-
-.metric-label {
-    font-size: 0.88rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-}
-
-.metric-value {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--color-heading);
-    margin-bottom: 0.25rem;
-}
-
-.metric-detail {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-    margin-top: 0.25rem;
+    .action-button {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>

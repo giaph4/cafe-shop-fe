@@ -1,110 +1,192 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal fade customer-detail-modal" ref="modalElement" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                    <div class="modal-header align-items-start">
+                    <div class="modal-header">
                         <div>
-                            <h5 class="modal-title">Chi tiết khách hàng</h5>
-                            <p class="text-muted mb-0">
-                                Cập nhật lần cuối: {{ formatDate(customer?.updatedAt) || '—' }}
-                            </p>
+                            <h5 class="modal-title">Chi tiết khách hàng #{{ customerId }}</h5>
+                            <p class="mb-0 text-muted small">Xem thông tin chi tiết, lịch sử mua hàng và thống kê của khách hàng.</p>
                         </div>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
+                        <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
                     </div>
-
-                    <div class="modal-body modal-body-scroll">
-                        <div v-if="loading" class="detail-state">
-                            <div class="spinner-border text-primary" role="status"></div>
-                        </div>
-                        <div v-else-if="error" class="alert alert-danger d-flex align-items-center gap-2">
-                            <i class="bi bi-exclamation-triangle"></i>
-                            <span>{{ error }}</span>
-                        </div>
-                        <div v-else-if="!customer" class="detail-state text-muted">
-                            Không tìm thấy thông tin khách hàng.
-                        </div>
-                        <div v-else class="detail-grid">
-                            <aside class="detail-media">
-                                <div class="image-frame">
-                                    <div class="avatar-placeholder">
-                                        <i class="bi bi-person-circle"></i>
+                    <div class="modal-body">
+                        <template v-if="loading">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template v-else-if="error">
+                            <div class="alert alert-danger">{{ error }}</div>
+                        </template>
+                        <template v-else-if="customer">
+                            <!-- Thông tin cơ bản -->
+                            <div class="info-section mb-4">
+                                <h6 class="section-title mb-3">
+                                    <i class="bi bi-person-circle me-2"></i>
+                                    Thông tin cơ bản
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <span class="info-label">Mã khách hàng:</span>
+                                            <span class="info-value">{{ customer.id }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <span class="info-label">Họ và tên:</span>
+                                            <span class="info-value">{{ customer.fullName }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <span class="info-label">Số điện thoại:</span>
+                                            <span class="info-value">{{ customer.phone || '—' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <span class="info-label">Email:</span>
+                                            <span class="info-value">{{ customer.email || '—' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <span class="info-label">Điểm thưởng:</span>
+                                            <span class="info-value text-primary fw-bold">{{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <span class="info-label">Ngày tạo:</span>
+                                            <span class="info-value text-muted">{{ formatDate(customer.createdAt) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <span class="info-label">Cập nhật lần cuối:</span>
+                                            <span class="info-value text-muted">{{ formatDate(customer.updatedAt) }}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="status-block status-block--active">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    <span>Đang hoạt động</span>
+                            </div>
+
+                            <!-- Thống kê -->
+                            <div class="info-section mb-4">
+                                <h6 class="section-title mb-3">
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    Thống kê
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="stat-box">
+                                            <div class="stat-icon stat-icon--purple">
+                                                <i class="bi bi-receipt"></i>
+                                            </div>
+                                            <div class="stat-info">
+                                                <div class="stat-label">Tổng đơn hàng</div>
+                                                <div class="stat-value">{{ summary.totalOrders }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="stat-box">
+                                            <div class="stat-icon stat-icon--green">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div class="stat-info">
+                                                <div class="stat-label">Tổng chi tiêu</div>
+                                                <div class="stat-value">{{ formatCurrency(summary.totalAmount) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="stat-box">
+                                            <div class="stat-icon stat-icon--blue">
+                                                <i class="bi bi-graph-up-arrow"></i>
+                                            </div>
+                                            <div class="stat-info">
+                                                <div class="stat-label">Giá trị TB/đơn</div>
+                                                <div class="stat-value">{{ formatCurrency(summary.averageOrderValue) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="stat-box">
+                                            <div class="stat-icon stat-icon--yellow">
+                                                <i class="bi bi-calendar-check"></i>
+                                            </div>
+                                            <div class="stat-info">
+                                                <div class="stat-label">Đơn gần nhất</div>
+                                                <div class="stat-value small">{{ formatDate(summary.lastPurchaseDate) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <dl class="meta-list">
-                                    <div>
-                                        <dt>Mã khách hàng</dt>
-                                        <dd>{{ customer.id }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Ngày tạo</dt>
-                                        <dd>{{ formatDate(customer.createdAt) || '—' }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Cập nhật lần cuối</dt>
-                                        <dd>{{ formatDate(customer.updatedAt) || '—' }}</dd>
-                                    </div>
-                                </dl>
-                            </aside>
+                            </div>
 
-                            <section class="detail-content">
-                                <header class="detail-header">
-                                    <h3>{{ customer.fullName || '—' }}</h3>
-                                    <p class="text-muted mb-0">{{ customer.email || 'Chưa có email' }}</p>
-                                </header>
-
-                                <div class="info-cards">
-                                    <div class="info-card">
-                                        <span class="label">Điểm thưởng</span>
-                                        <strong class="value text-primary">{{ formatLoyaltyPoints(customer.loyaltyPoints) }}</strong>
-                                    </div>
-                                    <div class="info-card">
-                                        <span class="label">Số điện thoại</span>
-                                        <strong class="value">{{ customer.phone || '—' }}</strong>
-                                    </div>
-                                    <div class="info-card">
-                                        <span class="label">Email</span>
-                                        <strong class="value">{{ customer.email || '—' }}</strong>
+                            <!-- Lịch sử đơn hàng -->
+                            <div class="info-section">
+                                <h6 class="section-title mb-3">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    Lịch sử mua hàng
+                                </h6>
+                                <div v-if="ordersLoading" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                </div>
+                                <div v-else-if="ordersError" class="alert alert-warning mb-0">
+                                    {{ ordersError }}
+                                </div>
+                                <div v-else-if="orders.length === 0" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    <p class="mb-0">Chưa có đơn hàng nào</p>
+                                </div>
+                                <div v-else class="orders-list">
+                                    <div
+                                        v-for="order in orders"
+                                        :key="order.id"
+                                        class="order-item"
+                                    >
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold">Đơn #{{ order.id }}</div>
+                                                <div class="small text-muted">
+                                                    {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
+                                                </div>
+                                                <div class="mt-1">
+                                                    <span :class="['badge', getStatusBadgeClass(order.status)]">
+                                                        {{ getStatusLabel(order.status) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-semibold text-primary">{{ formatCurrency(order.totalAmount) }}</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <section class="additional-info-section">
-                                    <h5 class="mb-3">Thông tin bổ sung</h5>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm align-middle">
-                                            <tbody>
-                                                <tr>
-                                                    <td class="fw-semibold" style="width: 40%;">Họ và tên:</td>
-                                                    <td>{{ customer.fullName || '—' }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="fw-semibold">Số điện thoại:</td>
-                                                    <td>{{ customer.phone || '—' }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="fw-semibold">Email:</td>
-                                                    <td>{{ customer.email || '—' }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="fw-semibold">Điểm thưởng:</td>
-                                                    <td><span class="text-primary fw-bold">{{ formatLoyaltyPoints(customer.loyaltyPoints) }}</span></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </section>
-                            </section>
-                        </div>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-person-x fs-1 mb-3 d-block"></i>
+                                <p class="mb-0">Không tìm thấy thông tin khách hàng.</p>
+                            </div>
+                        </template>
                     </div>
-
-                    <div class="modal-footer dual-buttons">
+                    <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                        <button type="button" class="btn btn-primary" @click="editCustomer">
-                            <i class="bi bi-pencil me-2"></i>Chỉnh sửa
+                        <button
+                            v-if="customer"
+                            type="button"
+                            class="btn btn-primary"
+                            @click="handleEdit"
+                        >
+                            <i class="bi bi-pencil me-2"></i>
+                            Chỉnh sửa
                         </button>
                     </div>
                 </div>
@@ -114,27 +196,105 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Modal } from 'bootstrap'
-import { getCustomerById } from '@/api/customerService'
-import { formatDateTime } from '@/utils/formatters'
+import { getCustomerById, getCustomerPurchaseHistory } from '@/api/customerService'
+import { formatCurrency, formatDateTime } from '@/utils/formatters'
+import logger from '@/utils/logger'
 
 const props = defineProps({
     customerId: {
-        type: [String, Number],
+        type: [Number, String],
         default: null
     }
 })
 
 const emit = defineEmits(['close', 'edit'])
 
-const modal = ref(null)
+const modalElement = ref(null)
 let modalInstance = null
-const customer = ref(null)
-const loading = ref(false)
-const error = ref(null)
 
-const formatDate = (value) => (value ? formatDateTime(value) : '')
+const customer = ref(null)
+const orders = ref([])
+const summary = ref({
+    totalOrders: 0,
+    totalAmount: 0,
+    averageOrderValue: 0,
+    lastPurchaseDate: null
+})
+const loading = ref(false)
+const ordersLoading = ref(false)
+const error = ref(null)
+const ordersError = ref(null)
+
+const STATUS_METADATA = {
+    PENDING: { label: 'Đang chờ', badgeClass: 'bg-warning-subtle text-warning' },
+    PAID: { label: 'Đã thanh toán', badgeClass: 'bg-success-subtle text-success' },
+    CANCELLED: { label: 'Đã hủy', badgeClass: 'bg-danger-subtle text-danger' },
+    TRANSFERRED: { label: 'Đã chuyển ca', badgeClass: 'bg-info-subtle text-info' }
+}
+
+const fetchCustomerDetails = async () => {
+    if (!props.customerId) {
+        customer.value = null
+        return
+    }
+
+    loading.value = true
+    error.value = null
+    try {
+        const response = await getCustomerById(props.customerId)
+        customer.value = response
+        await fetchOrders()
+    } catch (err) {
+        logger.error('Failed to fetch customer details:', err)
+        error.value = err?.response?.data?.message || 'Không thể tải thông tin chi tiết khách hàng.'
+        customer.value = null
+    } finally {
+        loading.value = false
+    }
+}
+
+const fetchOrders = async () => {
+    if (!props.customerId) return
+
+    ordersLoading.value = true
+    ordersError.value = null
+    try {
+        const response = await getCustomerPurchaseHistory({
+            id: props.customerId,
+            page: 0,
+            size: 10
+        })
+
+        const ordersList = Array.isArray(response?.content) ? response.content : (Array.isArray(response) ? response : [])
+        orders.value = ordersList
+
+        // Tính toán thống kê
+        const paidOrders = ordersList.filter(o => o.status === 'PAID')
+        summary.value.totalOrders = ordersList.length
+        summary.value.totalAmount = paidOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0)
+        summary.value.averageOrderValue = paidOrders.length > 0 ? summary.value.totalAmount / paidOrders.length : 0
+        
+        if (ordersList.length > 0) {
+            const sortedByDate = [...ordersList].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            summary.value.lastPurchaseDate = sortedByDate[0].createdAt
+        } else {
+            summary.value.lastPurchaseDate = null
+        }
+    } catch (err) {
+        logger.error('Failed to fetch customer orders:', err)
+        ordersError.value = 'Không thể tải lịch sử đơn hàng.'
+        orders.value = []
+    } finally {
+        ordersLoading.value = false
+    }
+}
+
+const formatDate = (value) => {
+    if (!value) return '—'
+    return formatDateTime(value)
+}
 
 const formatLoyaltyPoints = (points) => {
     const numeric = Number(points)
@@ -142,237 +302,210 @@ const formatLoyaltyPoints = (points) => {
     return numeric.toLocaleString('vi-VN')
 }
 
-const fetchDetail = async (id) => {
-    if (!id) return
-    loading.value = true
-    error.value = null
-    try {
-        const response = await getCustomerById(id)
-        customer.value = response
-    } catch (err) {
-        error.value = err.response?.data?.message || 'Không thể tải chi tiết khách hàng.'
-        customer.value = null
-    } finally {
-        loading.value = false
+const getStatusLabel = (status) => {
+    return STATUS_METADATA[status]?.label || status
+}
+
+const getStatusBadgeClass = (status) => {
+    return STATUS_METADATA[status]?.badgeClass || 'bg-secondary-subtle text-secondary'
+}
+
+const handleEdit = () => {
+    if (customer.value) {
+        emit('edit', customer.value)
+        hide()
     }
 }
 
-watch(
-    () => props.customerId,
-    async (id) => {
-        if (!modalInstance) return
-        customer.value = null
-        if (!id) return
-        await fetchDetail(id)
-        await nextTick()
+const show = () => {
+    if (modalInstance) {
+        modalInstance.show()
+        fetchCustomerDetails()
     }
-)
-
-const show = async () => {
-    if (!props.customerId) {
-        return
-    }
-    await fetchDetail(props.customerId)
-    await nextTick()
-    modalInstance?.show()
 }
 
 const hide = () => {
-    modalInstance?.hide()
+    if (modalInstance) {
+        modalInstance.hide()
+    }
     emit('close')
 }
 
-const editCustomer = () => {
-    if (customer.value) {
-        hide()
-        emit('edit', customer.value)
+watch(() => props.customerId, (newId) => {
+    if (newId && modalInstance?._isShown) {
+        fetchCustomerDetails()
     }
-}
+})
 
 onMounted(() => {
-    modalInstance = new Modal(modal.value, { backdrop: true })
+    modalInstance = new Modal(modalElement.value, { backdrop: 'static' })
 })
 
 onBeforeUnmount(() => {
-    modalInstance?.dispose()
+    if (modalInstance) {
+        modalInstance.dispose()
+        modalInstance = null
+    }
 })
 
 defineExpose({ show, hide })
 </script>
 
 <style scoped>
-.detail-state {
-    min-height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+:deep(.modal-content) {
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
 }
 
-.detail-grid {
-    display: grid;
-    grid-template-columns: minmax(240px, 320px) 1fr;
-    gap: 2rem;
-    min-width: 0;
+:deep(.modal-header) {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    background: #ffffff;
 }
 
-.detail-media {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.image-frame {
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-}
-
-.avatar-placeholder {
-    width: 100%;
-    height: 260px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(129, 140, 248, 0.05));
-}
-
-.avatar-placeholder i {
-    font-size: 8rem;
-    color: rgba(99, 102, 241, 0.3);
-}
-
-.status-block {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.9rem;
-    border-radius: 999px;
-    font-weight: 600;
-    width: fit-content;
-}
-
-.status-block--active {
-    background: rgba(16, 185, 129, 0.16);
-    color: var(--color-success);
-}
-
-.status-block--inactive {
-    background: rgba(248, 113, 113, 0.18);
-    color: var(--color-danger);
-}
-
-.meta-list {
-    display: grid;
-    gap: 0.75rem;
-    padding: 1.25rem;
-    border-radius: 16px;
-    border: 1px dashed rgba(148, 163, 184, 0.4);
-    background: var(--color-card-muted);
-}
-
-.meta-list dt {
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-subtle);
-}
-
-.meta-list dd {
-    margin: 0;
-    font-weight: 600;
-    color: var(--color-heading);
-}
-
-.detail-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    min-width: 0;
-    overflow: hidden;
-}
-
-.detail-header h3 {
+:deep(.modal-header .modal-title) {
     font-weight: 700;
-    margin-bottom: 0.35rem;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    color: #1e293b;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
 }
 
-.detail-header p {
-    word-break: break-word;
-    overflow-wrap: break-word;
+:deep(.modal-header .text-muted.small) {
+    color: #64748b;
+    font-size: 0.875rem;
 }
 
-.info-cards {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+.modal-body {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+}
+
+.info-section {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.info-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.section-title {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.stat-box {
+    display: flex;
+    align-items: center;
     gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    color: #ffffff;
+    border: 2px solid;
+}
+
+.stat-icon--purple {
+    background: linear-gradient(135deg, #a855f7, #9333ea);
+    border-color: #a855f7;
+}
+
+.stat-icon--green {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+}
+
+.stat-icon--blue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-color: #3b82f6;
+}
+
+.stat-icon--yellow {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    border-color: #eab308;
+}
+
+.stat-info {
+    flex: 1;
     min-width: 0;
 }
 
-.info-card {
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
-    padding: 1rem 1.25rem;
+.stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.stat-value.small {
+    font-size: 0.875rem;
+}
+
+.orders-list {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    min-width: 0;
-    overflow: hidden;
+    gap: 0.75rem;
 }
 
-.info-card .label {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    color: var(--color-text-subtle);
-    letter-spacing: 0.06em;
+.order-item {
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: background-color 0.2s;
 }
 
-.info-card .value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--color-heading);
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
-.additional-info-section {
-    border-top: 1px solid var(--color-border);
-    padding-top: 1.25rem;
-    min-width: 0;
-}
-
-.additional-info-section table td {
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
-.additional-info-section h5 {
-    font-weight: 600;
-    color: var(--color-heading);
-}
-
-.customer-detail-modal :global(.modal-backdrop.show) {
-    background-color: rgba(15, 23, 42, 0.3);
-    backdrop-filter: blur(2px);
-}
-
-@media (max-width: 992px) {
-    .detail-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .image-frame {
-        height: 220px;
-    }
-
-    .info-cards {
-        grid-template-columns: 1fr;
-    }
+.order-item:hover {
+    background: #f1f5f9;
 }
 </style>
-

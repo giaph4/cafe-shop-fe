@@ -126,7 +126,7 @@
                         </div>
                         <div class="col-12" v-if="isAdmin">
                             <label class="form-label">Quyền <span class="text-danger">*</span></label>
-                            <div class="role-selection" :class="{'is-invalid': formErrors.roleIds}">
+                            <div class="role-selection" :class="{'is-invalid': errors.roleIds}">
                                 <div class="form-check" v-for="role in availableRoles" :key="role.id">
                                     <input 
                                         class="form-check-input" 
@@ -140,7 +140,9 @@
                                     <label class="form-check-label" :for="`role-${role.id}`">{{ role.name }}</label>
                                 </div>
                             </div>
-                            <ErrorMessage name="roleIds" class="invalid-feedback" />
+                            <div v-if="errors.roleIds" class="invalid-feedback d-block">
+                                {{ errors.roleIds }}
+                            </div>
                         </div>
                     </div>
 
@@ -246,6 +248,7 @@ import AvatarEditorModal from '@/components/staff/AvatarEditorModal.vue'
 import {uploadFile, deleteFile, extractFileName} from '@/api/fileService'
 import {formatDate, formatDateTime} from '@/utils/formatters'
 import {toast} from 'vue3-toastify'
+import logger from '@/utils/logger'
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024
 const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
@@ -277,7 +280,9 @@ const passwordForm = reactive({
 const phoneRegex = /^(\+?84|0)\d{9}$/
 
 const profileSchema = computed(() => {
-    const baseSchema = {
+    // Không validate roleIds trong schema vì nó không được bind vào Field
+    // Sẽ validate thủ công trong handleSubmit
+    return yup.object({
         fullName: yup.string().trim().required('Họ tên là bắt buộc.').max(120, 'Họ tên tối đa 120 ký tự.'),
         phone: yup
             .string()
@@ -298,18 +303,7 @@ const profileSchema = computed(() => {
             .nullable()
             .transform((value) => (value === '' ? null : value))
             .max(255, 'Địa chỉ tối đa 255 ký tự.')
-    }
-
-    // Nếu là admin, thêm validation cho roleIds
-    if (isAdmin.value) {
-        baseSchema.roleIds = yup
-            .array()
-            .of(yup.number())
-            .min(1, 'Phải chọn ít nhất một quyền.')
-            .required('Quyền là bắt buộc.')
-    }
-
-    return yup.object(baseSchema)
+    })
 })
 
 const passwordSchema = yup.object({
@@ -458,11 +452,28 @@ const handleAvatarEditorClosed = () => {
 }
 
 const handleSubmit = async (values) => {
-    // values từ vee-validate đã được validate, nhưng cần merge với form state để lấy roleIds
+    // values từ vee-validate đã được validate
     const userId = authStore.user?.id
     if (!userId) {
         toast.error('Không xác định được người dùng hiện tại.')
         return
+    }
+
+    // Validate roleIds thủ công nếu là admin
+    if (isAdmin.value) {
+        if (!Array.isArray(form.roleIds) || form.roleIds.length === 0) {
+            errors.roleIds = 'Phải chọn ít nhất một quyền.'
+            toast.error('Phải chọn ít nhất một quyền.')
+            return
+        }
+        // Đảm bảo roleIds là mảng số nguyên hợp lệ
+        const validRoleIds = form.roleIds.filter(id => Number.isInteger(id) && id > 0)
+        if (validRoleIds.length === 0) {
+            errors.roleIds = 'Phải chọn ít nhất một quyền hợp lệ.'
+            toast.error('Phải chọn ít nhất một quyền hợp lệ.')
+            return
+        }
+        form.roleIds = validRoleIds
     }
 
     const previousAvatarUrl = originalAvatarUrl.value
@@ -479,13 +490,13 @@ const handleSubmit = async (values) => {
             removeFlag = false
         }
 
-        // Merge values từ vee-validate với form state (để lấy roleIds và các field không có trong schema)
+        // Merge values từ vee-validate với form state
         const payload = {
             fullName: (values?.fullName || form.fullName || '').trim(),
             phone: (values?.phone || form.phone || '').trim(),
             email: (values?.email || form.email || '')?.trim() || null,
             status: values?.status || form.status,
-            roleIds: isAdmin.value ? (values?.roleIds || [...form.roleIds]) : [...form.roleIds],
+            roleIds: isAdmin.value ? [...form.roleIds] : (profile.value?.roles?.map(r => r.id) || []),
             avatarUrl: removeFlag ? null : avatarUrl,
             address: (values?.address || form.address || '')?.trim() || null,
             removeAvatar: removeFlag
@@ -493,6 +504,10 @@ const handleSubmit = async (values) => {
 
         const updated = await profileStore.updateProfile(userId, payload)
         toast.success('Đã cập nhật hồ sơ cá nhân.')
+        
+        // Clear errors sau khi thành công
+        clearErrors()
+        
         syncFormFromProfile()
 
         if ((avatarFile.value || removeFlag) && previousAvatarUrl) {
@@ -501,7 +516,8 @@ const handleSubmit = async (values) => {
                 try {
                     await deleteFile(oldFileName)
                 } catch (cleanupErr) {
-                    // Ignore cleanup errors
+                    // Ignore cleanup errors - không ảnh hưởng đến việc cập nhật profile
+                    logger.warn('Failed to delete old avatar file:', cleanupErr)
                 }
             }
         }
@@ -509,26 +525,43 @@ const handleSubmit = async (values) => {
         avatarFile.value = null
         form.removeAvatar = false
     } catch (err) {
+        logger.error('Failed to update profile:', err)
         mapApiErrors(err)
     }
 }
 
 const mapApiErrors = (err) => {
     clearErrors()
-    const message = err.response?.data?.message
-    if (!message) return
-    if (message.includes('Phone number already exists')) {
+    const message = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi cập nhật hồ sơ.'
+    
+    // Hiển thị lỗi chung cho người dùng
+    if (!err.response?.data?.message || !message.includes('Phone number already exists') && 
+        !message.includes('Email already exists') && 
+        !message.includes('must have at least one role') &&
+        !message.includes('User not found')) {
+        toast.error(message)
+    }
+    
+    // Xử lý các lỗi cụ thể
+    if (message.includes('Phone number already exists') || message.includes('Số điện thoại đã tồn tại')) {
         errors.phone = 'Số điện thoại đã tồn tại.'
-    }
-    if (message.includes('Email already exists')) {
+        toast.error('Số điện thoại đã tồn tại. Vui lòng sử dụng số điện thoại khác.')
+    } else if (message.includes('Email already exists') || message.includes('Email đã được sử dụng')) {
         errors.email = 'Email đã được sử dụng.'
-    }
-    if (message.includes('must have at least one role')) {
+        toast.error('Email đã được sử dụng. Vui lòng sử dụng email khác.')
+    } else if (message.includes('must have at least one role') || message.includes('Phải chọn ít nhất một quyền')) {
         errors.roleIds = 'Phải chọn ít nhất một quyền.'
-    }
-    if (message.includes('User not found')) {
+        toast.error('Phải chọn ít nhất một quyền.')
+    } else if (message.includes('User not found') || message.includes('Không tìm thấy người dùng')) {
         toast.error('Không tìm thấy người dùng. Vui lòng đăng nhập lại.')
         router.push('/login')
+        return
+    } else if (message.includes('Full name') || message.includes('Họ tên')) {
+        errors.fullName = 'Họ tên không hợp lệ.'
+    } else if (message.includes('Phone') || message.includes('Số điện thoại')) {
+        errors.phone = 'Số điện thoại không hợp lệ.'
+    } else if (message.includes('Email')) {
+        errors.email = 'Email không hợp lệ.'
     }
 }
 
@@ -543,16 +576,34 @@ const handlePasswordSubmit = async (values) => {
         toast.success('Đã đổi mật khẩu thành công.')
         resetPasswordForm()
     } catch (err) {
-        const message = err.response?.data?.message
-        if (!message) return
-        if (message.includes('Incorrect current password')) {
+        logger.error('Failed to change password:', err)
+        const message = err.response?.data?.message || err.message || 'Không thể đổi mật khẩu.'
+        
+        // Hiển thị lỗi chung nếu không phải lỗi cụ thể
+        let hasSpecificError = false
+        
+        if (message.includes('Incorrect current password') || message.includes('Mật khẩu hiện tại không đúng')) {
             passwordErrors.currentPassword = 'Mật khẩu hiện tại không đúng.'
+            toast.error('Mật khẩu hiện tại không đúng.')
+            hasSpecificError = true
         }
-        if (message.includes('do not match')) {
+        if (message.includes('do not match') || message.includes('không khớp')) {
             passwordErrors.confirmationPassword = 'Mật khẩu xác nhận không khớp.'
+            if (!hasSpecificError) {
+                toast.error('Mật khẩu xác nhận không khớp.')
+            }
+            hasSpecificError = true
         }
-        if (message.includes('cannot be the same as the old password')) {
+        if (message.includes('cannot be the same as the old password') || message.includes('không được trùng')) {
             passwordErrors.newPassword = 'Mật khẩu mới không được trùng mật khẩu cũ.'
+            if (!hasSpecificError) {
+                toast.error('Mật khẩu mới không được trùng mật khẩu cũ.')
+            }
+            hasSpecificError = true
+        }
+        
+        if (!hasSpecificError) {
+            toast.error(message)
         }
     }
 }

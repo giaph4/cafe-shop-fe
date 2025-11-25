@@ -1,13 +1,23 @@
 <template>
-    <div class="payroll-page" data-aos="fade-up">
-        <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <div>
-                <h2 class="page-title mb-1">Quản lý Lương</h2>
-                <p class="text-muted mb-0">Theo dõi chu kỳ lương, đồng bộ thống kê và tổng hợp thực lĩnh cho nhân viên.</p>
+    <div class="page-container container-fluid payroll-page" data-aos="fade-up">
+        <div class="payroll-header">
+            <div class="payroll-header__content">
+                <div class="payroll-header__title-section">
+                    <h2 class="page-title">Quản lý Lương</h2>
+                    <p class="page-subtitle">Theo dõi chu kỳ lương, đồng bộ thống kê và tổng hợp thực lĩnh cho nhân viên.</p>
+                </div>
+                <div class="payroll-header__actions">
+                    <button class="btn btn-outline-secondary" type="button" @click="fetchCycles" :disabled="cyclesLoading">
+                        <span v-if="cyclesLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
+                    </button>
+                    <button class="btn btn-primary" type="button" @click="openCreateModal">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Tạo chu kỳ
+                    </button>
+                </div>
             </div>
-            <button class="btn btn-primary" type="button" @click="openCreateModal">
-                <i class="bi bi-plus-lg me-2"></i> Tạo chu kỳ
-            </button>
         </div>
 
         <div class="card filter-card mb-4">
@@ -91,12 +101,14 @@
                                     <span v-else class="text-muted small">Chưa phê duyệt</span>
                                 </td>
                                 <td class="text-end">
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" type="button" @click="selectCycle(cycle)">
+                                    <div class="action-buttons">
+                                        <button class="action-button action-button--primary" type="button" @click="selectCycle(cycle)" title="Xem chi tiết">
                                             <i class="bi bi-eye"></i>
+                                            <span>Chi tiết</span>
                                         </button>
-                                        <button class="btn btn-outline-secondary" type="button" @click="openEditModal(cycle)">
+                                        <button class="action-button action-button--primary" type="button" @click="openEditModal(cycle)" title="Chỉnh sửa">
                                             <i class="bi bi-pencil"></i>
+                                            <span>Chỉnh sửa</span>
                                         </button>
                                     </div>
                                 </td>
@@ -122,9 +134,11 @@
                             :disabled="summariesLoading || !canRegenerate"
                         >
                             <span v-if="summariesLoading" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-arrow-repeat me-2"></i>
                             Đồng bộ dữ liệu
                         </button>
                         <button class="btn btn-outline-secondary" type="button" @click="deselectCycle">
+                            <i class="bi bi-x-lg me-2"></i>
                             Bỏ chọn
                         </button>
                     </div>
@@ -398,16 +412,124 @@ fetchCycles()
     padding-bottom: 3rem;
 }
 
+/* Header Styles */
+.payroll-header {
+    background: #ffffff;
+    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
 
+.payroll-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.payroll-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.payroll-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--color-heading, #1e293b);
+    margin-bottom: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.page-subtitle {
+    margin-bottom: 0;
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid;
+    background: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.action-button--primary {
+    border-color: #a855f7;
+    color: #a855f7;
+    background: #ffffff;
+}
+
+.action-button--primary:hover {
+    background: #faf5ff;
+    border-color: #9333ea;
+    color: #9333ea;
+}
+
+.filter-card,
 .cycles-card,
 .cycle-detail {
     border-radius: 18px;
-    border: 1px solid var(--color-border);
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.filter-card .card-body {
+    padding: 1.75rem;
 }
 
 .table-active {
-    --bs-table-accent-bg: rgba(99, 102, 241, 0.08);
+    --bs-table-accent-bg: rgba(168, 85, 247, 0.08);
+}
+
+@media (max-width: 768px) {
+    .payroll-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .payroll-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>

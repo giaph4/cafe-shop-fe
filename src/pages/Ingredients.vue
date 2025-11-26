@@ -6,7 +6,7 @@
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h5 class="modal-title fw-semibold">{{ isEditing ? 'Cập nhật nguyên liệu' : 'Thêm nguyên liệu mới' }}</h5>
-                        <p class="modal-subtitle text-muted mb-0">Chuẩn hoá dữ liệu nguyên liệu để quản lý tồn kho chính xác.</p>
+                        <p class="modal-subtitle text-muted mb-0">Nhập thông tin nguyên liệu để quản lý tồn kho hiệu quả hơn.</p>
                     </div>
                     <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                 </div>
@@ -112,7 +112,7 @@
             <div class="ingredients-header__content">
                 <div class="ingredients-header__title-section">
                     <h2 class="ingredients-header__title">Quản lý Nguyên liệu</h2>
-                    <p class="ingredients-header__subtitle">Theo dõi tồn kho, ngưỡng cảnh báo và xử lý điều chỉnh kịp thời.</p>
+                    <p class="ingredients-header__subtitle">Theo dõi tồn kho nguyên liệu, thiết lập cảnh báo và điều chỉnh khi cần.</p>
                 </div>
                 <div class="ingredients-header__actions">
                     <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">

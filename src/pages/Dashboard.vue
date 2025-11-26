@@ -29,7 +29,10 @@
                 </div>
 
                 <div class="filter-actions">
-                    <button class="btn btn-primary" @click="fetchData">Cập nhật</button>
+                    <button class="btn btn-primary" @click="fetchData">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Cập nhật
+                    </button>
                 </div>
             </div>
         </section>

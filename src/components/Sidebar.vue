@@ -18,7 +18,7 @@
                     </span>
                     <span v-if="!displayCollapsed" class="neo-sidebar__brand-text">
                         <strong>Café Dash</strong>
-                        <small>Control Center</small>
+                        <small>Hệ thống quản lý</small>
                     </span>
                 </router-link>
 

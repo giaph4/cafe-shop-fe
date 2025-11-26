@@ -11,7 +11,7 @@
             </button>
 
             <div class="neo-nav__brand">
-                <span class="neo-nav__brand-prefix">Bảng điều khiển</span>
+                <span class="neo-nav__brand-prefix">Trang hiện tại</span>
                 <strong class="neo-nav__brand-title" :title="pageTitle">{{ pageTitle }}</strong>
             </div>
         </div>
@@ -47,11 +47,21 @@
                 <i class="bi bi-bell"></i>
             </button>
 
+            <button
+                class="neo-nav__icon"
+                type="button"
+                :title="calculatorOpen ? 'Đóng máy tính' : 'Mở máy tính (Ctrl+M)'"
+                aria-label="Máy tính"
+                @click="toggleCalculator"
+            >
+                <i class="bi bi-calculator"></i>
+            </button>
+
             <div class="neo-nav__profile" :class="{ 'is-open': profileMenuOpen }">
                 <button class="neo-nav__profile-trigger" type="button" @click="toggleProfileMenu" aria-haspopup="menu" :aria-expanded="profileMenuOpen">
                     <img :src="avatarUrl" alt="Avatar"/>
                     <div class="neo-nav__profile-info">
-                        <span>Xin chào,</span>
+                        <span>Xin chào</span>
                         <strong>{{ displayName }}</strong>
                     </div>
                     <i class="bi bi-chevron-down"></i>
@@ -75,6 +85,11 @@
             </div>
         </div>
     </header>
+
+    <CalculatorPanel
+        v-model="calculatorOpen"
+        @calculate:completed="handleCalculatorCompleted"
+    />
 </template>
 <script setup>
 import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue'
@@ -91,6 +106,7 @@ import {
     resolveInitialTheme,
     THEME_SEQUENCE
 } from '@/utils/theme'
+import CalculatorPanel from '@/components/CalculatorPanel.vue'
 
 const emit = defineEmits(['toggleSidebar', 'search'])
 
@@ -106,6 +122,7 @@ const searchKeyword = ref('')
 const profileMenuOpen = ref(false)
 const profileRef = ref(null)
 const isScrolled = ref(false)
+const calculatorOpen = ref(false)
 
 const currentTheme = ref(normalizeTheme(getStoredTheme() || resolveInitialTheme()))
 
@@ -167,6 +184,16 @@ const toggleProfileMenu = () => {
 const goToProfile = () => {
     profileMenuOpen.value = false
     router.push({name: 'Hồ sơ cá nhân'})
+}
+
+const toggleCalculator = () => {
+    calculatorOpen.value = !calculatorOpen.value
+}
+
+const handleCalculatorCompleted = (data) => {
+    console.log('Calculator completed:', data)
+    // Có thể emit event hoặc gọi API ở đây
+    // emit('calculator:completed', data)
 }
 
 const closeProfileMenu = (event) => {

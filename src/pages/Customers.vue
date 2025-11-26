@@ -4,7 +4,7 @@
             <div class="customers-header__content">
                 <div class="customers-header__title-section">
                     <h2 class="customers-header__title">Quản lý Khách hàng</h2>
-                    <p class="customers-header__subtitle">Theo dõi thông tin, lịch sử mua hàng và điểm thưởng của khách hàng.</p>
+                    <p class="customers-header__subtitle">Xem thông tin khách hàng, lịch sử mua hàng và quản lý điểm tích lũy.</p>
                 </div>
                 <div class="customers-header__actions">
                     <div class="form-check form-switch">

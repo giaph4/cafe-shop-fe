@@ -6,7 +6,7 @@
                     <div class="modal-header">
                         <div>
                             <h5 class="modal-title">{{ isEditing ? 'Cập nhật voucher' : 'Thêm voucher mới' }}</h5>
-                            <p class="mb-0 text-muted small">Điền chính xác thông tin theo contract backend, mọi trường đều kiểm tra chặt chẽ.</p>
+                            <p class="mb-0 text-muted small">Điền đầy đủ thông tin voucher. Hệ thống sẽ kiểm tra tính hợp lệ trước khi lưu.</p>
                         </div>
                         <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                     </div>
@@ -181,7 +181,7 @@
             <div class="vouchers-header__content">
                 <div class="vouchers-header__title-section">
                     <h2 class="page-title">Quản lý voucher</h2>
-                    <p class="page-subtitle">Theo dõi, tạo và kiểm soát voucher theo đúng chuẩn API backend.</p>
+                    <p class="page-subtitle">Tạo và quản lý các mã giảm giá, khuyến mãi cho khách hàng.</p>
             </div>
                 <div class="vouchers-header__actions">
                 <button class="btn btn-outline-secondary" type="button" @click="handleRefresh" :disabled="loading">

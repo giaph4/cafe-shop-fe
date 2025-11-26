@@ -6,6 +6,7 @@
 
                     <div class="brand-text">
                         <h1>Cafe Đời Thứ 3</h1>
+                        <p class="brand-tagline">Quản lý quán cà phê thông minh</p>
                     </div>
                 </div>
 
@@ -16,7 +17,7 @@
                         </div>
                         <div class="text">
                             <h3>Thống kê tức thì</h3>
-                            <p>Theo dõi doanh thu và hoạt động theo thời gian thực.</p>
+                            <p>Xem doanh thu, đơn hàng và hoạt động của quán ngay lập tức.</p>
                         </div>
                     </article>
                     <article class="highlight-item">
@@ -24,8 +25,8 @@
                             <i class="bi bi-people"></i>
                         </div>
                         <div class="text">
-                            <h3>Quản lý đội ngũ</h3>
-                            <p>Phân quyền và ghi nhận hiệu suất nhân viên rõ ràng.</p>
+                            <h3>Quản lý nhân viên</h3>
+                            <p>Phân ca làm việc, theo dõi hiệu suất và quản lý lương thưởng.</p>
                         </div>
                     </article>
                     <article class="highlight-item">
@@ -33,38 +34,30 @@
                             <i class="bi bi-bag-check"></i>
                         </div>
                         <div class="text">
-                            <h3>Kho & nhập hàng</h3>
-                            <p>Lên kế hoạch nguyên liệu, nhập hàng nhanh chóng.</p>
+                            <h3>Quản lý kho</h3>
+                            <p>Theo dõi nguyên liệu, nhập hàng và cảnh báo khi sắp hết.</p>
                         </div>
                     </article>
-                    <article class="highlight-item">
+                    <article class="highlight-item highlight-item--demo">
                         <div class="icon">
                             <i class="bi bi-key"></i>
                         </div>
                         <div class="text">
-                            <h3>Tài khoản demo admin</h3>
-                            <p> username: admin_demo</p>
-                            <p>Password: Admindemo1234.</p>
-                        </div>
-                    </article>
-                    <article class="highlight-item">
-                        <div class="icon">
-                            <i class="bi bi-key"></i>
-                        </div>
-                        <div class="text">
-                            <h3>Tài khoản demo manager</h3>
-                            <p> username: manager_demo</p>
-                            <p>Password: Managerdemo1234.</p>
-                        </div>
-                    </article>
-                    <article class="highlight-item">
-                        <div class="icon">
-                            <i class="bi bi-key"></i>
-                        </div>
-                        <div class="text">
-                            <h3>Tài khoản demo staff</h3>
-                            <p> username: staff_demo</p>
-                            <p>Password: Staffdemo1234.</p>
+                            <h3>Tài khoản demo</h3>
+                            <div class="demo-accounts">
+                                <div class="demo-account">
+                                    <span class="demo-role">Admin:</span>
+                                    <code>admin_demo</code> / <code>Admindemo1234.</code>
+                                </div>
+                                <div class="demo-account">
+                                    <span class="demo-role">Manager:</span>
+                                    <code>manager_demo</code> / <code>Managerdemo1234.</code>
+                                </div>
+                                <div class="demo-account">
+                                    <span class="demo-role">Staff:</span>
+                                    <code>staff_demo</code> / <code>Staffdemo1234.</code>
+                                </div>
+                            </div>
                         </div>
                     </article>
                 </div>
@@ -72,8 +65,8 @@
 
             <section class="login-form">
                 <div class="card-body">
-                    <h2>Đăng nhập hệ thống</h2>
-                    <p>Đăng nhập bằng tài khoản đã được cấp để tiếp tục quản lý quán.</p>
+                    <h2>Chào mừng trở lại!</h2>
+                    <p>Nhập thông tin đăng nhập để tiếp tục quản lý quán của bạn.</p>
 
                     <Form @submit="handleLogin" :validation-schema="loginSchema" v-slot="{ errors }">
                         <div class="mb-3">

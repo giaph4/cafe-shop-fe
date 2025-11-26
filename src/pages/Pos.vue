@@ -4,7 +4,7 @@
         <header class="pos-header">
             <div>
                 <h2 class="pos-header__title">Điều phối POS</h2>
-                <p class="pos-header__subtitle mb-0">Chọn món trước hoặc chọn bàn trước, đồng bộ theo nhu cầu phục vụ.</p>
+                <p class="pos-header__subtitle mb-0">Chọn món hoặc chọn bàn, hệ thống sẽ tự động đồng bộ theo nhu cầu của bạn.</p>
             </div>
             <div class="pos-header__actions">
                 <button

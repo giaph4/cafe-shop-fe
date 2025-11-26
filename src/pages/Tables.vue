@@ -43,7 +43,7 @@
         <header class="tables-header">
             <div>
                 <h2>Quản lý bàn</h2>
-                <p class="text-muted mb-0">Theo dõi trạng thái, chỉnh sửa thông tin và điều phối bàn theo thời gian thực.</p>
+                <p class="text-muted mb-0">Xem trạng thái bàn, chỉnh sửa thông tin và quản lý bàn theo thời gian thực.</p>
             </div>
             <button v-if="canManage" class="btn btn-primary" type="button" @click="openModal()">
                 <i class="bi bi-plus-lg me-2"></i>Thêm bàn mới

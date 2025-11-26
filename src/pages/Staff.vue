@@ -4,7 +4,7 @@
             <div class="staff-header__content">
                 <div class="staff-header__title-section">
                     <h2 class="page-title">Quản lý Nhân viên</h2>
-                    <p class="page-subtitle">Theo dõi thông tin nhân sự, hiệu suất và lịch sử đăng nhập.</p>
+                    <p class="page-subtitle">Quản lý thông tin nhân viên, phân ca làm việc và theo dõi hiệu suất.</p>
                 </div>
                 <div class="staff-header__actions">
                     <div class="btn-group" role="group" aria-label="Chế độ hiển thị">

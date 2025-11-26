@@ -4,7 +4,7 @@
             <div class="orders-header__content">
                 <div class="orders-header__title-section">
                     <h2 class="orders-header__title">Quản lý Đơn hàng</h2>
-                    <p class="orders-header__subtitle">Theo dõi đơn hàng, thanh toán và trạng thái vận hành.</p>
+                    <p class="orders-header__subtitle">Xem và quản lý tất cả đơn hàng, thanh toán và trạng thái của quán.</p>
                 </div>
                 <div class="orders-header__actions">
                     <div class="form-check form-switch">

@@ -62,14 +62,16 @@
         <div class="row g-4 mb-4">
             <!-- Trạng thái Chấm công -->
             <div class="col-lg-6" v-if="dashboardData?.attendance">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-clock-history"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Trạng thái Chấm công</h5>
                         </div>
-                        <h5 class="info-card__title">Trạng thái Chấm công</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="attendance-status">
                             <div class="attendance-status__indicator" :class="dashboardData.attendance.currentlyCheckedIn ? 'attendance-status__indicator--active' : 'attendance-status__indicator--inactive'">
                                 <i :class="dashboardData.attendance.currentlyCheckedIn ? 'bi bi-check-circle' : 'bi bi-clock'"></i>
@@ -89,14 +91,16 @@
 
             <!-- Tóm tắt Ca làm -->
             <div class="col-lg-6" v-if="dashboardData?.shiftSummary">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-calendar-week"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-calendar-week"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Tóm tắt Ca làm</h5>
                         </div>
-                        <h5 class="info-card__title">Tóm tắt Ca làm</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="shift-summary">
                             <div class="shift-summary__item">
                                 <div class="shift-summary__label">CA TRONG TUẦN</div>
@@ -128,14 +132,16 @@
         <div class="row g-4">
             <!-- Hiệu suất của tôi -->
             <div class="col-lg-6" v-if="dashboardData?.performance">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-graph-up"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Hiệu suất của tôi</h5>
                         </div>
-                        <h5 class="info-card__title">Hiệu suất của tôi</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="performance-metrics">
                             <div class="performance-metrics__item">
                                 <div class="performance-metrics__label">TỔNG ĐƠN HÀNG</div>
@@ -156,14 +162,16 @@
 
             <!-- Chi tiết Lương -->
             <div class="col-lg-6" v-if="dashboardData?.payroll">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-cash-coin"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-cash-coin"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Chi tiết Lương</h5>
                         </div>
-                        <h5 class="info-card__title">Chi tiết Lương</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="payroll-details">
                             <div class="payroll-details__item">
                                 <div class="payroll-details__label">LƯƠNG ƯỚC TÍNH</div>
@@ -288,21 +296,13 @@ defineProps({
 
 /* Info Cards */
 .info-card {
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    overflow: hidden;
     height: 100%;
 }
 
-.info-card__header {
-    background: rgba(148, 163, 184, 0.08);
+.info-card .card-header {
     border-bottom: 1px solid var(--color-border);
     padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    background: var(--color-card-muted);
 }
 
 .info-card__icon {
@@ -318,16 +318,6 @@ defineProps({
     flex-shrink: 0;
 }
 
-.info-card__title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--color-heading);
-    margin: 0;
-}
-
-.info-card__body {
-    padding: 1.5rem;
-}
 
 /* Attendance Status */
 .attendance-status {

@@ -41,8 +41,9 @@
                             <div class="col-md-6">
                                 <div class="payment-totals">
                                     <div><span>Tổng phụ</span><span>{{ formatCurrency(localOrder.subTotal ?? subTotal) }}</span></div>
-                                    <div><span>Giảm giá</span><span class="text-danger">-{{ formatCurrency(localOrder.discountAmount ?? 0) }}</span></div>
-                                    <div class="grand-total"><span>Tổng cộng</span><span>{{ formatCurrency(localOrder.totalAmount ?? subTotal) }}</span></div>
+                                    <div v-if="(localOrder.discountAmount ?? 0) > 0"><span>Giảm giá</span><span class="text-danger">-{{ formatCurrency(localOrder.discountAmount ?? 0) }}</span></div>
+                                    <div v-if="displayTipAmount > 0" class="text-success"><span>Tiền típ</span><span>+{{ formatCurrency(displayTipAmount) }}</span></div>
+                                    <div class="grand-total"><span>Tổng cộng</span><span>{{ formatCurrency(calculatedTotalAmount) }}</span></div>
                                 </div>
                             </div>
                         </div>
@@ -51,10 +52,15 @@
 
                         <section class="payment-items">
                             <h6 class="mb-3">Chi tiết sản phẩm</h6>
-                            <div v-if="!orderItems.length" class="text-center text-muted py-4">
-                                <i class="bi bi-basket fs-1 mb-2 d-block"></i>
-                                <span>Đơn hàng chưa có sản phẩm.</span>
-                            </div>
+                            <EmptyState
+                                v-if="!orderItems.length"
+                                title="Chưa có sản phẩm"
+                                message="Đơn hàng chưa có sản phẩm nào."
+                            >
+                                <template #icon>
+                                    <i class="bi bi-basket"></i>
+                                </template>
+                            </EmptyState>
                             <div v-else class="table-responsive">
                                 <table class="table align-middle">
                                     <thead>
@@ -80,29 +86,70 @@
                             </div>
                         </section>
 
-                        <section v-if="!isPaid" class="payment-methods mt-4">
-                            <h6 class="mb-2">Chọn phương thức thanh toán</h6>
-                            <div class="btn-group payment-methods__group" role="group">
-                                <button
-                                    v-for="method in PAYMENT_METHODS"
-                                    :key="method.value"
-                                    type="button"
-                                    class="btn"
-                                    :class="[
-                                        selectedPaymentMethod === method.value ? 'btn-primary' : 'btn-outline-primary',
-                                        'payment-methods__btn'
-                                    ]"
-                                    :disabled="processing"
-                                    @click="selectedPaymentMethod = method.value"
-                                >
-                                    <i :class="method.icon" class="me-2"></i>{{ method.label }}
-                                </button>
+                        <section v-if="!isPaid" class="payment-options mt-4">
+                            <div class="payment-methods mb-4">
+                                <h6 class="mb-2">Chọn phương thức thanh toán</h6>
+                                <div class="btn-group payment-methods__group" role="group">
+                                    <button
+                                        v-for="method in PAYMENT_METHODS"
+                                        :key="method.value"
+                                        type="button"
+                                        class="btn"
+                                        :class="[
+                                            selectedPaymentMethod === method.value ? 'btn-primary' : 'btn-outline-primary',
+                                            'payment-methods__btn'
+                                        ]"
+                                        :disabled="processing"
+                                        @click="selectedPaymentMethod = method.value"
+                                    >
+                                        <i :class="method.icon" class="me-2"></i>{{ method.label }}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-tip">
+                                <h6 class="mb-2">Tiền típ (tùy chọn)</h6>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-cash-coin"></i>
+                                    </span>
+                                    <input
+                                        v-model.number="tipAmount"
+                                        type="number"
+                                        class="form-control"
+                                        placeholder="Nhập số tiền típ"
+                                        min="0"
+                                        step="1000"
+                                        :disabled="processing"
+                                        @input="handleTipInput"
+                                    />
+                                    <button
+                                        v-for="quickTip in QUICK_TIP_OPTIONS"
+                                        :key="quickTip"
+                                        type="button"
+                                        class="btn btn-outline-secondary"
+                                        :disabled="processing"
+                                        @click="applyQuickTip(quickTip)"
+                                    >
+                                        {{ formatCurrency(quickTip) }}
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Tiền típ sẽ được cộng vào tổng thanh toán cuối cùng
+                                </small>
                             </div>
                         </section>
                     </section>
-                    <section v-else class="modal-body py-5 text-center text-muted">
-                        Không có dữ liệu đơn hàng để hiển thị.
-                    </section>
+                    <EmptyState
+                        v-else
+                        title="Không có dữ liệu"
+                        message="Không có dữ liệu đơn hàng để hiển thị."
+                    >
+                        <template #icon>
+                            <i class="bi bi-receipt-cutoff"></i>
+                        </template>
+                    </EmptyState>
 
                     <footer class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" :disabled="processing" @click="hide">Đóng</button>
@@ -130,6 +177,7 @@ import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import { printInvoiceToWindow } from '@/utils/invoicePrinter'
 import { toast } from 'vue3-toastify'
 import logger from '@/utils/logger'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     order: { type: Object, default: null },
@@ -145,6 +193,7 @@ let modalInstance = null
 const localOrder = ref(null)
 const printing = ref(false)
 const selectedPaymentMethod = ref('CASH')
+const tipAmount = ref(0)
 
 const STATUS_METADATA = Object.freeze({
     PENDING: { label: 'Đang chờ', class: 'status-pill--pending' },
@@ -159,6 +208,8 @@ const PAYMENT_METHODS = Object.freeze([
     { value: 'CARD', label: 'Thẻ', icon: 'bi bi-credit-card' },
 ])
 
+const QUICK_TIP_OPTIONS = Object.freeze([10000, 20000, 50000, 100000])
+
 const orderCode = computed(() => localOrder.value?.code || localOrder.value?.id || '—')
 const statusMeta = computed(() => {
     const status = localOrder.value?.status
@@ -172,6 +223,27 @@ const orderItems = computed(() => {
     return []
 })
 const subTotal = computed(() => orderItems.value.reduce((sum, item) => sum + (Number(item.priceAtOrder) || 0) * (Number(item.quantity) || 0), 0))
+
+const discountAmount = computed(() => {
+    const discount = Number(localOrder.value?.discountAmount) || 0
+    return Math.max(discount, 0)
+})
+
+const displayTipAmount = computed(() => {
+    // Ưu tiên lấy từ localOrder (khi đã thanh toán), sau đó từ tipAmount ref (khi đang nhập)
+    if (localOrder.value?.tipAmount !== undefined) {
+        return Math.max(0, Number(localOrder.value.tipAmount) || 0)
+    }
+    return Math.max(0, Number(tipAmount.value) || 0)
+})
+
+const calculatedTotalAmount = computed(() => {
+    const baseSubTotal = localOrder.value?.subTotal ?? subTotal.value
+    const discount = discountAmount.value
+    const tip = displayTipAmount.value
+    const amountAfterDiscount = Math.max(baseSubTotal - discount, 0)
+    return Math.max(amountAfterDiscount + tip, 0)
+})
 const tableLabel = computed(() => {
     if (localOrder.value?.tableName) return localOrder.value.tableName
     if (localOrder.value?.table?.name) return localOrder.value.table.name
@@ -192,6 +264,7 @@ const hide = () => modalInstance?.hide()
 const syncOrder = (incoming) => {
     if (!incoming) {
         localOrder.value = null
+        tipAmount.value = 0
         return
     }
     try {
@@ -205,18 +278,42 @@ const syncOrder = (incoming) => {
     } else {
         selectedPaymentMethod.value = 'CASH'
     }
+
+    // Khôi phục tipAmount từ order nếu có (khi đã thanh toán)
+    if (localOrder.value?.tipAmount !== undefined) {
+        tipAmount.value = Number(localOrder.value.tipAmount) || 0
+    } else {
+        tipAmount.value = 0
+    }
 }
 
 watch(() => props.order, syncOrder, { immediate: true })
+
+const handleTipInput = () => {
+    const value = Number(tipAmount.value) || 0
+    tipAmount.value = Math.max(0, Math.floor(value))
+}
+
+const applyQuickTip = (amount) => {
+    tipAmount.value = Math.max(0, Math.floor(amount))
+}
 
 const handleConfirm = () => {
     if (!localOrder.value?.id) {
         toast.warning('Thiếu thông tin đơn hàng để thanh toán.')
         return
     }
+    
+    const tip = Number(tipAmount.value) || 0
+    if (tip < 0) {
+        toast.error('Số tiền tip không được nhỏ hơn 0.')
+        return
+    }
+    
     emit('confirm-payment', {
         orderId: localOrder.value.id,
         paymentMethod: selectedPaymentMethod.value || 'CASH',
+        tipAmount: tip,
     })
 }
 
@@ -273,41 +370,43 @@ defineExpose({ show, hide })
 
 <style scoped>
 .pos-payment-modal :global(.modal-content) {
-    border-radius: 20px;
-    border: none;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
 }
 
 .pos-payment-modal :global(.modal-header) {
-    padding: 1.5rem 1.5rem 1rem;
-    border-bottom: none;
+    padding: var(--spacing-6) var(--spacing-6) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .pos-payment-modal :global(.modal-body) {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 var(--spacing-6) var(--spacing-6);
 }
 
 .pos-payment-modal :global(.modal-footer) {
-    padding: 1rem 1.5rem 1.5rem;
-    border-top: none;
+    padding: var(--spacing-4) var(--spacing-6) var(--spacing-6);
+    border-top: 1px solid var(--color-border);
 }
 
 .payment-meta li {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.35rem 0;
-    font-size: 0.95rem;
+    gap: var(--spacing-4);
+    padding: var(--spacing-1) 0;
+    font-size: var(--font-size-sm);
 }
 
 .payment-meta .label {
-    color: #64748b;
-    font-weight: 600;
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
 }
 
 .payment-totals {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
 }
 
 .payment-totals div {
@@ -317,20 +416,20 @@ defineExpose({ show, hide })
 }
 
 .payment-totals .grand-total {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
 }
 
 .status-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .status-pill--pending {
@@ -359,13 +458,13 @@ defineExpose({ show, hide })
 }
 
 .payment-items table {
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     overflow: hidden;
 }
 
 .payment-methods__group {
     display: flex;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
 }
 
@@ -374,15 +473,44 @@ defineExpose({ show, hide })
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: var(--spacing-1);
     text-transform: uppercase;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: 999px;
-    padding: 0.6rem 1.1rem;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-4);
 }
 
 .payment-methods__btn i {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+}
+
+.payment-tip .input-group {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+}
+
+.payment-tip .input-group-text {
+    background: var(--color-success-soft);
+    border-color: var(--color-success-border-soft);
+    color: var(--color-success);
+}
+
+.payment-tip .form-control {
+    flex: 1;
+    min-width: 150px;
+}
+
+.payment-tip .btn {
+    white-space: nowrap;
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-2) var(--spacing-3);
 }
 </style>

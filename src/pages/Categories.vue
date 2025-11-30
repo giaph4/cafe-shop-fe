@@ -1,47 +1,127 @@
 <template>
-    <div class="modal fade" id="categoryModal" tabindex="-1" ref="modalElement">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div>
-                        <h5 class="modal-title">{{ isEditing ? 'Cập nhật Danh mục' : 'Tạo mới Danh mục' }}</h5>
-                        <p class="mb-0 text-muted small">Điền đầy đủ thông tin theo quy định backend.</p>
+    <Teleport to="body">
+        <div class="modal fade" id="categoryModal" tabindex="-1" ref="modalElement">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title">{{ isEditing ? 'Cập nhật Danh mục' : 'Tạo mới Danh mục' }}</h5>
+                            <p class="mb-0 text-muted small">Điền đầy đủ thông tin theo quy định backend.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value" aria-label="Close"></button>
                     </div>
-                    <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+
+                    <Form @submit="handleSubmit" :validation-schema="categorySchema" v-slot="{ errors }">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-semibold">Tên Danh mục <span class="text-danger">*</span></label>
+                                <Field
+                                    name="name"
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': errors.name }"
+                                    id="name"
+                                    placeholder="Cà phê Việt Nam"
+                                    v-model="formData.name"
+                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                                />
+                                <ErrorMessage name="name" class="invalid-feedback" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label fw-semibold">Mô tả</label>
+                                <Field
+                                    name="description"
+                                    as="textarea"
+                                    rows="3"
+                                    class="form-control"
+                                    id="description"
+                                    placeholder="Mô tả ngắn gọn về danh mục..."
+                                    v-model="formData.description"
+                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                                />
+                                <ErrorMessage name="description" class="invalid-feedback" />
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                @click="closeModal"
+                                :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                            >
+                                <span
+                                    v-if="createMutation.isPending.value || updateMutation.isPending.value"
+                                    class="spinner-border spinner-border-sm me-2"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
+                                {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
+                            </button>
+                        </div>
+                    </Form>
                 </div>
-
-                <Form @submit="handleSubmit" :validation-schema="categorySchema" v-slot="{ errors }">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="name" class="form-label fw-bold">Tên Danh mục <span
-                                    class="text-danger">*</span></label>
-                            <Field name="name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }"
-                                id="name" placeholder="Cà phê Việt Nam" v-model="formData.name" />
-                            <ErrorMessage name="name" class="invalid-feedback" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="description" class="form-label fw-bold">Mô tả</label>
-                            <Field name="description" as="textarea" rows="3" class="form-control" id="description"
-                                placeholder="Mô tả ngắn gọn về danh mục..." v-model="formData.description" />
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="closeModal">Hủy</button>
-                        <button type="submit" class="btn btn-primary"
-                            :disabled="createMutation.isPending.value || updateMutation.isPending.value">
-                            <span v-if="createMutation.isPending.value || updateMutation.isPending.value"
-                                class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Lưu thay đổi
-                        </button>
-                    </div>
-                </Form>
             </div>
         </div>
-    </div>
 
-    <div class="page-container container-fluid" data-aos="fade-up">
+        <div class="modal fade" id="deleteCategoryModal" tabindex="-1" ref="deleteModalElement">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title">Xóa danh mục</h5>
+                            <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="deleteMutation.isPending.value" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Bạn có chắc chắn muốn xóa danh mục này không?</p>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <strong class="text-muted d-block mb-1">Tên danh mục:</strong>
+                                    <span>{{ deleteTarget?.name || '—' }}</span>
+                                </div>
+                                <div class="mb-0" v-if="deleteTarget?.description">
+                                    <strong class="text-muted d-block mb-1">Mô tả:</strong>
+                                    <span>{{ deleteTarget.description }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            @click="closeDeleteModal"
+                            :disabled="deleteMutation.isPending.value"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            @click="confirmDelete"
+                            :disabled="deleteMutation.isPending.value"
+                        >
+                            <span v-if="deleteMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
+                            Xóa danh mục
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
+    <div class="page-container container-fluid">
         <div class="categories-header">
             <div class="categories-header__content">
                 <div class="categories-header__title-section">
@@ -77,50 +157,61 @@
 
         <div class="card tabs-card">
             <div class="card-body">
-                <div v-if="isLoading" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-
-                <div v-else-if="isError" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">
-                        Không thể tải dữ liệu: {{ errorMessage }}
+                <LoadingState v-if="isLoading" />
+                <ErrorState
+                    v-else-if="isError"
+                    :message="errorMessage || 'Không thể tải dữ liệu danh mục.'"
+                    :show-retry="true"
+                    :retry-handler="() => queryClient.invalidateQueries(['categories'])"
+                />
+                <template v-else>
+                    <EmptyState
+                        v-if="!filteredCategories.length"
+                        title="Không tìm thấy danh mục"
+                        :message="searchQuery ? 'Không tìm thấy danh mục nào phù hợp với từ khóa tìm kiếm.' : 'Chưa có danh mục nào. Hãy tạo danh mục đầu tiên.'"
+                    >
+                        <template #icon>
+                            <i class="bi bi-folder-x"></i>
+                        </template>
+                        <template v-if="!searchQuery" #action>
+                            <button class="btn btn-primary" @click="openModal()">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Tạo danh mục đầu tiên
+                            </button>
+                        </template>
+                    </EmptyState>
+                    <div v-else class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Tên Danh mục</th>
+                                    <th scope="col">Mô tả</th>
+                                    <th scope="col" class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="category in filteredCategories" :key="category.id">
+                                    <th scope="row">{{ category.id }}</th>
+                                    <td class="fw-semibold">{{ category.name }}</td>
+                                    <td>{{ category.description || '—' }}</td>
+                                    <td class="text-end">
+                                        <div class="action-buttons">
+                                            <button class="action-button" type="button" @click="openModal(category)">
+                                                <i class="bi bi-pencil"></i>
+                                                <span>Chỉnh sửa</span>
+                                            </button>
+                                            <button class="action-button action-button--danger" type="button" @click="handleDelete(category)">
+                                                <i class="bi bi-trash"></i>
+                                                <span>Xóa</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-
-                <div v-else-if="categories" class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">Tên Danh mục</th>
-                                <th scope="col">Mô tả</th>
-                                <th scope="col" class="text-end">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="category in filteredCategories" :key="category.id">
-                                <th scope="row">{{ category.id }}</th>
-                                <td class="fw-bold">{{ category.name }}</td>
-                                <td>{{ category.description || 'N/A' }}</td>
-                                <td class="text-end">
-                                    <div class="action-buttons">
-                                        <button class="action-button" @click="openModal(category)">
-                                            <i class="bi bi-pencil"></i>
-                                            <span>Chỉnh sửa</span>
-                                        </button>
-                                        <button class="action-button action-button--danger" @click="handleDelete(category)">
-                                            <i class="bi bi-trash"></i>
-                                            <span>Xóa</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr v-if="filteredCategories.length === 0">
-                                <td colspan="5" class="text-center text-muted">Không tìm thấy danh mục nào.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                </template>
             </div>
         </div>
 
@@ -128,7 +219,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, computed, reactive, nextTick } from 'vue'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { Modal } from 'bootstrap'
 import { Form, Field, ErrorMessage } from 'vee-validate'
@@ -136,6 +227,9 @@ import * as yup from 'yup'
 import { toast } from 'vue3-toastify'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/categoryService'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const { extractErrorMessage } = useErrorHandler()
 
@@ -215,11 +309,15 @@ const filteredCategories = computed(() => {
 
 onMounted(() => {
     if (modalElement.value) {
-        bsModal.value = new Modal(modalElement.value)
+        bsModal.value = new Modal(modalElement.value, { backdrop: 'static' })
+    }
+    if (deleteModalElement.value) {
+        deleteModalInstance = new Modal(deleteModalElement.value, { backdrop: 'static' })
     }
 })
 onUnmounted(() => {
     bsModal.value?.dispose()
+    deleteModalInstance?.dispose()
 })
 
 const openModal = (category = null) => {
@@ -256,29 +354,45 @@ const handleSubmit = () => {
     }
 }
 
+const deleteTarget = ref(null)
+const deleteModalElement = ref(null)
+let deleteModalInstance = null
+
 const handleDelete = (category) => {
-    if (confirm(`Bạn có chắc chắn muốn xoá danh mục "${category.name}"?`)) {
-        deleteMutation.mutate(category.id)
+    deleteTarget.value = category
+    nextTick(() => {
+        deleteModalInstance?.show()
+    })
+}
+
+const confirmDelete = () => {
+    if (deleteTarget.value) {
+        deleteMutation.mutate(deleteTarget.value.id)
+        deleteModalInstance?.hide()
     }
+}
+
+const closeDeleteModal = () => {
+    deleteModalInstance?.hide()
+    deleteTarget.value = null
 }
 </script>
 
 <style scoped>
 .categories-header {
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
 }
 
 .categories-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .categories-header__title-section {
@@ -287,72 +401,69 @@ const handleDelete = (category) => {
 }
 
 .categories-header__title {
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .categories-header__subtitle {
     margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-normal);
 }
 
 .categories-header__actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
 
-/* Page-specific styles only */
-.table-hover tbody tr:hover {
-    background-color: #fdfaf7;
-}
-
 :deep(.modal-content) {
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
 }
 
 :deep(.modal-header) {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.5rem;
-    background: #ffffff;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
 }
 
 :deep(.modal-header .modal-title) {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
 }
 
 :deep(.modal-header .text-muted.small) {
-    color: #64748b;
-    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
 }
 
 :deep(.modal-body) {
-    padding: 1.5rem;
+    padding: var(--spacing-6);
 }
 
 :deep(.modal-footer) {
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    background: #ffffff;
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
 }
 
@@ -360,22 +471,24 @@ const handleDelete = (category) => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    background: #ffffff;
-    color: #a855f7;
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    gap: var(--spacing-1);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-primary-border-soft);
+    background: var(--color-card);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-fast);
     white-space: nowrap;
+    cursor: pointer;
 }
 
 .action-button:hover:not(:disabled) {
-    background: rgba(168, 85, 247, 0.05);
-    border-color: rgba(168, 85, 247, 0.5);
-    transform: translateY(-1px);
+    background: var(--color-primary);
+    color: var(--color-white);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
 }
 
 .action-button:disabled {
@@ -384,14 +497,16 @@ const handleDelete = (category) => {
 }
 
 .action-button--danger {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
+    border-color: var(--color-danger-border);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.5);
+    background: var(--color-danger);
+    color: var(--color-white);
+    border-color: var(--color-danger);
+    box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 768px) {
@@ -412,6 +527,10 @@ const handleDelete = (category) => {
 
     .action-button {
         width: 100%;
+    }
+
+    .action-button span {
+        display: none;
     }
 }
 </style>

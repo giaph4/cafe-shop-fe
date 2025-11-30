@@ -20,13 +20,12 @@
                             </div>
                         </div>
 
-                        <div v-if="calendarError" class="alert alert-warning mb-0">
-                            {{ calendarError }}
-                        </div>
+                        <ErrorState 
+                            v-if="calendarError" 
+                            :message="calendarError"
+                        />
                         <div v-else>
-                            <div v-if="calendarLoading" class="text-center py-4">
-                                <div class="spinner-border text-primary"></div>
-                            </div>
+                            <LoadingState v-if="calendarLoading" />
                             <div v-else>
                                 <div class="calendar-grid mb-3">
                                     <div class="calendar-weekday" v-for="day in WEEK_DAYS" :key="day">{{ day }}</div>
@@ -80,6 +79,8 @@
 </template>
 
 <script setup>
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 const WEEK_DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
 const CALENDAR_FETCH_SIZE = 200
@@ -110,12 +111,12 @@ const handleSelectDay = (day) => emit('select-day', day)
 const handleViewDetail = (shift) => emit('view-detail', shift)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .calendar-card {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .calendar-grid {

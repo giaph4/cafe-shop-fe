@@ -80,15 +80,18 @@ const handleRetry = () => {
     align-items: center;
     justify-content: center;
     min-height: 200px;
-    padding: 2rem;
+    padding: var(--spacing-8);
     text-align: center;
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .error-state__icon {
-    font-size: 3rem;
+    font-size: var(--font-size-3xl);
     color: var(--color-danger);
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .error-state__icon .bi-exclamation-triangle-fill {
@@ -97,20 +100,23 @@ const handleRetry = () => {
 
 .error-state__title {
     color: var(--color-heading);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     margin: 0;
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .error-state__message {
     color: var(--color-text-muted);
     margin: 0;
-    font-size: 0.9375rem;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
     max-width: 500px;
 }
 
 .error-state__actions {
-    margin-top: 0.5rem;
+    margin-top: var(--spacing-2);
 }
 
 /* Variant styles */

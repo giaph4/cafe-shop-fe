@@ -519,6 +519,52 @@
             </div>
         </Teleport>
 
+        <!-- Bulk Action Confirmation Modal -->
+        <Teleport to="body">
+            <div class="modal fade" ref="bulkActionModalRef" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">
+                                    {{ bulkActionTarget?.action === 'activate' ? 'Kích hoạt nhân viên' : 'Vô hiệu hóa nhân viên' }}
+                                </h5>
+                                <p class="mb-0 text-muted small">Hành động này sẽ áp dụng cho tất cả nhân viên đã chọn.</p>
+                            </div>
+                            <button type="button" class="btn-close" @click="closeBulkActionModal" :disabled="bulkProcessing" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-3">Bạn có chắc chắn muốn {{ bulkActionTarget?.action === 'activate' ? 'kích hoạt' : 'vô hiệu hóa' }} <strong>{{ bulkActionTarget?.count || 0 }}</strong> nhân viên đã chọn không?</p>
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ bulkActionTarget?.action === 'activate' ? 'Các nhân viên sẽ được kích hoạt và có thể đăng nhập vào hệ thống.' : 'Các nhân viên sẽ bị vô hiệu hóa và không thể đăng nhập vào hệ thống.' }}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                @click="closeBulkActionModal"
+                                :disabled="bulkProcessing"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                class="btn"
+                                :class="bulkActionTarget?.action === 'activate' ? 'btn-success' : 'btn-danger'"
+                                @click="handleBulkActionConfirm"
+                                :disabled="bulkProcessing"
+                            >
+                                <span v-if="bulkProcessing" class="spinner-border spinner-border-sm me-2"></span>
+                                {{ bulkActionTarget?.action === 'activate' ? 'Kích hoạt' : 'Vô hiệu hóa' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
         <!-- User Activity Log Modal -->
         <Teleport to="body">
             <div class="modal fade" ref="userActivityLogModalRef" tabindex="-1" aria-hidden="true">
@@ -529,14 +575,16 @@
                             <button type="button" class="btn-close" @click="hideUserActivityLogModal"></button>
                         </div>
                         <div class="modal-body">
-                            <div v-if="activityLogLoading" class="text-center py-5">
-                                <div class="spinner-border text-primary"></div>
-                            </div>
-                            <div v-else-if="!activityLogs.length" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                <p class="mb-0">Chưa có dữ liệu hoạt động.</p>
-                                <small class="text-muted">Tính năng này cần hỗ trợ từ backend.</small>
-                            </div>
+                            <LoadingState v-if="activityLogLoading" text="Đang tải lịch sử hoạt động..." />
+                            <EmptyState
+                                v-else-if="!activityLogs.length"
+                                title="Chưa có dữ liệu hoạt động"
+                                message="Tính năng này cần hỗ trợ từ backend."
+                            >
+                                <template #icon>
+                                    <i class="bi bi-inbox"></i>
+                                </template>
+                            </EmptyState>
                             <div v-else class="table-responsive">
                                 <table class="table table-hover">
                                     <thead class="table-light">
@@ -579,7 +627,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch, nextTick } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
 import { toast } from 'vue3-toastify'
@@ -1259,6 +1307,9 @@ onMounted(async () => {
     editModalInstance = new Modal(editModalRef.value, { backdrop: 'static' })
     resetPasswordModalInstance = new Modal(resetPasswordModalRef.value, { backdrop: 'static' })
     userActivityLogModalInstance = new Modal(userActivityLogModalRef.value, { backdrop: 'static' })
+    if (bulkActionModalRef.value) {
+        bulkActionModalInstance = new Modal(bulkActionModalRef.value, { backdrop: 'static' })
+    }
     await Promise.all([loadRoles(), fetchUsers()])
 })
 
@@ -1269,6 +1320,8 @@ onBeforeUnmount(() => {
     resetPasswordModalInstance = null
     userActivityLogModalInstance?.dispose()
     userActivityLogModalInstance = null
+    bulkActionModalInstance?.dispose()
+    bulkActionModalInstance = null
 })
 
 const closeDetail = () => {
@@ -1277,10 +1330,22 @@ const closeDetail = () => {
 }
 
 // Bulk Operations
+const bulkActionTarget = ref(null)
+const bulkActionModalRef = ref(null)
+let bulkActionModalInstance = null
+
 const handleBulkActivate = async () => {
     if (!selectedUsers.value.length) return
-    if (!confirm(`Bạn có chắc chắn muốn kích hoạt ${selectedUsers.value.length} nhân viên đã chọn?`)) return
+    bulkActionTarget.value = { action: 'activate', count: selectedUsers.value.length }
+    nextTick(() => {
+        bulkActionModalInstance?.show()
+    })
+}
 
+const handleBulkActivateConfirm = async () => {
+    if (!selectedUsers.value.length) return
+
+    bulkActionModalInstance?.hide()
     bulkProcessing.value = true
     try {
         const promises = selectedUsers.value.map(userId => {
@@ -1303,10 +1368,32 @@ const handleBulkActivate = async () => {
     }
 }
 
+const handleBulkActionConfirm = async () => {
+    if (!bulkActionTarget.value) return
+    if (bulkActionTarget.value.action === 'activate') {
+        await handleBulkActivateConfirm()
+    } else if (bulkActionTarget.value.action === 'deactivate') {
+        await handleBulkDeactivateConfirm()
+    }
+}
+
+const closeBulkActionModal = () => {
+    bulkActionModalInstance?.hide()
+    bulkActionTarget.value = null
+}
+
 const handleBulkDeactivate = async () => {
     if (!selectedUsers.value.length) return
-    if (!confirm(`Bạn có chắc chắn muốn vô hiệu hóa ${selectedUsers.value.length} nhân viên đã chọn?`)) return
+    bulkActionTarget.value = { action: 'deactivate', count: selectedUsers.value.length }
+    nextTick(() => {
+        bulkActionModalInstance?.show()
+    })
+}
 
+const handleBulkDeactivateConfirm = async () => {
+    if (!selectedUsers.value.length) return
+
+    bulkActionModalInstance?.hide()
     bulkProcessing.value = true
     try {
         const promises = selectedUsers.value.map(userId => {
@@ -1492,20 +1579,19 @@ const hideUserActivityLogModal = () => {
 <style scoped>
 /* Header Styles */
 .staff-header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-6);
 }
 
 .staff-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
     flex-wrap: wrap;
 }
 
@@ -1517,54 +1603,55 @@ const hideUserActivityLogModal = () => {
 .staff-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
     justify-content: flex-end;
 }
 
 .page-title {
-    font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .page-subtitle {
     margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 /* Stat Cards */
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    border-radius: 16px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: var(--spacing-4);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-xl);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     height: 100%;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
     color: #ffffff;
     border: 2px solid;
 }
@@ -1595,24 +1682,24 @@ const hideUserActivityLogModal = () => {
 }
 
 .stat-label {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 0.25rem;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-1);
+    font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 
 /* Action Buttons */
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
     align-items: center;
 }
@@ -1620,51 +1707,51 @@ const hideUserActivityLogModal = () => {
 .action-button {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
     border: 1px solid;
-    background: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
+    background: var(--color-card);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
     white-space: nowrap;
 }
 
 .action-button--primary {
-    border-color: #a855f7;
-    color: #a855f7;
-    background: #ffffff;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
 }
 
 .action-button--primary:hover {
-    background: #faf5ff;
-    border-color: #9333ea;
-    color: #9333ea;
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .action-button--info {
-    border-color: #06b6d4;
-    color: #06b6d4;
-    background: #ffffff;
+    border-color: var(--color-info);
+    color: var(--color-info);
+    background: var(--color-card);
 }
 
 .action-button--info:hover {
-    background: #ecfeff;
-    border-color: #0891b2;
-    color: #0891b2;
+    background: var(--color-info-soft);
+    border-color: var(--color-info);
+    color: var(--color-info);
 }
 
 .action-button--warning {
-    border-color: #f97316;
-    color: #f97316;
-    background: #ffffff;
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+    background: var(--color-card);
 }
 
 .action-button--warning:hover {
-    background: #fff7ed;
-    border-color: #ea580c;
-    color: #ea580c;
+    background: var(--color-warning-soft);
+    border-color: var(--color-warning);
+    color: var(--color-warning);
 }
 
 .action-button:disabled {
@@ -1673,7 +1760,7 @@ const hideUserActivityLogModal = () => {
 }
 
 .filter-card .card-body {
-    padding: 1.75rem;
+    padding: var(--spacing-7);
 }
 
 .table-avatar {
@@ -1763,19 +1850,54 @@ const hideUserActivityLogModal = () => {
 
 .role-box {
     border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3) var(--spacing-4);
     max-height: 220px;
     overflow-y: auto;
     background: var(--color-card-muted);
 }
 
 .role-box.is-invalid {
-    border-color: var(--bs-danger) !important;
+    border-color: var(--color-danger) !important;
 }
 
 .modal-body label {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 @media (max-width: 768px) {

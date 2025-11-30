@@ -57,13 +57,12 @@
                 </div>
             </div>
             <div class="card-body">
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="!records || records.length === 0" class="text-center py-5">
-                    <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                    <p class="text-muted mb-0">Chưa có lịch sử chấm công trong khoảng thời gian đã chọn.</p>
-                </div>
+                <LoadingState v-if="loading" />
+                <EmptyState
+                    v-else-if="!records || records.length === 0"
+                    title="Chưa có lịch sử"
+                    message="Chưa có lịch sử chấm công trong khoảng thời gian đã chọn."
+                />
                 <div v-else class="table-responsive">
                     <table class="table table-hover">
                         <thead>
@@ -130,6 +129,8 @@
 import { computed } from 'vue'
 import { formatDateTime } from '@/utils/formatters'
 import { ATTENDANCE_SOURCES } from '@/api/shiftService'
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     records: Array,
@@ -147,32 +148,32 @@ const formatSource = (source) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .attendance-history {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .history-stats {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-6);
 }
 
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8));
-    border-radius: 16px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    gap: var(--spacing-4);
+    padding: var(--spacing-5);
+    background: var(--color-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-card__icon {
@@ -210,10 +211,10 @@ const formatSource = (source) => {
 }
 
 .history-table-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .table {

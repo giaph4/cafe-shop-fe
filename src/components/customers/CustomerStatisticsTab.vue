@@ -24,10 +24,15 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div v-if="loyaltyDistribution.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            <p class="mb-0">Chưa có dữ liệu phân bố điểm thưởng.</p>
-                        </div>
+                        <EmptyState
+                            v-if="loyaltyDistribution.length === 0"
+                            title="Chưa có dữ liệu"
+                            message="Chưa có dữ liệu phân bố điểm thưởng."
+                        >
+                            <template #icon>
+                                <i class="bi bi-graph-up"></i>
+                            </template>
+                        </EmptyState>
                         <div v-else class="loyalty-distribution">
                             <div
                                 v-for="item in loyaltyDistribution"
@@ -58,10 +63,15 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div v-if="monthlyNewCustomers.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            <p class="mb-0">Chưa có dữ liệu khách hàng mới.</p>
-                        </div>
+                        <EmptyState
+                            v-if="monthlyNewCustomers.length === 0"
+                            title="Chưa có dữ liệu"
+                            message="Chưa có dữ liệu khách hàng mới."
+                        >
+                            <template #icon>
+                                <i class="bi bi-calendar"></i>
+                            </template>
+                        </EmptyState>
                         <div v-else class="monthly-stats">
                             <div
                                 v-for="item in monthlyNewCustomers"
@@ -87,6 +97,7 @@
 
 <script setup>
 import { formatNumber } from '@/utils/formatters'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     stats: {
@@ -118,30 +129,30 @@ const getIconClass = (index) => {
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    border-radius: 16px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: var(--spacing-4);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.5rem;
-    color: #ffffff;
+    font-size: var(--font-size-xl);
+    color: var(--color-white);
     border: 2px solid;
 }
 
@@ -166,17 +177,17 @@ const getIconClass = (index) => {
 }
 
 .stat-label {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 0.25rem;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-1);
+    font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 
 .distribution-item:last-child {
@@ -188,13 +199,13 @@ const getIconClass = (index) => {
 }
 
 .progress {
-    border-radius: 999px;
-    background-color: rgba(99, 102, 241, 0.1);
+    border-radius: var(--radius-full);
+    background-color: var(--color-primary-soft);
 }
 
 .progress-bar {
     background: linear-gradient(122deg, rgba(99, 102, 241, 0.92) 0%, rgba(129, 140, 248, 0.88) 100%);
-    border-radius: 999px;
+    border-radius: var(--radius-full);
 }
 </style>
 

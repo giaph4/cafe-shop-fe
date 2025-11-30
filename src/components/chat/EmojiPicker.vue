@@ -63,10 +63,10 @@ const handleSelect = (emoji) => {
     left: 0;
     width: 320px;
     max-height: 300px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--component-radius-sm);
+    box-shadow: var(--component-shadow-hover);
     z-index: 1000;
     margin-bottom: 0.5rem;
     overflow: hidden;
@@ -78,9 +78,9 @@ const handleSelect = (emoji) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: var(--component-gap-sm) var(--component-padding-sm);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card-muted);
 }
 
 .emoji-picker__grid {
@@ -96,13 +96,13 @@ const handleSelect = (emoji) => {
     background: transparent;
     border: none;
     padding: 0.5rem;
-    border-radius: 8px;
+    border-radius: var(--component-radius-sm);
     font-size: 1.5rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--component-transition);
 
     &:hover {
-        background: #f1f5f9;
+        background: var(--color-card-muted);
         transform: scale(1.2);
     }
 }

@@ -1,15 +1,23 @@
 <template>
-    <div class="attendance-page container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Chấm công</h2>
-                <p class="page-subtitle">Theo dõi và quản lý chấm công của nhân viên, xem lịch sử và thống kê chi tiết.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
+    <div class="attendance-page container-fluid">
+        <div class="attendance-header">
+            <div class="attendance-header__content">
+                <div class="attendance-header__title-section">
+                    <h2 class="attendance-header__title">Quản lý Chấm công</h2>
+                    <p class="attendance-header__subtitle">Theo dõi và quản lý chấm công của nhân viên, xem lịch sử và thống kê chi tiết.</p>
+                </div>
+                <div class="attendance-header__actions">
+                    <button 
+                        class="btn btn-outline-secondary" 
+                        type="button" 
+                        @click="fetchData" 
+                        :disabled="loading"
+                    >
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -67,12 +75,12 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading && activeTab !== 'overview'" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading && activeTab !== 'overview'" />
+                <ErrorState 
+                    v-else-if="error" 
+                    :message="error"
+                    @retry="fetchData"
+                />
                 <div v-else class="tab-content">
                     <AttendanceOverviewTab
                         v-if="activeTab === 'overview'"
@@ -119,6 +127,8 @@ import {
 import { getUsers } from '@/api/userService'
 import { showError, showSuccess } from '@/utils/toast'
 import { formatDateTime } from '@/utils/formatters'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import AttendanceOverviewTab from '@/components/attendance/AttendanceOverviewTab.vue'
 import AttendanceHistoryTab from '@/components/attendance/AttendanceHistoryTab.vue'
 import AttendanceStatisticsTab from '@/components/attendance/AttendanceStatisticsTab.vue'
@@ -450,73 +460,109 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .attendance-page {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
-    padding-bottom: 2rem;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
 }
 
-.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
+.attendance-header {
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
+}
+
+.attendance-header__content {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
-.page-title {
-    font-weight: 700;
+.attendance-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.attendance-header__title {
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--spacing-1);
 }
 
-.page-subtitle {
-    margin-bottom: 0;
+.attendance-header__subtitle {
+    margin: 0;
     color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+.attendance-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .filter-card,
 .tabs-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .reports-tabs .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-5);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
+    transition: all var(--transition-base);
+}
+
+.reports-tabs .nav-link:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-    color: #fff;
-}
-
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-white);
 }
 
 @media (max-width: 768px) {
-    .card-shadow {
-        padding: 1.25rem;
+    .attendance-header {
+        padding: var(--spacing-4);
+    }
+
+    .attendance-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .attendance-header__actions {
+        width: 100%;
+        justify-content: stretch;
+
+        .btn {
+            flex: 1;
+        }
     }
 }
 </style>

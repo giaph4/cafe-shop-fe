@@ -24,65 +24,117 @@
                     </div>
                 </div>
                 <div class="modal-body">
-                    <template v-if="loading">
-                        <div class="text-center">
-                            <div class="spinner-border text-primary" role="status"></div>
-                        </div>
-                    </template>
-                    <template v-else-if="error">
-                        <div class="alert alert-danger">{{ error }}</div>
-                    </template>
+                    <LoadingState v-if="loading" />
+                    <ErrorState v-else-if="error" :message="error" :show-retry="false" />
                     <template v-else-if="order">
-                        <div class="row">
+                        <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <p><strong>Bàn:</strong> {{ order.tableName }}</p>
-                                <p><strong>Nhân viên:</strong> {{ order.staffUsername }}</p>
-                                <p><strong>Khách hàng:</strong> {{ order.customerName || 'N/A' }}</p>
-                                <p><strong>Điện thoại:</strong> {{ order.customerPhone || 'N/A' }}</p>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title mb-3">Thông tin đơn hàng</h6>
+                                        <div class="mb-2">
+                                            <strong class="text-muted d-block mb-1">Bàn:</strong>
+                                            <span>{{ order.tableName || 'Mang về' }}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong class="text-muted d-block mb-1">Nhân viên:</strong>
+                                            <span>{{ order.staffUsername || '—' }}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong class="text-muted d-block mb-1">Khách hàng:</strong>
+                                            <span>{{ order.customerName || 'Khách lẻ' }}</span>
+                                        </div>
+                                        <div class="mb-0">
+                                            <strong class="text-muted d-block mb-1">Điện thoại:</strong>
+                                            <span>{{ order.customerPhone || '—' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <p><strong>Trạng thái:</strong> <span :class="['badge', getStatusClass(order.status)]">{{ order.status }}</span></p>
-                                <p><strong>Ngày tạo:</strong> {{ formatDateTime(order.createdAt) }}</p>
-                                <p><strong>Thanh toán:</strong> {{ order.paymentMethod || 'N/A' }}</p>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title mb-3">Thông tin thanh toán</h6>
+                                        <div class="mb-2">
+                                            <strong class="text-muted d-block mb-1">Trạng thái:</strong>
+                                            <span :class="['badge', getStatusClass(order.status)]">{{ getStatusLabel(order.status) }}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong class="text-muted d-block mb-1">Ngày tạo:</strong>
+                                            <span>{{ formatDateTime(order.createdAt) }}</span>
+                                        </div>
+                                        <div class="mb-0">
+                                            <strong class="text-muted d-block mb-1">Phương thức:</strong>
+                                            <span>{{ order.paymentMethod || '—' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <hr>
-                        <h6>Chi tiết sản phẩm</h6>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th>Số lượng</th>
-                                    <th>Đơn giá</th>
-                                    <th>Ghi chú</th>
-                                    <th>Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="item in order.orderDetails" :key="item.id">
-                                    <td>{{ item.productName }}</td>
-                                    <td>{{ item.quantity }}</td>
-                                    <td>{{ formatCurrency(item.priceAtOrder) }}</td>
-                                    <td>{{ item.notes }}</td>
-                                    <td>{{ formatCurrency(item.quantity * item.priceAtOrder) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <hr>
-                        <div class="row justify-content-end text-end">
-                            <div class="col-md-6">
-                                <p><strong>Tổng phụ:</strong> {{ formatCurrency(order.subTotal) }}</p>
-                                <p><strong>Giảm giá:</strong> -{{ formatCurrency(order.discountAmount) }}</p>
-                                <h5><strong>Tổng cộng:</strong> {{ formatCurrency(order.totalAmount) }}</h5>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Chi tiết sản phẩm</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Sản phẩm</th>
+                                                <th class="text-center">Số lượng</th>
+                                                <th class="text-end">Đơn giá</th>
+                                                <th>Ghi chú</th>
+                                                <th class="text-end">Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="item in order.orderDetails" :key="item.id">
+                                                <td>{{ item.productName }}</td>
+                                                <td class="text-center">{{ item.quantity }}</td>
+                                                <td class="text-end">{{ formatCurrency(item.priceAtOrder) }}</td>
+                                                <td>{{ item.notes || '—' }}</td>
+                                                <td class="text-end fw-semibold">{{ formatCurrency(item.quantity * item.priceAtOrder) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row justify-content-end">
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Tổng phụ:</span>
+                                            <strong>{{ formatCurrency(order.subTotal) }}</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Giảm giá:</span>
+                                            <strong class="text-danger">-{{ formatCurrency(order.discountAmount) }}</strong>
+                                        </div>
+                                        <div v-if="order.tipAmount && order.tipAmount > 0" class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Tiền típ:</span>
+                                            <strong>{{ formatCurrency(order.tipAmount) }}</strong>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-bold">Tổng cộng:</span>
+                                            <h5 class="mb-0 text-primary">{{ formatCurrency(order.totalAmount) }}</h5>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </template>
-                    <template v-else>
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-receipt-cutoff fs-1 mb-3 d-block"></i>
-                            <p class="mb-0">Không tìm thấy thông tin đơn hàng.</p>
-                        </div>
-                    </template>
+                    <EmptyState
+                        v-else
+                        title="Không tìm thấy đơn hàng"
+                        message="Không tìm thấy thông tin đơn hàng."
+                    >
+                        <template #icon>
+                            <i class="bi bi-receipt-cutoff"></i>
+                        </template>
+                    </EmptyState>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
@@ -100,6 +152,9 @@ import * as orderService from '@/api/orderService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import { toast } from 'vue3-toastify'
 import { printInvoiceToWindow } from '@/utils/invoicePrinter'
+import EmptyState from '@/components/common/EmptyState.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 const props = defineProps({
     orderId: Number,
@@ -133,11 +188,22 @@ const fetchOrderDetail = async (id) => {
 
 const getStatusClass = (status) => {
     switch (status) {
-        case 'PENDING': return 'bg-warning'
-        case 'PAID': return 'bg-success'
-        case 'CANCELLED': return 'bg-danger'
-        default: return 'bg-secondary'
+        case 'PENDING': return 'badge bg-warning-subtle text-warning'
+        case 'PAID': return 'badge bg-success-subtle text-success'
+        case 'CANCELLED': return 'badge bg-danger-subtle text-danger'
+        case 'TRANSFERRED': return 'badge bg-info-subtle text-info'
+        default: return 'badge bg-secondary-subtle text-secondary'
     }
+}
+
+const getStatusLabel = (status) => {
+    const labels = {
+        'PENDING': 'Đang chờ',
+        'PAID': 'Đã thanh toán',
+        'CANCELLED': 'Đã hủy',
+        'TRANSFERRED': 'Đã chuyển ca'
+    }
+    return labels[status] || status
 }
 
 const show = () => {
@@ -177,38 +243,38 @@ defineExpose({ show, hide })
 
 <style scoped>
 .order-detail-modal :global(.modal-content) {
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
 }
 
 .order-detail-modal :global(.modal-header) {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.5rem;
-    background: #ffffff;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
 }
 
 .order-detail-modal :global(.modal-header .modal-title) {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
 }
 
 .order-detail-modal :global(.modal-header .text-muted.small) {
-    color: #64748b;
-    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
 }
 
 .order-detail-modal :global(.modal-body) {
-    padding: 1.5rem;
+    padding: var(--spacing-6);
 }
 
 .order-detail-modal :global(.modal-footer) {
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    background: #ffffff;
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 .order-detail-modal :global(.modal-backdrop.show) {

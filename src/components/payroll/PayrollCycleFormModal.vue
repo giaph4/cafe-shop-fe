@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .modal-body {
     max-height: 70vh;
     overflow-y: auto;

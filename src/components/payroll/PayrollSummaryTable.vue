@@ -11,14 +11,11 @@
                 </div>
             </div>
 
-            <div v-if="loading" class="text-center py-4">
-                <div class="spinner-border text-primary"></div>
-            </div>
-
-            <div v-else-if="error" class="alert alert-warning">
-                {{ error }}
-            </div>
-
+            <LoadingState v-if="loading" />
+            <ErrorState 
+                v-else-if="error" 
+                :message="error"
+            />
             <EmptyState
                 v-else-if="!summaries.length"
                 title="Không có dữ liệu"
@@ -68,6 +65,8 @@
 
 <script setup>
 import EmptyState from '@/components/common/EmptyState.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import {formatCurrency, formatNumber} from '@/utils/formatters'
 
 const props = defineProps({
@@ -95,11 +94,11 @@ const formatMinutes = (minutes) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .summary-table {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 </style>

@@ -324,7 +324,9 @@ const removeIngredient = async (item) => {
         return
     }
 
-    const confirmed = window.confirm(`Bạn chắc chắn muốn xóa "${item.ingredientName}" khỏi công thức?`)
+    if (!item?.ingredientName) return
+
+    const confirmed = window.confirm(`Bạn chắc chắn muốn xóa "${item.ingredientName}" khỏi công thức?\n\nHành động này không thể hoàn tác.`)
     if (!confirmed) return
 
     const updatedItems = recipe.value
@@ -343,23 +345,29 @@ const removeIngredient = async (item) => {
 .recipe-manager {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .recipe-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .recipe-header h5 {
-    margin-bottom: 0.25rem;
-    font-weight: 700;
+    margin-bottom: var(--spacing-1);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 
 .recipe-header p {
     margin-bottom: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    line-height: var(--line-height-normal);
 }
 
 .state-block {
@@ -370,18 +378,21 @@ const removeIngredient = async (item) => {
 }
 
 .recipe-table .table {
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
 .add-section {
-    border-top: 1px solid rgba(148, 163, 184, 0.25);
-    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-5);
 }
 
 .add-section h6 {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-3);
 }
 
 @media (max-width: 768px) {

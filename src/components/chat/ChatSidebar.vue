@@ -204,17 +204,17 @@ const handleSearch = () => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #ffffff;
-    border-right: 1px solid #e2e8f0;
+    background: var(--color-card);
+    border-right: 1px solid var(--color-border);
 }
 
 .chat-sidebar__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: var(--component-padding-sm) var(--component-padding);
+    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     color: white;
 
     .chat-sidebar__title {
@@ -237,22 +237,24 @@ const handleSearch = () => {
 }
 
 .chat-sidebar__search {
-    padding: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: var(--component-padding-sm);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card-muted);
 
     .input-group-text {
         border-right: none;
-        border-color: #e2e8f0;
+        border-color: var(--color-border);
+        background: var(--color-card);
     }
 
     .form-control {
         border-left: none;
-        border-color: #e2e8f0;
+        border-color: var(--color-border);
+        background: var(--color-card);
 
         &:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 0.2rem var(--color-soft-primary);
         }
     }
 }
@@ -266,23 +268,23 @@ const handleSearch = () => {
 .conversation-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.875rem 1.25rem;
+    gap: var(--component-gap-sm);
+    padding: 0.875rem var(--component-padding);
     cursor: pointer;
-    transition: all 0.2s;
-    border-bottom: 1px solid #f1f5f9;
+    transition: all var(--component-transition);
+    border-bottom: 1px solid var(--color-border-light);
 
     &:hover {
-        background: #f8fafc;
+        background: var(--color-card-muted);
     }
 
     &--active {
-        background: linear-gradient(90deg, rgba(102, 126, 234, 0.1), transparent);
-        border-left: 3px solid #667eea;
+        background: linear-gradient(90deg, var(--color-soft-primary), transparent);
+        border-left: 3px solid var(--color-primary);
     }
 
     &--pinned {
-        background: #fffbf0;
+        background: var(--color-warning-light);
     }
 }
 
@@ -327,7 +329,7 @@ const handleSearch = () => {
     margin: 0;
     font-size: 0.9375rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--color-heading);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -335,7 +337,7 @@ const handleSearch = () => {
 
 .conversation-item__time {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -347,7 +349,7 @@ const handleSearch = () => {
 
 .conversation-item__last-message {
     font-size: 0.8125rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -381,14 +383,14 @@ const handleSearch = () => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1.5rem;
-    color: #64748b;
+    padding: 3rem var(--component-padding);
+    color: var(--color-text-muted);
 }
 
 .chat-sidebar__pagination {
-    padding: 1rem;
-    border-top: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: var(--component-padding-sm);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card-muted);
 }
 </style>
 

@@ -93,8 +93,8 @@
                                 />
                             </div>
                         </div>
-        </div>
-        
+                    </div>
+                    
                     <ChatInput
                         :sending="sendingMessage"
                         @send-text="handleSendText"
@@ -165,55 +165,57 @@
                 </div>
                 
                 <!-- Add Member Modal -->
-                <div v-if="showAddMemberModal" class="modal fade show" style="display: block;" @click.self="showAddMemberModal = false">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content" @click.stop>
-                            <div class="modal-header">
-                                <h5 class="modal-title">Thêm thành viên</h5>
-                                <button type="button" class="btn-close" @click="showAddMemberModal = false"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Chọn thành viên</label>
-                                    <div class="member-selection" style="max-height: 300px; overflow-y: auto;">
-                                        <div
-                                            v-for="user in availableUsers"
-                                            :key="user.id"
-                                            class="form-check"
-                                        >
-                                            <input
-                                                class="form-check-input"
-                                                type="checkbox"
-                                                :id="`add-user-${user.id}`"
-                                                :value="user.id"
-                                                v-model="selectedMemberIdsToAdd"
-                                                :disabled="conversationMembers.some(m => m.userId === user.id)"
-                                            />
-                                            <label class="form-check-label" :for="`add-user-${user.id}`">
-                                                {{ user.fullName || user.username }}
-                                            </label>
+                <Teleport to="body">
+                    <div v-if="showAddMemberModal" class="modal fade show" style="display: block;" @click.self="showAddMemberModal = false">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content" @click.stop>
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Thêm thành viên</h5>
+                                    <button type="button" class="btn-close" @click="showAddMemberModal = false"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn thành viên</label>
+                                        <div class="member-selection" style="max-height: 300px; overflow-y: auto;">
+                                            <div
+                                                v-for="user in availableUsers"
+                                                :key="user.id"
+                                                class="form-check"
+                                            >
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    :id="`add-user-${user.id}`"
+                                                    :value="user.id"
+                                                    v-model="selectedMemberIdsToAdd"
+                                                    :disabled="conversationMembers.some(m => m.userId === user.id)"
+                                                />
+                                                <label class="form-check-label" :for="`add-user-${user.id}`">
+                                                    {{ user.fullName || user.username }}
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" @click="showAddMemberModal = false">
-                                    Hủy
-                                </button>
-                                <button
-                                    type="button"
-                                    class="btn btn-primary"
-                                    @click="handleAddMembers"
-                                    :disabled="selectedMemberIdsToAdd.length === 0 || addingMembers"
-                                >
-                                    <span v-if="addingMembers" class="spinner-border spinner-border-sm me-2"></span>
-                                    Thêm
-                                </button>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" @click="showAddMemberModal = false">
+                                        Hủy
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        @click="handleAddMembers"
+                                        :disabled="selectedMemberIdsToAdd.length === 0 || addingMembers"
+                                    >
+                                        <span v-if="addingMembers" class="spinner-border spinner-border-sm me-2"></span>
+                                        Thêm
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div v-if="showAddMemberModal" class="modal-backdrop fade show"></div>
+                    <div v-if="showAddMemberModal" class="modal-backdrop fade show"></div>
+                </Teleport>
             </div>
         </div>
 
@@ -223,6 +225,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { Teleport } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import ChatSidebar from '@/components/chat/ChatSidebar.vue'
 import ChatMessageBubble from '@/components/chat/ChatMessageBubble.vue'
@@ -747,7 +750,7 @@ const handleAddMembers = async () => {
 
 const handleRemoveMember = async (memberId) => {
     if (!selectedConversation.value) return
-    if (!confirm('Bạn có chắc chắn muốn xóa thành viên này khỏi nhóm?')) return
+    if (!window.confirm('Bạn có chắc chắn muốn xóa thành viên này khỏi nhóm?')) return
     try {
         await removeMember(selectedConversation.value.id, memberId)
         await loadMembers()
@@ -780,13 +783,12 @@ const handleUpdateRole = async (memberId, newRole) => {
 }
 
 .chat-page__header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border);
+    border-radius: var(--component-radius-lg);
+    box-shadow: var(--component-shadow);
+    margin-bottom: var(--component-gap-lg);
+    padding: var(--component-padding);
 }
 
 .chat-page__header-content {
@@ -804,28 +806,30 @@ const handleUpdateRole = async (memberId, newRole) => {
 
 .chat-page__title {
     font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
+    color: var(--color-heading);
+    margin-bottom: 0.35rem;
     font-size: 1.5rem;
     line-height: 1.3;
+    letter-spacing: -0.01em;
 }
 
 .chat-page__subtitle {
     margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
+    color: var(--color-text-muted);
     font-size: 0.9rem;
     line-height: 1.5;
+    font-weight: 400;
 }
 
 .chat-container {
     display: flex;
     flex: 1;
     min-height: 0;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--component-radius-lg);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--component-shadow);
 }
 
 .chat-main {
@@ -841,7 +845,7 @@ const handleUpdateRole = async (memberId, newRole) => {
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .chat-window {
@@ -854,9 +858,9 @@ const handleUpdateRole = async (memberId, newRole) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: var(--component-padding-sm) var(--component-padding);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card-muted);
 }
 
 .chat-window__header-info {
@@ -891,14 +895,14 @@ const handleUpdateRole = async (memberId, newRole) => {
 
 .chat-window__name {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--color-heading);
 }
 
 .chat-window__messages {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem 0;
-    background: #f8fafc;
+    padding: var(--component-padding-sm) 0;
+    background: var(--color-card-muted);
 }
 
 .chat-window__loading,
@@ -908,13 +912,13 @@ const handleUpdateRole = async (memberId, newRole) => {
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .chat-details {
     width: 300px;
-    border-left: 1px solid #e2e8f0;
-    background: #ffffff;
+    border-left: 1px solid var(--color-border);
+    background: var(--color-card);
     display: flex;
     flex-direction: column;
 }
@@ -923,9 +927,9 @@ const handleUpdateRole = async (memberId, newRole) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: var(--component-padding-sm) var(--component-padding);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card-muted);
 }
 
 .chat-details__content {
@@ -948,7 +952,7 @@ const handleUpdateRole = async (memberId, newRole) => {
 .chat-details__section-title {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--color-text-muted);
     margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -997,13 +1001,13 @@ const handleUpdateRole = async (memberId, newRole) => {
 
 .chat-details__member-name {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--color-heading);
     font-size: 0.875rem;
 }
 
 .chat-details__member-role {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 </style>
 

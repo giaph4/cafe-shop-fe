@@ -28,10 +28,10 @@ const props = defineProps({
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     text-align: center;
-    padding: 2.5rem 1.5rem;
-    border-radius: var(--radius-md);
+    padding: var(--spacing-10) var(--spacing-6);
+    border-radius: var(--radius-lg);
     border: 1px dashed var(--color-border);
     background: var(--color-card-muted);
 }
@@ -39,22 +39,32 @@ const props = defineProps({
 .empty-state__icon {
     width: 64px;
     height: 64px;
-    border-radius: 16px;
-    background: var(--color-soft-primary);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-soft);
     display: grid;
     place-items: center;
-    font-size: 1.8rem;
+    font-size: var(--font-size-3xl);
     color: var(--color-primary);
+    margin-bottom: var(--spacing-2);
 }
 
 .empty-state__text h6 {
     margin: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-2);
 }
 
 .empty-state__text p {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+    max-width: 400px;
+}
+
+.empty-state__action {
+    margin-top: var(--spacing-2);
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <header class="neo-nav" :class="{ 'neo-nav--scrolled': isScrolled }">
+    <header class="neo-nav" :class="{ 'neo-nav--scrolled': isScrolled }" :style="{ left: topbarLeft }">
         <div class="neo-nav__section neo-nav__section--left">
             <button
                 class="neo-nav__icon neo-nav__icon--primary"
@@ -113,6 +113,9 @@ const emit = defineEmits(['toggleSidebar', 'search'])
 const props = defineProps({
     isSidebarCollapsed: Boolean
 })
+
+const sidebarWidth = computed(() => props.isSidebarCollapsed ? 76 : 278)
+const topbarLeft = computed(() => `calc(${sidebarWidth.value}px + 1.75rem + 1.5rem)`)
 
 const route = useRoute()
 const router = useRouter()
@@ -265,7 +268,9 @@ watch(
 }
 
 .neo-nav {
-    position: relative;
+    position: fixed;
+    top: 1.5rem;
+    right: 1.75rem;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
@@ -277,7 +282,8 @@ watch(
     background: var(--color-elevated);
     box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
     backdrop-filter: blur(16px);
-    transition: box-shadow 0.24s ease, transform 0.24s ease, border-color 0.24s ease;
+    transition: box-shadow 0.24s ease, transform 0.24s ease, border-color 0.24s ease,
+    left 0.26s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 120;
 }
 
@@ -543,6 +549,8 @@ watch(
 
 @media (max-width: 992px) {
     .neo-nav {
+        left: 1.4rem !important;
+        right: 1.4rem;
         grid-template-columns: 1fr auto;
         grid-template-areas: 'left right' 'center center';
         row-gap: 0.75rem;

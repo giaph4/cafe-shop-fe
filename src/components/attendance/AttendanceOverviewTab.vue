@@ -12,9 +12,7 @@
                     </button>
                 </div>
 
-                <div v-if="loading" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
+                <LoadingState v-if="loading" />
 
                 <div v-else-if="currentSession" class="current-session">
                     <div class="session-info-card">
@@ -106,13 +104,12 @@
                 <p class="text-muted mb-0">Các ca làm đã được phân công</p>
             </div>
             <div class="card-body">
-                <div v-if="loading" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="!assignments || assignments.length === 0" class="text-center py-4">
-                    <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                    <p class="text-muted mb-0">Chưa có ca làm nào được phân công.</p>
-                </div>
+                <LoadingState v-if="loading" />
+                <EmptyState
+                    v-else-if="!assignments || assignments.length === 0"
+                    title="Chưa có ca làm"
+                    message="Chưa có ca làm nào được phân công."
+                />
                 <div v-else class="assignments-list">
                     <div v-for="assignment in assignments" :key="assignment.id" class="assignment-item">
                         <div class="assignment-item__header">
@@ -152,6 +149,8 @@ import { reactive, ref } from 'vue'
 import { ATTENDANCE_SOURCES } from '@/api/shiftService'
 import { formatDateTime } from '@/utils/formatters'
 import { useAuthStore } from '@/store/auth'
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     currentSession: Object,
@@ -248,19 +247,19 @@ const getStatusLabel = (status) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .attendance-overview {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .check-in-out-card,
 .assignments-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .current-session {

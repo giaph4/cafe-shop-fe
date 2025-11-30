@@ -54,10 +54,15 @@
                         <h5 class="mb-0">Phân bổ theo trạng thái</h5>
                     </div>
                     <div class="card-body">
-                        <div v-if="statusDistribution.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-pie-chart fs-3 d-block mb-2"></i>
-                            <p class="mb-0">Chưa có dữ liệu</p>
-                        </div>
+                        <EmptyState
+                            v-if="statusDistribution.length === 0"
+                            title="Chưa có dữ liệu"
+                            message="Chưa có dữ liệu phân bổ trạng thái."
+                        >
+                            <template #icon>
+                                <i class="bi bi-pie-chart"></i>
+                            </template>
+                        </EmptyState>
                         <div v-else>
                             <div
                                 v-for="item in statusDistribution"
@@ -87,6 +92,7 @@
 <script setup>
 import { computed } from 'vue'
 import { formatCurrency, formatNumber, formatPercent } from '@/utils/formatters'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     orders: {
@@ -154,30 +160,30 @@ const getStatusProgressClass = (status) => {
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    border-radius: 16px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: var(--spacing-4);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.5rem;
-    color: #ffffff;
+    font-size: var(--font-size-xl);
+    color: var(--color-white);
     border: 2px solid;
 }
 
@@ -207,22 +213,17 @@ const getStatusProgressClass = (status) => {
 }
 
 .stat-label {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 0.25rem;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-1);
+    font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
-}
-
-.card-shadow {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: none;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 </style>
 

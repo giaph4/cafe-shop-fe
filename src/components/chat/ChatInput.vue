@@ -157,9 +157,9 @@ const removeFile = (index) => {
 <style scoped lang="scss">
 .chat-input {
     position: relative;
-    padding: 1rem;
-    background: #ffffff;
-    border-top: 1px solid #e2e8f0;
+    padding: var(--component-padding-sm);
+    background: var(--color-card);
+    border-top: 1px solid var(--color-border);
 }
 
 .chat-input__toolbar {
@@ -177,17 +177,18 @@ const removeFile = (index) => {
 .chat-input__textarea {
     flex: 1;
     resize: none;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--component-radius-sm);
+    padding: 0.75rem var(--component-padding-sm);
     font-size: 0.9375rem;
     line-height: 1.5;
     max-height: 120px;
-    transition: border-color 0.2s;
+    transition: border-color var(--component-transition);
+    background: var(--color-card);
 
     &:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 0.2rem var(--color-soft-primary);
     }
 }
 
@@ -200,12 +201,13 @@ const removeFile = (index) => {
     justify-content: center;
     padding: 0;
     flex-shrink: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     border: none;
+    transition: transform var(--component-transition), box-shadow var(--component-transition);
 
     &:hover:not(:disabled) {
         transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: var(--component-shadow-hover);
     }
 
     &:disabled {
@@ -217,19 +219,19 @@ const removeFile = (index) => {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid #f1f5f9;
+    margin-top: var(--component-gap-sm);
+    padding-top: var(--component-gap-sm);
+    border-top: 1px solid var(--color-border-light);
 }
 
 .chat-input__file-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    padding: 0.5rem var(--component-gap-sm);
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--component-radius-sm);
     font-size: 0.875rem;
 }
 

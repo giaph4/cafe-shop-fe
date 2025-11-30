@@ -1,7 +1,7 @@
 <template>
     <div class="admin-dashboard-tab">
         <!-- Range Selector -->
-        <div class="card filter-card mb-4">
+        <div class="filter-card card mb-4">
             <div class="card-body">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-6">
@@ -88,11 +88,13 @@
 
         <!-- System Alerts -->
         <div v-if="dashboardData?.alerts?.length > 0" class="card mb-4">
-            <div class="info-card__header">
-                <div class="info-card__icon">
-                    <i class="bi bi-exclamation-triangle"></i>
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="info-card__icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <h5 class="card-title mb-0">Cảnh báo hệ thống</h5>
                 </div>
-                <h5 class="info-card__title">Cảnh báo hệ thống</h5>
             </div>
             <div class="card-body">
                 <div class="alert-list">
@@ -115,14 +117,16 @@
         <div class="row g-4">
             <!-- Top Products -->
             <div v-if="dashboardData?.topProducts?.length > 0" class="col-lg-4">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-trophy"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-trophy"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Top Sản phẩm</h5>
                         </div>
-                        <h5 class="info-card__title">Top Sản phẩm</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="top-list">
                             <div
                                 v-for="(product, index) in dashboardData.topProducts.slice(0, 5)"
@@ -144,14 +148,16 @@
 
             <!-- Top Customers -->
             <div v-if="dashboardData?.topCustomers?.length > 0" class="col-lg-4">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-people"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Top Khách hàng</h5>
                         </div>
-                        <h5 class="info-card__title">Top Khách hàng</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="top-list">
                             <div
                                 v-for="(customer, index) in dashboardData.topCustomers.slice(0, 5)"
@@ -173,14 +179,16 @@
 
             <!-- Top Staff -->
             <div v-if="dashboardData?.topStaff?.length > 0" class="col-lg-4">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-person-badge"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Top Nhân viên</h5>
                         </div>
-                        <h5 class="info-card__title">Top Nhân viên</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="top-list">
                             <div
                                 v-for="(staff, index) in dashboardData.topStaff.slice(0, 5)"
@@ -205,6 +213,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { toast } from 'vue3-toastify'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 
 const props = defineProps({
@@ -233,7 +242,7 @@ const handleCustomRange = () => {
     }
     
     if (new Date(customFrom.value) > new Date(customTo.value)) {
-        alert('Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc.')
+        toast.error('Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc.')
         return
     }
     
@@ -272,12 +281,6 @@ watch(() => props.range, (newRange) => {
     padding: 0;
 }
 
-.filter-card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-}
 
 /* KPI Cards */
 .kpi-card {
@@ -359,21 +362,13 @@ watch(() => props.range, (newRange) => {
 
 /* Info Cards */
 .info-card {
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    overflow: hidden;
     height: 100%;
 }
 
-.info-card__header {
-    background: rgba(148, 163, 184, 0.08);
+.info-card .card-header {
     border-bottom: 1px solid var(--color-border);
     padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    background: var(--color-card-muted);
 }
 
 .info-card__icon {
@@ -389,16 +384,6 @@ watch(() => props.range, (newRange) => {
     flex-shrink: 0;
 }
 
-.info-card__title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--color-heading);
-    margin: 0;
-}
-
-.info-card__body {
-    padding: 1.5rem;
-}
 
 /* Alert List */
 .alert-list {
@@ -503,16 +488,6 @@ watch(() => props.range, (newRange) => {
     flex-shrink: 0;
 }
 
-.card {
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-}
-
-.card-body {
-    padding: 1.5rem;
-}
 
 @media (max-width: 768px) {
     .kpi-card {

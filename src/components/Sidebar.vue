@@ -331,12 +331,14 @@ function searchItems(items, parents, targetPath) {
 
 <style scoped>
 .neo-sidebar {
-    position: sticky;
+    position: fixed;
     top: 1.5rem;
+    left: 1.75rem;
+    bottom: 1.5rem;
     display: flex;
     flex-direction: column;
     width: 278px;
-    max-height: calc(100vh - 3rem);
+    height: calc(100vh - 3rem);
     border-radius: 22px;
     border: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
     background: var(--color-elevated);
@@ -344,7 +346,8 @@ function searchItems(items, parents, targetPath) {
     overflow: visible;
     transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.26s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s ease;
+    transform 0.3s ease,
+    left 0.26s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 110;
 }
 
@@ -513,6 +516,9 @@ function searchItems(items, parents, targetPath) {
 @media (max-width: 992px) {
     .neo-sidebar {
         top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100vh;
         border-radius: 0 22px 22px 0;
     }
 

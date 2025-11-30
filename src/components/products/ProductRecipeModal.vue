@@ -332,30 +332,30 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .modal-content {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
 }
 
 .modal-header {
     border-bottom: 1px solid var(--color-border);
-    padding: 1.25rem 1.5rem;
+    padding: var(--spacing-5) var(--spacing-6);
 }
 
 .modal-body {
-    padding: 1.5rem;
+    padding: var(--spacing-6);
     max-height: 60vh;
     overflow-y: auto;
 }
 
 .modal-footer {
     border-top: 1px solid var(--color-border);
-    padding: 1.25rem 1.5rem;
+    padding: var(--spacing-5) var(--spacing-6);
 }
 
 .table th {
-    font-weight: 600;
-    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .table td {

@@ -83,11 +83,17 @@ const formatRole = (roleName) => {
 
 <style scoped>
 .staff-card {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-md);
     background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
     color: var(--color-text);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.staff-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .avatar-wrapper {
@@ -100,9 +106,9 @@ const formatRole = (roleName) => {
 .avatar {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     object-fit: cover;
-    border: 2px solid rgba(148, 163, 184, 0.35);
+    border: 2px solid var(--color-border-soft);
 }
 
 .avatar.placeholder {
@@ -111,8 +117,8 @@ const formatRole = (roleName) => {
     justify-content: center;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(129, 140, 248, 0.12));
     color: var(--color-primary);
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
 }
 
 .badge.bg-soft {

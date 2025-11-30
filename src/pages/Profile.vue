@@ -225,11 +225,14 @@
             </section>
         </div>
 
-        <EmptyState v-if="!loading && !profile" title="Không có dữ liệu" message="Không thể tải hồ sơ của bạn. Vui lòng thử lại."/>
-        <div v-if="loading" class="profile-loading">
-            <div class="spinner-border text-primary"></div>
-            <p>Đang tải hồ sơ...</p>
-        </div>
+        <LoadingState v-if="loading" text="Đang tải hồ sơ..." />
+        <ErrorState
+            v-else-if="!profile"
+            title="Không thể tải hồ sơ"
+            message="Không thể tải hồ sơ của bạn. Vui lòng thử lại."
+            :show-retry="true"
+            :retry-handler="() => profileStore.loadProfile(authStore.user?.id)"
+        />
 
         <AvatarEditorModal ref="avatarEditorRef" @apply="handleAvatarEditorApply" @closed="handleAvatarEditorClosed"/>
     </div>
@@ -243,7 +246,8 @@ import {Form, Field, ErrorMessage} from 'vee-validate'
 import * as yup from 'yup'
 import {useAuthStore} from '@/store/auth'
 import {useProfileStore} from '@/store/profile'
-import EmptyState from '@/components/common/EmptyState.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import AvatarEditorModal from '@/components/staff/AvatarEditorModal.vue'
 import {uploadFile, deleteFile, extractFileName} from '@/api/fileService'
 import {formatDate, formatDateTime} from '@/utils/formatters'
@@ -730,6 +734,7 @@ const translateStatus = (status) => {
     padding-bottom: 1.5rem;
 }
 
+
 .profile-avatar {
     display: flex;
     flex-direction: column;
@@ -833,67 +838,74 @@ const translateStatus = (status) => {
 
 .role-selection {
     border: 1px solid var(--color-border);
-    border-radius: 16px;
-    padding: 0.9rem 1rem;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3) var(--spacing-4);
     background: var(--color-card-muted);
     max-height: 220px;
     overflow-y: auto;
     display: grid;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
+    transition: border-color var(--transition-fast);
 }
 
 .role-selection.is-invalid {
-    border-color: var(--bs-danger);
-}
-
-.profile-loading {
-    display: grid;
-    place-items: center;
-    gap: 0.75rem;
-    padding: 3rem 0;
-    color: var(--color-text-muted);
+    border-color: var(--color-danger);
 }
 
 @media (max-width: 992px) {
     .profile-layout {
         grid-template-columns: 1fr;
     }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-header__meta {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .profile-card__header {
+        flex-direction: column;
+    }
+
+    .profile-summary {
+        width: 100%;
+    }
 }
 
-.dark-theme .profile-card {
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.92));
-    border-color: rgba(129, 140, 248, 0.28);
-    box-shadow: 0 24px 50px rgba(2, 6, 23, 0.6);
-}
+@media (max-width: 768px) {
+    .profile-page {
+        gap: var(--spacing-4);
+        padding-bottom: var(--spacing-8);
+    }
 
-.dark-theme .profile-header {
-    border-color: rgba(129, 140, 248, 0.25);
-    background: linear-gradient(180deg, rgba(37, 47, 70, 0.96), rgba(17, 24, 39, 0.92));
-}
+    .profile-header {
+        padding: var(--spacing-4);
+    }
 
-.dark-theme .profile-status {
-    background: rgba(129, 140, 248, 0.18);
-    color: #c7d2ff;
-}
+    .profile-card {
+        padding: var(--spacing-4);
+    }
 
-.dark-theme .profile-status[data-status="INACTIVE"] {
-    background: rgba(248, 113, 113, 0.22);
-    color: #fecaca;
-}
+    .profile-avatar__actions {
+        width: 100%;
+    }
 
-.comfort-theme .profile-card {
-    border-color: rgba(95, 111, 148, 0.28);
-    background: linear-gradient(170deg, rgba(245, 241, 235, 0.98), rgba(236, 232, 226, 0.92));
-}
+    .profile-avatar__actions .btn {
+        flex: 1;
+        min-width: 0;
+    }
 
-.comfort-theme .profile-header {
-    border-color: rgba(95, 111, 148, 0.24);
-    background: linear-gradient(165deg, rgba(248, 244, 238, 0.98), rgba(236, 231, 224, 0.92));
-}
+    .profile-form__actions {
+        flex-direction: column-reverse;
+    }
 
-.comfort-theme .profile-status {
-    background: rgba(95, 111, 148, 0.16);
-    color: #3f4a63;
+    .profile-form__actions .btn {
+        width: 100%;
+    }
 }
 
 </style>

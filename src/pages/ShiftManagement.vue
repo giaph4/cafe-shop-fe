@@ -1,16 +1,27 @@
 <template>
-    <div class="shift-management-page container-fluid" data-aos="fade-up">
+    <div class="shift-management-page container-fluid">
         <div class="shift-management-header">
             <div class="shift-management-header__content">
                 <div class="shift-management-header__title-section">
-                    <h2 class="page-title">Quản lý Ca làm</h2>
-                    <p class="page-subtitle">Theo dõi ca làm, phân công nhân viên và trạng thái thực hiện.</p>
+                    <h2 class="shift-management-header__title">Quản lý Ca làm</h2>
+                    <p class="shift-management-header__subtitle">Theo dõi ca làm, phân công nhân viên và trạng thái thực hiện.</p>
                 </div>
                 <div class="shift-management-header__actions">
-                    <button class="btn btn-primary" type="button" @click="openCreateInstance" v-if="activeTab === 'instances'">
-                        <i class="bi bi-plus-lg me-2"></i>Tạo ca làm mới
+                    <button 
+                        class="btn btn-primary" 
+                        type="button" 
+                        @click="openCreateInstance" 
+                        v-if="activeTab === 'instances'"
+                    >
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Tạo ca làm mới
                     </button>
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                    <button 
+                        class="btn btn-outline-secondary" 
+                        type="button" 
+                        @click="fetchData" 
+                        :disabled="loading"
+                    >
                         <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
                         <i v-else class="bi bi-arrow-clockwise me-2"></i>
                         Làm mới
@@ -33,12 +44,12 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading && activeTab !== 'overview'" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error && activeTab !== 'overview'" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading && activeTab !== 'overview'" />
+                <ErrorState 
+                    v-else-if="error && activeTab !== 'overview'" 
+                    :message="error"
+                    @retry="fetchData"
+                />
                 <div v-else class="tab-content">
                     <ShiftOverviewTab
                         v-if="activeTab === 'overview'"
@@ -84,35 +95,113 @@
             </div>
         </div>
 
-        <ShiftInstanceFormModal
-            ref="formModal"
-            :templates="templateOptions"
-            :instance="editingInstance"
-            :submitting="formSubmitting"
-            @submit="handleFormSubmit"
-        />
+        <Teleport to="body">
+            <ShiftInstanceFormModal
+                ref="formModal"
+                :templates="templateOptions"
+                :instance="editingInstance"
+                :submitting="formSubmitting"
+                @submit="handleFormSubmit"
+            />
 
-        <ShiftTemplateFormModal
-            ref="templateModal"
-            :template="editingTemplate"
-            :submitting="templateSubmitting"
-            @submit="handleTemplateSubmit"
-        />
+            <ShiftTemplateFormModal
+                ref="templateModal"
+                :template="editingTemplate"
+                :submitting="templateSubmitting"
+                @submit="handleTemplateSubmit"
+            />
 
-        <ShiftInstanceDetailModal ref="detailModal" />
+            <ShiftInstanceDetailModal ref="detailModal" />
 
-        <ShiftStatusUpdateModal
-            ref="statusModal"
-            :status-options="SHIFT_STATUSES"
-            @submit="handleStatusUpdate"
-        />
+            <ShiftStatusUpdateModal
+                ref="statusModal"
+                :status-options="SHIFT_STATUSES"
+                @submit="handleStatusUpdate"
+            />
+
+            <!-- Delete Instance Confirmation Modal -->
+            <div 
+                class="modal fade" 
+                id="deleteInstanceModal" 
+                tabindex="-1" 
+                ref="deleteInstanceModalElement" 
+                aria-labelledby="deleteInstanceModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteInstanceModalLabel">Xác nhận xóa</h5>
+                            <button type="button" class="btn-close" @click="deleteInstanceBsModal?.hide()" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Bạn có chắc chắn muốn xóa ca làm này không?</p>
+                            <div v-if="instanceToDelete" class="card mt-3">
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Template:</strong> {{ instanceToDelete.templateName || 'N/A' }}</p>
+                                    <p class="mb-2"><strong>Ngày:</strong> {{ formatDate(instanceToDelete.shiftDate) }}</p>
+                                    <p class="mb-0"><strong>Thời gian:</strong> {{ formatTime(instanceToDelete.startTime) }} - {{ formatTime(instanceToDelete.endTime) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="deleteInstanceBsModal?.hide()">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="confirmDeleteInstance">
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Template Confirmation Modal -->
+            <div 
+                class="modal fade" 
+                id="deleteTemplateModal" 
+                tabindex="-1" 
+                ref="deleteTemplateModalElement" 
+                aria-labelledby="deleteTemplateModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteTemplateModalLabel">Xác nhận xóa</h5>
+                            <button type="button" class="btn-close" @click="deleteTemplateBsModal?.hide()" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Bạn có chắc chắn muốn xóa ca mẫu này không?</p>
+                            <div v-if="templateToDelete" class="card mt-3">
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Tên:</strong> {{ templateToDelete.name || 'N/A' }}</p>
+                                    <p class="mb-0"><strong>Mô tả:</strong> {{ templateToDelete.description || 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="deleteTemplateBsModal?.hide()">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="confirmDeleteTemplate">
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { Teleport } from 'vue'
 import { storeToRefs } from 'pinia'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import ShiftOverviewTab from '@/components/shifts/ShiftOverviewTab.vue'
 import ShiftInstancesTab from '@/components/shifts/ShiftInstancesTab.vue'
 import ShiftTemplatesTab from '@/components/shifts/ShiftTemplatesTab.vue'
@@ -133,6 +222,7 @@ import {
     updateShiftTemplate,
     deleteShiftTemplate
 } from '@/api/shiftService'
+import { Modal } from 'bootstrap'
 import { toast } from 'vue3-toastify'
 import { formatDate, formatDateTime } from '@/utils/formatters'
 import { PaginationMode, usePagination } from '@/composables/usePagination'
@@ -289,10 +379,7 @@ const handleStartSession = async () => {
             return
         }
         // Nếu admin override, cho phép start nhưng cảnh báo
-        const confirmed = confirm('Bạn đang có ca làm đang hoạt động. Bạn có chắc chắn muốn bắt đầu ca mới?')
-        if (!confirmed) {
-            return
-        }
+        // Sẽ được xử lý trong modal confirmation nếu cần
     }
     
     try {
@@ -637,9 +724,19 @@ const handleStatusUpdate = async (payload) => {
     }
 }
 
-const removeInstance = async (instance) => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa ca làm này?')
-    if (!confirmed) return
+const deleteInstanceModalElement = ref(null)
+const deleteInstanceBsModal = ref(null)
+const instanceToDelete = ref(null)
+
+const removeInstance = (instance) => {
+    instanceToDelete.value = instance
+    deleteInstanceBsModal.value?.show()
+}
+
+const confirmDeleteInstance = async () => {
+    if (!instanceToDelete.value) return
+    const instance = instanceToDelete.value
+    deleteInstanceBsModal.value?.hide()
     try {
         await deleteShiftInstance(instance.id)
         toast.success('Đã xóa ca làm.')
@@ -647,6 +744,8 @@ const removeInstance = async (instance) => {
         await fetchCalendarData()
     } catch (err) {
         toast.error(err.response?.data?.message || 'Không thể xóa ca làm.')
+    } finally {
+        instanceToDelete.value = null
     }
 }
 
@@ -693,10 +792,20 @@ const handleTemplateSubmit = async (payload) => {
     }
 }
 
-const removeTemplate = async (template) => {
+const deleteTemplateModalElement = ref(null)
+const deleteTemplateBsModal = ref(null)
+const templateToDelete = ref(null)
+
+const removeTemplate = (template) => {
     if (!template?.id) return
-    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa ca mẫu này?')
-    if (!confirmed) return
+    templateToDelete.value = template
+    deleteTemplateBsModal.value?.show()
+}
+
+const confirmDeleteTemplate = async () => {
+    if (!templateToDelete.value) return
+    const template = templateToDelete.value
+    deleteTemplateBsModal.value?.hide()
     try {
         await deleteShiftTemplate(template.id)
         toast.success('Đã xóa ca mẫu.')
@@ -707,6 +816,8 @@ const removeTemplate = async (template) => {
         await fetchTemplateOptions()
     } catch (err) {
         toast.error(err.response?.data?.message || 'Không thể xóa ca mẫu.')
+    } finally {
+        templateToDelete.value = null
     }
 }
 
@@ -804,6 +915,12 @@ watch(
 )
 
 onMounted(() => {
+    if (deleteInstanceModalElement.value) {
+        deleteInstanceBsModal.value = new Modal(deleteInstanceModalElement.value)
+    }
+    if (deleteTemplateModalElement.value) {
+        deleteTemplateBsModal.value = new Modal(deleteTemplateModalElement.value)
+    }
     fetchTemplateOptions()
     fetchCalendarData()
     fetchTemplates()
@@ -811,29 +928,27 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .shift-management-page {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
-    padding-bottom: 2rem;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
 }
 
 .shift-management-header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
 }
 
 .shift-management-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
     flex-wrap: wrap;
 }
 
@@ -842,64 +957,79 @@ onMounted(() => {
     min-width: 0;
 }
 
+.shift-management-header__title {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--spacing-1);
+}
+
+.shift-management-header__subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
 .shift-management-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
     justify-content: flex-end;
 }
 
-.page-title {
-    font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
-}
-
-.page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
 .tabs-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .reports-tabs .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-5);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
+    transition: all var(--transition-base);
+}
+
+.reports-tabs .nav-link:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-    color: #fff;
-}
-
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-white);
 }
 
 @media (max-width: 768px) {
-    .card-shadow {
-        padding: 1.25rem;
+    .shift-management-header {
+        padding: var(--spacing-4);
+    }
+
+    .shift-management-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .shift-management-header__actions {
+        width: 100%;
+        justify-content: stretch;
+
+        .btn {
+            flex: 1;
+        }
     }
 }
 </style>

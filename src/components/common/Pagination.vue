@@ -84,15 +84,15 @@ const changePage = (normalizedTarget) => {
 
 <style scoped>
 .pagination-wrapper {
-    margin-top: 1.5rem;
+    margin-top: var(--spacing-6);
 }
 
 .pagination {
-    gap: 0.5rem;
+    gap: var(--spacing-2);
 }
 
 .page-item {
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     overflow: hidden;
 }
 
@@ -103,27 +103,37 @@ const changePage = (normalizedTarget) => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
     color: var(--color-heading);
     background: var(--color-card);
-    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2), 0 6px 16px rgba(15, 23, 42, 0.08);
-    transition: all 0.2s ease;
+    box-shadow: inset 0 0 0 1px var(--color-border-soft), var(--shadow-md);
+    transition: all var(--transition-fast);
+    cursor: pointer;
 }
 
-.page-link:hover,
-.page-link:focus {
+.page-link:hover:not(:disabled),
+.page-link:focus:not(:disabled) {
     color: var(--color-primary);
-    box-shadow: inset 0 0 0 1px var(--color-primary), 0 8px 16px rgba(99, 102, 241, 0.18);
+    box-shadow: inset 0 0 0 1px var(--color-primary), var(--shadow-lg);
+    transform: translateY(-1px);
 }
 
 .page-item.active .page-link {
-    background: linear-gradient(122deg, rgba(99, 102, 241, 0.92) 0%, rgba(129, 140, 248, 0.88) 100%);
-    color: #fff;
-    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.35);
+    background: linear-gradient(122deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-primary-contrast);
+    box-shadow: var(--shadow-lg);
+    border: none;
+}
+
+.page-item.active .page-link:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xl);
 }
 
 .page-item.disabled .page-link {
     opacity: 0.5;
+    cursor: not-allowed;
     pointer-events: none;
 }
 </style>

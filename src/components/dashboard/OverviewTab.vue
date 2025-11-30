@@ -14,98 +14,114 @@
         </div>
 
         <div class="overview__grid">
-            <div class="card chart-card">
+            <div class="card">
                 <div class="card-header">
-                    <h5>Doanh thu theo ngày</h5>
-                    <p>Biến động doanh thu trong giai đoạn đã chọn</p>
-                </div>
-                <ApexChart 
-                    v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
-                    type="area" 
-                    height="320" 
-                    :series="revenueSeries" 
-                    :options="revenueOptions"
-                />
-                <EmptyState v-else message="Chưa có dữ liệu doanh thu"/>
-            </div>
-
-            <div class="card chart-card">
-                <div class="card-header">
-                    <h5>Phương thức thanh toán</h5>
-                    <p>Tỷ trọng đơn hàng theo kênh thanh toán</p>
-                </div>
-                <div v-if="paymentStats && paymentStats.length" class="payment-list">
-                    <div v-for="item in paymentStats" :key="item.paymentMethod" class="payment-item">
-                        <div class="payment-item__left">
-                            <span class="payment-item__method">{{ prettyMethod(item.paymentMethod) }}</span>
-                            <span class="payment-item__orders">{{ item.orderCount }} đơn</span>
-                        </div>
-                        <div class="payment-item__right">
-                            <strong>{{ formatCurrency(item.totalAmount) }}</strong>
-                            <span :class="['badge', 'bg-light']">{{ item.percentage?.toFixed(1) ?? 0 }}%</span>
-                        </div>
+                    <div>
+                        <h5 class="card-title">Doanh thu theo ngày</h5>
+                        <p class="card-subtitle">Biến động doanh thu trong giai đoạn đã chọn</p>
                     </div>
                 </div>
-                <EmptyState v-else message="Chưa có thống kê thanh toán"/>
+                <div class="card-body">
+                    <ApexChart 
+                        v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
+                        type="area" 
+                        height="320" 
+                        :series="revenueSeries" 
+                        :options="revenueOptions"
+                    />
+                    <EmptyState v-else message="Chưa có dữ liệu doanh thu"/>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Phương thức thanh toán</h5>
+                        <p class="card-subtitle">Tỷ trọng đơn hàng theo kênh thanh toán</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div v-if="paymentStats && paymentStats.length" class="payment-list">
+                        <div v-for="item in paymentStats" :key="item.paymentMethod" class="payment-item">
+                            <div class="payment-item__left">
+                                <span class="payment-item__method">{{ prettyMethod(item.paymentMethod) }}</span>
+                                <span class="payment-item__orders">{{ item.orderCount }} đơn</span>
+                            </div>
+                            <div class="payment-item__right">
+                                <strong>{{ formatCurrency(item.totalAmount) }}</strong>
+                                <span class="badge bg-soft">{{ item.percentage?.toFixed(1) ?? 0 }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <EmptyState v-else message="Chưa có thống kê thanh toán"/>
+                </div>
             </div>
         </div>
 
         <div class="composite-grid">
-            <div class="card comparison-card">
-                <div class="card-header mb-3">
-                    <h5>So sánh với kỳ trước</h5>
-                    <p>Đo lường tăng trưởng doanh thu và số đơn hàng</p>
-                </div>
-                <div v-if="salesComparison" class="comparison">
-                    <div class="comparison__item">
-                        <span class="comparison__label">Doanh thu kỳ hiện tại: </span>
-                        <strong>{{ formatCurrency(salesComparison.currentRevenue) }}</strong>
-                    </div>
-                    <div class="comparison__item">
-                        <span class="comparison__label">Doanh thu kỳ trước: </span>
-                        <strong>{{ formatCurrency(salesComparison.previousRevenue) }}</strong>
-                    </div>
-                    <div class="comparison__item">
-                        <span class="comparison__label">Tăng trưởng: </span>
-                        <strong :class="salesComparison.growthAmount >= 0 ? 'text-success' : 'text-danger'">
-                            {{ formatCurrency(salesComparison.growthAmount) }}
-                        </strong>
-                        <span class="comparison__sub" :class="salesComparison.growthPercentage >= 0 ? 'text-success' : 'text-danger'">
-                            {{ salesComparison.growthPercentage?.toFixed(2) ?? 0 }}%
-                        </span>
-                    </div>
-                    <div class="comparison__item">
-                        <span class="comparison__label">Số đơn: </span>
-                        <strong>{{ salesComparison.currentOrders }}</strong>
-                        <span class="comparison__sub">Trước: {{ salesComparison.previousOrders }}</span>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">So sánh với kỳ trước</h5>
+                        <p class="card-subtitle">Đo lường tăng trưởng doanh thu và số đơn hàng</p>
                     </div>
                 </div>
-                <EmptyState v-else message="Chưa có dữ liệu so sánh"/>
+                <div class="card-body">
+                    <div v-if="salesComparison" class="comparison">
+                        <div class="comparison__item">
+                            <span class="comparison__label">Doanh thu kỳ hiện tại: </span>
+                            <strong>{{ formatCurrency(salesComparison.currentRevenue) }}</strong>
+                        </div>
+                        <div class="comparison__item">
+                            <span class="comparison__label">Doanh thu kỳ trước: </span>
+                            <strong>{{ formatCurrency(salesComparison.previousRevenue) }}</strong>
+                        </div>
+                        <div class="comparison__item">
+                            <span class="comparison__label">Tăng trưởng: </span>
+                            <strong :class="salesComparison.growthAmount >= 0 ? 'text-success' : 'text-danger'">
+                                {{ formatCurrency(salesComparison.growthAmount) }}
+                            </strong>
+                            <span class="comparison__sub" :class="salesComparison.growthPercentage >= 0 ? 'text-success' : 'text-danger'">
+                                {{ salesComparison.growthPercentage?.toFixed(2) ?? 0 }}%
+                            </span>
+                        </div>
+                        <div class="comparison__item">
+                            <span class="comparison__label">Số đơn: </span>
+                            <strong>{{ salesComparison.currentOrders }}</strong>
+                            <span class="comparison__sub">Trước: {{ salesComparison.previousOrders }}</span>
+                        </div>
+                    </div>
+                    <EmptyState v-else message="Chưa có dữ liệu so sánh"/>
+                </div>
             </div>
 
-            <section v-if="quickActions.length" class="quick-actions">
-                <header class="quick-header mt-3">
-                    <h5>Thao tác nhanh</h5>
-                    <p class="text-muted">Truy cập nhanh các nghiệp vụ quan trọng theo vai trò của bạn.</p>
-                </header>
-                <div class="quick-grid">
-                    <router-link
-                        v-for="action in quickActions"
-                        :key="action.id"
-                        class="quick-card"
-                        :to="action.to"
-                    >
-                        <div class="quick-icon" :class="action.variant">
-                            <i :class="action.icon"></i>
-                        </div>
-                        <div class="quick-body">
-                            <h4>{{ action.title }}</h4>
-                            <p>{{ action.description }}</p>
-                        </div>
-                        <span class="quick-arrow"><i class="bi bi-arrow-right"></i></span>
-                    </router-link>
+            <div v-if="quickActions.length" class="card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Thao tác nhanh</h5>
+                        <p class="card-subtitle">Truy cập nhanh các nghiệp vụ quan trọng theo vai trò của bạn.</p>
+                    </div>
                 </div>
-            </section>
+                <div class="card-body">
+                    <div class="quick-grid">
+                        <router-link
+                            v-for="action in quickActions"
+                            :key="action.id"
+                            class="quick-card"
+                            :to="action.to"
+                        >
+                            <div class="quick-icon" :class="action.variant">
+                                <i :class="action.icon"></i>
+                            </div>
+                            <div class="quick-body">
+                                <h4>{{ action.title }}</h4>
+                                <p>{{ action.description }}</p>
+                            </div>
+                            <span class="quick-arrow"><i class="bi bi-arrow-right"></i></span>
+                        </router-link>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -292,9 +308,10 @@ const prettyMethod = (method) => {
     gap: 1.5rem;
 }
 
-.chart-card .card-header {
-    border-bottom: none;
-    margin-bottom: 0.75rem;
+.card-header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .payment-list {
@@ -336,9 +353,6 @@ const prettyMethod = (method) => {
     gap: 0.6rem;
 }
 
-.comparison-card .card-header {
-    border-bottom: none;
-}
 
 .comparison {
     display: grid;
@@ -365,22 +379,6 @@ const prettyMethod = (method) => {
     font-size: 0.8rem;
 }
 
-.overview-tab__quick {
-    border-radius: 20px;
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.quick-header h3 {
-    font-weight: 700;
-    color: var(--color-heading);
-    margin-bottom: 0.35rem;
-}
 
 .quick-grid {
     display: grid;
@@ -475,31 +473,6 @@ const prettyMethod = (method) => {
     background: var(--color-soft-orange);
 }
 
-.dark-theme .chart-card,
-.dark-theme .stat-card__icon,
-.dark-theme .stat-card__trend {
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.92));
-}
-
-.dark-theme .overview-tab__quick {
-    border-color: rgba(129, 140, 248, 0.28);
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.92));
-}
-
-.dark-theme .quick-card {
-    border-color: rgba(129, 140, 248, 0.25);
-    background: linear-gradient(170deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.92));
-}
-
-.comfort-theme .overview-tab__quick {
-    border-color: rgba(95, 111, 148, 0.25);
-    background: linear-gradient(170deg, rgba(245, 241, 235, 0.98), rgba(236, 232, 226, 0.92));
-}
-
-.comfort-theme .quick-card {
-    border-color: rgba(95, 111, 148, 0.25);
-    background: linear-gradient(170deg, rgba(245, 241, 235, 0.98), rgba(236, 232, 226, 0.92));
-}
 
 @media (max-width: 1200px) {
     .overview__grid {
@@ -511,9 +484,4 @@ const prettyMethod = (method) => {
     }
 }
 
-@media (max-width: 992px) {
-    .overview-tab__charts {
-        grid-template-columns: 1fr;
-    }
-}
 </style>

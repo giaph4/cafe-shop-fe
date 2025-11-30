@@ -151,15 +151,26 @@
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Xóa khách hàng</h5>
+                            <div>
+                                <h5 class="modal-title">Xóa khách hàng</h5>
+                                <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
+                            </div>
                             <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="deleting"></button>
                         </div>
                         <div class="modal-body">
-                            <p class="mb-2">Bạn có chắc chắn muốn xóa khách hàng này không?</p>
-                            <p class="mb-0 text-muted">
-                                Khách hàng: <strong>{{ deleteTarget?.fullName || '—' }}</strong><br />
-                                Số điện thoại: {{ deleteTarget?.phone || '—' }}
-                            </p>
+                            <p class="mb-3">Bạn có chắc chắn muốn xóa khách hàng này không?</p>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong class="text-muted d-block mb-1">Khách hàng:</strong>
+                                        <span>{{ deleteTarget?.fullName || '—' }}</span>
+                                    </div>
+                                    <div class="mb-0">
+                                        <strong class="text-muted d-block mb-1">Số điện thoại:</strong>
+                                        <span>{{ deleteTarget?.phone || '—' }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" @click="closeDeleteModal" :disabled="deleting">
@@ -766,20 +777,19 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .customers-header {
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
 }
 
 .customers-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .customers-header__title-section {
@@ -788,24 +798,26 @@ onBeforeUnmount(() => {
 }
 
 .customers-header__title {
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .customers-header__subtitle {
     margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-normal);
 }
 
 .customers-header__actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -813,14 +825,14 @@ onBeforeUnmount(() => {
 .customers-header__actions .form-check {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     margin-bottom: 0;
 }
 
 .customers-header__actions .form-check-label {
     margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
     white-space: nowrap;
 }
 

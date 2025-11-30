@@ -11,10 +11,7 @@
                         <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                     </div>
 
-                    <div v-if="formLoading" class="modal-body d-flex flex-column align-items-center py-5">
-                        <div class="spinner-border text-primary" role="status"></div>
-                        <p class="mt-3 mb-0 text-muted">Đang tải dữ liệu voucher...</p>
-                    </div>
+                    <LoadingState v-if="formLoading" text="Đang tải dữ liệu voucher..." />
 
                     <Form
                         v-else
@@ -174,6 +171,54 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" ref="deleteModalElement" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title">Xóa voucher</h5>
+                            <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="voucherStore.deleting" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Bạn có chắc chắn muốn xóa voucher này không?</p>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <strong class="text-muted d-block mb-1">Mã voucher:</strong>
+                                    <span>{{ deleteTarget?.code || '—' }}</span>
+                                </div>
+                                <div class="mb-0">
+                                    <strong class="text-muted d-block mb-1">Mô tả:</strong>
+                                    <span>{{ deleteTarget?.description || '—' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            @click="closeDeleteModal"
+                            :disabled="voucherStore.deleting"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            @click="handleDeleteConfirm"
+                            :disabled="voucherStore.deleting"
+                        >
+                            <span v-if="voucherStore.deleting" class="spinner-border spinner-border-sm me-2"></span>
+                            Xóa voucher
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </Teleport>
 
     <section class="page-container container-fluid vouchers-page" data-aos="fade-up">
@@ -316,15 +361,20 @@
                     </thead>
                     <tbody>
                         <tr v-if="loading">
-                            <td colspan="11" class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status"></div>
-                                <p class="mt-2 mb-0 text-muted">Đang tải dữ liệu voucher...</p>
+                            <td colspan="11" class="text-center py-5">
+                                <LoadingState text="Đang tải dữ liệu voucher..." />
                             </td>
                         </tr>
                         <tr v-else-if="!items.length">
-                            <td colspan="11" class="text-center py-4 text-muted">
-                                <i class="bi bi-search mb-2 d-block fs-4"></i>
-                                Không có voucher nào phù hợp bộ lọc hiện tại.
+                            <td colspan="11" class="text-center py-5">
+                                <EmptyState
+                                    title="Không có voucher"
+                                    message="Không có voucher nào phù hợp với bộ lọc hiện tại."
+                                >
+                                    <template #icon>
+                                        <i class="bi bi-ticket-perforated"></i>
+                                    </template>
+                                </EmptyState>
                             </td>
                         </tr>
                         <tr v-for="voucher in items" :key="voucher.id">
@@ -408,7 +458,7 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {computed, onMounted, onUnmounted, reactive, ref, watch, nextTick} from 'vue'
 import {Form, Field, ErrorMessage} from 'vee-validate'
 import * as yup from 'yup'
 import {Modal} from 'bootstrap'
@@ -419,6 +469,8 @@ import {VOUCHER_TYPES} from '@/api/voucherService'
 import {formatCurrency, formatDateTime, formatNumber} from '@/utils/formatters'
 import Pagination from '@/components/common/Pagination.vue'
 import {useAuthStore} from '@/store/auth'
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const voucherStore = useVoucherStore()
 const authStore = useAuthStore()
@@ -696,20 +748,36 @@ const handleToggle = async (voucher) => {
     }
 }
 
-const handleDelete = async (voucher) => {
+const deleteTarget = ref(null)
+const deleteModalElement = ref(null)
+let deleteModalInstance = null
+
+const handleDelete = (voucher) => {
     if (voucher.timesUsed > 0) {
         toast.warning('Voucher đã có lượt sử dụng, không thể xoá.')
         return
     }
-    if (!window.confirm(`Bạn có chắc chắn muốn xoá voucher "${voucher.code}"?`)) {
-        return
-    }
+    deleteTarget.value = voucher
+    nextTick(() => {
+        deleteModalInstance?.show()
+    })
+}
+
+const handleDeleteConfirm = async () => {
+    if (!deleteTarget.value) return
     try {
-        await voucherStore.remove(voucher.id)
+        await voucherStore.remove(deleteTarget.value.id)
         toast.success('Đã xoá voucher.')
+        deleteModalInstance?.hide()
+        deleteTarget.value = null
     } catch (err) {
         toast.error(normalizeMessage(err))
     }
+}
+
+const closeDeleteModal = () => {
+    deleteModalInstance?.hide()
+    deleteTarget.value = null
 }
 
 const exportCurrentPage = () => {
@@ -754,11 +822,15 @@ onMounted(() => {
     if (modalElement.value) {
         bsModal.value = new Modal(modalElement.value, {backdrop: 'static'})
     }
+    if (deleteModalElement.value) {
+        deleteModalInstance = new Modal(deleteModalElement.value, {backdrop: 'static'})
+    }
     initialize()
 })
 
 onUnmounted(() => {
     bsModal.value?.dispose()
+    deleteModalInstance?.dispose()
 })
 </script>
 
@@ -766,26 +838,64 @@ onUnmounted(() => {
 .vouchers-page {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding-bottom: 3rem;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-body label) {
+    font-weight: var(--font-weight-semibold);
 }
 
 /* Header Styles */
 .vouchers-header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-6);
 }
 
 .vouchers-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
     flex-wrap: wrap;
 }
 
@@ -797,31 +907,32 @@ onUnmounted(() => {
 .vouchers-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
     justify-content: flex-end;
 }
 
 .page-title {
-    font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .page-subtitle {
     margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 /* Action Buttons */
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
     align-items: center;
 }
@@ -829,51 +940,51 @@ onUnmounted(() => {
 .action-button {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
     border: 1px solid;
-    background: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
+    background: var(--color-card);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
     white-space: nowrap;
 }
 
 .action-button--primary {
-    border-color: #a855f7;
-    color: #a855f7;
-    background: #ffffff;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
 }
 
 .action-button--primary:hover {
-    background: #faf5ff;
-    border-color: #9333ea;
-    color: #9333ea;
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .action-button--warning {
-    border-color: #f59e0b;
-    color: #f59e0b;
-    background: #ffffff;
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+    background: var(--color-card);
 }
 
 .action-button--warning:hover {
-    background: #fffbeb;
-    border-color: #d97706;
-    color: #d97706;
+    background: var(--color-warning-soft);
+    border-color: var(--color-warning);
+    color: var(--color-warning);
 }
 
 .action-button--danger {
-    border-color: #ef4444;
-    color: #ef4444;
-    background: #ffffff;
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: var(--color-card);
 }
 
 .action-button--danger:hover {
-    background: #fef2f2;
-    border-color: #dc2626;
-    color: #dc2626;
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
 .action-button:disabled {
@@ -884,64 +995,71 @@ onUnmounted(() => {
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .summary-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    border-radius: 16px;
+    gap: var(--spacing-4);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    padding: 1rem 1.25rem;
-    box-shadow: var(--shadow-soft-sm);
+    padding: var(--spacing-4) var(--spacing-5);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .summary-icon {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     display: grid;
     place-items: center;
-    font-size: 1.4rem;
+    font-size: var(--font-size-xl);
 }
 
 .summary-label {
-    margin-bottom: 0.15rem;
-    font-size: 0.85rem;
+    margin-bottom: var(--spacing-0);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
 }
 
 .summary-value {
-    font-weight: 700;
-    font-size: 1.4rem;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
     color: var(--color-heading);
 }
 
 
 .filter-grid {
     display: grid;
-    gap: 1rem;
+    gap: var(--spacing-4);
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .filter-item .form-label {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
 }
 
 .filter-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: flex-end;
 }
 
 .table-card {
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-md);
     overflow: hidden;
 }
 
@@ -955,10 +1073,10 @@ onUnmounted(() => {
 
 .table-card th {
     border-bottom: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
 }
 
 .table-card td {
@@ -969,9 +1087,9 @@ onUnmounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1.5rem 1.25rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.25);
+    gap: var(--spacing-4);
+    padding: var(--spacing-3) var(--spacing-6) var(--spacing-5);
+    border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 992px) {

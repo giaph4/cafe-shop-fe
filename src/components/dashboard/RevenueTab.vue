@@ -1,42 +1,53 @@
 <template>
     <div class="revenue">
         <div class="revenue__grid">
-            <div class="card chart-card">
+            <div class="card">
                 <div class="card-header">
-                    <h5>Doanh thu theo ngày</h5>
-                    <p>Trực quan hóa doanh thu trong giai đoạn đã chọn</p>
+                    <div>
+                        <h5 class="card-title">Doanh thu theo ngày</h5>
+                        <p class="card-subtitle">Trực quan hóa doanh thu trong giai đoạn đã chọn</p>
+                    </div>
                 </div>
-                <apexchart 
-                    v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
-                    type="area" 
-                    height="320" 
-                    :series="revenueSeries" 
-                    :options="revenueOptions"
-                />
-                <EmptyState v-else message="Chưa có dữ liệu doanh thu"/>
+                <div class="card-body">
+                    <apexchart 
+                        v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
+                        type="area" 
+                        height="320" 
+                        :series="revenueSeries" 
+                        :options="revenueOptions"
+                    />
+                    <EmptyState v-else message="Chưa có dữ liệu doanh thu"/>
+                </div>
             </div>
 
-            <div class="card chart-card">
+            <div class="card">
                 <div class="card-header">
-                    <h5>Lợi nhuận</h5>
-                    <p>So sánh doanh thu và lợi nhuận trong kỳ</p>
+                    <div>
+                        <h5 class="card-title">Lợi nhuận</h5>
+                        <p class="card-subtitle">So sánh doanh thu và lợi nhuận trong kỳ</p>
+                    </div>
                 </div>
-                <apexchart 
-                    v-if="isMounted && profitSeries && profitSeries.length > 0 && profitOptions"
-                    type="bar" 
-                    height="320" 
-                    :series="profitSeries" 
-                    :options="profitOptions"
-                />
-                <EmptyState v-else message="Chưa có dữ liệu lợi nhuận"/>
+                <div class="card-body">
+                    <apexchart 
+                        v-if="isMounted && profitSeries && profitSeries.length > 0 && profitOptions"
+                        type="bar" 
+                        height="320" 
+                        :series="profitSeries" 
+                        :options="profitOptions"
+                    />
+                    <EmptyState v-else message="Chưa có dữ liệu lợi nhuận"/>
+                </div>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h5>Doanh thu theo danh mục</h5>
+                <div>
+                    <h5 class="card-title">Doanh thu theo danh mục</h5>
+                </div>
             </div>
-            <div class="table-responsive">
+            <div class="card-body">
+                <div class="table-responsive">
                 <table class="table">
                     <thead>
                     <tr>
@@ -62,30 +73,38 @@
                     </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
         <div class="revenue__grid">
             <div class="card">
                 <div class="card-header">
-                    <h5>Doanh thu theo khung giờ ({{ hourlySalesTitle }})</h5>
+                    <div>
+                        <h5 class="card-title">Doanh thu theo khung giờ ({{ hourlySalesTitle }})</h5>
+                    </div>
                 </div>
-                <div class="hourly-grid" v-if="hourlySales?.length">
+                <div class="card-body">
+                    <div class="hourly-grid" v-if="hourlySales?.length">
                     <div v-for="bucket in hourlySales" :key="bucket.hour" class="hourly-card">
                         <span class="hourly-card__hour">{{ bucket.hour }}h</span>
                         <strong>{{ formatCurrency(bucket.revenue) }}</strong>
                         <span class="hourly-card__orders">{{ bucket.orderCount }} đơn</span>
                     </div>
+                    </div>
+                    <EmptyState v-else message="Chưa có thống kê theo giờ"/>
                 </div>
-                <EmptyState v-else message="Chưa có thống kê theo giờ"/>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <h5>Sản phẩm bán chạy</h5>
-                    <p>Tổng kết doanh số theo sản phẩm</p>
+                    <div>
+                        <h5 class="card-title">Sản phẩm bán chạy</h5>
+                        <p class="card-subtitle">Tổng kết doanh số theo sản phẩm</p>
+                    </div>
                 </div>
-                <div v-if="productSummary" class="product-summary">
+                <div class="card-body">
+                    <div v-if="productSummary" class="product-summary">
                     <div class="product-summary__headline">
                         <div>
                             <span>Tổng số lượng</span>
@@ -105,8 +124,9 @@
                             </div>
                         </div>
                     </div>
+                    </div>
+                    <EmptyState v-else message="Chưa có dữ liệu sản phẩm"/>
                 </div>
-                <EmptyState v-else message="Chưa có dữ liệu sản phẩm"/>
             </div>
         </div>
     </div>
@@ -158,9 +178,10 @@ const topProducts = computed(() => props.productSummary?.products?.slice(0, 5) ?
     gap: 1.5rem;
 }
 
-.chart-card .card-header {
-    border-bottom: none;
-    margin-bottom: 1rem;
+.card-header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .hourly-grid {

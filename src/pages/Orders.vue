@@ -510,20 +510,19 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .orders-header {
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
 }
 
 .orders-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .orders-header__title-section {
@@ -532,24 +531,26 @@ onBeforeUnmount(() => {
 }
 
 .orders-header__title {
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .orders-header__subtitle {
     margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-normal);
 }
 
 .orders-header__actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -557,14 +558,14 @@ onBeforeUnmount(() => {
 .orders-header__actions .form-check {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     margin-bottom: 0;
 }
 
 .orders-header__actions .form-check-label {
     margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
     white-space: nowrap;
 }
 

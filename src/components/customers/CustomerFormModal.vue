@@ -173,8 +173,4 @@ onBeforeUnmount(() => {
 defineExpose({ show, hide })
 </script>
 
-<style scoped>
-.modal-title {
-    font-weight: 700;
-}
-</style>
+<!-- Styles đã được chuẩn hóa trong components.scss -->

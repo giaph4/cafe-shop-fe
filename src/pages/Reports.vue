@@ -94,12 +94,13 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading" text="Đang tải dữ liệu báo cáo..." />
+                <ErrorState
+                    v-else-if="error"
+                    :message="error"
+                    :show-retry="true"
+                    :retry-handler="fetchReports"
+                />
                 <div v-else class="tab-content">
                     <SummaryTab
                         v-if="activeTab === 'summary'"
@@ -209,6 +210,8 @@ import {
     getTotalImportedIngredientCost
 } from '@/api/reportService'
 import { showError, showSuccess } from '@/utils/toast'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 const today = () => new Date().toISOString().split('T')[0]
 const formatDate = (date) => date.toISOString().split('T')[0]
@@ -642,9 +645,9 @@ const fetchBestSellers = async () => {
 }
 
 const handleExportAll = () => {
-    if (isExportingAll.value) return
+    if (exportingAll.value) return
     try {
-        isExportingAll.value = true
+        exportingAll.value = true
         const payload = {
             generatedAt: new Date().toISOString(),
             filters: { ...filters },
@@ -685,7 +688,7 @@ const handleExportAll = () => {
     } catch (err) {
         showError(err?.message || 'Không thể tải dữ liệu báo cáo.')
     } finally {
-        isExportingAll.value = false
+        exportingAll.value = false
     }
 }
 
@@ -831,100 +834,106 @@ onBeforeUnmount(() => {
 /* Page-specific styles only - Global styles (.page-container) are in components.scss */
 
 .card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
     border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-6) var(--spacing-8);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
+    box-shadow: var(--shadow-md);
 }
 
 .page-title {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .page-subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 .filter-card,
 .tabs-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
     background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
 }
 
 .insights-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.24);
-    background: linear-gradient(160deg, rgba(248, 250, 252, 0.92), rgba(226, 232, 240, 0.6));
-    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(160deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
 }
 
 .insights-grid {
     display: grid;
-    gap: 1rem;
+    gap: var(--spacing-4);
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
 .insight-card {
     display: flex;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 16px;
-    background: #fff;
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .insight-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 28px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .insight-card__icon {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    color: #1e293b;
-    background: rgba(226, 232, 240, 0.65);
+    font-size: var(--font-size-xl);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
 }
 
 .insight-card__meta {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: var(--spacing-0);
 }
 
 .insight-card__title {
-    font-size: 0.85rem;
-    color: #475569;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 600;
+    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
 }
 
 .insight-card__value {
-    font-size: 1.3rem;
-    color: #0f172a;
-    font-weight: 700;
+    font-size: var(--font-size-lg);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-bold);
 }
 
 .insight-card__detail {
-    font-size: 0.85rem;
-    color: #64748b;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
 }
 
 .insight-card.accent-primary .insight-card__icon {
@@ -966,31 +975,38 @@ onBeforeUnmount(() => {
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .reports-tabs .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-5);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
+    transition: all var(--transition-fast);
+}
+
+.reports-tabs .nav-link:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-    color: #fff;
-}
-
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-primary-contrast);
+    box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 768px) {
     .card-shadow {
-        padding: 1.25rem;
+        padding: var(--spacing-5);
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .insights-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     }
 }
 </style>

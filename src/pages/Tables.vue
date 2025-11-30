@@ -8,32 +8,114 @@
                             <h5 class="modal-title">{{ isEditing ? 'Cập nhật bàn' : 'Thêm bàn mới' }}</h5>
                             <p class="mb-0 text-muted small">Điền đầy đủ thông tin theo quy định backend.</p>
                         </div>
-                        <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            @click="closeModal"
+                            :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                            aria-label="Close"
+                        ></button>
                     </div>
 
                     <Form @submit="handleSubmit" :validation-schema="tableSchema" v-slot="{ errors, isSubmitting }">
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label class="form-label">Tên bàn <span class="text-danger">*</span></label>
-                                <Field name="name" type="text" v-model="formData.name" class="form-control"
-                                       :class="{'is-invalid': errors.name}" autocomplete="off" maxlength="60"/>
+                                <label class="form-label fw-semibold">Tên bàn <span class="text-danger">*</span></label>
+                                <Field
+                                    name="name"
+                                    type="text"
+                                    v-model="formData.name"
+                                    class="form-control"
+                                    :class="{'is-invalid': errors.name}"
+                                    autocomplete="off"
+                                    maxlength="60"
+                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                                />
                                 <ErrorMessage name="name" class="invalid-feedback"/>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Sức chứa (số chỗ) <span class="text-danger">*</span></label>
-                                <Field name="capacity" type="number" v-model="formData.capacity" class="form-control"
-                                       :class="{'is-invalid': errors.capacity}" min="1" max="50" step="1"/>
+                                <label class="form-label fw-semibold">Sức chứa (số chỗ) <span class="text-danger">*</span></label>
+                                <Field
+                                    name="capacity"
+                                    type="number"
+                                    v-model="formData.capacity"
+                                    class="form-control"
+                                    :class="{'is-invalid': errors.capacity}"
+                                    min="1"
+                                    max="50"
+                                    step="1"
+                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                                />
                                 <ErrorMessage name="capacity" class="invalid-feedback"/>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="isSubmitting">Hủy</button>
-                            <button type="submit" class="btn btn-primary" :disabled="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value">
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                @click="closeModal"
+                                :disabled="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value"
+                            >
                                 <span v-if="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
-                                Lưu thay đổi
+                                {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
                             </button>
                         </div>
                     </Form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="deleteTableModal" tabindex="-1" ref="deleteModalElement">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title">Xóa bàn</h5>
+                            <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="deleteMutation.isPending.value" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Bạn có chắc chắn muốn xóa bàn này không?</p>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <strong class="text-muted d-block mb-1">Tên bàn:</strong>
+                                    <span>{{ deleteTarget?.name || '—' }}</span>
+                                </div>
+                                <div class="mb-0">
+                                    <strong class="text-muted d-block mb-1">Sức chứa:</strong>
+                                    <span>{{ deleteTarget?.capacity || '—' }} chỗ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            @click="closeDeleteModal"
+                            :disabled="deleteMutation.isPending.value"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            @click="handleDeleteConfirm"
+                            :disabled="deleteMutation.isPending.value"
+                        >
+                            <span v-if="deleteMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
+                            Xóa bàn
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,18 +173,30 @@
             </div>
         </div>
 
-        <div v-if="isLoading" class="state-block">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2">Đang tải danh sách bàn...</p>
-        </div>
-
-        <div v-else-if="isError" class="state-block state-error">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <p>Không thể tải dữ liệu bàn: {{ error?.message || 'Vui lòng thử lại sau.' }}</p>
-        </div>
-
-        <div v-else>
-            <div class="tables-grid">
+        <LoadingState v-if="isLoading" text="Đang tải danh sách bàn..." />
+        <ErrorState
+            v-else-if="isError"
+            :message="error?.message || 'Không thể tải dữ liệu bàn. Vui lòng thử lại sau.'"
+            :show-retry="true"
+            :retry-handler="() => queryClient.invalidateQueries(['tables'])"
+        />
+        <template v-else>
+            <EmptyState
+                v-if="sortedTables.length === 0"
+                title="Không tìm thấy bàn"
+                :message="hasActiveFilters ? 'Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.' : 'Chưa có bàn nào. Hãy tạo bàn đầu tiên.'"
+            >
+                <template #icon>
+                    <i class="bi bi-table"></i>
+                </template>
+                <template v-if="!hasActiveFilters && canManage" #action>
+                    <button class="btn btn-primary" @click="openModal()">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Tạo bàn đầu tiên
+                    </button>
+                </template>
+            </EmptyState>
+            <div v-else class="tables-grid">
                 <article v-for="table in sortedTables" :key="table.id" class="table-card" :class="getStatusVariant(table.status)">
                     <header class="table-card__header">
                         <div>
@@ -110,8 +204,12 @@
                             <p class="caption">ID: {{ table.id }}</p>
                         </div>
                         <div class="actions" v-if="canManage">
-                            <button class="btn btn-icon" type="button" @click="openModal(table)"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-icon text-danger" type="button" @click="confirmDelete(table)"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-icon" type="button" @click="openModal(table)" title="Chỉnh sửa">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-icon btn-icon--danger" type="button" @click="confirmDelete(table)" title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </header>
 
@@ -137,17 +235,12 @@
                     </footer>
                 </article>
             </div>
-
-            <div v-if="sortedTables.length === 0" class="state-block">
-                <i class="bi bi-search"></i>
-                <p>Không tìm thấy bàn phù hợp với bộ lọc hiện tại.</p>
-            </div>
-        </div>
+        </template>
     </section>
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue'
+import {computed, onMounted, onUnmounted, reactive, ref, nextTick} from 'vue'
 import {useQuery, useMutation, useQueryClient} from '@tanstack/vue-query'
 import {Modal} from 'bootstrap'
 import {Form, Field, ErrorMessage} from 'vee-validate'
@@ -164,6 +257,9 @@ import {
     TABLE_STATUS_OPTIONS,
     buildTablePayload
 } from '@/api/tableService'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const authStore = useAuthStore()
 const {userRoles} = storeToRefs(authStore)
@@ -333,11 +429,32 @@ const handleStatusChange = (table, newStatus) => {
     statusMutation.mutate({id: table.id, status: newStatus})
 }
 
+const deleteTarget = ref(null)
+const deleteModalElement = ref(null)
+let deleteModalInstance = null
+
+const hasActiveFilters = computed(() => {
+    return Boolean(filterState.name || filterState.status || filterState.capacity)
+})
+
 const confirmDelete = (table) => {
     if (!canManage.value) return
-    if (window.confirm(`Bạn có chắc muốn xoá bàn "${table.name}"?`)) {
-        deleteMutation.mutate(table.id)
+    deleteTarget.value = table
+    nextTick(() => {
+        deleteModalInstance?.show()
+    })
+}
+
+const handleDeleteConfirm = () => {
+    if (deleteTarget.value) {
+        deleteMutation.mutate(deleteTarget.value.id)
+        deleteModalInstance?.hide()
     }
+}
+
+const closeDeleteModal = () => {
+    deleteModalInstance?.hide()
+    deleteTarget.value = null
 }
 
 const getStatusMeta = (status) => {
@@ -389,10 +506,14 @@ onMounted(() => {
     if (modalElement.value) {
         bsModal.value = new Modal(modalElement.value, {backdrop: 'static'})
     }
+    if (deleteModalElement.value) {
+        deleteModalInstance = new Modal(deleteModalElement.value, {backdrop: 'static'})
+    }
 })
 
 onUnmounted(() => {
     bsModal.value?.dispose()
+    deleteModalInstance?.dispose()
 })
 
 const getStatusMetaRef = getStatusMeta
@@ -403,37 +524,40 @@ const getStatusMetaRef = getStatusMeta
 .tables-page {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding-bottom: 3rem;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
 }
 
 .tables-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-radius: 20px;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-md);
 }
 
 .tables-header h2 {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 
 .filter-grid {
     display: grid;
-    gap: 1rem;
+    gap: var(--spacing-4);
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .filter-item .form-label {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
 }
 
@@ -445,113 +569,117 @@ const getStatusMetaRef = getStatusMeta
 .tables-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.25rem;
+    gap: var(--spacing-5);
 }
 
 .table-card {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft-sm);
-    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-5);
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    gap: var(--spacing-5);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .table-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-medium);
+    box-shadow: var(--shadow-md);
 }
 
 .table-card__header {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.22);
-    padding-bottom: 0.75rem;
+    gap: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border-soft);
+    padding-bottom: var(--spacing-3);
 }
 
 .table-card__header h3 {
-    margin-bottom: 0.1rem;
-    font-size: 1.1rem;
-    font-weight: 700;
+    margin-bottom: var(--spacing-0);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
 }
 
 .table-card__header .caption {
     color: var(--color-text-muted);
-    font-size: 0.8rem;
+    font-size: var(--font-size-xs);
 }
 
 .table-card__body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .table-status-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    gap: var(--spacing-2);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
 }
 
 .table-capacity {
     display: inline-flex;
     align-items: baseline;
-    gap: 0.35rem;
-    font-size: 1.1rem;
+    gap: var(--spacing-1);
+    font-size: var(--font-size-lg);
     color: var(--color-heading);
 }
 
 .table-card__footer {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--spacing-1);
 }
 
 .table-card__footer .form-label {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     color: var(--color-text-muted);
 }
 
 .actions {
     display: inline-flex;
-    gap: 0.35rem;
+    gap: var(--spacing-1);
 }
 
 .btn-icon {
     width: 34px;
     height: 34px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     border: 1px solid transparent;
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
     color: var(--color-text);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.18s ease;
+    transition: all var(--transition-fast);
+    cursor: pointer;
 }
 
 .btn-icon:hover {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.35);
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary-border-soft);
+    color: var(--color-primary);
 }
 
-.state-block i {
-    font-size: 2rem;
+.btn-icon--danger {
+    color: var(--color-danger);
 }
 
-.state-error {
-    color: #dc2626;
+.btn-icon--danger:hover {
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger-border-soft);
+    color: var(--color-danger);
 }
 
 .status-success {
@@ -561,7 +689,7 @@ const getStatusMetaRef = getStatusMeta
 
 .status-success .table-status-chip {
     background: rgba(34, 197, 94, 0.18);
-    color: #166534;
+    color: var(--color-success);
 }
 
 .status-warning {
@@ -571,7 +699,7 @@ const getStatusMetaRef = getStatusMeta
 
 .status-warning .table-status-chip {
     background: rgba(234, 179, 8, 0.18);
-    color: #92400e;
+    color: var(--color-warning);
 }
 
 .status-danger {
@@ -581,7 +709,7 @@ const getStatusMetaRef = getStatusMeta
 
 .status-danger .table-status-chip {
     background: rgba(248, 113, 113, 0.22);
-    color: #b91c1c;
+    color: var(--color-danger);
 }
 
 .status-info {
@@ -595,13 +723,13 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .status-neutral {
-    border-color: rgba(148, 163, 184, 0.35);
-    background: linear-gradient(170deg, rgba(148, 163, 184, 0.12), transparent);
+    border-color: var(--color-border-soft);
+    background: linear-gradient(170deg, var(--color-card-muted), transparent);
 }
 
 .status-neutral .table-status-chip {
-    background: rgba(148, 163, 184, 0.22);
-    color: #475569;
+    background: var(--color-card-muted);
+    color: var(--color-text-muted);
 }
 
 .dark-theme .tables-header,
@@ -627,6 +755,41 @@ const getStatusMetaRef = getStatusMeta
 .comfort-theme .table-status-chip {
     background: rgba(95, 111, 148, 0.16);
     color: #374151;
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .text-muted.small) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 @media (max-width: 768px) {

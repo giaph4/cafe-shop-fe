@@ -373,20 +373,21 @@ defineExpose({show, hide, setTab})
 
 .tab-btn {
     flex: 1;
-    border: 1px solid rgba(228, 220, 211, 0.8);
-    background: rgba(248, 246, 244, 0.7);
-    color: #5a4d3a;
-    font-weight: 500;
-    border-radius: 12px;
-    padding: 0.6rem 1rem;
-    transition: all 0.2s ease;
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    color: var(--color-text);
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-3) var(--spacing-4);
+    transition: all var(--transition-base);
+    font-size: var(--font-size-base);
 }
 
 .tab-btn.active {
-    background: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     border-color: var(--color-primary);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(102, 92, 255, 0.25);
+    color: var(--color-text-inverse);
+    box-shadow: var(--shadow-md);
 }
 
 .tab-btn:disabled {
@@ -401,17 +402,17 @@ defineExpose({show, hide, setTab})
 .modal-body-scroll {
     max-height: 70vh;
     overflow: auto;
-    padding-right: 1.25rem;
+    padding-right: var(--spacing-5);
 }
 
 .image-uploader {
-    background: rgba(248, 246, 244, 0.7);
-    border: 1px dashed rgba(228, 220, 211, 0.8);
-    border-radius: 16px;
-    padding: 1rem;
+    background: var(--color-card-muted);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
 }
 
@@ -419,8 +420,9 @@ defineExpose({show, hide, setTab})
     width: 100%;
     height: 200px;
     object-fit: cover;
-    border-radius: 12px;
-    background: #fff;
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
 }
 
 .upload-btn {
@@ -428,13 +430,23 @@ defineExpose({show, hide, setTab})
     align-items: center;
     justify-content: center;
     width: 100%;
-    gap: 0.4rem;
-    border: 1px solid rgba(79, 70, 229, 0.3);
+    gap: var(--spacing-2);
+    border: 1px solid var(--color-primary);
     color: var(--color-primary);
-    padding: 0.45rem 0.85rem;
-    border-radius: 12px;
-    background: rgba(79, 70, 229, 0.08);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    background: var(--color-soft-primary);
     cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-base);
+}
+
+.upload-btn:hover {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .upload-btn input {

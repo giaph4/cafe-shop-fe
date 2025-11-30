@@ -22,15 +22,20 @@
                 </p>
             </header>
 
-            <div v-if="!order && !isCreatingNew" class="pos-cart__empty">
-                <div class="pos-cart__empty-icon">
+            <EmptyState
+                v-if="!order && !isCreatingNew"
+                title="Chưa có đơn hàng"
+                message="Chưa có đơn hàng nào cho bàn này."
+            >
+                <template #icon>
                     <i class="bi bi-plus-square"></i>
-                </div>
-                <p class="pos-cart__empty-text">Chưa có đơn hàng nào cho bàn này.</p>
-                <button class="btn btn-primary pos-cart__create-btn" @click="createNewOrder">
-                    Tạo đơn hàng mới
-                </button>
-            </div>
+                </template>
+                <template #action>
+                    <button class="btn btn-primary" @click="createNewOrder">
+                        Tạo đơn hàng mới
+                    </button>
+                </template>
+            </EmptyState>
 
             <template v-else>
                 <section class="pos-cart__items" v-if="!cartIsEmpty">
@@ -93,10 +98,15 @@
                         <span class="pos-cart__item-total">{{ formatCurrencySafe(item.priceAtOrder * item.quantity) }}</span>
                     </div>
                 </section>
-                <div v-else class="pos-cart__empty">
-                    <i class="bi bi-basket fs-1 text-muted"></i>
-                    <p class="mb-0">Giỏ hàng đang trống. Vui lòng chọn sản phẩm.</p>
-                </div>
+                <EmptyState
+                    v-else
+                    title="Giỏ hàng trống"
+                    message="Giỏ hàng đang trống. Vui lòng chọn sản phẩm."
+                >
+                    <template #icon>
+                        <i class="bi bi-basket"></i>
+                    </template>
+                </EmptyState>
 
                 <section class="pos-cart__customer">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -169,6 +179,10 @@
                     <div class="pos-cart__summary-row" v-if="showDiscountRow">
                         <span>Giảm giá</span>
                         <span>-{{ formatCurrencySafe(discountAmount) }}</span>
+                    </div>
+                    <div class="pos-cart__summary-row" v-if="showTipRow">
+                        <span class="text-success">Tiền típ</span>
+                        <span class="text-success">+{{ formatCurrencySafe(tipAmount) }}</span>
                     </div>
                     <div class="pos-cart__summary-divider"></div>
                     <div class="pos-cart__summary-row pos-cart__summary-row--total">
@@ -293,6 +307,7 @@ import { checkVoucher } from '@/api/voucherService.js'
 import { formatCurrency } from '@/utils/formatters.js'
 import { toast } from 'vue3-toastify'
 import PosPaymentModal from './PosPaymentModal.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     table: Object,
@@ -497,13 +512,19 @@ const discountAmount = computed(() => {
     return Number.isFinite(discount) ? Math.max(discount, 0) : 0
 })
 
+const tipAmount = computed(() => {
+    const tip = Number(localOrder.value.tipAmount)
+    return Number.isFinite(tip) ? Math.max(tip, 0) : 0
+})
+
 const totalAmount = computed(() => {
     // Always calculate from local items for real-time updates
     const items = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
     
     // If we have local items, always calculate from them
     if (items.length > 0) {
-        return Math.max(subTotal.value - discountAmount.value, 0)
+        const amountAfterDiscount = Math.max(subTotal.value - discountAmount.value, 0)
+        return Math.max(amountAfterDiscount + tipAmount.value, 0)
     }
     
     // Only use backend value if no local items (for initial load)
@@ -512,7 +533,8 @@ const totalAmount = computed(() => {
         return Math.max(backendTotal, 0)
     }
     
-    return Math.max(subTotal.value - discountAmount.value, 0)
+    const amountAfterDiscount = Math.max(subTotal.value - discountAmount.value, 0)
+    return Math.max(amountAfterDiscount + tipAmount.value, 0)
 })
 
 const hasVoucherApplied = computed(() => Boolean(localOrder.value.voucherCode))
@@ -522,6 +544,7 @@ const cartIsEmpty = computed(() => {
     return !Array.isArray(items) || items.length === 0
 })
 const showDiscountRow = computed(() => discountAmount.value > 0)
+const showTipRow = computed(() => tipAmount.value > 0)
 
 const showSelectTableButton = computed(() => !props.table && props.viewIntent !== 'takeaway' && !cartIsEmpty.value)
 
@@ -844,23 +867,41 @@ const processPayment = () => {
     paymentModalRef.value?.show()
 }
 
-const confirmPayment = async ({ orderId, paymentMethod } = {}) => {
+const confirmPayment = async ({ orderId, paymentMethod, tipAmount: tip } = {}) => {
     if (!orderId) {
         toast.error('Thiếu thông tin đơn hàng để thanh toán.')
         return
     }
+    
     try {
         loadingAction.value = 'pay'
+        
+        // Xây dựng payment data
         const paymentData = {
             paymentMethod: paymentMethod || 'CASH',
         }
+        
+        // Thêm customerId nếu có
         if (localOrder.value.customerId) {
             paymentData.customerId = localOrder.value.customerId
         }
+        
+        // Thêm tipAmount nếu có (chỉ gửi khi > 0)
+        const tipValue = Number(tip) || 0
+        if (tipValue > 0) {
+            paymentData.tipAmount = tipValue
+        }
+        
+        // Thêm voucherCode nếu có
+        if (localOrder.value.voucherCode) {
+            paymentData.voucherCode = localOrder.value.voucherCode
+        }
+        
         const updatedOrder = await orderService.processPayment({
             orderId,
             paymentData,
         })
+        
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
         paymentModalRef.value?.show()
         toast.success('Thanh toán thành công.')
@@ -1029,8 +1070,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 <style scoped>
 .pos-cart {
-    border-radius: 20px;
-    background: var(--color-card, #fff);
+    border-radius: var(--radius-xl);
+    background: var(--color-card);
 }
 
 .pos-cart__header {
@@ -1039,87 +1080,42 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     gap: 0.25rem;
 }
 
-.pos-cart__empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 3rem 1.5rem;
-    min-height: 200px;
-}
-
-.pos-cart__empty-icon {
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: rgba(99, 102, 241, 0.1);
-    margin-bottom: 1.5rem;
-}
-
-.pos-cart__empty-icon i {
-    font-size: 2rem;
-    color: var(--color-primary);
-}
-
-.pos-cart__empty-text {
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-.pos-cart__create-btn {
-    padding: 0.75rem 2rem;
-    font-weight: 600;
-    border-radius: 12px;
-    background: var(--color-primary);
-    border: none;
-    transition: all 0.2s ease;
-}
-
-.pos-cart__create-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-}
 
 .pos-cart__items {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .pos-cart__item {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
-    padding: 0.75rem 1rem;
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.7);
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-md);
+    background: var(--color-card-muted);
 }
 
 .pos-cart__item-info h6 {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .pos-cart__item-actions {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
 }
 
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: 0.125rem;
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-0);
+    background: var(--color-card-muted);
 }
 
 .quantity-btn {
@@ -1131,10 +1127,11 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     justify-content: center;
     border: none;
     background: transparent;
+    transition: background-color var(--transition-fast);
 }
 
 .quantity-btn:hover:not(:disabled) {
-    background: rgba(99, 102, 241, 0.1);
+    background: var(--color-primary-soft);
 }
 
 .quantity-input {
@@ -1142,46 +1139,46 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     text-align: center;
     border: none;
     background: transparent;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 0.25rem;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-1);
 }
 
 .quantity-input:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: -2px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .pos-cart__item-total {
-    font-weight: 600;
-    color: var(--color-heading, #1f2937);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
 }
 
 .pos-cart__summary {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-radius: 16px;
-    background: rgba(248, 250, 252, 0.75);
+    gap: var(--spacing-3);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-card-muted);
 }
 
 .pos-cart__summary-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
 }
 
 .pos-cart__summary-row--total {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
 }
 
 .pos-cart__summary-divider {
     height: 1px;
-    background: rgba(148, 163, 184, 0.35);
+    background: var(--color-border-soft);
 }
 
 .pos-cart__customer {
@@ -1203,11 +1200,11 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .pos-cart__customer-chip {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    background: rgba(59, 130, 246, 0.08);
-    border: 1px solid rgba(59, 130, 246, 0.18);
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-md);
+    background: var(--color-primary-soft);
+    border: 1px solid var(--color-primary-border-soft);
 }
 
 .pos-cart__voucher {
@@ -1217,19 +1214,19 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .pos-cart__actions {
     display: grid;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .status-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .status-pill--pending {

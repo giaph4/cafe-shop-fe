@@ -2,7 +2,7 @@
     <div class="layout" :class="{ 'layout--has-overlay': isMobile && sidebarStore.isMobileOpen }">
         <Sidebar :is-mobile="isMobile" />
 
-        <div class="layout__main">
+        <div class="layout__main" :style="{ marginLeft: mainMarginLeft }">
             <Topbar :is-sidebar-collapsed="sidebarToggleState" @toggleSidebar="toggleSidebar" />
             <main class="layout__content">
                 <router-view />
@@ -52,13 +52,21 @@ const toggleSidebar = () => {
 }
 
 const sidebarToggleState = computed(() => (isMobile.value ? !sidebarStore.isMobileOpen : sidebarStore.isCollapsed))
+
+const sidebarWidth = computed(() => {
+    if (isMobile.value) return 0
+    return sidebarStore.isCollapsed ? 76 : 278
+})
+
+const mainMarginLeft = computed(() => {
+    if (isMobile.value) return 0
+    return `calc(${sidebarWidth.value}px + 1.75rem + 1.5rem)`
+})
 </script>
 
 <style scoped>
 .layout {
     position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr;
     min-height: 100vh;
     color: var(--color-text);
 }
@@ -67,13 +75,13 @@ const sidebarToggleState = computed(() => (isMobile.value ? !sidebarStore.isMobi
     display: flex;
     flex-direction: column;
     position: relative;
-    padding: 1.75rem 2.25rem 2.5rem;
-    transition: padding 0.24s var(--transition-ease, cubic-bezier(0.4, 0, 0.2, 1));
+    padding: calc(72px + 1.5rem + 1.75rem) 2.25rem 2.5rem 0;
+    transition: margin-left 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.24s var(--transition-ease, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .layout__content {
     flex: 1;
-    margin-top: 1.75rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -107,7 +115,8 @@ const sidebarToggleState = computed(() => (isMobile.value ? !sidebarStore.isMobi
     }
 
     .layout__main {
-        padding: 1.5rem 1.4rem 2.25rem;
+        margin-left: 0 !important;
+        padding: calc(72px + 1.5rem + 1.75rem) 1.4rem 2.25rem;
     }
 }
 </style>

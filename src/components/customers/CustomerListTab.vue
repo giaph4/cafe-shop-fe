@@ -28,17 +28,18 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-        </div>
-        <div v-else-if="error" class="alert alert-warning mb-0">
-            {{ error }}
-        </div>
+        <LoadingState v-if="loading" />
+        <ErrorState v-else-if="error" :message="error" :show-retry="false" />
         <template v-else>
-            <div v-if="!customers.length" class="text-center py-5 text-muted">
-                <i class="bi bi-people fs-1 d-block mb-3"></i>
-                <p class="mb-0">Không có khách hàng nào phù hợp bộ lọc hiện tại.</p>
-            </div>
+            <EmptyState
+                v-if="!customers.length"
+                title="Không có khách hàng"
+                message="Không có khách hàng nào phù hợp bộ lọc hiện tại."
+            >
+                <template #icon>
+                    <i class="bi bi-people"></i>
+                </template>
+            </EmptyState>
             <div v-else class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -134,6 +135,9 @@
 <script setup>
 import { formatDateTime, formatNumber } from '@/utils/formatters'
 import Pagination from '@/components/common/Pagination.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     customers: {
@@ -200,7 +204,7 @@ const handleExport = () => {
 .action-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
 }
 
@@ -208,25 +212,25 @@ const handleExport = () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.75rem;
-    border-radius: 12px;
-    border: 1px solid rgba(99, 102, 241, 0.28);
-    background: var(--color-button-muted-bg, rgba(148, 163, 184, 0.08));
-    color: var(--color-primary, #4f46e5);
-    font-size: 0.85rem;
-    font-weight: 600;
+    gap: var(--spacing-1);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-primary-border-soft);
+    background: var(--color-card);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
     cursor: pointer;
     min-width: auto;
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-button-muted-hover, rgba(99, 102, 241, 0.12));
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.18);
+    background: var(--color-primary-soft);
+    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
-    border-color: rgba(99, 102, 241, 0.4);
+    border-color: var(--color-primary-border);
 }
 
 .action-button:disabled {
@@ -236,34 +240,34 @@ const handleExport = () => {
 }
 
 .action-button i {
-    font-size: 0.95rem;
+    font-size: var(--font-size-base);
 }
 
 .action-button--danger {
-    border-color: rgba(239, 68, 68, 0.32);
-    color: var(--color-danger, #ef4444);
-    background: rgba(239, 68, 68, 0.08);
+    border-color: var(--color-danger-border);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.5);
-    color: var(--color-danger, #ef4444);
-    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.18);
+    background: var(--color-danger);
+    color: var(--color-white);
+    border-color: var(--color-danger);
+    box-shadow: var(--shadow-md);
 }
 
 .bg-soft-primary {
-    background: rgba(99, 102, 241, 0.12);
-    color: var(--color-primary, #4f46e5);
-    font-weight: 600;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
 }
 
 @media (max-width: 768px) {
     .action-grid {
         flex-direction: column;
-        gap: 0.35rem;
+        gap: var(--spacing-1);
     }
     
     .action-button {

@@ -32,13 +32,11 @@
 
         <div class="card table-card">
             <div class="card-body">
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-                <div v-else-if="error" class="alert alert-warning d-flex align-items-center gap-2">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>{{ error }}</span>
-                </div>
+                <LoadingState v-if="loading" />
+                <ErrorState 
+                    v-else-if="error" 
+                    :message="error"
+                />
                 <EmptyState
                     v-else-if="!instances.length"
                     title="Chưa có ca làm nào"
@@ -119,6 +117,8 @@
 </template>
 
 <script setup>
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import { formatDate } from '@/utils/formatters'
@@ -192,13 +192,13 @@ const handleRemove = (instance) => emit('remove', instance)
 const handlePageChange = (page) => emit('page-change', page)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .filter-card,
 .table-card {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .action-buttons {

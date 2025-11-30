@@ -1,38 +1,41 @@
 <template>
     <div class="dashboard" data-aos="fade-up">
         <section class="dashboard__header">
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label>Khoảng thời gian</label>
-                    <div class="btn-group">
-                        <button
-                            v-for="preset in presets"
-                            :key="preset.value"
-                            class="btn btn-outline-primary"
-                            :class="{ active: rangePreset === preset.value }"
-                            @click="handlePresetClick(preset.value)"
-                        >
-                            {{ preset.label }}
-                        </button>
-                    </div>
-                </div>
+            <div class="filter-card card">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-auto">
+                            <label class="form-label">Khoảng thời gian</label>
+                            <div class="btn-group">
+                                <button
+                                    v-for="preset in presets"
+                                    :key="preset.value"
+                                    class="btn btn-outline-primary"
+                                    :class="{ active: rangePreset === preset.value }"
+                                    @click="handlePresetClick(preset.value)"
+                                >
+                                    {{ preset.label }}
+                                </button>
+                            </div>
+                        </div>
 
-                <div class="filter-dates">
-                    <div>
-                        <label>Từ ngày</label>
-                        <input type="date" class="form-control" v-model="filters.startDate" @change="fetchData"/>
-                    </div>
-                    <div>
-                        <label>Đến ngày</label>
-                        <input type="date" class="form-control" v-model="filters.endDate" @change="fetchData"/>
-                    </div>
-                </div>
+                        <div class="col-md-auto">
+                            <label class="form-label">Từ ngày</label>
+                            <input type="date" class="form-control" v-model="filters.startDate" @change="fetchData"/>
+                        </div>
 
-                <div class="filter-actions">
-                    <button class="btn btn-primary" @click="fetchData">
-                        <i class="bi bi-arrow-clockwise me-2"></i>
-                        Cập nhật
-                    </button>
+                        <div class="col-md-auto">
+                            <label class="form-label">Đến ngày</label>
+                            <input type="date" class="form-control" v-model="filters.endDate" @change="fetchData"/>
+                        </div>
+
+                        <div class="col-md-auto">
+                            <button class="btn btn-primary" @click="fetchData">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Cập nhật
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -53,49 +56,44 @@
         </section>
 
         <section class="dashboard__content">
-            <div v-if="loading" class="dashboard__loading">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Đang tải...</span>
+            <LoadingState v-if="loading" />
+            <ErrorState 
+                v-else-if="error" 
+                :message="typeof error === 'string' ? error : 'Đã xảy ra lỗi khi tải dữ liệu'" 
+                @retry="fetchData"
+            />
+
+            <Transition v-else name="fade" mode="out-in">
+                <div :key="activeTab">
+                    <OverviewTab
+                        v-if="activeTab === 'overview'"
+                        :stats="stats"
+                        :revenue-series="revenueSeries"
+                        :revenue-options="revenueOptions"
+                        :payment-stats="paymentStats"
+                        :sales-comparison="salesComparison"
+                    />
+
+                    <RevenueTab
+                        v-else-if="activeTab === 'revenue'"
+                        :revenue-series="revenueSeries"
+                        :revenue-options="revenueOptions"
+                        :profit-series="profitSeries"
+                        :profit-options="profitOptions"
+                        :category-sales="categorySales"
+                        :hourly-sales="hourlySales"
+                        :product-summary="productSummary"
+                    />
+
+                    <CustomersTab
+                        v-else-if="activeTab === 'customers'"
+                        :top-customers="topCustomers"
+                        :staff-performance="staffPerformance"
+                        :total-expenses="totalExpenses"
+                        :total-imported-cost="totalImportedCost"
+                    />
                 </div>
-            </div>
-
-            <div v-else-if="error" class="alert alert-danger">
-                {{ error }}
-            </div>
-
-            <template v-else>
-                <Transition name="fade" mode="out-in">
-                    <div :key="activeTab">
-                        <OverviewTab
-                            v-if="activeTab === 'overview'"
-                            :stats="stats"
-                            :revenue-series="revenueSeries"
-                            :revenue-options="revenueOptions"
-                            :payment-stats="paymentStats"
-                            :sales-comparison="salesComparison"
-                        />
-
-                        <RevenueTab
-                            v-else-if="activeTab === 'revenue'"
-                            :revenue-series="revenueSeries"
-                            :revenue-options="revenueOptions"
-                            :profit-series="profitSeries"
-                            :profit-options="profitOptions"
-                            :category-sales="categorySales"
-                            :hourly-sales="hourlySales"
-                            :product-summary="productSummary"
-                        />
-
-                        <CustomersTab
-                            v-else-if="activeTab === 'customers'"
-                            :top-customers="topCustomers"
-                            :staff-performance="staffPerformance"
-                            :total-expenses="totalExpenses"
-                            :total-imported-cost="totalImportedCost"
-                        />
-                    </div>
-                </Transition>
-            </template>
+            </Transition>
         </section>
     </div>
 </template>
@@ -105,6 +103,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import OverviewTab from '@/components/dashboard/OverviewTab.vue'
 import RevenueTab from '@/components/dashboard/RevenueTab.vue'
 import CustomersTab from '@/components/dashboard/CustomersTab.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import {
     getDashboardStats,
     getRevenueByDate,
@@ -320,58 +320,7 @@ onBeforeUnmount(() => {
 }
 
 .dashboard__header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.filter-bar {
-    width: 100%;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-}
-
-.filter-group label {
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.btn-group {
-    display: flex;
-    gap: 0.6rem;
-}
-
-.btn-group .btn {
-    border-radius: 12px;
-    padding-inline: 1.25rem;
-}
-
-.btn-group .btn.active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-primary-contrast);
-}
-
-.filter-dates {
-    display: flex;
-    align-items: flex-end;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.filter-dates label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 0.35rem;
-}
-
-.filter-actions {
-    display: flex;
-    align-items: flex-end;
+    margin-bottom: 1.5rem;
 }
 
 .dashboard__tabs .tabs {
@@ -408,15 +357,12 @@ onBeforeUnmount(() => {
     color: var(--color-primary);
 }
 
-.dashboard__content {
-    min-height: 300px;
+.dashboard__tabs {
+    margin-bottom: 1.5rem;
 }
 
-.dashboard__loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 240px;
+.dashboard__content {
+    min-height: 300px;
 }
 
 .fade-enter-active,

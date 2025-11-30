@@ -80,21 +80,21 @@
                 >
                     <div class="d-flex flex-column gap-4">
                         <!-- User Info Display -->
-                        <div v-if="settingsStore.userProfile" class="d-flex align-items-center gap-3 p-3 bg-light rounded">
-                            <div class="avatar-container">
+                        <div v-if="settingsStore.userProfile" class="settings-modal__user-info">
+                            <div class="settings-modal__avatar">
                                 <img
                                     v-if="settingsStore.userProfile.avatarUrl"
                                     :src="settingsStore.userProfile.avatarUrl"
                                     alt="Avatar"
-                                    class="avatar-img"
+                                    class="settings-modal__avatar-img"
                                 />
-                                <div v-else class="avatar-placeholder">
+                                <div v-else class="settings-modal__avatar-placeholder">
                                     <i class="bi bi-person-circle"></i>
                                 </div>
                             </div>
-                            <div>
-                                <h6 class="mb-1">{{ settingsStore.userProfile.fullName || settingsStore.userProfile.username }}</h6>
-                                <small class="text-muted">{{ settingsStore.userProfile.email }}</small>
+                            <div class="settings-modal__user-details">
+                                <h6 class="settings-modal__user-name">{{ settingsStore.userProfile.fullName || settingsStore.userProfile.username }}</h6>
+                                <small class="settings-modal__user-email">{{ settingsStore.userProfile.email }}</small>
                             </div>
                         </div>
 
@@ -161,7 +161,7 @@
                     <div class="d-flex flex-column gap-4">
                         <div class="alert alert-info d-flex align-items-center gap-2">
                             <i class="bi bi-info-circle"></i>
-                            <span>Mật khẩu mới phải có ít nhất 8 ký tự</span>
+                            <span>Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số</span>
                         </div>
 
                         <div class="row g-3">
@@ -475,44 +475,45 @@ onMounted(() => {
 .settings-modal {
     // Animation cho modal mask (backdrop)
     :deep(.p-dialog-mask) {
-        animation: fadeIn 0.3s ease-out;
+        animation: fadeIn var(--transition-base);
     }
 
     // Animation cho dialog (modal content)
     :deep(.p-dialog) {
-        border-radius: 20px;
+        border-radius: var(--radius-xl);
         overflow: hidden;
-        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
-        background: #ffffff !important;
-        border: 1px solid #e5e7eb;
+        box-shadow: var(--shadow-2xl);
+        background: var(--color-card) !important;
+        border: 1px solid var(--color-border);
         opacity: 1 !important;
         display: flex !important;
         flex-direction: column !important;
-        animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: modalSlideIn var(--transition-smooth);
         transform-origin: center center;
     }
 
     :deep(.p-dialog-header) {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
         background-color: transparent !important;
-        color: white !important;
+        color: var(--color-white) !important;
         border-radius: 0;
-        padding: 1.5rem;
+        padding: var(--spacing-6);
         border-bottom: none;
 
         .p-dialog-title {
-            font-weight: 700;
-            font-size: 1.5rem;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-2xl);
+            line-height: var(--line-height-tight);
             margin: 0;
-            color: white !important;
+            color: var(--color-white) !important;
         }
 
         .p-dialog-header-icon {
-            color: white !important;
+            color: var(--color-white) !important;
             width: 2.5rem;
             height: 2.5rem;
-            border-radius: 8px;
-            transition: background-color 0.2s;
+            border-radius: var(--radius-md);
+            transition: background-color var(--transition-base);
 
             &:hover {
                 background: rgba(255, 255, 255, 0.2) !important;
@@ -521,47 +522,47 @@ onMounted(() => {
     }
 
     :deep(.p-dialog-content) {
-        padding: 1.5rem;
-        background: #ffffff !important;
+        padding: var(--spacing-6);
+        background: var(--color-card) !important;
     }
 
     :deep(.p-dialog-footer) {
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #e5e7eb;
+        padding: var(--spacing-4) var(--spacing-6);
+        border-top: 1px solid var(--color-border-soft);
         display: flex;
         justify-content: flex-end;
-        gap: 0.75rem;
-        background: #ffffff !important;
+        gap: var(--spacing-3);
+        background: var(--color-card) !important;
     }
 
     :deep(.p-tabview) {
         .p-tabview-nav {
-            border-bottom: 2px solid #e5e7eb;
-            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--color-border-soft);
+            margin-bottom: var(--spacing-6);
             background: transparent;
 
             li {
-                margin-right: 0.5rem;
+                margin-right: var(--spacing-2);
 
                 .p-tabview-nav-link {
-                    padding: 0.75rem 1.5rem;
-                    font-weight: 600;
-                    color: #6b7280;
+                    padding: var(--spacing-3) var(--spacing-6);
+                    font-weight: var(--font-weight-semibold);
+                    color: var(--color-text-muted);
                     border: none;
                     border-bottom: 3px solid transparent;
                     background: transparent;
-                    transition: all 0.2s;
-                    border-radius: 8px 8px 0 0;
+                    transition: all var(--transition-base);
+                    border-radius: var(--radius-md) var(--radius-md) 0 0;
 
                     &:hover {
-                        background: rgba(102, 126, 234, 0.08);
-                        color: #667eea;
+                        background: var(--color-primary-soft);
+                        color: var(--color-primary);
                     }
 
                     &.p-highlight {
-                        color: #667eea;
-                        border-bottom-color: #667eea;
-                        background: rgba(102, 126, 234, 0.1);
+                        color: var(--color-primary);
+                        border-bottom-color: var(--color-primary);
+                        background: var(--color-primary-soft);
                     }
                 }
             }
@@ -572,28 +573,55 @@ onMounted(() => {
         }
     }
 
-    .avatar-container {
+    .settings-modal__user-info {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-4);
+        padding: var(--spacing-4);
+        border-radius: var(--radius-lg);
+        background: var(--color-card-muted);
+        border: 1px solid var(--color-border-soft);
+    }
+
+    .settings-modal__avatar {
         width: 64px;
         height: 64px;
-        border-radius: 50%;
+        border-radius: var(--radius-full);
         overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f3f4f6;
-        border: 2px solid #e5e7eb;
+        background: var(--color-card-muted);
+        border: 2px solid var(--color-border);
         flex-shrink: 0;
+    }
 
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .settings-modal__avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-        .avatar-placeholder {
-            font-size: 2.5rem;
-            color: #9ca3af;
-        }
+    .settings-modal__avatar-placeholder {
+        font-size: 2.5rem;
+        color: var(--color-text-muted);
+    }
+
+    .settings-modal__user-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .settings-modal__user-name {
+        margin: 0 0 var(--spacing-1);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-heading);
+        font-size: var(--font-size-base);
+    }
+
+    .settings-modal__user-email {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-sm);
     }
 
     :deep(.p-inputswitch) {
@@ -601,21 +629,21 @@ onMounted(() => {
         height: 1.75rem;
 
         .p-inputswitch-slider {
-            background: #d1d5db;
-            border-radius: 30px;
-            transition: background-color 0.2s;
+            background: var(--color-border);
+            border-radius: var(--radius-full);
+            transition: background-color var(--transition-base);
 
             &:before {
-                background: white;
+                background: var(--color-white);
                 width: 1.25rem;
                 height: 1.25rem;
-                border-radius: 50%;
-                transition: transform 0.2s;
+                border-radius: var(--radius-full);
+                transition: transform var(--transition-base);
             }
         }
 
         &.p-inputswitch-checked .p-inputswitch-slider {
-            background: #667eea;
+            background: var(--color-primary);
 
             &:before {
                 transform: translateX(1.25rem);
@@ -631,40 +659,41 @@ onMounted(() => {
         }
 
         .p-dropdown-label {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background: white;
-            transition: all 0.2s;
+            padding: var(--spacing-2) var(--spacing-3);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-card);
+            transition: all var(--transition-base);
         }
 
         &.p-focus .p-dropdown-label {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 0.2rem var(--color-primary-border-soft);
         }
 
         .p-dropdown-panel {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-            margin-top: 0.25rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            margin-top: var(--spacing-1);
+            background: var(--color-card);
 
             .p-dropdown-items {
-                padding: 0.5rem;
+                padding: var(--spacing-2);
 
                 .p-dropdown-item {
-                    padding: 0.5rem 0.75rem;
-                    border-radius: 6px;
-                    transition: all 0.2s;
+                    padding: var(--spacing-2) var(--spacing-3);
+                    border-radius: var(--radius-sm);
+                    transition: all var(--transition-base);
 
                     &:hover {
-                        background: rgba(102, 126, 234, 0.1);
-                        color: #667eea;
+                        background: var(--color-primary-soft);
+                        color: var(--color-primary);
                     }
 
                     &.p-highlight {
-                        background: rgba(102, 126, 234, 0.15);
-                        color: #667eea;
+                        background: var(--color-primary-soft);
+                        color: var(--color-primary);
                     }
                 }
             }
@@ -672,26 +701,26 @@ onMounted(() => {
     }
 
     :deep(.p-button) {
-        padding: 0.625rem 1.5rem;
-        font-weight: 600;
-        border-radius: 8px;
-        transition: all 0.2s;
+        padding: var(--spacing-2) var(--spacing-6);
+        font-weight: var(--font-weight-semibold);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
         border: 1px solid transparent;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        gap: var(--spacing-2);
 
         &.p-button-primary {
-            background: #667eea;
-            border-color: #667eea;
-            color: white;
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: var(--color-white);
 
             &:hover:not(:disabled) {
-                background: #5568d3;
-                border-color: #5568d3;
+                background: var(--color-primary-dark);
+                border-color: var(--color-primary-dark);
                 transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                box-shadow: var(--shadow-md);
             }
 
             &:disabled {
@@ -701,29 +730,78 @@ onMounted(() => {
         }
 
         &.p-button-secondary {
-            background: white;
-            border-color: #d1d5db;
-            color: #374151;
+            background: var(--color-card);
+            border-color: var(--color-border);
+            color: var(--color-heading);
 
             &:hover:not(:disabled) {
-                background: #f9fafb;
-                border-color: #9ca3af;
+                background: var(--color-card-muted);
+                border-color: var(--color-border-soft);
             }
         }
 
         &.p-button-outlined {
             background: transparent;
-            border: 1px solid #d1d5db;
-            color: #374151;
+            border: 1px solid var(--color-border);
+            color: var(--color-heading);
 
             &:hover:not(:disabled) {
-                background: #f9fafb;
-                border-color: #9ca3af;
+                background: var(--color-card-muted);
+                border-color: var(--color-border-soft);
             }
         }
 
         .p-button-loading-icon {
-            margin-right: 0.5rem;
+            margin-right: var(--spacing-2);
+        }
+    }
+
+    // Responsive adjustments
+    @media (max-width: 768px) {
+        :deep(.p-dialog) {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            margin: var(--spacing-4);
+        }
+
+        :deep(.p-dialog-header) {
+            padding: var(--spacing-4);
+        }
+
+        :deep(.p-dialog-content) {
+            padding: var(--spacing-4);
+        }
+
+        :deep(.p-dialog-footer) {
+            padding: var(--spacing-3) var(--spacing-4);
+            flex-direction: column-reverse;
+
+            .p-button {
+                width: 100%;
+            }
+        }
+
+        :deep(.p-tabview-nav) {
+            flex-wrap: wrap;
+
+            li {
+                flex: 1;
+                min-width: 0;
+
+                .p-tabview-nav-link {
+                    padding: var(--spacing-2) var(--spacing-3);
+                    font-size: var(--font-size-sm);
+                }
+            }
+        }
+
+        .settings-modal__user-info {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .settings-modal__user-details {
+            text-align: center;
         }
     }
 }
@@ -751,11 +829,11 @@ onMounted(() => {
 
 // Animation khi đóng modal
 .settings-modal.p-dialog-mask.p-dialog-mask-leave-active {
-    animation: fadeOut 0.25s ease-in forwards;
+    animation: fadeOut var(--transition-fast) ease-in forwards;
 }
 
 .settings-modal.p-dialog.p-dialog-leave-active {
-    animation: modalSlideOut 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: modalSlideOut var(--transition-fast) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes fadeOut {

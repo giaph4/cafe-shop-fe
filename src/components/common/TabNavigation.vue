@@ -64,39 +64,47 @@ const handleTabClick = (tabKey) => {
 
 <style scoped>
 .tab-navigation {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-6);
 }
 
 .tab-navigation .nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     border-bottom: 2px solid var(--color-border-soft);
-    padding-bottom: 0.5rem;
+    padding-bottom: var(--spacing-2);
 }
 
 .tab-navigation .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-5);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
-    transition: all 0.2s ease;
+    background: var(--color-card-muted);
+    transition: all var(--transition-fast);
     border: none;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    gap: var(--spacing-2);
 }
 
 .tab-navigation .nav-link:hover:not(:disabled) {
     color: var(--color-primary);
-    background: rgba(99, 102, 241, 0.08);
+    background: var(--color-primary-soft);
+    transform: translateY(-1px);
 }
 
 .tab-navigation .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-    color: #fff;
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-primary-contrast);
+    box-shadow: var(--shadow-md);
+}
+
+.tab-navigation .nav-link.active:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
 }
 
 .tab-navigation .nav-link:disabled {
@@ -107,9 +115,10 @@ const handleTabClick = (tabKey) => {
 .tab-navigation .badge {
     background: rgba(255, 255, 255, 0.2);
     color: inherit;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 999px;
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-medium);
 }
 
 .tab-navigation .nav-link.active .badge {
@@ -119,12 +128,12 @@ const handleTabClick = (tabKey) => {
 /* Responsive */
 @media (max-width: 768px) {
     .tab-navigation .nav {
-        gap: 0.5rem;
+        gap: var(--spacing-2);
     }
     
     .tab-navigation .nav-link {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
+        padding: var(--spacing-2) var(--spacing-4);
+        font-size: var(--font-size-sm);
     }
 }
 </style>

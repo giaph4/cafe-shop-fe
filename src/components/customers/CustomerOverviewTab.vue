@@ -24,10 +24,15 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div v-if="recentCustomers.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            <p class="mb-0">Chưa có khách hàng mới.</p>
-                        </div>
+                        <EmptyState
+                            v-if="recentCustomers.length === 0"
+                            title="Chưa có khách hàng mới"
+                            message="Chưa có khách hàng mới được tạo."
+                        >
+                            <template #icon>
+                                <i class="bi bi-inbox"></i>
+                            </template>
+                        </EmptyState>
                         <div v-else class="list-group list-group-flush">
                             <div
                                 v-for="customer in recentCustomers"
@@ -58,10 +63,15 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div v-if="topCustomers.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            <p class="mb-0">Chưa có khách hàng VIP.</p>
-                        </div>
+                        <EmptyState
+                            v-if="topCustomers.length === 0"
+                            title="Chưa có khách hàng VIP"
+                            message="Chưa có khách hàng VIP nào."
+                        >
+                            <template #icon>
+                                <i class="bi bi-trophy"></i>
+                            </template>
+                        </EmptyState>
                         <div v-else class="list-group list-group-flush">
                             <div
                                 v-for="(customer, index) in topCustomers"
@@ -91,6 +101,7 @@
 
 <script setup>
 import { formatDateTime, formatNumber } from '@/utils/formatters'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     stats: {
@@ -133,30 +144,30 @@ const getIconClass = (index) => {
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    border-radius: 16px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: var(--spacing-4);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.5rem;
-    color: #ffffff;
+    font-size: var(--font-size-xl);
+    color: var(--color-white);
     border: 2px solid;
 }
 
@@ -186,35 +197,35 @@ const getIconClass = (index) => {
 }
 
 .stat-label {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 0.25rem;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-1);
+    font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 
 .rank-badge {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     background: linear-gradient(122deg, rgba(99, 102, 241, 0.92) 0%, rgba(129, 140, 248, 0.88) 100%);
-    color: white;
+    color: var(--color-white);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 0.875rem;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
 }
 
 .list-group-item {
-    border-color: var(--color-border-soft, #e2e8f0);
-    padding: 1rem 0;
+    border-color: var(--color-border-soft);
+    padding: var(--spacing-4) 0;
 }
 
 .list-group-item:first-child {

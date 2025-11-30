@@ -268,20 +268,20 @@ defineExpose({show, hide})
 .detail-grid {
     display: grid;
     grid-template-columns: minmax(240px, 320px) 1fr;
-    gap: 2rem;
+    gap: var(--spacing-8);
 }
 
 .detail-media {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: var(--spacing-5);
 }
 
 .image-frame {
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     border: 1px solid var(--color-border);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
+    box-shadow: var(--shadow-lg);
 }
 
 .image-frame img {
@@ -293,103 +293,119 @@ defineExpose({show, hide})
 .status-block {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.9rem;
-    border-radius: 999px;
-    font-weight: 600;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
     width: fit-content;
 }
 
 .status-block--active {
-    background: rgba(16, 185, 129, 0.16);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .status-block--inactive {
-    background: rgba(248, 113, 113, 0.18);
+    background: rgba(239, 68, 68, 0.18);
     color: var(--color-danger);
 }
 
 .meta-list {
     display: grid;
-    gap: 0.75rem;
-    padding: 1.25rem;
-    border-radius: 16px;
-    border: 1px dashed rgba(148, 163, 184, 0.4);
+    gap: var(--spacing-3);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
     background: var(--color-card-muted);
 }
 
 .meta-list dt {
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--letter-spacing-wide);
     text-transform: uppercase;
     color: var(--color-text-subtle);
+    font-weight: var(--font-weight-semibold);
 }
 
 .meta-list dd {
     margin: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-size: var(--font-size-base);
 }
 
 .detail-content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .detail-header h3 {
-    font-weight: 700;
-    margin-bottom: 0.35rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    color: var(--color-heading);
 }
 
 .info-cards {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .info-card {
     background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: 16px;
-    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4) var(--spacing-5);
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: var(--spacing-2);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .info-card .label {
-    font-size: 0.8rem;
+    font-size: var(--font-size-xs);
     text-transform: uppercase;
     color: var(--color-text-subtle);
-    letter-spacing: 0.06em;
+    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
 }
 
 .info-card .value {
-    font-size: 1.2rem;
-    font-weight: 700;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 
 .recipe-section {
     border-top: 1px solid var(--color-border);
-    padding-top: 1.25rem;
+    padding-top: var(--spacing-5);
 }
 
 .empty-recipe {
-    border: 1px dashed rgba(148, 163, 184, 0.4);
-    border-radius: 16px;
-    padding: 1.75rem;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-8);
     text-align: center;
     color: var(--color-text-subtle);
     display: grid;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     justify-items: center;
+    background: var(--color-card-muted);
 }
 
 .empty-recipe i {
-    font-size: 2rem;
+    font-size: var(--font-size-3xl);
     color: var(--color-primary);
 }
 

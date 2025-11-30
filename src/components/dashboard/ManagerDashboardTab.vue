@@ -62,14 +62,16 @@
         <div class="row g-4 mb-4">
             <!-- Tổng quan Ca làm -->
             <div class="col-lg-6" v-if="dashboardData?.shiftOverview">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-calendar-check"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Tổng quan Ca làm</h5>
                         </div>
-                        <h5 class="info-card__title">Tổng quan Ca làm</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="stats-grid">
                             <div class="stat-box stat-box--primary">
                                 <div class="stat-box__label">Đã lên lịch hôm nay</div>
@@ -114,14 +116,16 @@
 
             <!-- Hiệu suất Team -->
             <div class="col-lg-6" v-if="dashboardData?.teamPerformance">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-graph-up"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Hiệu suất Team</h5>
                         </div>
-                        <h5 class="info-card__title">Hiệu suất Team</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div v-if="dashboardData.teamPerformance.topStaff?.length > 0" class="team-performance">
                             <div class="team-list">
                                 <div
@@ -151,14 +155,16 @@
         <div class="row g-4">
             <!-- Cảnh báo Kho -->
             <div class="col-lg-6" v-if="dashboardData?.inventory?.alerts?.length > 0">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-exclamation-triangle"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Cảnh báo Kho</h5>
                         </div>
-                        <h5 class="info-card__title">Cảnh báo Kho</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="alert-list">
                             <div
                                 v-for="(alert, index) in dashboardData.inventory.alerts.slice(0, 5)"
@@ -181,14 +187,16 @@
 
             <!-- Tổng quan Lương -->
             <div class="col-lg-6" v-if="dashboardData?.payroll">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-cash-coin"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-cash-coin"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Tổng quan Lương</h5>
                         </div>
-                        <h5 class="info-card__title">Tổng quan Lương</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="payroll-grid">
                             <div class="payroll-item">
                                 <div class="payroll-item__label">Lương ước tính</div>
@@ -227,14 +235,16 @@
 
             <!-- Chờ phê duyệt -->
             <div class="col-lg-6" v-if="dashboardData?.pendingApprovals?.length > 0">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-clock-history"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Chờ phê duyệt</h5>
                         </div>
-                        <h5 class="info-card__title">Chờ phê duyệt</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="approval-list">
                             <div
                                 v-for="(approval, index) in dashboardData.pendingApprovals.slice(0, 5)"
@@ -257,14 +267,16 @@
 
             <!-- Cảnh báo Chấm công -->
             <div class="col-lg-6" v-if="dashboardData?.attendanceAlerts?.length > 0">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-person-check"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-person-check"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Cảnh báo Chấm công</h5>
                         </div>
-                        <h5 class="info-card__title">Cảnh báo Chấm công</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="attendance-list">
                             <div
                                 v-for="(alert, index) in dashboardData.attendanceAlerts.slice(0, 5)"
@@ -284,14 +296,16 @@
 
             <!-- Vấn đề Dịch vụ -->
             <div class="col-lg-6" v-if="dashboardData?.serviceIssues?.length > 0">
-                <div class="info-card">
-                    <div class="info-card__header">
-                        <div class="info-card__icon">
-                            <i class="bi bi-exclamation-circle"></i>
+                <div class="card info-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="info-card__icon">
+                                <i class="bi bi-exclamation-circle"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Vấn đề Dịch vụ</h5>
                         </div>
-                        <h5 class="info-card__title">Vấn đề Dịch vụ</h5>
                     </div>
-                    <div class="info-card__body">
+                    <div class="card-body">
                         <div class="service-list">
                             <div
                                 v-for="(issue, index) in dashboardData.serviceIssues.slice(0, 5)"
@@ -432,21 +446,13 @@ const getSeverityBadge = (severity) => {
 
 /* Info Cards */
 .info-card {
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    overflow: hidden;
     height: 100%;
 }
 
-.info-card__header {
-    background: rgba(148, 163, 184, 0.08);
+.info-card .card-header {
     border-bottom: 1px solid var(--color-border);
     padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    background: var(--color-card-muted);
 }
 
 .info-card__icon {
@@ -462,16 +468,6 @@ const getSeverityBadge = (severity) => {
     flex-shrink: 0;
 }
 
-.info-card__title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--color-heading);
-    margin: 0;
-}
-
-.info-card__body {
-    padding: 1.5rem;
-}
 
 /* Stats Grid */
 .stats-grid {

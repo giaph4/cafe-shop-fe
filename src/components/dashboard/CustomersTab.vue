@@ -26,10 +26,13 @@
         <div class="customers-tab__grid">
             <div class="card">
                 <div class="card-header">
-                    <h5>Khách hàng tiêu biểu</h5>
-                    <p>Top khách hàng theo doanh số trong giai đoạn lọc</p>
+                    <div>
+                        <h5 class="card-title">Khách hàng tiêu biểu</h5>
+                        <p class="card-subtitle">Top khách hàng theo doanh số trong giai đoạn lọc</p>
+                    </div>
                 </div>
-                <div class="table-responsive">
+                <div class="card-body">
+                    <div class="table-responsive">
                     <table class="table">
                         <thead>
                         <tr>
@@ -59,15 +62,19 @@
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <h5>Hiệu suất nhân viên</h5>
-                    <p>Top nhân viên theo doanh thu và số đơn</p>
+                    <div>
+                        <h5 class="card-title">Hiệu suất nhân viên</h5>
+                        <p class="card-subtitle">Top nhân viên theo doanh thu và số đơn</p>
+                    </div>
                 </div>
-                <div class="table-responsive">
+                <div class="card-body">
+                    <div class="table-responsive">
                     <table class="table">
                         <thead>
                         <tr>
@@ -93,6 +100,7 @@
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -197,8 +205,9 @@ const prettyRole = (role) => {
 }
 
 .card-header {
-    border-bottom: none;
-    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .table {

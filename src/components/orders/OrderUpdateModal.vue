@@ -251,82 +251,82 @@ defineExpose({ show, hide })
 
 <style scoped>
 :deep(.modal-content) {
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
 }
 
 :deep(.modal-header) {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.5rem;
-    background: #ffffff;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
 }
 
 :deep(.modal-header .modal-title) {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
 }
 
 :deep(.modal-header .text-muted.small) {
-    color: #64748b;
-    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
 }
 
 .modal-body {
     max-height: 70vh;
     overflow-y: auto;
-    padding: 1.5rem;
+    padding: var(--spacing-6);
 }
 
 :deep(.modal-footer) {
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    background: #ffffff;
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 :deep(.form-label) {
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-2);
+    font-size: var(--font-size-sm);
 }
 
 :deep(.form-control),
 :deep(.form-select) {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.625rem 1rem;
-    font-size: 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
 }
 
 :deep(.form-control:focus),
 :deep(.form-select:focus) {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 :deep(.btn-primary) {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    background: var(--color-primary);
     border: none;
-    border-radius: 12px;
-    padding: 0.625rem 1.5rem;
-    font-weight: 600;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-6);
+    font-weight: var(--font-weight-semibold);
 }
 
 :deep(.btn-outline-secondary) {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.625rem 1.5rem;
-    color: #64748b;
-    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-6);
+    color: var(--color-text-muted);
+    background: var(--color-card);
 }
 
 :deep(.btn-outline-secondary:hover) {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: var(--color-card-muted);
+    border-color: var(--color-border-soft);
 }
 </style>
 

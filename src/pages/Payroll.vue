@@ -1,13 +1,18 @@
 <template>
-    <div class="page-container container-fluid payroll-page" data-aos="fade-up">
+    <div class="page-container container-fluid payroll-page">
         <div class="payroll-header">
             <div class="payroll-header__content">
                 <div class="payroll-header__title-section">
-                    <h2 class="page-title">Quản lý Lương</h2>
-                    <p class="page-subtitle">Theo dõi chu kỳ lương, đồng bộ thống kê và tổng hợp thực lĩnh cho nhân viên.</p>
+                    <h2 class="payroll-header__title">Quản lý Lương</h2>
+                    <p class="payroll-header__subtitle">Theo dõi chu kỳ lương, đồng bộ thống kê và tổng hợp thực lĩnh cho nhân viên.</p>
                 </div>
                 <div class="payroll-header__actions">
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchCycles" :disabled="cyclesLoading">
+                    <button 
+                        class="btn btn-outline-secondary" 
+                        type="button" 
+                        @click="fetchCycles" 
+                        :disabled="cyclesLoading"
+                    >
                         <span v-if="cyclesLoading" class="spinner-border spinner-border-sm me-2"></span>
                         <i v-else class="bi bi-arrow-clockwise me-2"></i>
                         Làm mới
@@ -60,17 +65,24 @@
                     <div class="text-muted small">{{ cycles.length }} chu kỳ</div>
                 </div>
 
-                <div v-if="cyclesLoading" class="text-center py-4">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-                <div v-else-if="cyclesError" class="alert alert-warning">
-                    {{ cyclesError }}
-                </div>
+                <LoadingState v-if="cyclesLoading" />
+                <ErrorState 
+                    v-else-if="cyclesError" 
+                    :message="cyclesError" 
+                    @retry="fetchCycles"
+                />
                 <EmptyState
                     v-else-if="!cycles.length"
                     title="Chưa có chu kỳ"
                     message="Hãy tạo chu kỳ lương đầu tiên để bắt đầu tính lương."
-                />
+                >
+                    <template #action>
+                        <button class="btn btn-primary" type="button" @click="openCreateModal">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            Tạo chu kỳ
+                        </button>
+                    </template>
+                </EmptyState>
                 <div v-else class="table-responsive">
                     <table class="table align-middle">
                         <thead class="table-light">
@@ -102,13 +114,23 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="action-buttons">
-                                        <button class="action-button action-button--primary" type="button" @click="selectCycle(cycle)" title="Xem chi tiết">
-                                            <i class="bi bi-eye"></i>
-                                            <span>Chi tiết</span>
+                                        <button 
+                                            class="btn btn-sm btn-outline-primary" 
+                                            type="button" 
+                                            @click="selectCycle(cycle)" 
+                                            title="Xem chi tiết"
+                                        >
+                                            <i class="bi bi-eye me-1"></i>
+                                            <span class="d-none d-md-inline">Chi tiết</span>
                                         </button>
-                                        <button class="action-button action-button--primary" type="button" @click="openEditModal(cycle)" title="Chỉnh sửa">
-                                            <i class="bi bi-pencil"></i>
-                                            <span>Chỉnh sửa</span>
+                                        <button 
+                                            class="btn btn-sm btn-outline-primary" 
+                                            type="button" 
+                                            @click="openEditModal(cycle)" 
+                                            title="Chỉnh sửa"
+                                        >
+                                            <i class="bi bi-pencil me-1"></i>
+                                            <span class="d-none d-md-inline">Sửa</span>
                                         </button>
                                     </div>
                                 </td>
@@ -192,12 +214,63 @@
             :submitting="formSubmitting"
             @submit="handleModalSubmit"
         />
+
+        <!-- Regenerate Confirmation Modal -->
+        <Teleport to="body">
+            <div 
+                class="modal fade" 
+                id="regenerateConfirmModal" 
+                tabindex="-1" 
+                ref="regenerateModalElement" 
+                aria-labelledby="regenerateConfirmModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="regenerateConfirmModalLabel">Xác nhận đồng bộ</h5>
+                            <button type="button" class="btn-close" @click="closeRegenerateModal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Việc đồng bộ sẽ tính lại toàn bộ lương trong khoảng thời gian chu kỳ. Bạn có chắc chắn muốn tiếp tục?</p>
+                            <div v-if="selectedCycle" class="alert alert-info mt-3">
+                                <strong>Chu kỳ:</strong> {{ selectedCycle.code }}<br>
+                                <strong>Thời gian:</strong> {{ formatDate(selectedCycle.startDate) }} → {{ formatDate(selectedCycle.endDate) }}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="closeRegenerateModal">
+                                Hủy
+                            </button>
+                            <button 
+                                type="button" 
+                                class="btn btn-success" 
+                                @click="confirmRegenerate"
+                                :disabled="summariesLoading"
+                            >
+                                <span 
+                                    v-if="summariesLoading"
+                                    class="spinner-border spinner-border-sm me-2" 
+                                    role="status" 
+                                    aria-hidden="true"
+                                ></span>
+                                Đồng bộ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup>
-import {computed, reactive, ref, watch} from 'vue'
+import {computed, reactive, ref, watch, onMounted, onUnmounted} from 'vue'
+import {Teleport} from 'vue'
+import {Modal} from 'bootstrap'
 import EmptyState from '@/components/common/EmptyState.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import PayrollSummaryTable from '@/components/payroll/PayrollSummaryTable.vue'
 import PayrollCycleFormModal from '@/components/payroll/PayrollCycleFormModal.vue'
 import {
@@ -245,6 +318,9 @@ const summarySearch = ref('')
 const cycleModalRef = ref(null)
 const editingCycle = ref(null)
 const formSubmitting = ref(false)
+const regenerateModalElement = ref(null)
+const regenerateBsModal = ref(null)
+const regenerateConfirmModal = ref(false)
 
 const filteredSummaries = computed(() => {
     if (!summarySearch.value) return summaries.value
@@ -373,14 +449,22 @@ const handleModalSubmit = async (payload) => {
     }
 }
 
-const handleRegenerate = async () => {
+const handleRegenerate = () => {
     if (!selectedCycleId.value) return
     if (!canRegenerate.value) {
         toast.warning('Chu kỳ lương đã chốt nên không thể đồng bộ lại dữ liệu.')
         return
     }
-    const confirmed = window.confirm('Việc đồng bộ sẽ tính lại toàn bộ lương trong khoảng thời gian chu kỳ. Bạn có chắc chắn?')
-    if (!confirmed) return
+    regenerateBsModal.value?.show()
+}
+
+const closeRegenerateModal = () => {
+    regenerateBsModal.value?.hide()
+}
+
+const confirmRegenerate = async () => {
+    if (!selectedCycleId.value) return
+    closeRegenerateModal()
     summariesLoading.value = true
     try {
         await regeneratePayrollSummaries(selectedCycleId.value)
@@ -404,30 +488,37 @@ watch(selectedCycleId, () => {
     fetchSummaries()
 })
 
-fetchCycles()
+onMounted(() => {
+    if (regenerateModalElement.value) {
+        regenerateBsModal.value = new Modal(regenerateModalElement.value)
+    }
+    fetchCycles()
+})
+
+onUnmounted(() => {
+    regenerateBsModal.value?.dispose()
+})
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .payroll-page {
-    padding-bottom: 3rem;
+    padding-bottom: var(--spacing-12);
 }
 
-/* Header Styles */
 .payroll-header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
 }
 
 .payroll-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
     flex-wrap: wrap;
 }
 
@@ -436,82 +527,56 @@ fetchCycles()
     min-width: 0;
 }
 
+.payroll-header__title {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--spacing-1);
+}
+
+.payroll-header__subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
 .payroll-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
     justify-content: flex-end;
 }
 
-.page-title {
-    font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
-}
-
-.page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
-/* Action Buttons */
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
     align-items: center;
-}
-
-.action-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid;
-    background: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.action-button--primary {
-    border-color: #a855f7;
-    color: #a855f7;
-    background: #ffffff;
-}
-
-.action-button--primary:hover {
-    background: #faf5ff;
-    border-color: #9333ea;
-    color: #9333ea;
 }
 
 .filter-card,
 .cycles-card,
 .cycle-detail {
-    border-radius: 18px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-}
-
-.filter-card .card-body {
-    padding: 1.75rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-sm);
 }
 
 .table-active {
-    --bs-table-accent-bg: rgba(168, 85, 247, 0.08);
+    --bs-table-accent-bg: var(--color-primary-soft);
 }
 
 @media (max-width: 768px) {
+    .payroll-header {
+        padding: var(--spacing-4);
+    }
+
     .payroll-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -519,17 +584,20 @@ fetchCycles()
 
     .payroll-header__actions {
         width: 100%;
-        justify-content: flex-start;
+        justify-content: stretch;
+
+        .btn {
+            flex: 1;
+        }
     }
 
     .action-buttons {
         flex-direction: column;
         width: 100%;
-    }
 
-    .action-button {
-        width: 100%;
-        justify-content: center;
+        .btn {
+            width: 100%;
+        }
     }
 }
 </style>

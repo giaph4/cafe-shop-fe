@@ -163,7 +163,8 @@ const fetchDashboard = async () => {
         
         dashboardData.value = data
     } catch (err) {
-        error.value = handleError(err, 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.')
+        const errorMessage = handleError(err, 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.')
+        error.value = typeof errorMessage === 'string' ? errorMessage : 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.'
     } finally {
         loading.value = false
     }

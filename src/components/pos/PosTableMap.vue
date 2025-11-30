@@ -1,12 +1,11 @@
 <template>
-    <div v-if="isLoading" class="pos-table-map__state">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2">Đang tải sơ đồ bàn...</p>
-    </div>
-    <div v-else-if="isError" class="pos-table-map__state pos-table-map__state--error">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <p>Không thể tải sơ đồ bàn. Vui lòng thử lại.</p>
-    </div>
+    <LoadingState v-if="isLoading" text="Đang tải sơ đồ bàn..." />
+    <ErrorState
+        v-else-if="isError"
+        message="Không thể tải sơ đồ bàn. Vui lòng thử lại."
+        :show-retry="true"
+        :retry-handler="() => tableStore.loadTables()"
+    />
     <div v-else class="pos-table-map__grid">
         <button v-for="table in tables" :key="table.id" type="button"
                 class="table-chip" :class="getStatusVariant(table.status)"
@@ -24,6 +23,8 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useTableStore } from '@/store/tables'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 const emit = defineEmits(['table-selected'])
 
@@ -67,62 +68,50 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 </script>
 
 <style scoped>
-.pos-table-map__state {
-    display: grid;
-    place-items: center;
-    gap: 0.5rem;
-    padding: 2rem 0;
-    color: var(--color-text-muted);
-}
-
-.pos-table-map__state--error {
-    color: #dc2626;
-}
-
 .pos-table-map__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .table-chip {
     border: 1px solid var(--color-border);
-    border-radius: 16px;
-    padding: 0.85rem 1rem;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3) var(--spacing-4);
     display: grid;
-    gap: 0.35rem;
+    gap: var(--spacing-1);
     text-align: left;
     background: var(--color-card);
     color: var(--color-text);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .table-chip:hover,
 .table-chip:focus {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-soft);
-    border-color: rgba(99, 102, 241, 0.45);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-border);
 }
 
 .table-chip__name {
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
     color: var(--color-heading);
 }
 
 .table-chip__status {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-weight: 600;
-    font-size: 0.85rem;
+    gap: var(--spacing-1);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
 }
 
 .table-chip__capacity {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.85rem;
+    gap: var(--spacing-1);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
 }
 

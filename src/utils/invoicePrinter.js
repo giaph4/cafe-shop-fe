@@ -105,8 +105,11 @@ export const buildInvoiceDocument = (order, options = {}) => {
     const items = resolveItems(order)
     const subTotalValue = resolveSubTotal(order, items)
     const discountValue = Math.max(0, toNumber(order?.discountAmount))
+    const tipValue = Math.max(0, toNumber(order?.tipAmount))
     const totalValueRaw = toNumber(order?.totalAmount)
-    const totalValue = totalValueRaw > 0 ? totalValueRaw : Math.max(subTotalValue - discountValue, 0)
+    // Công thức: (Tổng tiền hàng - Giảm giá) + Tiền típ
+    const calculatedTotal = Math.max(subTotalValue - discountValue, 0) + tipValue
+    const totalValue = totalValueRaw > 0 ? totalValueRaw : calculatedTotal
 
     const createdAt = order?.paidAt || order?.createdAt
     const metaRows = [
@@ -161,10 +164,18 @@ export const buildInvoiceDocument = (order, options = {}) => {
                 <span>Tổng phụ</span>
                 <span>${escapeHtml(formatCurrencySafe(subTotalValue))}</span>
             </div>
+            ${discountValue > 0 ? `
             <div>
                 <span>Giảm giá</span>
                 <span>- ${escapeHtml(formatCurrencySafe(discountValue))}</span>
             </div>
+            ` : ''}
+            ${tipValue > 0 ? `
+            <div style="color: #15803d;">
+                <span>Tiền típ</span>
+                <span>+ ${escapeHtml(formatCurrencySafe(tipValue))}</span>
+            </div>
+            ` : ''}
             <div class="grand-total">
                 <span>Tổng cộng</span>
                 <span>${escapeHtml(formatCurrencySafe(totalValue))}</span>

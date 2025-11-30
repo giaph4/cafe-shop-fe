@@ -85,10 +85,15 @@
                     </button>
                 </div>
 
-                <div v-if="pendingTakeawayOrders.length === 0" class="order-section__empty">
-                    <i class="bi bi-bag-dash"></i>
-                    <p>Chưa có đơn mang về nào đang chờ.</p>
-                </div>
+                <EmptyState
+                    v-if="pendingTakeawayOrders.length === 0"
+                    title="Chưa có đơn mang về"
+                    message="Chưa có đơn mang về nào đang chờ."
+                >
+                    <template #icon>
+                        <i class="bi bi-bag-dash"></i>
+                    </template>
+                </EmptyState>
                 <ul v-else class="order-list">
                     <li
                         v-for="order in pendingTakeawayOrders"
@@ -143,6 +148,7 @@ import PosProductMenu from '@/components/pos/PosProductMenu.vue'
 import PosOrderCart from '@/components/pos/PosOrderCart.vue'
 import { getPendingOrderByTable, getOrdersByStatus } from '@/api/orderService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const tableStore = useTableStore()
 
@@ -323,27 +329,32 @@ watch(() => tableStore.tables, (tables) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-radius: 20px;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-md);
 }
 
 .pos-header__title {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .pos-header__subtitle {
     color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
 }
 
 .pos-header__actions {
     display: inline-flex;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -352,12 +363,12 @@ watch(() => tableStore.tables, (tables) => {
     display: flex;
     flex: 1;
     min-height: 0;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
     align-items: flex-start;
 }
 
 .pos-table-map-container {
-    padding: 1.5rem;
+    padding: var(--spacing-6);
     height: 100%;
     overflow-y: auto;
 }
@@ -365,10 +376,10 @@ watch(() => tableStore.tables, (tables) => {
 .pos-panel {
     display: flex;
     flex-direction: column;
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
     border: 1px solid var(--color-border);
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
 }
 
@@ -384,8 +395,8 @@ watch(() => tableStore.tables, (tables) => {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.5rem;
+    gap: var(--spacing-6);
+    padding: var(--spacing-6);
     height: 100vh;
     overflow-y: auto;
 }
@@ -394,41 +405,41 @@ watch(() => tableStore.tables, (tables) => {
 .order-section {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .order-section__header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
-    padding-bottom: 1rem;
+    gap: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
 }
 
 .order-section__title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 var(--spacing-1) 0;
 }
 
 .order-section__subtitle {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin: 0;
 }
 
 .order-section__badge {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    background: rgba(148, 163, 184, 0.1);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    background: var(--color-card-muted);
     color: var(--color-text-muted);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .order-section__empty {
@@ -436,20 +447,20 @@ watch(() => tableStore.tables, (tables) => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1rem;
+    padding: var(--spacing-12) var(--spacing-4);
     text-align: center;
     color: var(--color-text-muted);
 }
 
 .order-section__empty i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--spacing-4);
     opacity: 0.5;
 }
 
 .order-section__empty p {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
 }
 
 /* Order List */
@@ -459,26 +470,27 @@ watch(() => tableStore.tables, (tables) => {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .order-list__item {
-    padding: 1rem;
-    border-radius: 12px;
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    background: rgba(148, 163, 184, 0.05);
+    background: var(--color-card-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 }
 
 .order-list__item:hover {
-    background: rgba(148, 163, 184, 0.1);
+    background: var(--color-card-accent);
     transform: translateX(4px);
     border-color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
 }
 
 .order-list__item--active {
-    background: rgba(99, 102, 241, 0.1);
+    background: var(--color-primary-soft);
     border-color: var(--color-primary);
 }
 
@@ -486,18 +498,18 @@ watch(() => tableStore.tables, (tables) => {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .order-list__item-title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--spacing-1);
 }
 
 .order-list__item-meta {
     color: var(--color-text-muted);
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
 }
 
 .order-list__item-right {
@@ -505,10 +517,10 @@ watch(() => tableStore.tables, (tables) => {
 }
 
 .order-list__item-amount {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-primary);
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-1);
 }
 
 @media (max-width: 1200px) {

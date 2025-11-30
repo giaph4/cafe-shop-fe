@@ -172,9 +172,9 @@ const handleFileClick = (file) => {
         }
 
         .message-bubble__body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
             color: white;
-            border-radius: 18px 18px 4px 18px;
+            border-radius: var(--component-radius-sm) var(--component-radius-sm) 4px var(--component-radius-sm);
         }
     }
 
@@ -230,14 +230,14 @@ const handleFileClick = (file) => {
 .message-bubble__sender {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .message-bubble__body {
-    background: #f1f5f9;
-    color: #1e293b;
-    padding: 0.75rem 1rem;
-    border-radius: 18px 18px 18px 4px;
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    padding: 0.75rem var(--component-padding-sm);
+    border-radius: var(--component-radius-sm) var(--component-radius-sm) var(--component-radius-sm) 4px;
     max-width: 70%;
     word-wrap: break-word;
 }
@@ -302,7 +302,7 @@ const handleFileClick = (file) => {
 
 .message-bubble__recalled {
     font-style: italic;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -312,7 +312,7 @@ const handleFileClick = (file) => {
     gap: 0.25rem;
     margin-top: 0.25rem;
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
 }
 
 .message-bubble__actions {

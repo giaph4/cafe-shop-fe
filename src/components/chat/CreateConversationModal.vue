@@ -200,9 +200,10 @@ defineExpose({ show, hide })
 .member-selection {
     max-height: 200px;
     overflow-y: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--component-radius-sm);
+    padding: var(--component-gap-sm);
+    background: var(--color-card-muted);
 }
 
 .form-check {

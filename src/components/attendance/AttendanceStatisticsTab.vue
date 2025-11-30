@@ -1,12 +1,11 @@
 <template>
     <div class="attendance-statistics">
-        <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-        </div>
-        <div v-else-if="!statistics" class="text-center py-5">
-            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-            <p class="text-muted mb-0">Chưa có dữ liệu thống kê trong khoảng thời gian đã chọn.</p>
-        </div>
+        <LoadingState v-if="loading" />
+        <EmptyState
+            v-else-if="!statistics"
+            title="Chưa có dữ liệu"
+            message="Chưa có dữ liệu thống kê trong khoảng thời gian đã chọn."
+        />
         <div v-else>
             <div class="stats-cards mb-4">
                 <div class="row g-3">
@@ -227,6 +226,9 @@
 </template>
 
 <script setup>
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+
 defineProps({
     statistics: Object,
     loading: Boolean,
@@ -234,34 +236,34 @@ defineProps({
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .attendance-statistics {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .stats-cards {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-6);
 }
 
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
     height: 100%;
     min-height: 140px;
 }
 
 .stat-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-card--primary .stat-card__icon {
@@ -322,10 +324,10 @@ defineProps({
 
 .analytics-card,
 .summary-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .analytics-item {

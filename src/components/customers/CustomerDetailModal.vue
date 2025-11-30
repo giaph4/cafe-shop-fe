@@ -11,16 +11,8 @@
                         <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <template v-if="loading">
-                            <div class="text-center py-5">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Đang tải...</span>
-                                </div>
-                            </div>
-                        </template>
-                        <template v-else-if="error">
-                            <div class="alert alert-danger">{{ error }}</div>
-                        </template>
+                        <LoadingState v-if="loading" />
+                        <ErrorState v-else-if="error" :message="error" :show-retry="false" />
                         <template v-else-if="customer">
                             <!-- Thông tin cơ bản -->
                             <div class="info-section mb-4">
@@ -140,10 +132,15 @@
                                 <div v-else-if="ordersError" class="alert alert-warning mb-0">
                                     {{ ordersError }}
                                 </div>
-                                <div v-else-if="orders.length === 0" class="text-center text-muted py-4">
-                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                                    <p class="mb-0">Chưa có đơn hàng nào</p>
-                                </div>
+                                <EmptyState
+                                    v-else-if="orders.length === 0"
+                                    title="Chưa có đơn hàng"
+                                    message="Khách hàng này chưa có đơn hàng nào."
+                                >
+                                    <template #icon>
+                                        <i class="bi bi-receipt-cutoff"></i>
+                                    </template>
+                                </EmptyState>
                                 <div v-else class="orders-list">
                                     <div
                                         v-for="order in orders"
@@ -157,7 +154,7 @@
                                                     {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
                                                 </div>
                                                 <div class="mt-1">
-                                                    <span :class="['badge', getStatusBadgeClass(order.status)]">
+                                                    <span :class="getStatusBadgeClass(order.status)">
                                                         {{ getStatusLabel(order.status) }}
                                                     </span>
                                                 </div>
@@ -170,12 +167,15 @@
                                 </div>
                             </div>
                         </template>
-                        <template v-else>
-                            <div class="text-center text-muted py-4">
-                                <i class="bi bi-person-x fs-1 mb-3 d-block"></i>
-                                <p class="mb-0">Không tìm thấy thông tin khách hàng.</p>
-                            </div>
-                        </template>
+                        <EmptyState
+                            v-else
+                            title="Không tìm thấy khách hàng"
+                            message="Không tìm thấy thông tin khách hàng."
+                        >
+                            <template #icon>
+                                <i class="bi bi-person-x"></i>
+                            </template>
+                        </EmptyState>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
@@ -201,6 +201,9 @@ import { Modal } from 'bootstrap'
 import { getCustomerById, getCustomerPurchaseHistory } from '@/api/customerService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import logger from '@/utils/logger'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     customerId: {
@@ -307,7 +310,7 @@ const getStatusLabel = (status) => {
 }
 
 const getStatusBadgeClass = (status) => {
-    return STATUS_METADATA[status]?.badgeClass || 'bg-secondary-subtle text-secondary'
+    return STATUS_METADATA[status]?.badgeClass || 'badge bg-secondary-subtle text-secondary'
 }
 
 const handleEdit = () => {
@@ -353,45 +356,45 @@ defineExpose({ show, hide })
 
 <style scoped>
 :deep(.modal-content) {
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
 }
 
 :deep(.modal-header) {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.5rem;
-    background: #ffffff;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
 }
 
 :deep(.modal-header .modal-title) {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
 }
 
 :deep(.modal-header .text-muted.small) {
-    color: #64748b;
-    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
 }
 
 .modal-body {
-    padding: 1.5rem;
+    padding: var(--spacing-6);
     max-height: 70vh;
     overflow-y: auto;
 }
 
 :deep(.modal-footer) {
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    background: #ffffff;
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 .info-section {
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: var(--spacing-6);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .info-section:last-of-type {
@@ -400,9 +403,9 @@ defineExpose({ show, hide })
 }
 
 .section-title {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
     display: flex;
     align-items: center;
 }
@@ -410,41 +413,41 @@ defineExpose({ show, hide })
 .info-item {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
 }
 
 .info-label {
-    font-size: 0.875rem;
-    color: #64748b;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
 }
 
 .info-value {
-    font-size: 0.95rem;
-    color: #1e293b;
-    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
 }
 
 .stat-box {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
 }
 
 .stat-icon {
     width: 48px;
     height: 48px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.25rem;
-    color: #ffffff;
+    font-size: var(--font-size-xl);
+    color: var(--color-white);
     border: 2px solid;
 }
 
@@ -474,38 +477,38 @@ defineExpose({ show, hide })
 }
 
 .stat-label {
-    font-size: 0.75rem;
-    color: #64748b;
-    margin-bottom: 0.25rem;
-    font-weight: 500;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-1);
+    font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 
 .stat-value.small {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
 }
 
 .orders-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .order-item {
-    padding: 1rem;
-    border-radius: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    transition: background-color 0.2s;
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
+    transition: background-color var(--transition-fast);
 }
 
 .order-item:hover {
-    background: #f1f5f9;
+    background: var(--color-card-accent);
 }
 </style>

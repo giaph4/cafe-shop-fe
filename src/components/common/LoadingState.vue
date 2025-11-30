@@ -74,8 +74,8 @@ const spinnerClass = computed(() => {
     align-items: center;
     justify-content: center;
     min-height: 200px;
-    padding: 2rem;
-    gap: 1rem;
+    padding: var(--spacing-8);
+    gap: var(--spacing-4);
 }
 
 .loading-state__spinner {
@@ -87,18 +87,30 @@ const spinnerClass = computed(() => {
 .loading-state__text {
     color: var(--color-text-muted);
     margin: 0;
-    font-size: 0.9375rem;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
 }
 
 /* Size variants */
 .loading-state--sm {
     min-height: 100px;
-    padding: 1rem;
+    padding: var(--spacing-4);
+    gap: var(--spacing-2);
+}
+
+.loading-state--sm .loading-state__text {
+    font-size: var(--font-size-sm);
 }
 
 .loading-state--lg {
     min-height: 300px;
-    padding: 3rem;
+    padding: var(--spacing-12);
+    gap: var(--spacing-6);
+}
+
+.loading-state--lg .loading-state__text {
+    font-size: var(--font-size-lg);
 }
 </style>
 

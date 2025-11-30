@@ -302,11 +302,50 @@ defineExpose({show, hide})
 
 <style scoped>
 .role-box {
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3) var(--spacing-4);
     max-height: 220px;
     overflow-y: auto;
-    background: rgba(248, 249, 251, 0.6);
+    background: var(--color-card-muted);
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.form-label) {
+    font-weight: var(--font-weight-semibold);
 }
 </style>

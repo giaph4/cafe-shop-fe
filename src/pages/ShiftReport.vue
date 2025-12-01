@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Báo cáo ca làm việc</h2>
@@ -27,12 +27,12 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading && activeTab === 'list'" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error && activeTab === 'list'" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading && activeTab === 'list'" />
+                <ErrorState 
+                    v-else-if="error && activeTab === 'list'" 
+                    :message="error"
+                    @retry="fetchData"
+                />
                 <div v-else class="tab-content">
                     <ShiftReportDetailTab
                         v-if="activeTab === 'detail'"
@@ -64,6 +64,8 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { toast } from 'vue3-toastify'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import ShiftReportDetailTab from '@/components/shift-reports/ShiftReportDetailTab.vue'
 import ShiftReportListTab from '@/components/shift-reports/ShiftReportListTab.vue'
 import { getShiftReport, regenerateShiftReport, listShiftReportsByWorkShift } from '@/api/shiftReportService'
@@ -257,61 +259,79 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .shift-report-page {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
-    padding-bottom: 2rem;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
 }
 
 .card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .page-title {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
 }
 
 .page-subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 .tabs-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .reports-tabs .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-5);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
+    transition: all var(--transition-base);
+}
+
+.reports-tabs .nav-link:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-    color: #fff;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-white);
 }
 
+@media (max-width: 768px) {
+    .card-shadow {
+        padding: var(--spacing-4);
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
 </style>

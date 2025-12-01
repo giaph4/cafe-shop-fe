@@ -141,54 +141,55 @@ const getIconClass = (index) => {
 </script>
 
 <style scoped>
+/* KPI cards giống Dashboard */
 .stat-card {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-5);
-    border-radius: var(--radius-lg);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+    border-radius: 24px;
+    background: #f8fafc;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
 }
 
 .stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-full);
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: var(--font-size-xl);
-    color: var(--color-white);
-    border: 2px solid;
+    font-size: 1.75rem;
+    color: #6366f1;
 }
 
+/* Màu icon pastel, đồng bộ Dashboard */
 .stat-icon--purple {
-    background: linear-gradient(135deg, #a855f7, #9333ea);
-    border-color: #a855f7;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
 .stat-icon--green {
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-color: #10b981;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
 }
 
 .stat-icon--yellow {
-    background: linear-gradient(135deg, #eab308, #ca8a04);
-    border-color: #eab308;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
 .stat-icon--blue {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    border-color: #3b82f6;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
 }
 
 .stat-content {
@@ -214,8 +215,8 @@ const getIconClass = (index) => {
     width: 32px;
     height: 32px;
     border-radius: var(--radius-full);
-    background: linear-gradient(122deg, rgba(99, 102, 241, 0.92) 0%, rgba(129, 140, 248, 0.88) 100%);
-    color: var(--color-white);
+    background: var(--color-primary);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;

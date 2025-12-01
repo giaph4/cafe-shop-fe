@@ -7,14 +7,24 @@
                     <p class="page-subtitle">Quản lý thông tin nhân viên, phân ca làm việc và theo dõi hiệu suất.</p>
                 </div>
                 <div class="staff-header__actions">
-                    <div class="btn-group" role="group" aria-label="Chế độ hiển thị">
-                        <button class="btn btn-outline-secondary" :class="{ active: viewMode === 'grid' }"
-                            @click="viewMode = 'grid'">
+                    <div class="staff-view-tabs" role="tablist" aria-label="Chế độ hiển thị">
+                        <button
+                            type="button"
+                            class="staff-view-tab"
+                            :class="{ active: viewMode === 'grid' }"
+                            @click="viewMode = 'grid'"
+                        >
                             <i class="bi bi-grid-3x3-gap"></i>
+                            <span>Thẻ</span>
                         </button>
-                        <button class="btn btn-outline-secondary" :class="{ active: viewMode === 'table' }"
-                            @click="viewMode = 'table'">
-                            <i class="bi bi-list"></i>
+                        <button
+                            type="button"
+                            class="staff-view-tab"
+                            :class="{ active: viewMode === 'table' }"
+                            @click="viewMode = 'table'"
+                        >
+                            <i class="bi bi-table"></i>
+                            <span>Bảng</span>
                         </button>
                     </div>
                     <button class="btn btn-outline-secondary" type="button" @click="fetchUsers" :disabled="loading">
@@ -38,48 +48,48 @@
         </div>
 
         <!-- Statistics Cards -->
-        <div class="row g-3 mb-4" v-if="!loading && users.length > 0">
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--blue">
-                    <div class="stat-icon stat-icon--blue">
+        <div class="row g-4 mb-4" v-if="!loading && users.length > 0">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--people">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-people"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Tổng số nhân viên</div>
-                        <div class="stat-value">{{ formatNumber(totalUsers) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Tổng số nhân viên</div>
+                        <div class="kpi-card__value">{{ formatNumber(totalUsers) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--green">
-                    <div class="stat-icon stat-icon--green">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--active">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-check-circle"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Đang hoạt động</div>
-                        <div class="stat-value">{{ formatNumber(activeUsersCount) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Đang hoạt động</div>
+                        <div class="kpi-card__value">{{ formatNumber(activeUsersCount) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--purple">
-                    <div class="stat-icon stat-icon--purple">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--role">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-person-badge"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Theo quyền</div>
-                        <div class="stat-value">{{ formatNumber(usersByRoleCount) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Theo quyền</div>
+                        <div class="kpi-card__value">{{ formatNumber(usersByRoleCount) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--orange">
-                    <div class="stat-icon stat-icon--orange">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--recent">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-clock-history"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Hoạt động gần đây</div>
-                        <div class="stat-value">{{ formatNumber(recentlyActiveCount) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Hoạt động gần đây</div>
+                        <div class="kpi-card__value">{{ formatNumber(recentlyActiveCount) }}</div>
                     </div>
                 </div>
             </div>
@@ -334,7 +344,7 @@
                         </div>
                         <form @submit.prevent="submitResetPassword">
                             <div class="modal-body">
-                                <div class="alert alert-warning">
+                                <div class="alert alert-warning mb-3">
                                     <i class="bi bi-exclamation-triangle me-2"></i>
                                     Mật khẩu mới sẽ được áp dụng ngay lập tức. Người dùng sẽ cần đăng nhập lại với mật
                                     khẩu mới.
@@ -1608,6 +1618,46 @@ const hideUserActivityLogModal = () => {
     justify-content: flex-end;
 }
 
+/* View mode tabs - Giống Dashboard */
+.staff-view-tabs {
+    display: inline-flex;
+    gap: 0.75rem;
+    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    padding: 0.6rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
+}
+
+.staff-view-tab {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1.35rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.staff-view-tab i {
+    font-size: 1.15rem;
+}
+
+.staff-view-tab:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--color-primary);
+}
+
+.staff-view-tab.active {
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+}
+
 .page-title {
     font-weight: var(--font-weight-bold);
     color: var(--color-heading);
@@ -1624,75 +1674,80 @@ const hideUserActivityLogModal = () => {
     line-height: var(--line-height-relaxed);
 }
 
-/* Stat Cards */
-.stat-card {
+/* KPI Cards - Giống Dashboard */
+.kpi-card {
+    background: #f8fafc;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    border-radius: 24px;
+    padding: var(--spacing-6);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
     display: flex;
     align-items: center;
-    gap: var(--spacing-4);
-    padding: var(--spacing-5);
-    border-radius: var(--radius-xl);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    gap: var(--spacing-5);
+    transition: all var(--transition-base);
+    min-height: 140px;
     height: 100%;
 }
 
-.stat-card:hover {
+.kpi-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
 }
 
-.stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-full);
+.kpi-card__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 1.75rem;
     flex-shrink: 0;
-    font-size: var(--font-size-xl);
-    color: #ffffff;
-    border: 2px solid;
+    color: #6366f1;
+    position: relative;
 }
 
-.stat-icon--blue {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    border-color: #3b82f6;
+.kpi-card--people .kpi-card__icon {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
-.stat-icon--green {
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-color: #10b981;
+.kpi-card--active .kpi-card__icon {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
 }
 
-.stat-icon--purple {
-    background: linear-gradient(135deg, #a855f7, #9333ea);
-    border-color: #a855f7;
+.kpi-card--role .kpi-card__icon {
+    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
 }
 
-.stat-icon--orange {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    border-color: #f97316;
+.kpi-card--recent .kpi-card__icon {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
-.stat-content {
+.kpi-card__content {
     flex: 1;
     min-width: 0;
 }
 
-.stat-label {
-    font-size: var(--font-size-sm);
+.kpi-card__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-1);
-    font-weight: var(--font-weight-medium);
+    text-transform: none;
+    letter-spacing: normal;
+    margin-bottom: var(--spacing-2);
+    line-height: var(--line-height-normal);
 }
 
-.stat-value {
-    font-size: var(--font-size-xl);
+.kpi-card__value {
+    font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-heading);
     line-height: var(--line-height-tight);
+    margin-bottom: var(--spacing-1);
 }
 
 /* Action Buttons */
@@ -1759,9 +1814,6 @@ const hideUserActivityLogModal = () => {
     cursor: not-allowed;
 }
 
-.filter-card .card-body {
-    padding: var(--spacing-7);
-}
 
 .table-avatar {
     width: 42px;
@@ -1817,12 +1869,6 @@ const hideUserActivityLogModal = () => {
     font-size: 2.25rem;
 }
 
-/* .page-title is in components.scss */
-
-.badge.bg-soft {
-    background: var(--color-badge-soft-bg);
-    color: var(--color-badge-soft-text);
-}
 
 .staff-role-badge {
     display: inline-flex;
@@ -1900,6 +1946,7 @@ const hideUserActivityLogModal = () => {
     background: var(--color-card);
 }
 
+/* Responsive */
 @media (max-width: 768px) {
     .staff-header__content {
         flex-direction: column;
@@ -1911,6 +1958,22 @@ const hideUserActivityLogModal = () => {
         justify-content: flex-start;
     }
 
+    .staff-view-tabs {
+        width: 100%;
+    }
+
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
+    }
+
+    .kpi-card__icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+
     .action-buttons {
         flex-direction: column;
         width: 100%;
@@ -1919,6 +1982,20 @@ const hideUserActivityLogModal = () => {
     .action-button {
         width: 100%;
         justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .staff-header {
+        padding: var(--spacing-4);
+    }
+
+    .kpi-card {
+        padding: var(--spacing-4);
+    }
+
+    .kpi-card__value {
+        font-size: var(--font-size-xl);
     }
 }
 </style>

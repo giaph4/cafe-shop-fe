@@ -218,11 +218,12 @@ onBeforeUnmount(() => modalInstance?.dispose())
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    background: var(--bs-primary);
+    background: var(--color-primary);
     color: white;
-    border-radius: 999px;
-    padding: 0.2rem 0.65rem;
-    font-size: 0.8rem;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
 }
 
 .btn-close-sm {

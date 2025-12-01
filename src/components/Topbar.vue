@@ -115,7 +115,7 @@ const props = defineProps({
 })
 
 const sidebarWidth = computed(() => props.isSidebarCollapsed ? 76 : 278)
-const topbarLeft = computed(() => `calc(${sidebarWidth.value}px + 1.75rem + 1.5rem)`)
+const topbarLeft = computed(() => `${sidebarWidth.value}px`)
 
 const route = useRoute()
 const router = useRouter()
@@ -269,18 +269,20 @@ watch(
 
 .neo-nav {
     position: fixed;
-    top: 1.5rem;
-    right: 1.75rem;
+    top: 0;
+    right: 0;
+    left: 278px;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: var(--nav-gap);
     min-height: var(--nav-height);
     padding: 0.75rem var(--nav-padding-x);
-    border-radius: 22px;
-    border: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
     background: var(--color-elevated);
-    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     backdrop-filter: blur(16px);
     transition: box-shadow 0.24s ease, transform 0.24s ease, border-color 0.24s ease,
     left 0.26s cubic-bezier(0.4, 0, 0.2, 1);
@@ -288,7 +290,7 @@ watch(
 }
 
 .neo-nav--scrolled {
-    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.18);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     border-color: rgba(99, 102, 241, 0.24);
 }
 
@@ -549,8 +551,8 @@ watch(
 
 @media (max-width: 992px) {
     .neo-nav {
-        left: 1.4rem !important;
-        right: 1.4rem;
+        left: 0 !important;
+        right: 0;
         grid-template-columns: 1fr auto;
         grid-template-areas: 'left right' 'center center';
         row-gap: 0.75rem;

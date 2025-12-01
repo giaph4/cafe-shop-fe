@@ -10,8 +10,8 @@
             <div class="stats-cards mb-4">
                 <div class="row g-3">
                     <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card stat-card--primary w-100">
-                            <div class="stat-card__icon">
+                        <div class="stat-card w-100">
+                            <div class="stat-card__icon bg-primary-light">
                                 <i class="bi bi-calendar-check"></i>
                             </div>
                             <div class="stat-card__meta">
@@ -21,8 +21,8 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card stat-card--success w-100">
-                            <div class="stat-card__icon">
+                        <div class="stat-card w-100">
+                            <div class="stat-card__icon bg-emerald-light">
                                 <i class="bi bi-box-arrow-in-right"></i>
                             </div>
                             <div class="stat-card__meta">
@@ -35,8 +35,8 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card stat-card--info w-100">
-                            <div class="stat-card__icon">
+                        <div class="stat-card w-100">
+                            <div class="stat-card__icon bg-sky-light">
                                 <i class="bi bi-box-arrow-right"></i>
                             </div>
                             <div class="stat-card__meta">
@@ -49,8 +49,8 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card stat-card--warning w-100">
-                            <div class="stat-card__icon">
+                        <div class="stat-card w-100">
+                            <div class="stat-card__icon bg-amber-light">
                                 <i class="bi bi-graph-up-arrow"></i>
                             </div>
                             <div class="stat-card__meta">
@@ -250,15 +250,16 @@ defineProps({
 .stat-card {
     display: flex;
     align-items: center;
-    gap: var(--spacing-4);
-    padding: var(--spacing-6);
-    background: var(--color-card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-base);
+    gap: 1rem;
+    background: linear-gradient(160deg, rgba(244, 246, 255, 0.94), rgba(233, 240, 255, 0.9));
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    padding: 1rem 1.2rem;
+    box-shadow: 0 16px 30px rgba(99, 102, 241, 0.12);
+    color: var(--color-text);
     height: 100%;
     min-height: 140px;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .stat-card:hover {
@@ -266,32 +267,16 @@ defineProps({
     box-shadow: var(--shadow-md);
 }
 
-.stat-card--primary .stat-card__icon {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-}
-
-.stat-card--success .stat-card__icon {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-.stat-card--info .stat-card__icon {
-    background: linear-gradient(135deg, #0ea5e9, #0284c7);
-}
-
-.stat-card--warning .stat-card__icon {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
 .stat-card__icon {
-    width: 64px;
-    height: 64px;
+    width: 52px;
+    height: 52px;
     border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.75rem;
-    color: #fff;
-    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 18px rgba(99, 102, 241, 0.18);
 }
 
 .stat-card__meta {
@@ -304,22 +289,17 @@ defineProps({
 .stat-card__label {
     font-size: 0.85rem;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
 }
 
 .stat-card__value {
-    font-size: 2rem;
+    font-size: 1.35rem;
     font-weight: 700;
     color: var(--color-heading);
-    line-height: 1;
 }
 
 .stat-card__subtitle {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--color-text-muted);
-    font-weight: 500;
 }
 
 .analytics-card,
@@ -378,9 +358,9 @@ defineProps({
     align-items: center;
     gap: 1rem;
     padding: 1.25rem;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: #f8fafc;
+    border-radius: 18px;
+    border: 1px solid rgba(226, 232, 240, 0.7);
 }
 
 .summary-item__icon {
@@ -413,6 +393,22 @@ defineProps({
     font-weight: 700;
     color: var(--color-heading);
     line-height: 1;
+}
+
+.bg-primary-light {
+    background: var(--color-soft-primary);
+}
+
+.bg-amber-light {
+    background: var(--color-soft-amber);
+}
+
+.bg-sky-light {
+    background: var(--color-soft-sky);
+}
+
+.bg-emerald-light {
+    background: var(--color-soft-emerald);
 }
 </style>
 

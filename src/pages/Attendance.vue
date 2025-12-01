@@ -4,13 +4,15 @@
             <div class="attendance-header__content">
                 <div class="attendance-header__title-section">
                     <h2 class="attendance-header__title">Quản lý Chấm công</h2>
-                    <p class="attendance-header__subtitle">Theo dõi và quản lý chấm công của nhân viên, xem lịch sử và thống kê chi tiết.</p>
+                    <p class="attendance-header__subtitle">
+                        Theo dõi và quản lý chấm công của nhân viên, xem lịch sử và thống kê chi tiết.
+                    </p>
                 </div>
                 <div class="attendance-header__actions">
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button" 
-                        @click="fetchData" 
+                    <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        @click="fetchData"
                         :disabled="loading"
                     >
                         <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
@@ -55,59 +57,65 @@
                                 {{ user.fullName || user.username }}
                             </option>
                         </select>
-                        <small class="text-muted d-block mt-1">Lưu ý: Chỉ hiển thị ca làm của nhân viên được chọn</small>
+                        <small class="text-muted d-block mt-1">
+                            Lưu ý: Chỉ hiển thị ca làm của nhân viên được chọn
+                        </small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card tabs-card mb-4">
-            <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
+        <section class="attendance-tabs">
+            <div class="card tabs-card mb-4">
+                <div class="card-body">
+                    <div class="tabs">
                         <button
+                            v-for="tab in tabs"
+                            :key="tab.key"
                             type="button"
-                            class="nav-link"
+                            class="tab"
                             :class="{ active: activeTab === tab.key }"
                             @click="activeTab = tab.key"
                         >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
+                            <i :class="tab.icon"></i>
+                            <span>{{ tab.label }}</span>
                         </button>
-                    </li>
-                </ul>
-                <LoadingState v-if="loading && activeTab !== 'overview'" />
-                <ErrorState 
-                    v-else-if="error" 
-                    :message="error"
-                    @retry="fetchData"
-                />
-                <div v-else class="tab-content">
-                    <AttendanceOverviewTab
-                        v-if="activeTab === 'overview'"
-                        :current-session="currentSession"
-                        :assignments="myAssignments"
-                        :loading="overviewLoading"
-                        :check-in-submitting="checkInSubmitting"
-                        :check-out-submitting="checkOutSubmitting"
-                        @check-in="handleCheckIn"
-                        @check-out="handleCheckOut"
-                        @refresh="fetchMyAssignments"
+                    </div>
+
+                    <LoadingState v-if="loading && activeTab !== 'overview'" />
+                    <ErrorState
+                        v-else-if="error"
+                        :message="error"
+                        @retry="fetchData"
                     />
-                    <AttendanceHistoryTab
-                        v-else-if="activeTab === 'history'"
-                        :records="attendanceRecords"
-                        :loading="historyLoading"
-                        :filters="filters"
-                    />
-                    <AttendanceStatisticsTab
-                        v-else-if="activeTab === 'statistics'"
-                        :statistics="statistics"
-                        :loading="statisticsLoading"
-                        :filters="filters"
-                    />
+                    <div v-else class="tab-content">
+                        <AttendanceOverviewTab
+                            v-if="activeTab === 'overview'"
+                            :current-session="currentSession"
+                            :assignments="myAssignments"
+                            :loading="overviewLoading"
+                            :check-in-submitting="checkInSubmitting"
+                            :check-out-submitting="checkOutSubmitting"
+                            @check-in="handleCheckIn"
+                            @check-out="handleCheckOut"
+                            @refresh="fetchMyAssignments"
+                        />
+                        <AttendanceHistoryTab
+                            v-else-if="activeTab === 'history'"
+                            :records="attendanceRecords"
+                            :loading="historyLoading"
+                            :filters="filters"
+                        />
+                        <AttendanceStatisticsTab
+                            v-else-if="activeTab === 'statistics'"
+                            :statistics="statistics"
+                            :loading="statisticsLoading"
+                            :filters="filters"
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 </template>
 
@@ -515,35 +523,55 @@ onMounted(() => {
 
 .filter-card,
 .tabs-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--component-radius-lg);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--component-shadow);
     background: var(--color-card);
 }
 
-.reports-tabs {
+.attendance-tabs {
+    margin-top: var(--spacing-2);
+}
+
+.attendance-tabs .tabs {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: 0.75rem;
+    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    padding: 0.6rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
 }
 
-.reports-tabs .nav-link {
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-5);
-    font-weight: var(--font-weight-semibold);
+.attendance-tabs .tab {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1.35rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 600;
     color: var(--color-text-muted);
-    background: var(--color-card-muted);
-    transition: all var(--transition-base);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+    white-space: nowrap;
 }
 
-.reports-tabs .nav-link:hover {
-    background: var(--color-primary-soft);
+.attendance-tabs .tab i {
+    font-size: 1.15rem;
+}
+
+.attendance-tabs .tab.active {
+    background: var(--color-soft-primary);
     color: var(--color-primary);
+    box-shadow: var(--shadow-md);
 }
 
-.reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-white);
+.attendance-tabs .tab:hover:not(.active) {
+    background: var(--color-card-muted);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {

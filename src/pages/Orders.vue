@@ -67,18 +67,19 @@
 
         <div class="card tabs-card mb-4">
             <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
+                <div class="orders-tabs mb-3">
+                    <button
+                        v-for="tab in tabs"
+                        :key="tab.key"
+                        type="button"
+                        class="orders-tab"
+                        :class="{ active: activeTab === tab.key }"
+                        @click="activeTab = tab.key"
+                    >
+                        <i :class="tab.icon"></i>
+                        <span>{{ tab.label }}</span>
+                    </button>
+                </div>
                 <LoadingState v-if="loading && activeTab !== 'overview'" />
                 <ErrorState v-else-if="error && activeTab !== 'overview'" :message="error" @retry="fetchData" />
                 <div v-else class="tab-content">
@@ -123,6 +124,69 @@
             :order="selectedOrder"
             @updated="handleOrderUpdated"
         />
+
+        <!-- Cancel Order Modal -->
+        <Teleport to="body">
+            <div
+                class="modal fade"
+                tabindex="-1"
+                aria-labelledby="cancelOrderModalLabel"
+                aria-hidden="true"
+                ref="cancelModalRef"
+            >
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-header__content">
+                                <h5 class="modal-title" id="cancelOrderModalLabel">Hủy đơn hàng</h5>
+                                <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                @click="closeCancelModal"
+                                aria-label="Đóng"
+                            ></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-3">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
+                            <div class="delete-info-card">
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Mã đơn:</span>
+                                    <span class="delete-info-value">#{{ cancelTarget?.id ?? '—' }}</span>
+                                </div>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Bàn:</span>
+                                    <span class="delete-info-value">{{ cancelTarget?.tableName || 'Mang về' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                @click="closeCancelModal"
+                                :disabled="cancelling"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-danger"
+                                @click="confirmCancelOrder"
+                                :disabled="cancelling"
+                            >
+                                <span
+                                    v-if="cancelling"
+                                    class="spinner-border spinner-border-sm me-2"
+                                ></span>
+                                Xác nhận hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
@@ -182,6 +246,9 @@ const orderDetailModal = ref(null)
 const orderUpdateModal = ref(null)
 const cancelling = ref(false)
 const exporting = ref(false)
+const cancelTarget = ref(null)
+const cancelModalRef = ref(null)
+let cancelModalInstance = null
 
 const filters = reactive({
     status: '',
@@ -318,9 +385,6 @@ const fetchOrders = async () => {
             totalPages: response?.totalPages ?? 0,
             totalElements: response?.totalElements ?? 0
         })
-        if (adjusted) {
-            toast.info('Trang đơn hàng đã được điều chỉnh theo dữ liệu hiện có.', { autoClose: 2500 })
-        }
     } catch (err) {
         // Error handling đã được xử lý trong service layer
         // Chỉ cần hiển thị error message cho user
@@ -512,9 +576,9 @@ onBeforeUnmount(() => {
 .orders-header {
     padding: var(--spacing-6);
     border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
     margin-bottom: var(--spacing-6);
 }
 
@@ -569,6 +633,41 @@ onBeforeUnmount(() => {
     white-space: nowrap;
 }
 
+/* Tabs giống Dashboard */
+.orders-tabs {
+    display: flex;
+    gap: 0.75rem;
+    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    padding: 0.6rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
+}
+
+.orders-tab {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1.35rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.orders-tab i {
+    font-size: 1.15rem;
+}
+
+.orders-tab.active {
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+}
+
 @media (max-width: 768px) {
     .orders-header__content {
         flex-direction: column;
@@ -578,6 +677,15 @@ onBeforeUnmount(() => {
     .orders-header__actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .orders-tabs {
+        gap: var(--spacing-2);
+    }
+
+    .orders-tab {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
     }
 }
 </style>

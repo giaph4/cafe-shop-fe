@@ -53,12 +53,12 @@
         <div class="card table-card">
             <div class="card-body">
                 <h5 class="card-title mb-3">Tổng hợp theo phân công</h5>
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-                <div v-else-if="!groupedByAssignment.length" class="text-center text-muted py-5">
-                    Chưa có dữ liệu để thống kê.
-                </div>
+                <LoadingState v-if="loading" />
+                <EmptyState
+                    v-else-if="!groupedByAssignment.length"
+                    title="Chưa có dữ liệu"
+                    message="Chưa có dữ liệu để thống kê."
+                />
                 <div v-else class="table-responsive">
                     <table class="table align-middle">
                         <thead class="table-light">
@@ -92,6 +92,8 @@
 
 <script setup>
 import { computed } from 'vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 import { formatCurrency } from '@/utils/formatters'
 
 const props = defineProps({
@@ -144,18 +146,18 @@ const groupedByAssignment = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .metric-card {
     position: relative;
-    border-radius: 20px;
-    border: 1px solid rgba(148, 163, 184, 0.24);
-    background: linear-gradient(160deg, rgba(248, 250, 252, 0.92), rgba(226, 232, 240, 0.6));
-    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-    padding: 1.5rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-6);
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    gap: var(--spacing-5);
+    transition: all var(--transition-base);
     overflow: hidden;
     height: 100%;
     min-height: 140px;
@@ -174,76 +176,76 @@ const groupedByAssignment = computed(() => {
 
 .metric-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-md);
 }
 
 .metric-card__icon {
     width: 64px;
     height: 64px;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: var(--font-size-2xl);
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: var(--color-card-muted);
+    box-shadow: var(--shadow-sm);
 }
 
 .metric-card--primary {
-    background: linear-gradient(160deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
-    border-color: rgba(99, 102, 241, 0.2);
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary-soft);
 }
 
 .metric-card--primary .metric-card__icon {
-    background: rgba(99, 102, 241, 0.15);
-    color: #4f46e5;
+    background: var(--color-primary);
+    color: var(--color-white);
 }
 
 .metric-card--primary .metric-value {
-    color: #4f46e5;
+    color: var(--color-primary);
 }
 
 .metric-card--success {
-    background: linear-gradient(160deg, rgba(34, 197, 94, 0.12), rgba(74, 222, 128, 0.08));
-    border-color: rgba(34, 197, 94, 0.2);
+    background: var(--color-success-soft);
+    border-color: var(--color-success-soft);
 }
 
 .metric-card--success .metric-card__icon {
-    background: rgba(34, 197, 94, 0.15);
-    color: #15803d;
+    background: var(--color-success);
+    color: var(--color-white);
 }
 
 .metric-card--success .metric-value {
-    color: #047857;
+    color: var(--color-success);
 }
 
 .metric-card--danger {
-    background: linear-gradient(160deg, rgba(239, 68, 68, 0.12), rgba(248, 113, 113, 0.08));
-    border-color: rgba(239, 68, 68, 0.2);
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger-soft);
 }
 
 .metric-card--danger .metric-card__icon {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
+    background: var(--color-danger);
+    color: var(--color-white);
 }
 
 .metric-card--danger .metric-value {
-    color: #b91c1c;
+    color: var(--color-danger);
 }
 
 .metric-card--warning {
-    background: linear-gradient(160deg, rgba(251, 191, 36, 0.12), rgba(253, 224, 71, 0.08));
-    border-color: rgba(251, 191, 36, 0.2);
+    background: var(--color-warning-soft);
+    border-color: var(--color-warning-soft);
 }
 
 .metric-card--warning .metric-card__icon {
-    background: rgba(251, 191, 36, 0.18);
-    color: #b45309;
+    background: var(--color-warning);
+    color: var(--color-white);
 }
 
 .metric-card--warning .metric-value {
-    color: #b45309;
+    color: var(--color-warning);
 }
 
 .metric-card__content {
@@ -254,30 +256,30 @@ const groupedByAssignment = computed(() => {
 }
 
 .metric-label {
-    font-size: 0.85rem;
-    color: #475569;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 600;
+    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
 }
 
 .metric-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    line-height: 1.2;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
 }
 
 .metric-detail {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-top: 0.125rem;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
 }
 
 .table-card {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 @media (max-width: 768px) {

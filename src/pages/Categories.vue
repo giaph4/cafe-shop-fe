@@ -84,16 +84,14 @@
                     </div>
                     <div class="modal-body">
                         <p class="mb-3">Bạn có chắc chắn muốn xóa danh mục này không?</p>
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <strong class="text-muted d-block mb-1">Tên danh mục:</strong>
-                                    <span>{{ deleteTarget?.name || '—' }}</span>
-                                </div>
-                                <div class="mb-0" v-if="deleteTarget?.description">
-                                    <strong class="text-muted d-block mb-1">Mô tả:</strong>
-                                    <span>{{ deleteTarget.description }}</span>
-                                </div>
+                        <div class="delete-info-card">
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Tên danh mục:</span>
+                                <span class="delete-info-value">{{ deleteTarget?.name || '—' }}</span>
+                            </div>
+                            <div class="delete-info-item" v-if="deleteTarget?.description">
+                                <span class="delete-info-label">Mô tả:</span>
+                                <span class="delete-info-value">{{ deleteTarget.description }}</span>
                             </div>
                         </div>
                     </div>
@@ -132,6 +130,20 @@
                     <button class="btn btn-primary btn-sm" @click="openModal()">
                         <i class="bi bi-plus-lg me-2"></i> Thêm mới
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4 mt-1">
+            <div class="col-md-4 d-flex" v-for="stat in stats" :key="stat.label">
+                <div class="stat-card w-100">
+                    <div class="stat-icon" :class="stat.variant">
+                        <i :class="stat.icon"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label mb-1">{{ stat.label }}</p>
+                        <h4 class="stat-value mb-0">{{ stat.value }}</h4>
+                    </div>
                 </div>
             </div>
         </div>
@@ -197,7 +209,7 @@
                                     <td>{{ category.description || '—' }}</td>
                                     <td class="text-end">
                                         <div class="action-buttons">
-                                            <button class="action-button" type="button" @click="openModal(category)">
+                                            <button class="action-button action-button--primary" type="button" @click="openModal(category)">
                                                 <i class="bi bi-pencil"></i>
                                                 <span>Chỉnh sửa</span>
                                             </button>
@@ -306,6 +318,32 @@ const filteredCategories = computed(() => {
     )
 })
 
+const stats = computed(() => {
+    const total = categories.value?.length || 0
+    const withDescription = categories.value?.filter(c => c.description && c.description.trim()).length || 0
+    const withoutDescription = total - withDescription
+    return [
+        {
+            label: 'Tổng danh mục',
+            value: total,
+            icon: 'bi bi-folder',
+            variant: 'variant-primary'
+        },
+        {
+            label: 'Có mô tả',
+            value: withDescription,
+            icon: 'bi bi-file-text',
+            variant: 'variant-success'
+        },
+        {
+            label: 'Không mô tả',
+            value: withoutDescription,
+            icon: 'bi bi-file',
+            variant: 'variant-warning'
+        }
+    ]
+})
+
 
 onMounted(() => {
     if (modalElement.value) {
@@ -382,9 +420,9 @@ const closeDeleteModal = () => {
 .categories-header {
     padding: var(--spacing-6);
     border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
     margin-bottom: var(--spacing-6);
 }
 
@@ -460,6 +498,124 @@ const closeDeleteModal = () => {
     background: var(--color-card);
 }
 
+.delete-info-card {
+    border: 1px dashed var(--color-primary-border-soft);
+    background: var(--color-primary-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+}
+
+.delete-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
+}
+
+.delete-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.delete-info-label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.delete-info-value {
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    text-align: right;
+    flex: 1;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    border-radius: 24px;
+    padding: var(--spacing-4) var(--spacing-5);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    height: 100%;
+    min-height: 120px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--color-card-muted);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    color: #4338ca;
+}
+
+.variant-primary {
+    background-color: #e0e7ff;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.18);
+}
+
+.variant-success {
+    background-color: #dcfce7;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.18);
+}
+
+.variant-warning {
+    background-color: #fef3c7;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18);
+}
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-medium);
+}
+
+.stat-value {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+}
+
+.filter-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
+}
+
+.filter-card .input-group-text {
+    background: var(--color-card-muted);
+    border-right: none;
+    color: var(--color-text-muted);
+}
+
+.filter-card .form-control {
+    border-left: none;
+    background: var(--color-card);
+}
+
+.tabs-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
+}
+
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -471,42 +627,44 @@ const closeDeleteModal = () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-1);
-    padding: var(--spacing-2) var(--spacing-3);
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-primary-border-soft);
+    border: 1px solid;
     background: var(--color-card);
-    color: var(--color-primary);
     font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     transition: all var(--transition-fast);
     white-space: nowrap;
-    cursor: pointer;
 }
 
-.action-button:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: var(--color-white);
+.action-button--primary {
     border-color: var(--color-primary);
-    box-shadow: var(--shadow-sm);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.action-button--primary:hover:not(:disabled) {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .action-button:disabled {
-    opacity: 0.65;
-    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .action-button--danger {
-    border-color: var(--color-danger-border);
-    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
     color: var(--color-danger);
+    background: var(--color-card);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: var(--color-danger);
-    color: var(--color-white);
+    background: var(--color-danger-soft);
     border-color: var(--color-danger);
-    box-shadow: var(--shadow-sm);
+    color: var(--color-danger);
 }
 
 @media (max-width: 768px) {
@@ -529,8 +687,8 @@ const closeDeleteModal = () => {
         width: 100%;
     }
 
-    .action-button span {
-        display: none;
+    .stat-card {
+        flex-direction: row;
     }
 }
 </style>

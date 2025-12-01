@@ -74,47 +74,8 @@
                                 </div>
                             </div>
 
-                            <!-- History -->
-                            <div v-if="history.length > 0" class="calculator-history">
-                                <div class="calculator-history__header">
-                                    <span>Lịch sử ({{ history.length }}/20)</span>
-                                    <button
-                                        type="button"
-                                        class="calculator-btn calculator-btn--text"
-                                        @click="clearHistory"
-                                    >
-                                        Xóa
-                                    </button>
-                                </div>
-                                <div class="calculator-history__list">
-                                    <button
-                                        v-for="(item, index) in history"
-                                        :key="index"
-                                        type="button"
-                                        class="calculator-history__item"
-                                        @click="loadFromHistory(item)"
-                                    >
-                                        <span class="calculator-history__expr">{{ item.expression }}</span>
-                                        <span class="calculator-history__result">= {{ formatNumber(item.result) }}</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Keypad -->
+                            <!-- Keypad (phong cách Windows Calculator) -->
                             <div class="calculator-keypad">
-                                <!-- Row 1: Functions -->
-                                <button
-                                    v-for="func in functionButtons"
-                                    :key="func.key"
-                                    type="button"
-                                    class="calculator-key calculator-key--function"
-                                    @click="handleFunction(func.key)"
-                                    :title="func.title"
-                                >
-                                    {{ func.label }}
-                                </button>
-
-                                <!-- Row 2-5: Numbers and Operations -->
                                 <button
                                     v-for="key in keypadLayout"
                                     :key="key"
@@ -454,27 +415,17 @@ const currency = ref({
 })
 const currencyResult = ref(null)
 
-// Function buttons
-const functionButtons = [
-    { key: 'sqrt', label: '√', title: 'Căn bậc hai' },
-    { key: 'power', label: 'x²', title: 'Bình phương' },
-    { key: 'log', label: 'log', title: 'Logarit cơ số 10' },
-    { key: 'ln', label: 'ln', title: 'Logarit tự nhiên' },
-    { key: 'sin', label: 'sin', title: 'Sin (độ)' },
-    { key: 'cos', label: 'cos', title: 'Cos (độ)' },
-    { key: 'tan', label: 'tan', title: 'Tan (độ)' },
-    { key: 'factorial', label: 'n!', title: 'Giai thừa' }
-]
-
-// Keypad layout
+// Layout keypad chuẩn, tối giản giống Windows Calculator (theme sáng)
 const keypadLayout = [
-    'CE', 'C', '⌫', '÷',
+    // Hàng 1: Memory
+    'MC', 'MR', 'M+', 'M-',
+    // Hàng 2: phần trăm + xoá
+    '%', 'CE', 'C', '⌫',
+    // Hàng 3-6: số & toán tử
     '7', '8', '9', '×',
     '4', '5', '6', '-',
     '1', '2', '3', '+',
-    '±', '0', '.', '=',
-    'M+', 'M-', 'MR', 'MC',
-    '%', 'R100', 'R1000'
+    '±', '0', '.', '='
 ]
 
 // Computed
@@ -927,10 +878,55 @@ const handleResize = () => {
 }
 
 const setupKeyboardShortcuts = (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+    const key = e.key
+
+    // Ctrl+M: toggle open/close
+    if ((e.ctrlKey || e.metaKey) && key.toLowerCase() === 'm') {
         e.preventDefault()
         isOpen.value = !isOpen.value
         emit('update:modelValue', isOpen.value)
+        return
+    }
+
+    // Chỉ xử lý phím khi panel đang mở và đang ở tab standard
+    if (!isOpen.value || activeTab.value !== 'standard') return
+
+    // Nếu focus đang ở input trong quickpay/currency thì bỏ qua
+    const target = e.target
+    if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return
+
+    // Map phím bàn phím sang key của calculator
+    const keyMap = {
+        '/': '÷',
+        '*': '×',
+        '+': '+',
+        '-': '-',
+        Enter: '=',
+        '=': '=',
+        Backspace: '⌫',
+        Escape: 'C',
+        Delete: 'CE',
+        '%': '%',
+    }
+
+    // Số và dấu chấm
+    if (/^[0-9]$/.test(key)) {
+        e.preventDefault()
+        handleKey(key)
+        return
+    }
+
+    if (key === '.' || key === ',') {
+        e.preventDefault()
+        handleKey('.')
+        return
+    }
+
+    // Các phím chức năng + toán tử
+    const mapped = keyMap[key] || keyMap[e.key]
+    if (mapped) {
+        e.preventDefault()
+        handleKey(mapped)
     }
 }
 

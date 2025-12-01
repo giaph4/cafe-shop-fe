@@ -1,14 +1,15 @@
 <template>
-    <!-- Supplier Modal -->
-    <div class="modal fade" id="supplierModal" tabindex="-1" ref="modalElement" aria-hidden="true">
+    <Teleport to="body">
+        <!-- Supplier Modal -->
+        <div class="modal fade" id="supplierModal" tabindex="-1" ref="modalElement" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content form-modal">
-                <div class="modal-header border-0 pb-0">
+            <div class="modal-content">
+                <div class="modal-header">
                     <div>
-                        <h5 class="modal-title fw-semibold">{{ isEditing ? 'Cập nhật nhà cung cấp' : 'Thêm nhà cung cấp mới' }}</h5>
-                        <p class="modal-subtitle text-muted mb-0">Lưu thông tin chính xác để quản lý chuỗi cung ứng hiệu quả.</p>
+                        <h5 class="modal-title">{{ isEditing ? 'Cập nhật nhà cung cấp' : 'Thêm nhà cung cấp mới' }}</h5>
+                        <p class="modal-subtitle mb-0">Lưu thông tin chính xác để quản lý chuỗi cung ứng hiệu quả.</p>
                     </div>
-                    <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value" aria-label="Close"></button>
                 </div>
 
                 <Form @submit="handleSubmit" :validation-schema="supplierSchema" v-slot="{ errors }">
@@ -47,8 +48,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-outline-secondary" @click="closeModal">Hủy</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value">Hủy</button>
                         <button type="submit" class="btn btn-primary"
                             :disabled="createMutation.isPending.value || updateMutation.isPending.value">
                             <span v-if="createMutation.isPending.value || updateMutation.isPending.value"
@@ -59,9 +60,58 @@
                 </Form>
             </div>
         </div>
-    </div>
+        </div>
 
-    <div class="suppliers-page container-fluid" data-aos="fade-up">
+        <!-- Delete Supplier Confirmation Modal -->
+        <div 
+            class="modal fade" 
+            id="deleteSupplierModal" 
+            tabindex="-1" 
+            ref="deleteSupplierModalElement" 
+            aria-labelledby="deleteSupplierModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="deleteSupplierModalLabel">Xóa nhà cung cấp</h5>
+                            <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="deleteSupplierBsModal?.hide()" :disabled="deleteMutation.isPending.value" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Bạn có chắc chắn muốn xóa nhà cung cấp này không?</p>
+                        <div v-if="supplierToDelete" class="delete-info-card">
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Tên:</span>
+                                <span class="delete-info-value">{{ supplierToDelete.name || '—' }}</span>
+                            </div>
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Người liên hệ:</span>
+                                <span class="delete-info-value">{{ supplierToDelete.contactPerson || '—' }}</span>
+                            </div>
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Số điện thoại:</span>
+                                <span class="delete-info-value">{{ supplierToDelete.phone || '—' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @click="deleteSupplierBsModal?.hide()" :disabled="deleteMutation.isPending.value">
+                            Hủy
+                        </button>
+                        <button type="button" class="btn btn-danger" @click="confirmDeleteSupplier" :disabled="deleteMutation.isPending.value">
+                            <span v-if="deleteMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
+                            Xóa nhà cung cấp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
+    <div class="suppliers-page container-fluid">
         <div class="suppliers-header">
             <div class="suppliers-header__content">
                 <div class="suppliers-header__title-section">
@@ -117,12 +167,17 @@
 
         <div class="card table-card">
             <div class="card-body p-0">
-                <div v-if="isLoading" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="isError" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ errorMessage }}</div>
-                </div>
+                <LoadingState v-if="isLoading" />
+                <ErrorState 
+                    v-else-if="isError" 
+                    :message="errorMessage"
+                    @retry="refetch"
+                />
+                <EmptyState
+                    v-else-if="!tableData.length"
+                    title="Chưa có nhà cung cấp"
+                    message="Tạo nhà cung cấp mới bằng nút ở góc trên bên phải."
+                />
                 <div v-else class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -144,7 +199,7 @@
                                 <td>{{ supplier.address || '—' }}</td>
                                 <td class="text-end">
                                     <div class="action-buttons">
-                                        <button class="action-button" type="button" @click="openModal(supplier)">
+                                        <button class="action-button action-button--primary" type="button" @click="openModal(supplier)">
                                             <i class="bi bi-pencil"></i>
                                             <span>Chỉnh sửa</span>
                                         </button>
@@ -154,9 +209,6 @@
                                         </button>
                                     </div>
                                 </td>
-                            </tr>
-                            <tr v-if="!tableData.length">
-                                <td colspan="6" class="text-center text-muted py-5">Không tìm thấy nhà cung cấp phù hợp.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -172,11 +224,15 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { Teleport } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { Modal } from 'bootstrap'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
 
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import { usePagination, PaginationMode } from '@/composables/usePagination'
 import { showSuccess, showError } from '@/utils/toast'
@@ -187,6 +243,9 @@ const queryClient = useQueryClient()
 
 const modalElement = ref(null)
 const bsModal = ref(null)
+const deleteSupplierModalElement = ref(null)
+const deleteSupplierBsModal = ref(null)
+const supplierToDelete = ref(null)
 const isEditing = ref(false)
 
 const formData = reactive({ id: null, name: '', contactPerson: '', phone: '', email: '', address: '' })
@@ -213,6 +272,9 @@ watch(searchQuery, (value) => {
 onMounted(() => {
     if (modalElement.value) {
         bsModal.value = new Modal(modalElement.value, { backdrop: 'static' })
+    }
+    if (deleteSupplierModalElement.value) {
+        deleteSupplierBsModal.value = new Modal(deleteSupplierModalElement.value)
     }
 })
 
@@ -383,9 +445,16 @@ const handleSubmit = (values) => {
 }
 
 const handleDelete = (supplier) => {
-    if (confirm(`Bạn có chắc chắn muốn xoá nhà cung cấp "${supplier.name}"?`)) {
-        deleteMutation.mutate(supplier.id)
-    }
+    supplierToDelete.value = supplier
+    deleteSupplierBsModal.value?.show()
+}
+
+const confirmDeleteSupplier = () => {
+    if (!supplierToDelete.value) return
+    const supplier = supplierToDelete.value
+    deleteSupplierBsModal.value?.hide()
+    deleteMutation.mutate(supplier.id)
+    supplierToDelete.value = null
 }
 
 const handlePageChange = (page) => {
@@ -393,102 +462,184 @@ const handlePageChange = (page) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .suppliers-page {
-    padding-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
 }
-
 
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    padding: 1rem 1.25rem;
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    gap: var(--spacing-4);
+    border-radius: 24px;
+    padding: var(--spacing-4) var(--spacing-5);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
     height: 100%;
-    min-height: 140px;
+    min-height: 120px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--color-card-muted);
 }
 
 .stat-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: #fff;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    color: #4338ca;
 }
 
 .variant-primary {
-    background: linear-gradient(140deg, #6366f1, #8b5cf6);
+    background-color: #e0e7ff;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.18);
 }
 
 .variant-info {
-    background: linear-gradient(140deg, #0ea5e9, #38bdf8);
+    background-color: #dbeafe;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
 }
 
 .variant-success {
-    background: linear-gradient(140deg, #22c55e, #4ade80);
+    background-color: #dcfce7;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.18);
 }
 
 .stat-label {
-    font-size: 0.85rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-1);
 }
 
 .stat-value {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
 }
 
 .table-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
 }
 
-.search-group .input-group-text {
-    background: transparent;
+.filter-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
+}
+
+.filter-card .input-group-text {
+    background: var(--color-card-muted);
     border-right: none;
+    color: var(--color-text-muted);
 }
 
-.search-group .form-control {
+.filter-card .form-control {
     border-left: none;
+    background: var(--color-card);
+}
+
+.delete-info-card {
+    border: 1px dashed var(--color-primary-border-soft);
+    background: var(--color-primary-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+}
+
+.delete-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
+}
+
+.delete-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.delete-info-label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.delete-info-value {
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    text-align: right;
+    flex: 1;
 }
 
 
-.form-modal {
-    border-radius: 20px;
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
 }
 
-.form-modal .modal-subtitle {
-    font-size: 0.9rem;
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .modal-subtitle) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 .suppliers-header {
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
 }
 
 .suppliers-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
+    flex-wrap: wrap;
 }
 
 .suppliers-header__title-section {
@@ -497,24 +648,25 @@ const handlePageChange = (page) => {
 }
 
 .suppliers-header__title {
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--spacing-1);
 }
 
 .suppliers-header__subtitle {
-    margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 .suppliers-header__actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -522,7 +674,7 @@ const handlePageChange = (page) => {
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
 }
 
@@ -530,76 +682,51 @@ const handlePageChange = (page) => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    background: #ffffff;
-    color: #a855f7;
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    background: var(--color-card);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
     white-space: nowrap;
 }
 
-.action-button:hover:not(:disabled) {
-    background: rgba(168, 85, 247, 0.05);
-    border-color: rgba(168, 85, 247, 0.5);
-    transform: translateY(-1px);
+.action-button--primary {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.action-button--primary:hover:not(:disabled) {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .action-button:disabled {
-    opacity: 0.65;
-    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .action-button--danger {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: var(--color-card);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.5);
-}
-
-:deep(.form-modal) {
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
-}
-
-:deep(.form-modal .modal-header) {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.5rem;
-    background: #ffffff;
-}
-
-:deep(.form-modal .modal-title) {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
-}
-
-:deep(.form-modal .modal-subtitle) {
-    color: #64748b;
-    font-size: 0.875rem;
-}
-
-:deep(.form-modal .modal-body) {
-    padding: 1.5rem;
-}
-
-:deep(.form-modal .modal-footer) {
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    background: #ffffff;
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
 @media (max-width: 768px) {
+    .suppliers-header {
+        padding: var(--spacing-4);
+    }
+
     .suppliers-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -607,7 +734,11 @@ const handlePageChange = (page) => {
 
     .suppliers-header__actions {
         width: 100%;
-        justify-content: flex-start;
+        justify-content: stretch;
+    }
+
+    .suppliers-header__actions .btn {
+        flex: 1;
     }
 
     .action-buttons {

@@ -2,9 +2,9 @@
     <div class="attendance-history">
         <div class="history-stats mb-4">
             <div class="row g-3">
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-card__icon bg-primary">
+                <div class="col-md-3 col-sm-6 d-flex">
+                    <div class="stat-card w-100">
+                        <div class="stat-card__icon bg-primary-light">
                             <i class="bi bi-calendar-check"></i>
                         </div>
                         <div class="stat-card__meta">
@@ -13,9 +13,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-card__icon bg-success">
+                <div class="col-md-3 col-sm-6 d-flex">
+                    <div class="stat-card w-100">
+                        <div class="stat-card__icon bg-emerald-light">
                             <i class="bi bi-box-arrow-in-right"></i>
                         </div>
                         <div class="stat-card__meta">
@@ -24,9 +24,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-card__icon bg-info">
+                <div class="col-md-3 col-sm-6 d-flex">
+                    <div class="stat-card w-100">
+                        <div class="stat-card__icon bg-sky-light">
                             <i class="bi bi-box-arrow-right"></i>
                         </div>
                         <div class="stat-card__meta">
@@ -35,9 +35,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-card__icon bg-warning">
+                <div class="col-md-3 col-sm-6 d-flex">
+                    <div class="stat-card w-100">
+                        <div class="stat-card__icon bg-amber-light">
                             <i class="bi bi-clock-history"></i>
                         </div>
                         <div class="stat-card__meta">
@@ -162,52 +162,50 @@ const formatSource = (source) => {
 .stat-card {
     display: flex;
     align-items: center;
-    gap: var(--spacing-4);
-    padding: var(--spacing-5);
-    background: var(--color-card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-base);
+    gap: 1rem;
+    background: linear-gradient(160deg, rgba(244, 246, 255, 0.92), rgba(233, 240, 255, 0.84));
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    padding: 1rem 1.2rem;
+    box-shadow: 0 16px 30px rgba(99, 102, 241, 0.12);
+    color: var(--color-text);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-md);
 }
 
 .stat-card__icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: #fff;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 18px rgba(99, 102, 241, 0.18);
     flex-shrink: 0;
 }
 
 .stat-card__meta {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.2rem;
     flex: 1;
 }
 
 .stat-card__label {
     font-size: 0.85rem;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
 }
 
 .stat-card__value {
-    font-size: 1.75rem;
+    font-size: 1.35rem;
     font-weight: 700;
     color: var(--color-heading);
-    line-height: 1;
 }
 
 .history-table-card {
@@ -215,6 +213,22 @@ const formatSource = (source) => {
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-sm);
     background: var(--color-card);
+}
+
+.bg-primary-light {
+    background: var(--color-soft-primary);
+}
+
+.bg-amber-light {
+    background: var(--color-soft-amber);
+}
+
+.bg-sky-light {
+    background: var(--color-soft-sky);
+}
+
+.bg-emerald-light {
+    background: var(--color-soft-emerald);
 }
 
 .table {

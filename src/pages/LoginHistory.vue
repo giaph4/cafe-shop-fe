@@ -63,14 +63,17 @@
 
         <div class="card table-card">
             <div class="card-body">
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error" class="alert alert-danger mb-0">{{ error }}</div>
-                <div v-else-if="!history.length" class="text-center py-5">
-                    <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                    <p class="text-muted mb-0">Chưa có dữ liệu đăng nhập.</p>
-                </div>
+                <LoadingState v-if="loading" />
+                <ErrorState 
+                    v-else-if="error" 
+                    :message="error"
+                    @retry="fetchHistory"
+                />
+                <EmptyState
+                    v-else-if="!history.length"
+                    title="Chưa có dữ liệu đăng nhập"
+                    message="Chưa có lịch sử đăng nhập nào được ghi nhận."
+                />
                 <div v-else>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -139,6 +142,9 @@
 <script setup>
 import { onMounted, reactive, ref, computed } from 'vue'
 import { toast } from 'vue3-toastify'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 import { formatDateTime } from '@/utils/formatters'
 import { getLoginHistory } from '@/api/loginHistoryService'
 
@@ -254,27 +260,25 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .login-history-page {
-    padding-bottom: 3rem;
+    padding-bottom: var(--spacing-12);
 }
 
-/* Header Styles */
 .login-history-header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
 }
 
 .login-history-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
     flex-wrap: wrap;
 }
 
@@ -286,45 +290,52 @@ onMounted(() => {
 .login-history-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
     justify-content: flex-end;
 }
 
 .page-title {
-    font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
 }
 
 .page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9rem;
-    line-height: 1.5;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
+.filter-card,
+.table-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+}
 
 .table {
     margin-bottom: 0;
 }
 
 .table thead th {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--letter-spacing-wide);
     border-bottom: 2px solid var(--color-border);
 }
 
 .table tbody tr {
-    transition: background-color 0.2s ease;
+    transition: background-color var(--transition-base);
 }
 
 .table tbody tr:hover {
-    background-color: rgba(148, 163, 184, 0.05);
+    background-color: var(--color-card-muted);
 }
 
 .pagination .page-item.active .page-link {
@@ -335,11 +346,32 @@ onMounted(() => {
 .pagination .page-link {
     color: var(--color-heading);
     border-color: var(--color-border);
+    transition: all var(--transition-base);
 }
 
 .pagination .page-link:hover {
-    background-color: rgba(148, 163, 184, 0.1);
-    border-color: var(--color-border);
+    background-color: var(--color-primary-soft);
+    border-color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .login-history-header {
+        padding: var(--spacing-4);
+    }
+
+    .login-history-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .login-history-header__actions {
+        width: 100%;
+        justify-content: stretch;
+
+        .btn {
+            flex: 1;
+        }
+    }
 }
 </style>
 

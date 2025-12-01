@@ -9,7 +9,7 @@
                         <i class="bi bi-cash-stack"></i>
                     </div>
                     <div class="kpi-card__content">
-                        <div class="kpi-card__label">DOANH THU CỦA TÔI</div>
+                        <div class="kpi-card__label">Doanh thu của tôi:</div>
                         <div class="kpi-card__value">{{ formatCurrency(dashboardData.performance.totalRevenue || 0) }}</div>
                         <div class="kpi-card__detail">{{ formatNumber(dashboardData.performance.totalOrders || 0) }} đơn hàng</div>
                     </div>
@@ -23,7 +23,7 @@
                         <i class="bi bi-tag"></i>
                     </div>
                     <div class="kpi-card__content">
-                        <div class="kpi-card__label">GIÁ TRỊ ĐƠN TRUNG BÌNH</div>
+                        <div class="kpi-card__label">Giá trị đơn trung bình:</div>
                         <div class="kpi-card__value">{{ formatCurrency(dashboardData.performance.averageOrderValue || 0) }}</div>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                         <i class="bi bi-calendar-week"></i>
                     </div>
                     <div class="kpi-card__content">
-                        <div class="kpi-card__label">CA TRONG TUẦN</div>
+                        <div class="kpi-card__label">Ca trong tuần:</div>
                         <div class="kpi-card__value">{{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek || 0) }}</div>
                         <div class="kpi-card__detail">{{ formatNumber(dashboardData.shiftSummary.completedShifts || 0) }} đã hoàn thành</div>
                     </div>
@@ -50,7 +50,7 @@
                         <i class="bi bi-coin"></i>
                     </div>
                     <div class="kpi-card__content">
-                        <div class="kpi-card__label">LƯƠNG ƯỚC TÍNH</div>
+                        <div class="kpi-card__label">Lương ước tính:</div>
                         <div class="kpi-card__value">{{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle || 0) }}</div>
                         <div class="kpi-card__detail">Đã nhận: {{ formatCurrency(dashboardData.payroll.lastCyclePaid || 0) }}</div>
                     </div>
@@ -218,21 +218,22 @@ defineProps({
 
 /* KPI Cards */
 .kpi-card {
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    padding: 1.5rem;
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    background: #f8fafc;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    border-radius: 24px;
+    padding: var(--spacing-6);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    transition: all 0.3s ease;
+    gap: var(--spacing-5);
+    transition: all var(--transition-base);
     min-height: 140px;
+    height: 100%;
 }
 
 .kpi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(15, 23, 184, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
 }
 
 .kpi-card__icon {
@@ -242,56 +243,60 @@ defineProps({
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 1.75rem;
     flex-shrink: 0;
-    color: white;
+    color: #6366f1;
+    position: relative;
 }
 
 .kpi-card--revenue .kpi-card__icon {
-    background: linear-gradient(135deg, #3b82f6, #60a5fa);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
 .kpi-card--average .kpi-card__icon {
-    background: linear-gradient(135deg, #10b981, #34d399);
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .kpi-card--shifts .kpi-card__icon {
-    background: linear-gradient(135deg, #f59e0b, #fbbf24);
-    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
 }
 
 .kpi-card--salary .kpi-card__icon {
-    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
 .kpi-card__content {
     flex: 1;
+    min-width: 0;
 }
 
 .kpi-card__label {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    text-transform: none;
+    letter-spacing: normal;
+    margin-bottom: var(--spacing-2);
+    line-height: var(--line-height-normal);
 }
 
 .kpi-card__value {
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    line-height: 1.2;
-    margin-bottom: 0.25rem;
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--spacing-1);
 }
 
 .kpi-card__detail {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    margin-top: 0.25rem;
+    margin-top: var(--spacing-1);
+    line-height: var(--line-height-relaxed);
 }
 
 /* Info Cards */
@@ -309,13 +314,20 @@ defineProps({
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #ffffff;
     font-size: 1.25rem;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    filter: brightness(1.05) contrast(1.1);
+}
+
+.info-card__icon i {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 

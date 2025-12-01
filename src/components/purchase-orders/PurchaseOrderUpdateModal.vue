@@ -4,8 +4,11 @@
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Cập nhật đơn nhập hàng #{{ purchaseOrderId }}</h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
+                        <div>
+                            <h5 class="modal-title">Cập nhật đơn nhập hàng #{{ purchaseOrderId }}</h5>
+                            <p class="modal-subtitle mb-0">Chỉnh sửa thông tin và danh sách nguyên liệu của phiếu nhập.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="hide" :disabled="submitting"></button>
                     </div>
                     <div class="modal-body">
                         <form @submit.prevent="handleSubmit">
@@ -152,7 +155,7 @@
                     <div class="modal-footer">
                         <button 
                             type="button" 
-                            class="btn btn-secondary" 
+                            class="btn btn-outline-secondary" 
                             @click="hide"
                             :disabled="submitting"
                         >
@@ -373,6 +376,41 @@ defineExpose({ show, hide })
 .modal-body {
     max-height: 70vh;
     overflow-y: auto;
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .modal-subtitle) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 </style>
 

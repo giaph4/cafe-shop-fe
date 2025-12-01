@@ -32,7 +32,7 @@
 
         <div class="card tabs-card mb-4">
             <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
+                <ul class="nav nav-pills reports-tabs" role="tablist">
                     <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
                         <button
                             type="button"
@@ -44,13 +44,14 @@
                         </button>
                     </li>
                 </ul>
-                <LoadingState v-if="loading && activeTab !== 'overview'" />
-                <ErrorState 
-                    v-else-if="error && activeTab !== 'overview'" 
-                    :message="error"
-                    @retry="fetchData"
-                />
-                <div v-else class="tab-content">
+                <div class="tab-content mt-4">
+                    <LoadingState v-if="loading && activeTab !== 'overview'" />
+                    <ErrorState 
+                        v-else-if="error && activeTab !== 'overview'" 
+                        :message="error"
+                        @retry="fetchData"
+                    />
+                    <template v-else>
                     <ShiftOverviewTab
                         v-if="activeTab === 'overview'"
                         :calendar-loading="calendarLoading"
@@ -91,6 +92,7 @@
                         @remove="removeTemplate"
                         @page-change="handleTemplatePageChange"
                     />
+                    </template>
                 </div>
             </div>
         </div>
@@ -982,35 +984,79 @@ onMounted(() => {
 }
 
 .tabs-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--component-radius-lg);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    background: var(--color-card);
+    box-shadow: var(--component-shadow);
+    background: linear-gradient(180deg, var(--color-card) 0%, var(--color-card-accent) 100%);
+    transition: box-shadow var(--component-transition);
+}
+
+.tabs-card:hover {
+    box-shadow: var(--component-shadow-hover);
+}
+
+.tabs-card .card-body {
+    padding: var(--component-padding-lg);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--component-gap-sm);
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
 }
 
 .reports-tabs .nav-link {
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-5);
-    font-weight: var(--font-weight-semibold);
+    border-radius: 999px;
+    padding: 0.65rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
     color: var(--color-text-muted);
-    background: var(--color-card-muted);
-    transition: all var(--transition-base);
+    background: rgba(148, 163, 184, 0.12);
+    transition: all var(--component-transition);
+    border: 1px solid transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reports-tabs .nav-link i {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.reports-tabs .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.4s ease;
 }
 
 .reports-tabs .nav-link:hover {
-    background: var(--color-primary-soft);
     color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.2);
+    transform: translateY(-1px);
+}
+
+.reports-tabs .nav-link:hover::before {
+    left: 100%;
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-white);
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #3b82f6 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3), 0 2px 4px rgba(79, 70, 229, 0.2);
+    border-color: transparent;
 }
 
 @media (max-width: 768px) {
@@ -1030,6 +1076,19 @@ onMounted(() => {
         .btn {
             flex: 1;
         }
+    }
+
+    .tabs-card .card-body {
+        padding: var(--component-padding-sm);
+    }
+
+    .reports-tabs {
+        gap: var(--spacing-2);
+    }
+
+    .reports-tabs .nav-link {
+        padding: var(--spacing-2) var(--spacing-4);
+        font-size: 0.85rem;
     }
 }
 </style>

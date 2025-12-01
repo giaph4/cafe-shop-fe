@@ -116,38 +116,28 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 }
 
 .table-chip--success {
-    border-color: rgba(34, 197, 94, 0.45);
-    background: linear-gradient(165deg, rgba(34, 197, 94, 0.15), transparent);
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.1);
 }
 
 .table-chip--warning {
-    border-color: rgba(234, 179, 8, 0.45);
-    background: linear-gradient(165deg, rgba(234, 179, 8, 0.18), transparent);
+    border-color: rgba(234, 179, 8, 0.35);
+    background: rgba(234, 179, 8, 0.12);
 }
 
 .table-chip--danger {
-    border-color: rgba(239, 68, 68, 0.45);
-    background: linear-gradient(165deg, rgba(239, 68, 68, 0.18), transparent);
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.12);
 }
 
 .table-chip--info {
     border-color: rgba(59, 130, 246, 0.35);
-    background: linear-gradient(165deg, rgba(59, 130, 246, 0.18), transparent);
+    background: rgba(59, 130, 246, 0.12);
 }
 
 .table-chip--neutral {
     border-color: rgba(148, 163, 184, 0.35);
-    background: linear-gradient(165deg, rgba(148, 163, 184, 0.15), transparent);
-}
-
-.dark-theme .table-chip {
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.9));
-    border-color: rgba(129, 140, 248, 0.28);
-}
-
-.comfort-theme .table-chip {
-    background: linear-gradient(170deg, rgba(245, 241, 235, 0.95), rgba(236, 232, 226, 0.92));
-    border-color: rgba(95, 111, 148, 0.25);
+    background: rgba(148, 163, 184, 0.1);
 }
 
 </style>

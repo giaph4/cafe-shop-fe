@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid">
         <div class="inventory-report-header">
             <div class="inventory-report-header__content">
                 <div class="inventory-report-header__title-section">
@@ -26,8 +26,8 @@
 
         <div class="row g-3 mb-4">
             <div class="col-lg-4 col-md-4 col-sm-6" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card">
-                    <div class="stat-icon" :class="stat.variant">
+                <div class="stat-card" :class="stat.variant">
+                    <div class="stat-icon">
                         <i :class="stat.icon"></i>
                     </div>
                     <div>
@@ -61,7 +61,7 @@
 
         <div class="analytics-grid mb-4">
             <div class="card chart-card">
-                <div class="card-header border-0">
+                <div class="card-header">
                     <h5 class="card-title mb-0">Tình trạng tồn kho</h5>
                 </div>
                 <div class="card-body">
@@ -69,7 +69,7 @@
                 </div>
             </div>
             <div class="card chart-card">
-                <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Top nguyên liệu thiếu hụt</h5>
                     <small class="text-muted">{{ lowStockItems.length }} mục</small>
                 </div>
@@ -81,41 +81,45 @@
 
         <div class="card table-card">
             <div class="card-body p-0">
-                <div v-if="isLoading" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="isError" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ errorMessage }}</div>
-                </div>
-                <div v-else class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col">Tên nguyên liệu</th>
-                                <th scope="col">Đơn vị</th>
-                                <th scope="col" class="text-end">Tồn kho</th>
-                                <th scope="col" class="text-end">Mức đặt lại</th>
-                                <th scope="col" class="text-center">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="item in tableData" :key="item.id">
-                                <td class="fw-semibold">{{ item.name }}</td>
-                                <td>{{ item.unit || '—' }}</td>
-                                <td class="text-end">{{ formatNumber(item.quantityOnHand, { maximumFractionDigits: 2 }) }}</td>
-                                <td class="text-end">{{ item.reorderLevel != null ? formatNumber(item.reorderLevel, { maximumFractionDigits: 2 }) : '—' }}</td>
-                                <td class="text-center">
-                                    <span class="status-badge" :class="statusBadgeClass(item.status)">
-                                        {{ statusLabel(item.status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr v-if="!tableData.length">
-                                <td colspan="5" class="text-center text-muted py-5">Không có nguyên liệu phù hợp.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <LoadingState v-if="isLoading" />
+                <ErrorState 
+                    v-else-if="isError" 
+                    :message="errorMessage"
+                    @retry="refetch"
+                />
+                <template v-else>
+                    <EmptyState
+                        v-if="!tableData.length"
+                        title="Không có nguyên liệu phù hợp"
+                        message="Không tìm thấy nguyên liệu nào phù hợp với bộ lọc hiện tại."
+                    />
+                    <div v-else class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Tên nguyên liệu</th>
+                                    <th scope="col">Đơn vị</th>
+                                    <th scope="col" class="text-end">Tồn kho</th>
+                                    <th scope="col" class="text-end">Mức đặt lại</th>
+                                    <th scope="col" class="text-center">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in tableData" :key="item.id">
+                                    <td class="fw-semibold">{{ item.name }}</td>
+                                    <td>{{ item.unit || '—' }}</td>
+                                    <td class="text-end">{{ formatNumber(item.quantityOnHand, { maximumFractionDigits: 2 }) }}</td>
+                                    <td class="text-end">{{ item.reorderLevel != null ? formatNumber(item.reorderLevel, { maximumFractionDigits: 2 }) : '—' }}</td>
+                                    <td class="text-center">
+                                        <span class="status-badge" :class="statusBadgeClass(item.status)">
+                                            {{ statusLabel(item.status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
             </div>
             <div class="card-footer bg-transparent" v-if="pagination.totalPages > 1">
                 <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="pagination.totalPages"
@@ -130,6 +134,9 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import VueApexCharts from 'vue3-apexcharts'
 
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import { usePagination, PaginationMode } from '@/composables/usePagination'
 import { showError, showSuccess } from '@/utils/toast'
@@ -308,110 +315,139 @@ const statusLabel = (status) => {
 }
 </script>
 
-<style scoped>
-
-
+<style scoped lang="scss">
 .search-group .input-group-text {
-    background: transparent;
+    background: var(--color-card-muted);
     border-right: none;
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
 }
 
 .search-group .form-control {
     border-left: none;
+    border-color: var(--color-border);
+    background: var(--color-card);
+}
+
+.search-group .form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.1);
 }
 
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.25rem;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: var(--spacing-4);
+    border-radius: 24px;
+    padding: var(--spacing-4) var(--spacing-5);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
     height: 100%;
+    min-height: 120px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-lg);
+    background: var(--color-card-muted);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: 50%;
+    border-radius: 18px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     flex-shrink: 0;
-    border: 2px solid;
+    color: #6366f1;
 }
 
-.variant-primary {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    border-color: #3b82f6;
+.variant-primary .stat-icon {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
-.variant-warning {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    border-color: #f97316;
+.variant-warning .stat-icon {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
-.variant-success {
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-color: #10b981;
+.variant-success .stat-icon {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
 }
 
 .stat-label {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 0.25rem;
-    font-weight: 500;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-1);
 }
 
 .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
 }
 
 .analytics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .chart-card {
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
 }
 
+.chart-card .card-header {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-5) var(--spacing-6);
+    background: var(--color-card-muted);
+}
+
+.chart-card .card-title {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+}
+
+.filter-card,
+.table-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
+}
 
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.85rem;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
 }
 
 .status-success {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
+    background: var(--color-success-soft);
+    color: var(--color-success);
 }
 
 .status-danger {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
 }
 
 .table td,
@@ -420,20 +456,20 @@ const statusLabel = (status) => {
 }
 
 .inventory-report-header {
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: var(--spacing-6);
 }
 
 .inventory-report-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
+    flex-wrap: wrap;
 }
 
 .inventory-report-header__title-section {
@@ -442,24 +478,24 @@ const statusLabel = (status) => {
 }
 
 .inventory-report-header__title {
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
 }
 
 .inventory-report-header__subtitle {
     margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 .inventory-report-header__actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -467,18 +503,22 @@ const statusLabel = (status) => {
 .inventory-report-header__actions .form-check {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     margin-bottom: 0;
 }
 
 .inventory-report-header__actions .form-check-label {
     margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
     white-space: nowrap;
 }
 
 @media (max-width: 768px) {
+    .inventory-report-header {
+        padding: var(--spacing-4);
+    }
+
     .inventory-report-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -487,10 +527,24 @@ const statusLabel = (status) => {
     .inventory-report-header__actions {
         width: 100%;
         justify-content: flex-start;
+        flex-direction: column;
+        gap: var(--spacing-2);
     }
 
-    .stats-row {
-        justify-content: flex-start;
+    .inventory-report-header__actions .form-check {
+        width: 100%;
+    }
+
+    .inventory-report-header__actions .btn {
+        width: 100%;
+    }
+
+    .stat-card {
+        flex-direction: row;
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>

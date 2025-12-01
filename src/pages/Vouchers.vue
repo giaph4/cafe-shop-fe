@@ -253,8 +253,8 @@
             </article>
         </div>
         <div class="summary-grid" v-else>
-            <article class="summary-card">
-                <div class="summary-icon bg-success-subtle text-success">
+            <article class="summary-card summary-card--active">
+                <div class="summary-icon summary-icon--active">
                     <i class="bi bi-check-circle"></i>
                 </div>
                 <div>
@@ -262,8 +262,8 @@
                     <p class="summary-value">{{ summary.activeCount }}</p>
                 </div>
             </article>
-            <article class="summary-card">
-                <div class="summary-icon bg-secondary-subtle text-secondary">
+            <article class="summary-card summary-card--inactive">
+                <div class="summary-icon summary-icon--inactive">
                     <i class="bi bi-pause-circle"></i>
                 </div>
                 <div>
@@ -271,8 +271,8 @@
                     <p class="summary-value">{{ summary.inactiveCount }}</p>
                 </div>
             </article>
-            <article class="summary-card">
-                <div class="summary-icon bg-warning-subtle text-warning">
+            <article class="summary-card summary-card--expiring">
+                <div class="summary-icon summary-icon--expiring">
                     <i class="bi bi-hourglass-split"></i>
                 </div>
                 <div>
@@ -280,8 +280,8 @@
                     <p class="summary-value">{{ summary.expiringSoonCount }}</p>
                 </div>
             </article>
-            <article class="summary-card">
-                <div class="summary-icon bg-info-subtle text-info">
+            <article class="summary-card summary-card--redeemed">
+                <div class="summary-icon summary-icon--redeemed">
                     <i class="bi bi-ticket-perforated"></i>
                 </div>
                 <div>
@@ -883,10 +883,10 @@ onUnmounted(() => {
 
 /* Header Styles */
 .vouchers-header {
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-soft);
     margin-bottom: var(--spacing-6);
     padding: var(--spacing-6);
 }
@@ -1002,26 +1002,47 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    padding: var(--spacing-4) var(--spacing-5);
-    box-shadow: var(--shadow-sm);
+    border-radius: 24px;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    background: #f8fafc;
+    padding: var(--spacing-5) var(--spacing-6);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .summary-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
 }
 
 .summary-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-lg);
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: grid;
     place-items: center;
-    font-size: var(--font-size-xl);
+    font-size: 1.75rem;
+    color: #6366f1;
+}
+
+.summary-icon--active {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+.summary-icon--inactive {
+    background: linear-gradient(135deg, #e5e7eb, #e2e8f0);
+    box-shadow: 0 2px 8px rgba(148, 163, 184, 0.18);
+}
+
+.summary-icon--expiring {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+.summary-icon--redeemed {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.18);
 }
 
 .summary-label {

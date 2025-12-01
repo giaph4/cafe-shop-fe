@@ -197,7 +197,7 @@ defineExpose({ show, hide })
 
 .info-section {
     border-top: 1px solid var(--color-border);
-    padding-top: 1.25rem;
+    padding-top: var(--spacing-5);
 }
 
 .info-section:first-child {
@@ -206,36 +206,42 @@ defineExpose({ show, hide })
 }
 
 .section-title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    margin-bottom: 1rem;
-    font-size: 1rem;
+    margin-bottom: var(--spacing-4);
+    font-size: var(--font-size-base);
 }
 
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .info-item {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
 }
 
 .info-label {
-    font-size: 0.8rem;
+    font-size: var(--font-size-xs);
     text-transform: uppercase;
-    color: var(--color-text-subtle);
+    color: var(--color-text-muted);
     letter-spacing: 0.06em;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .info-value {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     color: var(--color-heading);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 

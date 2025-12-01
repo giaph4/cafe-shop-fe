@@ -1,5 +1,5 @@
 <template>
-    <div class="admin-analytics-page container-fluid" data-aos="fade-up">
+    <div class="admin-analytics-page container-fluid">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">
@@ -137,18 +137,11 @@
             </div>
         </div>
 
-        <div v-if="loading" class="card">
-            <div class="card-body text-center py-5">
-                <div class="spinner-border text-primary" role="status"></div>
-                <p class="mt-3 text-muted">Đang tải dữ liệu...</p>
-            </div>
-        </div>
-
-        <div v-else-if="error" class="card">
-            <div class="card-body">
-                <div class="alert alert-danger mb-0">{{ error }}</div>
-            </div>
-        </div>
+        <LoadingState v-if="loading" message="Đang tải dữ liệu..." />
+        <ErrorState 
+            v-else-if="error" 
+            :message="error"
+        />
 
         <div v-else-if="insightData" class="row g-4">
             <!-- AI Insights -->
@@ -253,33 +246,21 @@
                     </div>
                     <div class="card-body">
                         <div v-if="insightData.metrics" class="metrics-summary">
-                            <div class="metric-item">
-                                <div class="metric-label">Tổng đơn hàng</div>
-                                <div class="metric-value">{{ formatNumber(insightData.metrics.totalOrders) }}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Đơn đã thanh toán</div>
-                                <div class="metric-value text-success">{{ formatNumber(insightData.metrics.paidOrders) }}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Đơn đã hủy</div>
-                                <div class="metric-value text-danger">{{ formatNumber(insightData.metrics.cancelledOrders) }}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Tổng doanh thu</div>
-                                <div class="metric-value text-primary">{{ formatCurrency(insightData.metrics.totalRevenue) }}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Giá trị đơn trung bình</div>
-                                <div class="metric-value">{{ formatCurrency(insightData.metrics.averageOrderValue) }}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Tổng giảm giá</div>
-                                <div class="metric-value text-warning">{{ formatCurrency(insightData.metrics.totalDiscount) }}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">Sử dụng Voucher</div>
-                                <div class="metric-value">{{ formatNumber(insightData.metrics.voucherUsageCount) }}</div>
+                            <div
+                                v-for="metric in metricItems"
+                                :key="metric.key"
+                                class="metric-item"
+                                :class="metric.variant"
+                            >
+                                <div class="metric-item__icon">
+                                    <i :class="metric.icon"></i>
+                                </div>
+                                <div class="metric-item__content">
+                                    <div class="metric-label">{{ metric.label }}</div>
+                                    <div class="metric-value" :class="metric.valueClass">
+                                        {{ metric.value }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -395,6 +376,8 @@
 import { ref, reactive, computed } from 'vue'
 import { toast } from 'vue3-toastify'
 import VueApexCharts from 'vue3-apexcharts'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import { formatDateTime, formatCurrency, formatNumber } from '@/utils/formatters'
 import { generateAdminInsight } from '@/api/adminAnalyticsService'
 import { useThemePreference } from '@/composables/useThemePreference'
@@ -420,6 +403,69 @@ const filters = reactive({
 
 const isFormValid = computed(() => {
     return filters.from && filters.to && filters.question.trim()
+})
+
+const metricItems = computed(() => {
+    if (!insightData.value?.metrics) return []
+    const m = insightData.value.metrics
+    return [
+        {
+            key: 'totalOrders',
+            label: 'Tổng đơn hàng',
+            value: formatNumber(m.totalOrders),
+            icon: 'bi bi-receipt',
+            variant: 'metric-item--primary',
+            valueClass: ''
+        },
+        {
+            key: 'paidOrders',
+            label: 'Đơn đã thanh toán',
+            value: formatNumber(m.paidOrders),
+            icon: 'bi bi-check-circle',
+            variant: 'metric-item--success',
+            valueClass: 'text-success'
+        },
+        {
+            key: 'cancelledOrders',
+            label: 'Đơn đã hủy',
+            value: formatNumber(m.cancelledOrders),
+            icon: 'bi bi-x-circle',
+            variant: 'metric-item--danger',
+            valueClass: 'text-danger'
+        },
+        {
+            key: 'totalRevenue',
+            label: 'Tổng doanh thu',
+            value: formatCurrency(m.totalRevenue),
+            icon: 'bi bi-cash-coin',
+            variant: 'metric-item--primary',
+            valueClass: 'text-primary'
+        },
+        {
+            key: 'averageOrderValue',
+            label: 'Giá trị đơn trung bình',
+            value: formatCurrency(m.averageOrderValue),
+            icon: 'bi bi-graph-up',
+            variant: 'metric-item--indigo',
+            valueClass: ''
+        },
+        {
+            key: 'totalDiscount',
+            label: 'Tổng giảm giá',
+            value: formatCurrency(m.totalDiscount),
+            icon: 'bi bi-ticket-perforated',
+            variant: 'metric-item--warning',
+            valueClass: 'text-warning'
+        },
+        {
+            key: 'voucherUsageCount',
+            label: 'Sử dụng Voucher',
+            value: formatNumber(m.voucherUsageCount),
+            icon: 'bi bi-tags',
+            variant: 'metric-item--violet',
+            valueClass: ''
+        }
+    ]
 })
 
 const formatMarkdown = (markdown) => {
@@ -727,34 +773,41 @@ const orderStatusChartSeries = computed(() => [{
 }])
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .admin-analytics-page {
-    padding: 1.5rem;
+    padding: var(--spacing-6);
 }
 
 .page-header {
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    border-radius: 18px;
-    border: 1px solid var(--color-border);
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: var(--spacing-6);
 }
 
 
 .insight-card,
 .metrics-card {
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+}
+
+.filter-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .card-header {
-    background: rgba(148, 163, 184, 0.08);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
-    padding: 1rem 1.5rem;
-    border-radius: 18px 18px 0 0;
+    padding: var(--spacing-4) var(--spacing-6);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .ai-insight-content {
@@ -808,23 +861,78 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .metric-item {
-    padding: 0.75rem;
-    background: rgba(148, 163, 184, 0.05);
-    border-radius: 8px;
-    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border-radius: 20px;
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.metric-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--color-card-muted);
+}
+
+.metric-item__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    color: #4338ca;
+    background: #e0e7ff;
+}
+
+.metric-item--success .metric-item__icon {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.metric-item--danger .metric-item__icon {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.metric-item--warning .metric-item__icon {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.metric-item--indigo .metric-item__icon {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.metric-item--violet .metric-item__icon {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.metric-item__content {
+    flex: 1;
+    min-width: 0;
 }
 
 .metric-label {
-    font-size: 0.85rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-1);
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .metric-value {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
 }
 
@@ -833,18 +941,18 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .table thead th {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--letter-spacing-wide);
     border-bottom: 2px solid var(--color-border);
 }
 
 .prompt-templates {
-    background: rgba(148, 163, 184, 0.05);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
     max-height: 500px;
     overflow-y: auto;
 }
@@ -863,34 +971,34 @@ const orderStatusChartSeries = computed(() => [{
 .prompt-template-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
     background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-base);
     text-align: left;
     width: 100%;
 }
 
 .prompt-template-item:hover {
-    background: rgba(37, 99, 235, 0.08);
-    border-color: #2563eb;
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    box-shadow: var(--shadow-md);
 }
 
 .prompt-template-item__icon {
     width: 40px;
     height: 40px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #2563eb, #0ea5e9);
-    color: #ffffff;
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
     flex-shrink: 0;
 }
 
@@ -902,28 +1010,38 @@ const orderStatusChartSeries = computed(() => [{
 .prompt-template-item__content strong {
     display: block;
     color: var(--color-heading);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-1);
 }
 
 .prompt-template-item__content small {
     display: block;
     color: var(--color-text-muted);
-    font-size: 0.8125rem;
-    line-height: 1.4;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 .prompt-template-item__arrow {
     color: var(--color-text-muted);
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
     flex-shrink: 0;
-    transition: transform 0.2s ease;
+    transition: transform var(--transition-base);
 }
 
 .prompt-template-item:hover .prompt-template-item__arrow {
     transform: translateX(4px);
-    color: #2563eb;
+    color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .admin-analytics-page {
+        padding: var(--spacing-4);
+    }
+
+    .page-header {
+        padding: var(--spacing-4);
+    }
 }
 </style>
 

@@ -172,59 +172,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.modal-content {
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
-    background: #ffffff;
-}
-
-.modal-header {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.5rem;
-}
-
-.modal-title {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1.25rem;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-footer {
-    border-top: 1px solid #e2e8f0;
-    padding: 1.5rem;
-}
-
-.form-control,
-.form-select {
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: #a855f7;
-    box-shadow: 0 0 0 0.2rem rgba(168, 85, 247, 0.25);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #a855f7, #9333ea);
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #9333ea, #7e22ce);
-}
-
-.btn-outline-secondary {
-    border-radius: 12px;
-    border-color: #e2e8f0;
-}
+/* Modal styles đã được chuẩn hóa trong components.scss */
 </style>
 

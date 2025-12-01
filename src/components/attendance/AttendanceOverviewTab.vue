@@ -263,10 +263,11 @@ const getStatusLabel = (status) => {
 }
 
 .current-session {
-    padding: 1rem;
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
-    border-radius: 16px;
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    padding: var(--spacing-4);
+    background: linear-gradient(160deg, rgba(244, 246, 255, 0.92), rgba(233, 240, 255, 0.84));
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
 }
 
 .session-info-card {
@@ -326,15 +327,16 @@ const getStatusLabel = (status) => {
 }
 
 .check-form {
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.15);
+    padding: var(--spacing-4);
+    background: var(--color-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-xs);
 }
 
 .no-session {
     text-align: center;
-    padding: 3rem 1rem;
+    padding: var(--spacing-8) var(--spacing-4);
 }
 
 .no-session__icon {
@@ -356,16 +358,17 @@ const getStatusLabel = (status) => {
 }
 
 .assignment-item {
-    padding: 1.25rem;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 14px;
+    padding: var(--spacing-5);
+    background: linear-gradient(160deg, rgba(244, 246, 255, 0.92), rgba(233, 240, 255, 0.84));
+    border-radius: var(--radius-md);
     border: 1px solid rgba(148, 163, 184, 0.18);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
 }
 
 .assignment-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .assignment-item__header {

@@ -1,128 +1,114 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade order-detail-modal" ref="modal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
+        <div class="modal fade order-detail-modal" ref="modal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
-                <div class="modal-header">
-                    <div>
-                        <h5 class="modal-title">Chi tiết đơn hàng #{{ order?.id }}</h5>
-                        <p class="mb-0 text-muted small">Xem thông tin chi tiết và in hóa đơn cho đơn hàng.</p>
+                    <div class="modal-header">
+                        <div class="modal-header__content">
+                            <h5 class="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng #{{ order?.id }}</h5>
+                            <p class="modal-subtitle">Xem thông tin chi tiết và in hóa đơn cho đơn hàng.</p>
+                        </div>
+                        <div class="modal-header__actions">
+                            <button
+                                v-if="order?.status === 'PAID'"
+                                class="btn btn-outline-primary btn-sm"
+                                type="button"
+                                :disabled="printing"
+                                @click="printInvoice"
+                            >
+                                <span v-if="printing" class="spinner-border spinner-border-sm me-2"></span>
+                                <i v-else class="bi bi-printer me-2"></i>
+                                In hóa đơn
+                            </button>
+                            <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <button
-                            v-if="order?.status === 'PAID'"
-                            class="btn btn-outline-primary btn-sm"
-                            type="button"
-                            :disabled="printing"
-                            @click="printInvoice"
-                        >
-                            <span v-if="printing" class="spinner-border spinner-border-sm me-1"></span>
-                            <i v-else class="bi bi-printer me-1"></i>
-                            In hóa đơn
-                        </button>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
-                    </div>
-                </div>
-                <div class="modal-body">
+                    <div class="modal-body">
                     <LoadingState v-if="loading" />
                     <ErrorState v-else-if="error" :message="error" :show-retry="false" />
                     <template v-else-if="order">
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title mb-3">Thông tin đơn hàng</h6>
-                                        <div class="mb-2">
-                                            <strong class="text-muted d-block mb-1">Bàn:</strong>
-                                            <span>{{ order.tableName || 'Mang về' }}</span>
-                                        </div>
-                                        <div class="mb-2">
-                                            <strong class="text-muted d-block mb-1">Nhân viên:</strong>
-                                            <span>{{ order.staffUsername || '—' }}</span>
-                                        </div>
-                                        <div class="mb-2">
-                                            <strong class="text-muted d-block mb-1">Khách hàng:</strong>
-                                            <span>{{ order.customerName || 'Khách lẻ' }}</span>
-                                        </div>
-                                        <div class="mb-0">
-                                            <strong class="text-muted d-block mb-1">Điện thoại:</strong>
-                                            <span>{{ order.customerPhone || '—' }}</span>
-                                        </div>
+                        <div class="order-detail__info-grid">
+                            <div class="order-detail__info-card">
+                                <h6 class="order-detail__info-title">Thông tin đơn hàng</h6>
+                                <div class="order-detail__info-list">
+                                    <div class="order-detail__info-item">
+                                        <span class="order-detail__info-label">Bàn:</span>
+                                        <span class="order-detail__info-value">{{ order.tableName || 'Mang về' }}</span>
+                                    </div>
+                                    <div class="order-detail__info-item">
+                                        <span class="order-detail__info-label">Nhân viên:</span>
+                                        <span class="order-detail__info-value">{{ order.staffUsername || '—' }}</span>
+                                    </div>
+                                    <div class="order-detail__info-item">
+                                        <span class="order-detail__info-label">Khách hàng:</span>
+                                        <span class="order-detail__info-value">{{ order.customerName || 'Khách lẻ' }}</span>
+                                    </div>
+                                    <div class="order-detail__info-item">
+                                        <span class="order-detail__info-label">Điện thoại:</span>
+                                        <span class="order-detail__info-value">{{ order.customerPhone || '—' }}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title mb-3">Thông tin thanh toán</h6>
-                                        <div class="mb-2">
-                                            <strong class="text-muted d-block mb-1">Trạng thái:</strong>
-                                            <span :class="['badge', getStatusClass(order.status)]">{{ getStatusLabel(order.status) }}</span>
-                                        </div>
-                                        <div class="mb-2">
-                                            <strong class="text-muted d-block mb-1">Ngày tạo:</strong>
-                                            <span>{{ formatDateTime(order.createdAt) }}</span>
-                                        </div>
-                                        <div class="mb-0">
-                                            <strong class="text-muted d-block mb-1">Phương thức:</strong>
-                                            <span>{{ order.paymentMethod || '—' }}</span>
-                                        </div>
+                            <div class="order-detail__info-card">
+                                <h6 class="order-detail__info-title">Thông tin thanh toán</h6>
+                                <div class="order-detail__info-list">
+                                    <div class="order-detail__info-item">
+                                        <span class="order-detail__info-label">Trạng thái:</span>
+                                        <span :class="['badge', getStatusClass(order.status)]">{{ getStatusLabel(order.status) }}</span>
+                                    </div>
+                                    <div class="order-detail__info-item">
+                                        <span class="order-detail__info-label">Ngày tạo:</span>
+                                        <span class="order-detail__info-value">{{ formatDateTime(order.createdAt) }}</span>
+                                    </div>
+                                    <div class="order-detail__info-item">
+                                        <span class="order-detail__info-label">Phương thức:</span>
+                                        <span class="order-detail__info-value">{{ order.paymentMethod || '—' }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">Chi tiết sản phẩm</h6>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Sản phẩm</th>
-                                                <th class="text-center">Số lượng</th>
-                                                <th class="text-end">Đơn giá</th>
-                                                <th>Ghi chú</th>
-                                                <th class="text-end">Thành tiền</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="item in order.orderDetails" :key="item.id">
-                                                <td>{{ item.productName }}</td>
-                                                <td class="text-center">{{ item.quantity }}</td>
-                                                <td class="text-end">{{ formatCurrency(item.priceAtOrder) }}</td>
-                                                <td>{{ item.notes || '—' }}</td>
-                                                <td class="text-end fw-semibold">{{ formatCurrency(item.quantity * item.priceAtOrder) }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                        <div class="order-detail__products-section">
+                            <h6 class="order-detail__section-title">Chi tiết sản phẩm</h6>
+                            <div class="table-responsive">
+                                <table class="table order-detail__table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sản phẩm</th>
+                                            <th class="text-center">Số lượng</th>
+                                            <th class="text-end">Đơn giá</th>
+                                            <th>Ghi chú</th>
+                                            <th class="text-end">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in order.orderDetails" :key="item.id">
+                                            <td>{{ item.productName }}</td>
+                                            <td class="text-center">{{ item.quantity }}</td>
+                                            <td class="text-end">{{ formatCurrency(item.priceAtOrder) }}</td>
+                                            <td class="text-muted">{{ item.notes || '—' }}</td>
+                                            <td class="text-end fw-semibold">{{ formatCurrency(item.quantity * item.priceAtOrder) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="row justify-content-end">
-                                    <div class="col-md-6">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted">Tổng phụ:</span>
-                                            <strong>{{ formatCurrency(order.subTotal) }}</strong>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted">Giảm giá:</span>
-                                            <strong class="text-danger">-{{ formatCurrency(order.discountAmount) }}</strong>
-                                        </div>
-                                        <div v-if="order.tipAmount && order.tipAmount > 0" class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted">Tiền típ:</span>
-                                            <strong>{{ formatCurrency(order.tipAmount) }}</strong>
-                                        </div>
-                                        <hr>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="fw-bold">Tổng cộng:</span>
-                                            <h5 class="mb-0 text-primary">{{ formatCurrency(order.totalAmount) }}</h5>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="order-detail__summary">
+                            <div class="order-detail__summary-item">
+                                <span class="order-detail__summary-label">Tổng phụ:</span>
+                                <span class="order-detail__summary-value">{{ formatCurrency(order.subTotal) }}</span>
+                            </div>
+                            <div class="order-detail__summary-item">
+                                <span class="order-detail__summary-label">Giảm giá:</span>
+                                <span class="order-detail__summary-value text-danger">-{{ formatCurrency(order.discountAmount) }}</span>
+                            </div>
+                            <div v-if="order.tipAmount && order.tipAmount > 0" class="order-detail__summary-item">
+                                <span class="order-detail__summary-label">Tiền típ:</span>
+                                <span class="order-detail__summary-value">{{ formatCurrency(order.tipAmount) }}</span>
+                            </div>
+                            <div class="order-detail__summary-divider"></div>
+                            <div class="order-detail__summary-item order-detail__summary-item--total">
+                                <span class="order-detail__summary-label">Tổng cộng:</span>
+                                <span class="order-detail__summary-value order-detail__summary-value--total">{{ formatCurrency(order.totalAmount) }}</span>
                             </div>
                         </div>
                     </template>
@@ -136,9 +122,9 @@
                         </template>
                     </EmptyState>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -242,6 +228,10 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
+.order-detail-modal :global(.modal-dialog) {
+    max-width: 900px;
+}
+
 .order-detail-modal :global(.modal-content) {
     border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
@@ -253,6 +243,15 @@ defineExpose({ show, hide })
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-6);
     background: var(--color-card);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+}
+
+.modal-header__content {
+    flex: 1;
+    min-width: 0;
 }
 
 .order-detail-modal :global(.modal-header .modal-title) {
@@ -260,25 +259,200 @@ defineExpose({ show, hide })
     color: var(--color-heading);
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
+    line-height: var(--line-height-tight);
 }
 
-.order-detail-modal :global(.modal-header .text-muted.small) {
+.modal-subtitle {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
+    margin-bottom: 0;
+    line-height: var(--line-height-normal);
+}
+
+.modal-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
 }
 
 .order-detail-modal :global(.modal-body) {
     padding: var(--spacing-6);
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
 }
 
 .order-detail-modal :global(.modal-footer) {
     border-top: 1px solid var(--color-border);
     padding: var(--spacing-4) var(--spacing-6);
     background: var(--color-card);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
 }
 
-.order-detail-modal :global(.modal-backdrop.show) {
-    backdrop-filter: none !important;
-    filter: none !important;
+/* Info Grid */
+.order-detail__info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-5);
+    margin-bottom: var(--spacing-6);
+}
+
+.order-detail__info-card {
+    padding: var(--spacing-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.order-detail__info-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.order-detail__info-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.order-detail__info-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.order-detail__info-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    min-width: 100px;
+}
+
+.order-detail__info-value {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    text-align: right;
+    word-break: break-word;
+}
+
+/* Products Section */
+.order-detail__products-section {
+    margin-bottom: var(--spacing-6);
+}
+
+.order-detail__section-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.order-detail__table {
+    margin-bottom: 0;
+}
+
+.order-detail__table thead th {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 2px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+.order-detail__table tbody td {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border-soft);
+    vertical-align: middle;
+}
+
+.order-detail__table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Summary */
+.order-detail__summary {
+    padding: var(--spacing-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.order-detail__summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+}
+
+.order-detail__summary-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.order-detail__summary-value {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+}
+
+.order-detail__summary-divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--spacing-2) 0;
+}
+
+.order-detail__summary-item--total {
+    margin-top: var(--spacing-2);
+}
+
+.order-detail__summary-item--total .order-detail__summary-label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+}
+
+.order-detail__summary-value--total {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .order-detail__info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .order-detail-modal :global(.modal-dialog) {
+        margin: var(--spacing-4);
+    }
+
+    .order-detail-modal :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
+
+    .order-detail__table {
+        font-size: var(--font-size-xs);
+    }
+
+    .order-detail__table thead th,
+    .order-detail__table tbody td {
+        padding: var(--spacing-2);
+    }
 }
 </style>

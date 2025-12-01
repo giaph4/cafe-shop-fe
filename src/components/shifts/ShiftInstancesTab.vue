@@ -81,19 +81,35 @@
                             </td>
                             <td class="text-end">
                                 <div class="action-buttons">
-                                    <button class="action-button action-button--primary" @click="handleViewDetail(instance)" title="Xem chi tiết">
+                                    <button
+                                        class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
+                                        @click="handleViewDetail(instance)"
+                                        title="Xem chi tiết"
+                                    >
                                         <i class="bi bi-eye"></i>
                                         <span>Chi tiết</span>
                                     </button>
-                                    <button class="action-button action-button--primary" @click="handleEdit(instance)" title="Chỉnh sửa">
+                                    <button
+                                        class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
+                                        @click="handleEdit(instance)"
+                                        title="Chỉnh sửa"
+                                    >
                                         <i class="bi bi-pencil"></i>
                                         <span>Chỉnh sửa</span>
                                     </button>
-                                    <button class="action-button action-button--info" @click="handleUpdateStatus(instance)" title="Cập nhật trạng thái">
+                                    <button
+                                        class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-2"
+                                        @click="handleUpdateStatus(instance)"
+                                        title="Cập nhật trạng thái"
+                                    >
                                         <i class="bi bi-arrow-repeat"></i>
                                         <span>Trạng thái</span>
                                     </button>
-                                    <button class="action-button action-button--danger" @click="handleRemove(instance)" title="Xóa">
+                                    <button
+                                        class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
+                                        @click="handleRemove(instance)"
+                                        title="Xóa"
+                                    >
                                         <i class="bi bi-trash"></i>
                                         <span>Xóa</span>
                                     </button>
@@ -195,9 +211,9 @@ const handlePageChange = (page) => emit('page-change', page)
 <style scoped lang="scss">
 .filter-card,
 .table-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--component-radius-lg);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--component-shadow);
     background: var(--color-card);
 }
 
@@ -209,54 +225,10 @@ const handlePageChange = (page) => emit('page-change', page)
     align-items: center;
 }
 
-.action-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid;
-    background: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.action-button--primary {
-    border-color: #a855f7;
-    color: #a855f7;
-    background: #ffffff;
-}
-
-.action-button--primary:hover {
-    background: #faf5ff;
-    border-color: #9333ea;
-    color: #9333ea;
-}
-
-.action-button--info {
-    border-color: #06b6d4;
-    color: #06b6d4;
-    background: #ffffff;
-}
-
-.action-button--info:hover {
-    background: #ecfeff;
-    border-color: #0891b2;
-    color: #0891b2;
-}
-
-.action-button--danger {
-    border-color: #ef4444;
-    color: #ef4444;
-    background: #ffffff;
-}
-
-.action-button--danger:hover {
-    background: #fef2f2;
-    border-color: #dc2626;
-    color: #dc2626;
+@media (max-width: 992px) {
+    .filter-card .card-body {
+        padding: var(--component-padding-sm);
+    }
 }
 
 @media (max-width: 768px) {
@@ -265,9 +237,19 @@ const handlePageChange = (page) => emit('page-change', page)
         width: 100%;
     }
 
-    .action-button {
+    .action-buttons .btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .filter-card .row {
+        margin-bottom: var(--spacing-3);
+    }
+}
+
+@media (max-width: 576px) {
+    .table-responsive {
+        font-size: 0.875rem;
     }
 }
 </style>

@@ -114,9 +114,11 @@
                                 <div v-if="assignmentsLoading" class="text-center py-4">
                                     <div class="spinner-border text-primary"></div>
                                 </div>
-                                <div v-else-if="assignmentsError" class="alert alert-warning">
-                                    {{ assignmentsError }}
-                                </div>
+                                <ErrorState
+                                    v-else-if="assignmentsError"
+                                    :message="assignmentsError"
+                                    @retry="fetchAssignments"
+                                />
                                 <EmptyState
                                     v-else-if="!assignments.length"
                                     title="Chưa có phân công"
@@ -160,19 +162,35 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="action-buttons">
-                                                        <button class="action-button action-button--secondary" @click="toggleAssignmentDetails(assignment)" :title="expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng'">
+                                                        <button
+                                                            class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
+                                                            @click="toggleAssignmentDetails(assignment)"
+                                                            :title="expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng'"
+                                                        >
                                                             <i class="bi" :class="expandedAssignmentId === assignment.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                                                             <span>{{ expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng' }}</span>
                                                         </button>
-                                                        <button class="action-button action-button--primary" @click="editAssignment(assignment)" title="Chỉnh sửa">
+                                                        <button
+                                                            class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
+                                                            @click="editAssignment(assignment)"
+                                                            title="Chỉnh sửa"
+                                                        >
                                                             <i class="bi bi-pencil"></i>
                                                             <span>Chỉnh sửa</span>
                                                         </button>
-                                                        <button class="action-button action-button--info" @click="openStatusModal(assignment)" title="Cập nhật trạng thái">
+                                                        <button
+                                                            class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-2"
+                                                            @click="openStatusModal(assignment)"
+                                                            title="Cập nhật trạng thái"
+                                                        >
                                                             <i class="bi bi-arrow-repeat"></i>
                                                             <span>Trạng thái</span>
                                                         </button>
-                                                        <button class="action-button action-button--danger" @click="removeAssignment(assignment)" title="Xóa">
+                                                        <button
+                                                            class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
+                                                            @click="removeAssignment(assignment)"
+                                                            title="Xóa"
+                                                        >
                                                             <i class="bi bi-trash"></i>
                                                             <span>Xóa</span>
                                                         </button>
@@ -245,9 +263,11 @@
                                                             <div class="spinner-border text-primary"></div>
                                                         </div>
                                                         <div v-else>
-                                                            <div v-if="adjustmentState.error" class="alert alert-warning">
-                                                                {{ adjustmentState.error }}
-                                                            </div>
+                                                            <ErrorState
+                                                                v-if="adjustmentState.error"
+                                                                :message="adjustmentState.error"
+                                                                @retry="() => loadAdjustmentData(expandedAssignment.value?.id)"
+                                                            />
                                                             <EmptyState
                                                                 v-else-if="!adjustmentState.list.length"
                                                                 title="Chưa có điều chỉnh"
@@ -345,9 +365,11 @@
                                                             <div class="spinner-border text-primary"></div>
                                                         </div>
                                                         <div v-else>
-                                                            <div v-if="attendanceState.error" class="alert alert-warning">
-                                                                {{ attendanceState.error }}
-                                                            </div>
+                                                            <ErrorState
+                                                                v-if="attendanceState.error"
+                                                                :message="attendanceState.error"
+                                                                @retry="() => loadAttendanceData(expandedAssignment.value?.id)"
+                                                            />
                                                             <EmptyState
                                                                 v-else-if="!attendanceState.list.length"
                                                                 title="Chưa có chấm công"
@@ -400,7 +422,7 @@
         </Teleport>
 
         <ShiftAssignmentStatusUpdateModal
-            ref="assignmentStatusModal"
+            ref="statusUpdateModalRef"
             :status-options="ASSIGNMENT_STATUSES"
             @submit="handleAssignmentStatusUpdate"
         />
@@ -412,6 +434,7 @@ import {storeToRefs} from 'pinia'
 import {Modal} from 'bootstrap'
 import {toast} from 'vue3-toastify'
 import EmptyState from '@/components/common/EmptyState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import ShiftAssignmentStatusUpdateModal from '@/components/shifts/ShiftAssignmentStatusUpdateModal.vue'
 import {
     ASSIGNMENT_STATUSES,
@@ -495,6 +518,7 @@ const assignmentForm = reactive({
 
 const expandedAssignmentId = ref(null)
 const detailTab = ref('adjustments')
+const statusUpdateModalRef = ref(null)
 
 const sanitizeAssignments = (list) => (Array.isArray(list) ? list.filter((item) => item && item.id) : [])
 
@@ -940,25 +964,33 @@ const editAssignment = (assignment) => {
 }
 
 const promptStatusChange = async (assignment) => {
-    const nextStatus = window.prompt('Nhập trạng thái mới (SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED):', assignment.status)
-    if (!nextStatus) return
-    if (!ASSIGNMENT_STATUSES.some((status) => status.value === nextStatus)) {
-        toast.warning('Trạng thái không hợp lệ.')
-        return
+    if (statusUpdateModalRef.value) {
+        statusUpdateModalRef.value.show(assignment)
     }
+}
+
+const handleAssignmentStatusUpdate = async (payload) => {
+    if (!statusUpdateModalRef.value) return
+    statusUpdateModalRef.value.setSubmitting(true)
     try {
-        await updateShiftAssignmentStatus(assignment.id, {status: nextStatus, notes: assignment.notes || null})
+        const assignment = visibleAssignments.value.find(a => a.id === expandedAssignmentId.value)
+        if (!assignment) {
+            toast.error('Không tìm thấy phân công.')
+            statusUpdateModalRef.value.setSubmitting(false)
+            return
+        }
+        await updateShiftAssignmentStatus(assignment.id, payload)
         toast.success('Đã cập nhật trạng thái phân công.')
-        await fetchAssignments()
+        await fetchAssignments(true)
     } catch (err) {
         logger.error('Failed to update assignment status:', err)
         toast.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.')
+        statusUpdateModalRef.value.setSubmitting(false)
     }
 }
 
 const removeAssignment = async (assignment) => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa phân công này?')
-    if (!confirmed) return
+    if (!assignment?.id) return
     try {
         await deleteShiftAssignment(assignment.id)
         toast.success('Đã xóa phân công.')
@@ -1057,66 +1089,11 @@ onBeforeUnmount(() => modalInstance?.dispose())
     align-items: center;
 }
 
-.action-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid;
-    background: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.action-button--primary {
-    border-color: #a855f7;
-    color: #a855f7;
-    background: #ffffff;
-}
-
-.action-button--primary:hover {
-    background: #faf5ff;
-    border-color: #9333ea;
-    color: #9333ea;
-}
-
-.action-button--secondary {
-    border-color: #64748b;
-    color: #64748b;
-    background: #ffffff;
-}
-
-.action-button--secondary:hover {
-    background: #f1f5f9;
-    border-color: #475569;
-    color: #475569;
-}
-
-.action-button--info {
-    border-color: #06b6d4;
-    color: #06b6d4;
-    background: #ffffff;
-}
-
-.action-button--info:hover {
-    background: #ecfeff;
-    border-color: #0891b2;
-    color: #0891b2;
-}
-
-.action-button--danger {
-    border-color: #ef4444;
-    color: #ef4444;
-    background: #ffffff;
-}
-
-.action-button--danger:hover {
-    background: #fef2f2;
-    border-color: #dc2626;
-    color: #dc2626;
+@media (max-width: 992px) {
+    .assignment-form .card-body,
+    .assignment-table .card-body {
+        padding: var(--component-padding-sm);
+    }
 }
 
 @media (max-width: 768px) {
@@ -1125,9 +1102,23 @@ onBeforeUnmount(() => modalInstance?.dispose())
         width: 100%;
     }
 
-    .action-button {
+    .action-buttons .btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .instance-summary {
+        padding: var(--spacing-4);
+    }
+
+    .assignment-detail {
+        padding: var(--spacing-3);
+    }
+}
+
+@media (max-width: 576px) {
+    .table-responsive {
+        font-size: 0.875rem;
     }
 }
 </style>

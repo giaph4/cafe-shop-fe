@@ -1,47 +1,47 @@
 <template>
     <div class="order-statistics-tab">
-        <div class="row g-3 mb-4">
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--orange">
-                    <div class="stat-icon stat-icon--orange">
+        <div class="row g-4 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--total">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-receipt"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Tổng đơn hàng</div>
-                        <div class="stat-value">{{ formatNumber(totalOrders) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Tổng đơn hàng:</div>
+                        <div class="kpi-card__value">{{ formatNumber(totalOrders) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--green">
-                    <div class="stat-icon stat-icon--green">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--revenue">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-cash-stack"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Tổng doanh thu</div>
-                        <div class="stat-value">{{ formatCurrency(totalRevenue) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Tổng doanh thu:</div>
+                        <div class="kpi-card__value">{{ formatCurrency(totalRevenue) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--light-blue">
-                    <div class="stat-icon stat-icon--light-blue">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--average">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-graph-up"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Giá trị đơn trung bình</div>
-                        <div class="stat-value">{{ formatCurrency(averageOrderValue) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Giá trị đơn trung bình:</div>
+                        <div class="kpi-card__value">{{ formatCurrency(averageOrderValue) }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card stat-card--purple">
-                    <div class="stat-icon stat-icon--purple">
+            <div class="col-md-3 col-sm-6">
+                <div class="kpi-card kpi-card--rate">
+                    <div class="kpi-card__icon">
                         <i class="bi bi-percent"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Tỷ lệ thanh toán</div>
-                        <div class="stat-value">{{ formatPercent(paidRate) }}</div>
+                    <div class="kpi-card__content">
+                        <div class="kpi-card__label">Tỷ lệ thanh toán:</div>
+                        <div class="kpi-card__value">{{ formatPercent(paidRate) }}</div>
                     </div>
                 </div>
             </div>
@@ -157,73 +157,93 @@ const getStatusProgressClass = (status) => {
 </script>
 
 <style scoped>
-.stat-card {
+/* KPI Cards - đồng bộ với Dashboard */
+.kpi-card {
+    background: #f8fafc;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    border-radius: 24px;
+    padding: var(--spacing-6);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
     display: flex;
     align-items: center;
-    gap: var(--spacing-4);
-    padding: var(--spacing-5);
-    border-radius: var(--radius-lg);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    gap: var(--spacing-5);
+    transition: all var(--transition-base);
+    min-height: 140px;
+    height: 100%;
 }
 
-.stat-card:hover {
+.kpi-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
 }
 
-.stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-full);
+.kpi-card__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 1.75rem;
     flex-shrink: 0;
-    font-size: var(--font-size-xl);
-    color: var(--color-white);
-    border: 2px solid;
+    color: #6366f1;
+    position: relative;
 }
 
-.stat-icon--orange {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    border-color: #f97316;
+.kpi-card__icon i {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.stat-icon--green {
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-color: #10b981;
+/* Màu icon giống Dashboard */
+.kpi-card--total .kpi-card__icon {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
-.stat-icon--light-blue {
-    background: linear-gradient(135deg, #06b6d4, #0891b2);
-    border-color: #06b6d4;
+.kpi-card--revenue .kpi-card__icon {
+    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
 }
 
-.stat-icon--purple {
-    background: linear-gradient(135deg, #a855f7, #9333ea);
-    border-color: #a855f7;
+.kpi-card--average .kpi-card__icon {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
-.stat-content {
+.kpi-card--rate .kpi-card__icon {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+.kpi-card__content {
     flex: 1;
     min-width: 0;
 }
 
-.stat-label {
-    font-size: var(--font-size-sm);
+.kpi-card__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-1);
-    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    margin-bottom: var(--spacing-2);
+    line-height: var(--line-height-normal);
 }
 
-.stat-value {
+.kpi-card__value {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-heading);
     line-height: var(--line-height-tight);
+    margin-bottom: var(--spacing-1);
+}
+
+@media (max-width: 768px) {
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+    }
 }
 </style>
 

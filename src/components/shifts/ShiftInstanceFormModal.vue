@@ -220,9 +220,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.badge {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 999px;
-}
+/* Badge styles đã được chuẩn hóa trong components.scss */
 </style>

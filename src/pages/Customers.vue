@@ -25,7 +25,7 @@
             </div>
         </div>
 
-        <div class="card filter-card mb-4" v-if="activeTab === 'list' || activeTab === 'statistics'">
+        <div class="card filter-card mb-4" v-if="activeTab === 'list'">
             <div class="card-body">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-3 col-md-4">
@@ -78,20 +78,21 @@
             </div>
         </div>
 
-        <div class="card tabs-card mb-4">
+        <div class="card tabs-card">
             <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
+                <div class="customer-tabs mb-4">
+                    <button
+                        v-for="tab in tabs"
+                        :key="tab.key"
+                        type="button"
+                        class="customer-tab"
+                        :class="{ active: activeTab === tab.key }"
+                        @click="activeTab = tab.key"
+                    >
+                        <i :class="tab.icon"></i>
+                        <span>{{ tab.label }}</span>
+                    </button>
+                </div>
                 <LoadingState v-if="loading && activeTab !== 'overview'" />
                 <ErrorState v-else-if="error && activeTab !== 'overview'" :message="error" @retry="fetchData" />
                 <div v-else class="tab-content">
@@ -147,28 +148,26 @@
         />
 
         <Teleport to="body">
-            <div class="modal fade" tabindex="-1" aria-hidden="true" ref="deleteModalRef">
-                <div class="modal-dialog modal-dialog-centered">
+            <div class="modal fade" tabindex="-1" aria-labelledby="deleteCustomerModalLabel" aria-hidden="true" ref="deleteModalRef">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <div>
-                                <h5 class="modal-title">Xóa khách hàng</h5>
-                                <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
+                            <div class="modal-header__content">
+                                <h5 class="modal-title" id="deleteCustomerModalLabel">Xóa khách hàng</h5>
+                                <p class="modal-subtitle">Hành động này không thể hoàn tác.</p>
                             </div>
-                            <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="deleting"></button>
+                            <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="deleting" aria-label="Đóng"></button>
                         </div>
                         <div class="modal-body">
-                            <p class="mb-3">Bạn có chắc chắn muốn xóa khách hàng này không?</p>
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <div class="mb-2">
-                                        <strong class="text-muted d-block mb-1">Khách hàng:</strong>
-                                        <span>{{ deleteTarget?.fullName || '—' }}</span>
-                                    </div>
-                                    <div class="mb-0">
-                                        <strong class="text-muted d-block mb-1">Số điện thoại:</strong>
-                                        <span>{{ deleteTarget?.phone || '—' }}</span>
-                                    </div>
+                            <p class="mb-4">Bạn có chắc chắn muốn xóa khách hàng này không?</p>
+                            <div class="delete-info-card">
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Khách hàng:</span>
+                                    <span class="delete-info-value">{{ deleteTarget?.fullName || '—' }}</span>
+                                </div>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Số điện thoại:</span>
+                                    <span class="delete-info-value">{{ deleteTarget?.phone || '—' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -590,7 +589,10 @@ const openEditModal = (customer) => {
         id: customer.id,
         fullName: customer.fullName || '',
         phone: customer.phone || '',
-        email: customer.email || ''
+        email: customer.email || '',
+        loyaltyPoints: customer.loyaltyPoints ?? 0,
+        createdAt: customer.createdAt || '',
+        updatedAt: customer.updatedAt || ''
     }
     customerFormModalRef.value?.show()
 }
@@ -779,9 +781,9 @@ onBeforeUnmount(() => {
 .customers-header {
     padding: var(--spacing-6);
     border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
     margin-bottom: var(--spacing-6);
 }
 
@@ -851,4 +853,70 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card, .tabs-card, .reports-tabs, .state-block) are in components.scss */
+
+.customer-tabs {
+    display: flex;
+    gap: 0.75rem;
+    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    padding: 0.6rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
+}
+
+.customer-tab {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1.35rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.customer-tab i {
+    font-size: 1.15rem;
+}
+
+.customer-tab.active {
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+}
+
+.delete-info-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.delete-info-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.delete-info-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+.delete-info-value {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    text-align: right;
+    word-break: break-word;
+}
 </style>

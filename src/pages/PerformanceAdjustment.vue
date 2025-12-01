@@ -1,18 +1,32 @@
 <template>
-    <div class="performance-adjustment-page container-fluid" data-aos="fade-up">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Quản lý Điều chỉnh Hiệu suất</h2>
-                <p class="page-subtitle">Thưởng và phạt nhân viên dựa trên hiệu suất làm việc trong ca.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-primary" type="button" @click="openCreateModal" v-if="activeTab === 'list'">
-                    <i class="bi bi-plus-lg me-2"></i>Tạo điều chỉnh mới
-                </button>
-                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
+    <div class="performance-adjustment-page container-fluid">
+        <div class="performance-adjustment-header">
+            <div class="performance-adjustment-header__content">
+                <div class="performance-adjustment-header__title-section">
+                    <h2 class="performance-adjustment-header__title">Quản lý Điều chỉnh Hiệu suất</h2>
+                    <p class="performance-adjustment-header__subtitle">Thưởng và phạt nhân viên dựa trên hiệu suất làm việc trong ca.</p>
+                </div>
+                <div class="performance-adjustment-header__actions">
+                    <button 
+                        class="btn btn-primary" 
+                        type="button" 
+                        @click="openCreateModal" 
+                        v-if="activeTab === 'list'"
+                    >
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Tạo điều chỉnh mới
+                    </button>
+                    <button 
+                        class="btn btn-outline-secondary" 
+                        type="button" 
+                        @click="fetchData" 
+                        :disabled="loading"
+                    >
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                        Làm mới
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -30,12 +44,12 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading && activeTab === 'list'" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error && activeTab === 'list'" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading && activeTab === 'list'" />
+                <ErrorState 
+                    v-else-if="error && activeTab === 'list'" 
+                    :message="error"
+                    @retry="fetchData"
+                />
                 <div v-else class="tab-content">
                     <PerformanceAdjustmentListTab
                         v-if="activeTab === 'list'"
@@ -60,19 +74,113 @@
             </div>
         </div>
 
-        <PerformanceAdjustmentFormModal
-            ref="formModal"
-            :adjustment="editingAdjustment"
-            :assignment-options="assignmentOptions"
-            :type-options="ADJUSTMENT_TYPES"
-            :submitting="formSubmitting"
-            @submit="handleFormSubmit"
-        />
+        <Teleport to="body">
+            <PerformanceAdjustmentFormModal
+                ref="formModal"
+                :adjustment="editingAdjustment"
+                :assignment-options="assignmentOptions"
+                :type-options="ADJUSTMENT_TYPES"
+                :submitting="formSubmitting"
+                @submit="handleFormSubmit"
+            />
+
+            <!-- Revoke Adjustment Confirmation Modal -->
+            <div 
+                class="modal fade" 
+                id="revokeAdjustmentModal" 
+                tabindex="-1" 
+                ref="revokeAdjustmentModalElement" 
+                aria-labelledby="revokeAdjustmentModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="revokeAdjustmentModalLabel">Thu hồi điều chỉnh</h5>
+                            <button type="button" class="btn-close" @click="revokeAdjustmentBsModal?.hide()" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Nhập lý do thu hồi điều chỉnh này:</p>
+                            <div v-if="adjustmentToRevoke" class="card mt-3 mb-3">
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Loại:</strong> {{ adjustmentToRevoke.type === 'BONUS' ? 'Thưởng' : 'Phạt' }}</p>
+                                    <p class="mb-2"><strong>Số tiền:</strong> {{ formatCurrency(adjustmentToRevoke.amount) }}</p>
+                                    <p class="mb-0"><strong>Lý do:</strong> {{ adjustmentToRevoke.reason || 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lý do thu hồi</label>
+                                <textarea 
+                                    class="form-control" 
+                                    rows="3" 
+                                    v-model="revokeReason"
+                                    placeholder="Nhập lý do thu hồi..."
+                                    maxlength="500"
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="revokeAdjustmentBsModal?.hide()">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-warning" @click="confirmRevokeAdjustment">
+                                Thu hồi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Adjustment Confirmation Modal -->
+            <div 
+                class="modal fade" 
+                id="deleteAdjustmentModal" 
+                tabindex="-1" 
+                ref="deleteAdjustmentModalElement" 
+                aria-labelledby="deleteAdjustmentModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteAdjustmentModalLabel">Xác nhận xóa</h5>
+                            <button type="button" class="btn-close" @click="deleteAdjustmentBsModal?.hide()" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Bạn có chắc chắn muốn xóa điều chỉnh này không?</p>
+                            <div class="alert alert-warning mt-3">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Hành động này không thể hoàn tác.
+                            </div>
+                            <div v-if="adjustmentToDelete" class="card mt-3">
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Loại:</strong> {{ adjustmentToDelete.type === 'BONUS' ? 'Thưởng' : 'Phạt' }}</p>
+                                    <p class="mb-2"><strong>Số tiền:</strong> {{ formatCurrency(adjustmentToDelete.amount) }}</p>
+                                    <p class="mb-0"><strong>Lý do:</strong> {{ adjustmentToDelete.reason || 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="deleteAdjustmentBsModal?.hide()">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="confirmDeleteAdjustment">
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue'
+import { Teleport } from 'vue'
+import { Modal } from 'bootstrap'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import PerformanceAdjustmentListTab from '@/components/performance-adjustments/PerformanceAdjustmentListTab.vue'
 import PerformanceAdjustmentStatsTab from '@/components/performance-adjustments/PerformanceAdjustmentStatsTab.vue'
 import PerformanceAdjustmentFormModal from '@/components/performance-adjustments/PerformanceAdjustmentFormModal.vue'
@@ -86,7 +194,7 @@ import {
 import { getAssignmentsForShift } from '@/api/shiftService'
 import { listShiftInstances } from '@/api/shiftService'
 import { toast } from 'vue3-toastify'
-import { formatDate } from '@/utils/formatters'
+import { formatCurrency, formatDate } from '@/utils/formatters'
 
 const activeTab = ref('list')
 const tabs = [
@@ -109,6 +217,13 @@ const assignmentOptions = ref([])
 const formModal = ref(null)
 const editingAdjustment = ref(null)
 const formSubmitting = ref(false)
+const revokeAdjustmentModalElement = ref(null)
+const revokeAdjustmentBsModal = ref(null)
+const deleteAdjustmentModalElement = ref(null)
+const deleteAdjustmentBsModal = ref(null)
+const adjustmentToRevoke = ref(null)
+const adjustmentToDelete = ref(null)
+const revokeReason = ref('')
 
 const fetchAssignmentOptions = async () => {
     try {
@@ -210,31 +325,49 @@ const handleFormSubmit = async (payload) => {
     }
 }
 
-const handleRevoke = async (adjustment) => {
+const handleRevoke = (adjustment) => {
     if (adjustment.revoked) {
         toast.warning('Điều chỉnh này đã được thu hồi.')
         return
     }
-    const reason = window.prompt('Nhập lý do thu hồi:', '')
-    if (reason === null) return
+    adjustmentToRevoke.value = adjustment
+    revokeReason.value = ''
+    revokeAdjustmentBsModal.value?.show()
+}
+
+const confirmRevokeAdjustment = async () => {
+    if (!adjustmentToRevoke.value) return
+    const adjustment = adjustmentToRevoke.value
+    revokeAdjustmentBsModal.value?.hide()
     try {
-        await revokeAdjustment(adjustment.id, { reason: reason || null })
+        await revokeAdjustment(adjustment.id, { reason: revokeReason.value || null })
         toast.success('Đã thu hồi điều chỉnh.')
         await fetchAdjustments()
     } catch (err) {
         toast.error(err.response?.data?.message || 'Không thể thu hồi điều chỉnh.')
+    } finally {
+        adjustmentToRevoke.value = null
+        revokeReason.value = ''
     }
 }
 
-const handleRemove = async (adjustment) => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa điều chỉnh này?')
-    if (!confirmed) return
+const handleRemove = (adjustment) => {
+    adjustmentToDelete.value = adjustment
+    deleteAdjustmentBsModal.value?.show()
+}
+
+const confirmDeleteAdjustment = async () => {
+    if (!adjustmentToDelete.value) return
+    const adjustment = adjustmentToDelete.value
+    deleteAdjustmentBsModal.value?.hide()
     try {
         await deleteAdjustment(adjustment.id)
         toast.success('Đã xóa điều chỉnh.')
         await fetchAdjustments()
     } catch (err) {
         toast.error(err.response?.data?.message || 'Không thể xóa điều chỉnh.')
+    } finally {
+        adjustmentToDelete.value = null
     }
 }
 
@@ -259,77 +392,120 @@ watch(() => filters.assignmentId, () => {
 })
 
 onMounted(() => {
+    if (revokeAdjustmentModalElement.value) {
+        revokeAdjustmentBsModal.value = new Modal(revokeAdjustmentModalElement.value)
+    }
+    if (deleteAdjustmentModalElement.value) {
+        deleteAdjustmentBsModal.value = new Modal(deleteAdjustmentModalElement.value)
+    }
     fetchAssignmentOptions()
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .performance-adjustment-page {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
-    padding-bottom: 2rem;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
 }
 
-.card-shadow {
-    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.08));
+.performance-adjustment-header {
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
+}
+
+.performance-adjustment-header__content {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
+    flex-wrap: wrap;
 }
 
-.page-title {
-    font-weight: 700;
+.performance-adjustment-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.performance-adjustment-header__title {
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--spacing-1);
 }
 
-.page-subtitle {
-    margin-bottom: 0;
+.performance-adjustment-header__subtitle {
+    margin: 0;
     color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+.performance-adjustment-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .tabs-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .reports-tabs .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-5);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
+    transition: all var(--transition-base);
+}
+
+.reports-tabs .nav-link:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-    color: #fff;
-}
-
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-white);
 }
 
 @media (max-width: 768px) {
-    .card-shadow {
-        padding: 1.25rem;
+    .performance-adjustment-header {
+        padding: var(--spacing-4);
+    }
+
+    .performance-adjustment-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .performance-adjustment-header__actions {
+        width: 100%;
+        justify-content: stretch;
+
+        .btn {
+            flex: 1;
+        }
     }
 }
 </style>
+
 

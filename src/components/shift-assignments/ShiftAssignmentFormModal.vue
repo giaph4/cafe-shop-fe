@@ -177,10 +177,12 @@ const validateForm = () => {
     return { valid: true }
 }
 
+import { toast } from 'vue3-toastify'
+
 const handleSubmit = () => {
     const validation = validateForm()
     if (!validation.valid) {
-        alert(validation.message)
+        toast.error(validation.message)
         return
     }
     const payload = {

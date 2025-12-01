@@ -121,18 +121,39 @@
         </div>
     </Teleport>
 
-    <section class="tables-page" data-aos="fade-up">
+    <div class="page-container container-fluid" data-aos="fade-up">
         <header class="tables-header">
             <div>
                 <h2>Quản lý bàn</h2>
                 <p class="text-muted mb-0">Xem trạng thái bàn, chỉnh sửa thông tin và quản lý bàn theo thời gian thực.</p>
             </div>
-            <button v-if="canManage" class="btn btn-primary" type="button" @click="openModal()">
-                <i class="bi bi-plus-lg me-2"></i>Thêm bàn mới
-            </button>
+            <div class="tables-header__actions">
+                <div class="btn-group layout-toggle" role="group" aria-label="Chọn bố cục hiển thị">
+                    <button
+                        type="button"
+                        class="btn btn-sm"
+                        :class="layoutMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
+                        @click="layoutMode = 'table'"
+                    >
+                        <i class="bi bi-table me-2"></i>Bảng
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-sm"
+                        :class="layoutMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
+                        @click="layoutMode = 'grid'"
+                    >
+                        <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
+                    </button>
+                </div>
+                <button v-if="canManage" class="btn btn-primary btn-sm" type="button" @click="openModal()">
+                    <i class="bi bi-plus-lg me-2"></i>Thêm bàn mới
+                </button>
+            </div>
         </header>
 
-        <div class="filter-card">
+        <div class="card filter-card mb-4">
+            <div class="card-body">
             <div class="filter-grid">
                 <div class="filter-item">
                     <label class="form-label">Tìm theo tên</label>
@@ -171,32 +192,91 @@
                     <button class="btn btn-outline-secondary" type="button" @click="resetFilters">Đặt lại</button>
                 </div>
             </div>
+            </div>
         </div>
 
-        <LoadingState v-if="isLoading" text="Đang tải danh sách bàn..." />
-        <ErrorState
-            v-else-if="isError"
-            :message="error?.message || 'Không thể tải dữ liệu bàn. Vui lòng thử lại sau.'"
-            :show-retry="true"
-            :retry-handler="() => queryClient.invalidateQueries(['tables'])"
-        />
-        <template v-else>
-            <EmptyState
-                v-if="sortedTables.length === 0"
-                title="Không tìm thấy bàn"
-                :message="hasActiveFilters ? 'Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.' : 'Chưa có bàn nào. Hãy tạo bàn đầu tiên.'"
-            >
-                <template #icon>
-                    <i class="bi bi-table"></i>
-                </template>
-                <template v-if="!hasActiveFilters && canManage" #action>
-                    <button class="btn btn-primary" @click="openModal()">
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Tạo bàn đầu tiên
-                    </button>
-                </template>
-            </EmptyState>
-            <div v-else class="tables-grid">
+        <div class="card tabs-card">
+            <div class="card-body">
+                <LoadingState v-if="isLoading" text="Đang tải danh sách bàn..." />
+                <ErrorState
+                    v-else-if="isError"
+                    :message="error?.message || 'Không thể tải dữ liệu bàn. Vui lòng thử lại sau.'"
+                    :show-retry="true"
+                    :retry-handler="() => queryClient.invalidateQueries(['tables'])"
+                />
+                <template v-else>
+                    <EmptyState
+                        v-if="sortedTables.length === 0"
+                        title="Không tìm thấy bàn"
+                        :message="hasActiveFilters ? 'Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.' : 'Chưa có bàn nào. Hãy tạo bàn đầu tiên.'"
+                    >
+                        <template #icon>
+                            <i class="bi bi-table"></i>
+                        </template>
+                        <template v-if="!hasActiveFilters && canManage" #action>
+                            <button class="btn btn-primary" @click="openModal()">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Tạo bàn đầu tiên
+                            </button>
+                        </template>
+                    </EmptyState>
+                    <div v-else>
+                        <!-- Table View -->
+                        <div v-if="layoutMode === 'table'" class="table-responsive">
+                            <table class="table align-middle table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tên bàn</th>
+                                        <th>ID</th>
+                                        <th>Sức chứa</th>
+                                        <th>Trạng thái</th>
+                                        <th class="text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="table in sortedTables" :key="table.id">
+                                        <td class="fw-semibold">{{ table.name }}</td>
+                                        <td>
+                                            <span class="text-muted small">#{{ table.id }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi bi-people-fill text-muted"></i>
+                                                <span>{{ table.capacity }} chỗ</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <select 
+                                                    class="form-select form-select-sm" 
+                                                    :value="table.status"
+                                                    @change="handleStatusChange(table, $event.target.value)"
+                                                    :disabled="statusMutation.isPending.value"
+                                                    style="min-width: 150px;"
+                                                >
+                                                    <option v-for="status in TABLE_STATUS_OPTIONS" :key="status.value" :value="status.value">{{ status.label }}</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="action-grid" v-if="canManage">
+                                                <button class="action-button" type="button" @click="openModal(table)" title="Chỉnh sửa">
+                                                    <i class="bi bi-pencil"></i>
+                                                    <span>Chỉnh sửa</span>
+                                                </button>
+                                                <button class="action-button action-button--danger" type="button" @click="confirmDelete(table)" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                    <span>Xóa</span>
+                                                </button>
+                                            </div>
+                                            <span v-else class="text-muted small">—</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Grid View -->
+                        <div v-else class="tables-grid">
                 <article v-for="table in sortedTables" :key="table.id" class="table-card" :class="getStatusVariant(table.status)">
                     <header class="table-card__header">
                         <div>
@@ -234,9 +314,12 @@
                         </select>
                     </footer>
                 </article>
+                        </div>
+                    </div>
+                </template>
             </div>
-        </template>
-    </section>
+        </div>
+    </div>
 </template>
 
 <script setup>
@@ -270,6 +353,7 @@ const modalElement = ref(null)
 const bsModal = ref(null)
 const isEditing = ref(false)
 const sortState = ref('name-asc')
+const layoutMode = ref('grid')
 
 const formData = reactive({
     id: null,
@@ -538,6 +622,7 @@ const getStatusMetaRef = getStatusMeta
     border: 1px solid var(--color-border);
     background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
     box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-6);
 }
 
 .tables-header h2 {
@@ -547,6 +632,18 @@ const getStatusMetaRef = getStatusMeta
     font-size: var(--font-size-2xl);
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
+}
+
+.tables-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    flex-wrap: wrap;
+}
+
+.layout-toggle .btn {
+    min-width: 120px;
+    font-weight: var(--font-weight-semibold);
 }
 
 
@@ -792,14 +889,79 @@ const getStatusMetaRef = getStatusMeta
     background: var(--color-card);
 }
 
+.action-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.action-button:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.action-button--danger {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+}
+
+.action-button--danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--color-danger);
+}
+
 @media (max-width: 768px) {
     .tables-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
+    .tables-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .layout-toggle {
+        width: 100%;
+    }
+
+    .layout-toggle .btn {
+        flex: 1;
+    }
+
     .tables-grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+
+    .action-grid {
+        flex-direction: column;
     }
 }
 

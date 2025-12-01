@@ -693,71 +693,9 @@ textarea.form-control {
     min-height: 44px;
 }
 
-.modal-content {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-2xl);
-    background: var(--color-modal-bg);
-    overflow: hidden;
-}
+/* Modal styles are now in components.scss - keeping minimal overrides here if needed */
 
-.modal-header {
-    padding: var(--spacing-6);
-    border-bottom: 1px solid var(--color-border);
-    background: linear-gradient(180deg, var(--color-card-muted), transparent);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-4);
-}
-
-.modal-title {
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xl);
-    color: var(--color-heading);
-    margin: 0;
-    line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
-}
-
-.modal-body {
-    padding: var(--spacing-6);
-    color: var(--color-text);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-relaxed);
-    max-height: calc(100vh - 300px);
-    overflow-y: auto;
-}
-
-.modal-footer {
-    padding: var(--spacing-4) var(--spacing-6);
-    border-top: 1px solid var(--color-border);
-    background: linear-gradient(180deg, transparent, var(--color-card-muted));
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--spacing-3);
-}
-
-.btn-close {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
-    opacity: 0.7;
-    transition: all var(--transition-all);
-    display: grid;
-    place-items: center;
-}
-
-.btn-close:hover,
-.btn-close:focus {
-    opacity: 1;
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-    transform: scale(1.05);
-}
+/* btn-close styles are now in components.scss */
 
 .modal-backdrop.show {
     opacity: 1;

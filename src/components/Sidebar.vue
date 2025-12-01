@@ -332,28 +332,28 @@ function searchItems(items, parents, targetPath) {
 <style scoped>
 .neo-sidebar {
     position: fixed;
-    top: 1.5rem;
-    left: 1.75rem;
-    bottom: 1.5rem;
+    top: 0;
+    left: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     width: 278px;
-    height: calc(100vh - 3rem);
-    border-radius: 22px;
-    border: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
     background: var(--color-elevated);
-    box-shadow: 0 28px 64px rgba(15, 23, 42, 0.18);
+    box-shadow: 0 0 0 rgba(15, 23, 42, 0);
     overflow: visible;
     transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.26s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s ease,
-    left 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+    transform 0.3s ease;
     z-index: 110;
 }
 
 .neo-sidebar.is-collapsed {
     width: 76px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+    box-shadow: 0 0 0 rgba(15, 23, 42, 0);
 }
 
 .neo-sidebar.is-mobile {
@@ -361,7 +361,8 @@ function searchItems(items, parents, targetPath) {
     inset: 0 auto 0 0;
     width: clamp(280px, 78vw, 340px);
     max-height: none;
-    border-radius: 0 22px 22px 0;
+    border-radius: 0;
+    border-right: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
     transform: translateX(-110%);
     box-shadow: 0 32px 90px rgba(15, 23, 42, 0.24);
 }
@@ -519,7 +520,8 @@ function searchItems(items, parents, targetPath) {
         left: 0;
         bottom: 0;
         height: 100vh;
-        border-radius: 0 22px 22px 0;
+        border-radius: 0;
+        border-right: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
     }
 
     .neo-sidebar__header {

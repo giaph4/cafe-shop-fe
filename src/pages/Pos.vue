@@ -1,33 +1,20 @@
 <template>
     <div class="pos-page">
-        <!-- Header -->
         <header class="pos-header">
-            <div>
+            <div class="pos-header__content">
                 <h2 class="pos-header__title">Điều phối POS</h2>
-                <p class="pos-header__subtitle mb-0">Chọn món hoặc chọn bàn, hệ thống sẽ tự động đồng bộ theo nhu cầu của bạn.</p>
+                <p class="pos-header__subtitle">Chọn món hoặc chọn bàn, hệ thống sẽ tự động đồng bộ theo nhu cầu của bạn.</p>
             </div>
             <div class="pos-header__actions">
-                <button
-                    type="button"
-                    class="btn btn-outline-primary"
-                    @click="startTableSelection"
-                >
+                <button type="button" class="btn btn-outline-primary" @click="startTableSelection">
                     <i class="bi bi-grid-3x3-gap-fill me-1"></i>
                     Xem sơ đồ bàn
                 </button>
-                <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    @click="startProductFirst"
-                >
+                <button type="button" class="btn btn-outline-secondary" @click="startProductFirst">
                     <i class="bi bi-list-ul me-1"></i>
                     Chọn món trước
                 </button>
-                <button
-                    type="button"
-                    class="btn btn-success"
-                    @click="handleNewTakeaway"
-                >
+                <button type="button" class="btn btn-success" @click="handleNewTakeaway">
                     <i class="bi bi-bag-check-fill me-2"></i>
                     Bán Mang Về
                 </button>
@@ -35,17 +22,16 @@
         </header>
 
         <div class="pos-container">
-            <!-- Left Panel: Product Selection or Table Map -->
-            <div class="pos-panel pos-panel--left">
+            <aside class="pos-panel pos-panel--left">
                 <transition name="fade" mode="out-in">
-                    <div v-if="viewState.mode === 'tables'" class="pos-table-map-container">
-                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div v-if="viewState.mode === 'tables'" class="pos-table-map-wrapper">
+                        <div class="pos-table-map-header">
                             <div>
-                                <h3 class="page-title mb-1">Sơ đồ Bàn</h3>
-                                <p class="text-muted mb-0 small">Chọn bàn để tiếp tục phục vụ hoặc gán đơn nháp hiện tại.</p>
+                                <h3 class="pos-table-map-title">Sơ đồ Bàn</h3>
+                                <p class="pos-table-map-subtitle">Chọn bàn để tiếp tục phục vụ hoặc gán đơn nháp hiện tại.</p>
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span v-if="selectedTable" class="badge bg-primary-subtle text-primary fw-semibold">
+                            <div class="pos-table-map-actions">
+                                <span v-if="selectedTable" class="pos-table-map-badge">
                                     Bàn đang chọn: {{ selectedTable.name }}
                                 </span>
                                 <button class="btn btn-primary" type="button" @click="viewState.mode = 'menu'">
@@ -63,78 +49,75 @@
                         @back-to-tables="startTableSelection"
                     />
                 </transition>
-            </div>
+            </aside>
 
-        <!-- Right Panel: Order Management -->
-        <div class="pos-panel pos-panel--right">
-            <!-- Takeaway Orders Section -->
-            <section class="order-section">
-                <div class="order-section__header">
-                    <div>
-                        <h5 class="order-section__title">Đơn mang về đang chờ</h5>
-                        <p class="order-section__subtitle">Chọn để tiếp tục xử lý hoặc thanh toán.</p>
-                    </div>
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-outline-secondary"
-                        :disabled="isLoadingTakeawayOrders"
-                        @click="refetchTakeawayOrders()"
-                    >
-                        <span v-if="isLoadingTakeawayOrders" class="spinner-border spinner-border-sm me-2"></span>
-                        Làm mới
-                    </button>
-                </div>
-
-                <EmptyState
-                    v-if="pendingTakeawayOrders.length === 0"
-                    title="Chưa có đơn mang về"
-                    message="Chưa có đơn mang về nào đang chờ."
-                >
-                    <template #icon>
-                        <i class="bi bi-bag-dash"></i>
-                    </template>
-                </EmptyState>
-                <ul v-else class="order-list">
-                    <li
-                        v-for="order in pendingTakeawayOrders"
-                        :key="order.id"
-                        :class="['order-list__item', { 'order-list__item--active': order.id === selectedTakeawayOrder?.id }]"
-                        @click="handleTakeawaySelected(order)"
-                    >
-                        <div class="order-list__item-content">
-                            <div>
-                                <div class="order-list__item-title">Đơn #{{ order.id }}</div>
-                                <small class="order-list__item-meta">Tạo lúc {{ formatDateTime(order.createdAt) }}</small>
-                            </div>
-                            <div class="order-list__item-right">
-                                <div class="order-list__item-amount">{{ formatCurrency(order.totalAmount) }}</div>
-                                <small class="order-list__item-meta">{{ order.orderDetails?.length || 0 }} món</small>
-                            </div>
+            <aside class="pos-panel pos-panel--right">
+                <section class="pos-order-section">
+                    <header class="pos-order-section__header">
+                        <div>
+                            <h5 class="pos-order-section__title">Đơn mang về đang chờ</h5>
+                            <p class="pos-order-section__subtitle">Chọn để tiếp tục xử lý hoặc thanh toán.</p>
                         </div>
-                    </li>
-                </ul>
-            </section>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            :disabled="isLoadingTakeawayOrders"
+                            @click="refetchTakeawayOrders()"
+                        >
+                            <span v-if="isLoadingTakeawayOrders" class="spinner-border spinner-border-sm me-2"></span>
+                            Làm mới
+                        </button>
+                    </header>
 
-            <!-- Draft Orders Section -->
-            <section class="order-section">
-                <div class="order-section__header">
-                    <div>
-                        <h5 class="order-section__title">Đơn nháp (chờ gán bàn)</h5>
-                        <span v-if="!selectedTable && activeOrder && !activeOrder.id" class="order-section__badge">CHƯA GÁN BÀN</span>
-                    </div>
-                </div>
+                    <EmptyState
+                        v-if="pendingTakeawayOrders.length === 0"
+                        title="Chưa có đơn mang về"
+                        message="Chưa có đơn mang về nào đang chờ."
+                    >
+                        <template #icon>
+                            <i class="bi bi-bag-dash"></i>
+                        </template>
+                    </EmptyState>
+                    <ul v-else class="pos-order-list">
+                        <li
+                            v-for="order in pendingTakeawayOrders"
+                            :key="order.id"
+                            :class="['pos-order-list__item', { 'pos-order-list__item--active': order.id === selectedTakeawayOrder?.id }]"
+                            @click="handleTakeawaySelected(order)"
+                        >
+                            <div class="pos-order-list__content">
+                                <div>
+                                    <div class="pos-order-list__title">Đơn #{{ order.id }}</div>
+                                    <small class="pos-order-list__meta">Tạo lúc {{ formatDateTime(order.createdAt) }}</small>
+                                </div>
+                                <div class="pos-order-list__right">
+                                    <div class="pos-order-list__amount">{{ formatCurrency(order.totalAmount) }}</div>
+                                    <small class="pos-order-list__meta">{{ order.orderDetails?.length || 0 }} món</small>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
 
-                <PosOrderCart
-                    ref="orderCartRef"
-                    :table="selectedTable"
-                    :order="activeOrder"
-                    :view-intent="viewState.intent"
-                    @order-updated="handleOrderUpdated"
-                    @create-new-takeaway="handleNewTakeaway"
-                    @request-table-selection="startTableSelection"
-                />
-            </section>
-        </div>
+                <section class="pos-order-section">
+                    <header class="pos-order-section__header">
+                        <div>
+                            <h5 class="pos-order-section__title">Đơn nháp (chờ gán bàn)</h5>
+                            <span v-if="!selectedTable && activeOrder && !activeOrder.id" class="pos-order-section__badge">CHƯA GÁN BÀN</span>
+                        </div>
+                    </header>
+
+                    <PosOrderCart
+                        ref="orderCartRef"
+                        :table="selectedTable"
+                        :order="activeOrder"
+                        :view-intent="viewState.intent"
+                        @order-updated="handleOrderUpdated"
+                        @create-new-takeaway="handleNewTakeaway"
+                        @request-table-selection="startTableSelection"
+                    />
+                </section>
+            </aside>
         </div>
     </div>
 </template>
@@ -320,27 +303,32 @@ watch(() => tableStore.tables, (tables) => {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 2rem);
-    gap: 1.5rem;
-    padding: 1rem;
-    background: var(--color-bg, #f8fafc);
+    gap: var(--spacing-5);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
 }
 
 .pos-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-4);
+    gap: 1.5rem;
     padding: var(--spacing-6);
     border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
+}
+
+.pos-header__content {
+    flex: 1;
+    min-width: 0;
 }
 
 .pos-header__title {
     font-weight: var(--font-weight-bold);
     color: var(--color-heading);
-    margin-bottom: var(--spacing-1);
+    margin: 0 0 var(--spacing-1) 0;
     font-size: var(--font-size-2xl);
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
@@ -350,11 +338,12 @@ watch(() => tableStore.tables, (tables) => {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-normal);
+    margin: 0;
 }
 
 .pos-header__actions {
     display: inline-flex;
-    gap: var(--spacing-3);
+    gap: 0.75rem;
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -363,23 +352,17 @@ watch(() => tableStore.tables, (tables) => {
     display: flex;
     flex: 1;
     min-height: 0;
-    gap: var(--spacing-6);
+    gap: var(--spacing-5);
     align-items: flex-start;
-}
-
-.pos-table-map-container {
-    padding: var(--spacing-6);
-    height: 100%;
-    overflow-y: auto;
 }
 
 .pos-panel {
     display: flex;
     flex-direction: column;
     border-radius: var(--radius-xl);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-lg);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
     overflow: hidden;
 }
 
@@ -395,44 +378,86 @@ watch(() => tableStore.tables, (tables) => {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-6);
-    padding: var(--spacing-6);
+    gap: var(--spacing-5);
+    padding: var(--spacing-5);
     height: 100vh;
     overflow-y: auto;
 }
 
-/* Order Section */
-.order-section {
+.pos-table-map-wrapper {
+    padding: var(--spacing-5);
+    height: 100%;
+    overflow-y: auto;
+}
+
+.pos-table-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-5);
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+}
+
+.pos-table-map-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin: 0 0 var(--spacing-1) 0;
+}
+
+.pos-table-map-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.pos-table-map-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pos-table-map-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.pos-order-section {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-4);
 }
 
-.order-section__header {
+.pos-order-section__header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: var(--spacing-4);
     padding-bottom: var(--spacing-4);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border-soft);
 }
 
-.order-section__title {
+.pos-order-section__title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     color: var(--color-heading);
     margin: 0 0 var(--spacing-1) 0;
 }
 
-.order-section__subtitle {
+.pos-order-section__subtitle {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin: 0;
 }
 
-.order-section__badge {
+.pos-order-section__badge {
     display: inline-block;
-    padding: var(--spacing-1) var(--spacing-3);
+    padding: 0.25rem 0.75rem;
     border-radius: var(--radius-full);
     background: var(--color-card-muted);
     color: var(--color-text-muted);
@@ -442,29 +467,7 @@ watch(() => tableStore.tables, (tables) => {
     letter-spacing: var(--letter-spacing-wide);
 }
 
-.order-section__empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-12) var(--spacing-4);
-    text-align: center;
-    color: var(--color-text-muted);
-}
-
-.order-section__empty i {
-    font-size: var(--font-size-3xl);
-    margin-bottom: var(--spacing-4);
-    opacity: 0.5;
-}
-
-.order-section__empty p {
-    margin: 0;
-    font-size: var(--font-size-sm);
-}
-
-/* Order List */
-.order-list {
+.pos-order-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -473,54 +476,64 @@ watch(() => tableStore.tables, (tables) => {
     gap: var(--spacing-3);
 }
 
-.order-list__item {
+.pos-order-list__item {
     padding: var(--spacing-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
     cursor: pointer;
     transition: all var(--transition-fast);
 }
 
-.order-list__item:hover {
-    background: var(--color-card-accent);
-    transform: translateX(4px);
+.pos-order-list__item:hover {
+    background: var(--color-card-muted);
+    transform: translateX(2px);
     border-color: var(--color-primary);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-soft);
 }
 
-.order-list__item--active {
+.pos-order-list__item--active {
     background: var(--color-primary-soft);
     border-color: var(--color-primary);
 }
 
-.order-list__item-content {
+.pos-order-list__content {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: var(--spacing-4);
 }
 
-.order-list__item-title {
+.pos-order-list__title {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: var(--spacing-1);
 }
 
-.order-list__item-meta {
+.pos-order-list__meta {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
 }
 
-.order-list__item-right {
+.pos-order-list__right {
     text-align: right;
 }
 
-.order-list__item-amount {
+.pos-order-list__amount {
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-1);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 
 @media (max-width: 1200px) {
@@ -536,13 +549,33 @@ watch(() => tableStore.tables, (tables) => {
 }
 
 @media (max-width: 768px) {
-    .pos-container {
-        padding: 0.5rem;
-        gap: 1rem;
+    .pos-page {
+        padding: var(--spacing-2);
+        gap: var(--spacing-4);
+    }
+
+    .pos-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: var(--spacing-4);
+    }
+
+    .pos-header__actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .pos-header__actions .btn {
+        flex: 1;
     }
 
     .pos-panel--right {
-        padding: 1rem;
+        padding: var(--spacing-4);
+    }
+
+    .pos-table-map-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 </style>

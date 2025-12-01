@@ -1,26 +1,25 @@
 <template>
-    <div class="pos-cart card shadow-sm">
-        <div class="card-body d-flex flex-column gap-4">
-            <header class="pos-cart__header">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <h4 class="mb-0">{{ cartTitle }}</h4>
-                        <button
-                            v-if="showSelectTableButton"
-                            class="btn btn-outline-primary btn-sm"
-                            type="button"
-                            @click="requestTableSelection"
-                        >
-                            <i class="bi bi-grid-3x3-gap me-1"></i>
-                            Chọn bàn
-                        </button>
-                    </div>
-                    <span class="status-pill" :class="orderStatusClass">{{ orderStatusLabel }}</span>
+    <div class="pos-cart">
+        <header class="pos-cart__header">
+            <div class="pos-cart__header-top">
+                <div class="pos-cart__header-left">
+                    <h4 class="pos-cart__title">{{ cartTitle }}</h4>
+                    <button
+                        v-if="showSelectTableButton"
+                        class="btn btn-outline-primary btn-sm"
+                        type="button"
+                        @click="requestTableSelection"
+                    >
+                        <i class="bi bi-grid-3x3-gap me-1"></i>
+                        Chọn bàn
+                    </button>
                 </div>
-                <p v-if="localOrder.code || localOrder.id" class="text-muted small mb-0">
-                    Mã đơn: #{{ localOrder.code || localOrder.id }}
-                </p>
-            </header>
+                <span class="status-pill" :class="orderStatusClass">{{ orderStatusLabel }}</span>
+            </div>
+            <p v-if="localOrder.code || localOrder.id" class="pos-cart__order-code">
+                Mã đơn: #{{ localOrder.code || localOrder.id }}
+            </p>
+        </header>
 
             <EmptyState
                 v-if="!order && !isCreatingNew"
@@ -109,12 +108,12 @@
                 </EmptyState>
 
                 <section class="pos-cart__customer">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Khách hàng</h6>
+                    <div class="pos-cart__customer-header">
+                        <h6 class="pos-cart__customer-title">Khách hàng</h6>
                         <button
                             v-if="hasSelectedCustomer"
                             type="button"
-                            class="btn btn-link btn-sm text-danger p-0"
+                            class="pos-cart__customer-clear"
                             @click="clearSelectedCustomer"
                         >
                             Bỏ chọn
@@ -150,24 +149,21 @@
                                 Tìm
                             </button>
                         </div>
-                        <ul
-                            v-if="showCustomerSuggestions"
-                            class="list-group pos-cart__customer-results mt-2"
-                        >
+                        <ul v-if="showCustomerSuggestions" class="pos-cart__customer-results">
                             <li
                                 v-for="customer in customerSearchResults"
                                 :key="customer.id || customer.customerId"
-                                class="list-group-item list-group-item-action"
+                                class="pos-cart__customer-item"
                                 @click="selectCustomer(customer)"
                             >
-                                <div class="fw-semibold">{{ customer.fullName || customer.customerName || customer.name }}</div>
-                                <small class="text-muted">{{ customer.phone || customer.customerPhone || '—' }}</small>
+                                <div class="pos-cart__customer-item-name">{{ customer.fullName || customer.customerName || customer.name }}</div>
+                                <small class="pos-cart__customer-item-phone">{{ customer.phone || customer.customerPhone || '—' }}</small>
                             </li>
-                            <li v-if="!customerSearchResults.length" class="list-group-item text-muted small text-center">
+                            <li v-if="!customerSearchResults.length" class="pos-cart__customer-item pos-cart__customer-item--empty">
                                 Không tìm thấy khách phù hợp.
                             </li>
                         </ul>
-                        <small class="text-muted d-block mt-2">Chọn khách để tích điểm và hiển thị trên hóa đơn.</small>
+                        <small class="pos-cart__customer-hint">Chọn khách để tích điểm và hiển thị trên hóa đơn.</small>
                     </template>
                 </section>
 
@@ -193,8 +189,8 @@
 
                 <section class="pos-cart__voucher">
                     <template v-if="hasVoucherApplied">
-                        <div class="alert alert-success d-flex justify-content-between align-items-center mb-3">
-                            <div>
+                        <div class="pos-cart__voucher-applied">
+                            <div class="pos-cart__voucher-applied-content">
                                 <strong>Voucher đã áp dụng:</strong> {{ localOrder.voucherCode }}
                             </div>
                             <button
@@ -239,11 +235,11 @@
                                 Áp dụng
                             </button>
                         </div>
-                        <div v-if="voucherCheckResult" class="alert" :class="voucherCheckResult.valid ? 'alert-success' : 'alert-warning'">
+                        <div v-if="voucherCheckResult" class="pos-cart__voucher-result" :class="voucherCheckResult.valid ? 'pos-cart__voucher-result--success' : 'pos-cart__voucher-result--warning'">
                             <div v-if="voucherCheckResult.valid">
                                 <i class="bi bi-check-circle me-2"></i>
                                 <strong>Voucher hợp lệ!</strong>
-                                <div class="mt-1">
+                                <div class="pos-cart__voucher-result-discount">
                                     Giảm giá: <strong>{{ formatVoucherDiscount(voucherCheckResult) }}</strong>
                                 </div>
                             </div>
@@ -252,7 +248,7 @@
                                 <strong>{{ voucherCheckResult.message || 'Voucher không hợp lệ' }}</strong>
                             </div>
                         </div>
-                        <small v-if="!isExistingOrder" class="text-muted d-block mt-2">Lưu đơn hàng trước khi áp dụng voucher.</small>
+                        <small v-if="!isExistingOrder" class="pos-cart__voucher-hint">Lưu đơn hàng trước khi áp dụng voucher.</small>
                     </div>
                 </section>
 
@@ -286,7 +282,6 @@
                     </button>
                 </section>
             </template>
-        </div>
     </div>
 
     <PosPaymentModal
@@ -1070,14 +1065,48 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 <style scoped>
 .pos-cart {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
     border-radius: var(--radius-xl);
     background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
+    padding: var(--spacing-5);
 }
 
 .pos-cart__header {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.pos-cart__header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pos-cart__header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pos-cart__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin: 0;
+}
+
+.pos-cart__order-code {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
 }
 
 
@@ -1095,7 +1124,13 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     padding: var(--spacing-3) var(--spacing-4);
     border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-md);
+    background: var(--color-card);
+    transition: all var(--transition-fast);
+}
+
+.pos-cart__item:hover {
     background: var(--color-card-muted);
+    box-shadow: var(--shadow-soft);
 }
 
 .pos-cart__item-info h6 {
@@ -1112,10 +1147,10 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     display: flex;
     align-items: center;
     gap: var(--spacing-1);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-md);
     padding: var(--spacing-0);
-    background: var(--color-card-muted);
+    background: var(--color-card);
 }
 
 .quantity-btn {
@@ -1184,17 +1219,90 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .pos-cart__customer {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
+}
+
+.pos-cart__customer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.pos-cart__customer-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin: 0;
+}
+
+.pos-cart__customer-clear {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: opacity var(--transition-fast);
+}
+
+.pos-cart__customer-clear:hover {
+    opacity: 0.8;
 }
 
 .pos-cart__customer-results {
     max-height: 220px;
     overflow-y: auto;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    list-style: none;
+    padding: 0;
+    margin: var(--spacing-2) 0 0 0;
 }
 
-.pos-cart__customer-results .list-group-item {
+.pos-cart__customer-item {
+    padding: var(--spacing-3) var(--spacing-4);
     cursor: pointer;
+    border-bottom: 1px solid var(--color-border-soft);
+    transition: background-color var(--transition-fast);
+}
+
+.pos-cart__customer-item:last-child {
+    border-bottom: none;
+}
+
+.pos-cart__customer-item:hover {
+    background: var(--color-card-muted);
+}
+
+.pos-cart__customer-item--empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: default;
+}
+
+.pos-cart__customer-item--empty:hover {
+    background: transparent;
+}
+
+.pos-cart__customer-item-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+}
+
+.pos-cart__customer-item-phone {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.pos-cart__customer-hint {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    display: block;
+    margin-top: var(--spacing-2);
 }
 
 .pos-cart__customer-chip {
@@ -1210,6 +1318,52 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .pos-cart__voucher {
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pos-cart__voucher-applied {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-md);
+    background: var(--color-success-soft);
+    border: 1px solid var(--color-success-border-soft);
+    color: var(--color-success);
+    margin-bottom: var(--spacing-3);
+}
+
+.pos-cart__voucher-applied-content {
+    flex: 1;
+}
+
+.pos-cart__voucher-result {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-2);
+}
+
+.pos-cart__voucher-result--success {
+    background: var(--color-success-soft);
+    border: 1px solid var(--color-success-border-soft);
+    color: var(--color-success);
+}
+
+.pos-cart__voucher-result--warning {
+    background: var(--color-warning-soft);
+    border: 1px solid var(--color-warning-border-soft);
+    color: var(--color-warning);
+}
+
+.pos-cart__voucher-result-discount {
+    margin-top: 0.5rem;
+}
+
+.pos-cart__voucher-hint {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    display: block;
+    margin-top: var(--spacing-2);
 }
 
 .pos-cart__actions {
@@ -1230,34 +1384,34 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .status-pill--pending {
-    background: rgba(250, 204, 21, 0.18);
-    color: #b45309;
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
 }
 
 .status-pill--paid {
-    background: rgba(34, 197, 94, 0.18);
-    color: #15803d;
+    background: var(--color-success-soft);
+    color: var(--color-success);
 }
 
 .status-pill--cancelled {
-    background: rgba(239, 68, 68, 0.18);
-    color: #b91c1c;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
 }
 
 .status-pill--transferred {
-    background: rgba(129, 140, 248, 0.18);
-    color: #4338ca;
+    background: var(--color-info-soft);
+    color: var(--color-info);
 }
 
 .status-pill--takeaway {
-    background: rgba(59, 130, 246, 0.18);
-    color: #1d4ed8;
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .status-pill--draft,
 .status-pill--default {
-    background: rgba(148, 163, 184, 0.18);
-    color: #475569;
+    background: var(--color-card-muted);
+    color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {

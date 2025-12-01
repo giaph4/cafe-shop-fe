@@ -1,22 +1,22 @@
 <template>
-    <div class="modal fade" id="purchaseDetailModal" tabindex="-1" ref="modalElement" aria-hidden="true">
+    <Teleport to="body">
+        <div class="modal fade" id="purchaseDetailModal" tabindex="-1" ref="modalElement" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content detail-modal">
-                <div class="modal-header border-0 pb-0">
+                <div class="modal-header">
                     <div>
-                        <h5 class="modal-title fw-semibold">Chi tiết đơn nhập hàng #{{ orderId }}</h5>
-                        <p class="modal-subtitle text-muted mb-0">Theo dõi tình trạng xử lý và các hạng mục trong phiếu nhập.</p>
+                        <h5 class="modal-title">Chi tiết đơn nhập hàng #{{ orderId }}</h5>
+                        <p class="modal-subtitle mb-0">Theo dõi tình trạng xử lý và các hạng mục trong phiếu nhập.</p>
                     </div>
                     <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
-                    <div v-if="isLoading" class="state-block py-5">
-                        <div class="spinner-border text-primary" role="status"></div>
-                    </div>
-                    <div v-else-if="isError" class="state-block py-5">
-                        <div class="alert alert-danger mb-0">{{ errorMessage }}</div>
-                    </div>
+                    <LoadingState v-if="isLoading" />
+                    <ErrorState 
+                        v-else-if="isError" 
+                        :message="errorMessage"
+                    />
                     <div v-else-if="detail" class="detail-content">
                         <div class="row g-4 mb-3">
                             <div class="col-md-6">
@@ -89,19 +89,23 @@
                     </div>
                 </div>
 
-                <div class="modal-footer border-0 pt-0">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" @click="closeModal">Đóng</button>
                 </div>
             </div>
         </div>
-    </div>
+        </div>
+    </Teleport>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { Teleport } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { Modal } from 'bootstrap'
 
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import { getPurchaseOrderById } from '@/api/purchaseOrderService'
 import { formatCurrency, formatDateTime, formatNumber } from '@/utils/formatters'
 
@@ -174,88 +178,87 @@ const statusLabel = (status) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .detail-modal {
-    border-radius: 24px;
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
-    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
-}
-
-.modal-subtitle {
-    font-size: 0.9rem;
-}
-
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
 }
 
 .detail-content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .info-card {
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    border-radius: 16px;
-    padding: 1rem 1.25rem;
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4) var(--spacing-5);
+    background: var(--color-card);
+    transition: all var(--transition-fast);
+}
+
+.info-card:hover {
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card-muted);
 }
 
 .info-card .label {
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--letter-spacing-wide);
     color: var(--color-text-muted);
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-1);
 }
 
 .info-card .value {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: 0;
 }
 
 .section-title {
-    font-weight: 700;
-    margin-bottom: 0.75rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-3);
     color: var(--color-heading);
+    font-size: var(--font-size-lg);
 }
 
 .table-wrapper {
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    border-radius: 18px;
-    padding: 1.25rem;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-5);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
 }
 
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.85rem;
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
 }
 
 .status-success {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
+    background: var(--color-success-soft);
+    color: var(--color-success);
 }
 
 .status-danger {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
 }
 
 .status-warning {
-    background: rgba(234, 179, 8, 0.15);
-    color: #ca8a04;
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
 }
 
 .table tbody tr:last-child td {
@@ -267,4 +270,38 @@ const statusLabel = (status) => {
     vertical-align: middle;
 }
 
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .modal-subtitle) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
+}
 </style>

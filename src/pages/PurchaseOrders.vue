@@ -1,13 +1,111 @@
 <template>
-    <PurchaseOrderDetailModal :order-id="selectedOrderId" @close="selectedOrderId = null"/>
-    <PurchaseOrderUpdateModal 
-        ref="updateModal"
-        :purchase-order-id="selectedOrderId"
-        :purchase-order="selectedOrder"
-        @updated="handleOrderUpdated"
-    />
+    <Teleport to="body">
+        <PurchaseOrderDetailModal :order-id="selectedOrderId" @close="selectedOrderId = null"/>
+        <PurchaseOrderUpdateModal 
+            ref="updateModal"
+            :purchase-order-id="selectedOrderId"
+            :purchase-order="selectedOrder"
+            @updated="handleOrderUpdated"
+        />
 
-    <div class="page-container container-fluid" data-aos="fade-up">
+        <!-- Complete Order Confirmation Modal -->
+        <div 
+            class="modal fade" 
+            id="completeOrderModal" 
+            tabindex="-1" 
+            ref="completeOrderModalElement" 
+            aria-labelledby="completeOrderModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="completeOrderModalLabel">Hoàn thành phiếu nhập</h5>
+                            <p class="modal-subtitle mb-0">Xác nhận hoàn thành phiếu nhập hàng này.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="completeOrderBsModal?.hide()" :disabled="completeMutation.isPending.value" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Bạn có chắc chắn muốn hoàn thành phiếu nhập này không?</p>
+                        <div v-if="orderToComplete" class="delete-info-card">
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Mã đơn:</span>
+                                <span class="delete-info-value">#{{ orderToComplete.id }}</span>
+                            </div>
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Nhà cung cấp:</span>
+                                <span class="delete-info-value">{{ orderToComplete.supplierName || '—' }}</span>
+                            </div>
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Tổng tiền:</span>
+                                <span class="delete-info-value">{{ formatCurrency(orderToComplete.totalAmount) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @click="completeOrderBsModal?.hide()" :disabled="completeMutation.isPending.value">
+                            Hủy
+                        </button>
+                        <button type="button" class="btn btn-success" @click="confirmCompleteOrder" :disabled="completeMutation.isPending.value">
+                            <span v-if="completeMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
+                            Hoàn thành
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancel Order Confirmation Modal -->
+        <div 
+            class="modal fade" 
+            id="cancelOrderModal" 
+            tabindex="-1" 
+            ref="cancelOrderModalElement" 
+            aria-labelledby="cancelOrderModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="cancelOrderModalLabel">Hủy phiếu nhập</h5>
+                            <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
+                        </div>
+                        <button type="button" class="btn-close" @click="cancelOrderBsModal?.hide()" :disabled="cancelMutation.isPending.value" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Bạn có chắc chắn muốn hủy phiếu nhập này không?</p>
+                        <div v-if="orderToCancel" class="delete-info-card">
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Mã đơn:</span>
+                                <span class="delete-info-value">#{{ orderToCancel.id }}</span>
+                            </div>
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Nhà cung cấp:</span>
+                                <span class="delete-info-value">{{ orderToCancel.supplierName || '—' }}</span>
+                            </div>
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Tổng tiền:</span>
+                                <span class="delete-info-value">{{ formatCurrency(orderToCancel.totalAmount) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @click="cancelOrderBsModal?.hide()" :disabled="cancelMutation.isPending.value">
+                            Hủy
+                        </button>
+                        <button type="button" class="btn btn-danger" @click="confirmCancelOrder" :disabled="cancelMutation.isPending.value">
+                            <span v-if="cancelMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
+                            Xác nhận hủy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
+    <div class="purchase-orders-page container-fluid">
         <div class="purchase-orders-header">
             <div class="purchase-orders-header__content">
                 <div class="purchase-orders-header__title-section">
@@ -28,8 +126,8 @@
 
         <div class="row g-4 mb-4 mt-1">
             <div class="col-sm-6 col-lg-3 d-flex" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card w-100">
-                    <div class="stat-icon" :class="stat.variant">
+                <div class="stat-card w-100" :class="stat.variant">
+                    <div class="stat-icon">
                         <i :class="stat.icon"></i>
                     </div>
                     <div>
@@ -87,12 +185,17 @@
 
         <div class="card table-card">
             <div class="card-body p-0">
-                <div v-if="isLoading || isSuppliersLoading" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="isError" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ errorMessage }}</div>
-                </div>
+                <LoadingState v-if="isLoading || isSuppliersLoading" />
+                <ErrorState 
+                    v-else-if="isError" 
+                    :message="errorMessage"
+                    @retry="refetch"
+                />
+                <EmptyState
+                    v-else-if="!tableData.length"
+                    title="Chưa có phiếu nhập"
+                    message="Tạo phiếu nhập mới bằng nút ở góc trên bên phải."
+                />
                 <div v-else class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -120,12 +223,12 @@
                             <td class="text-end fw-semibold">{{ formatCurrency(order.totalAmount) }}</td>
                             <td class="text-end">
                                 <div class="action-buttons">
-                                    <button class="action-button" type="button"
+                                    <button class="action-button action-button--primary" type="button"
                                             @click="selectedOrderId = order.id">
                                         <i class="bi bi-eye"></i>
                                         <span>Chi tiết</span>
                                     </button>
-                                    <button class="action-button" type="button"
+                                    <button class="action-button action-button--primary" type="button"
                                             v-if="order.status === 'PENDING'"
                                             @click="handleUpdate(order)">
                                         <i class="bi bi-pencil"></i>
@@ -146,25 +249,27 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr v-if="!tableData.length">
-                            <td colspan="7" class="text-center text-muted py-5">Không tìm thấy phiếu nhập phù hợp.</td>
-                        </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-transparent" v-if="supportsPagination && totalPages > 1">
-                    <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
-                                @page-change="handlePageChange"/>
-                </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex justify-content-end" v-if="supportsPagination && totalPages > 1">
+                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
+                            @page-change="handlePageChange"/>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import {computed, reactive, ref} from 'vue'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {Teleport} from 'vue'
+import {Modal} from 'bootstrap'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/vue-query'
 
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 import PurchaseOrderDetailModal from '@/components/purchase-orders/PurchaseOrderDetailModal.vue'
 import PurchaseOrderUpdateModal from '@/components/purchase-orders/PurchaseOrderUpdateModal.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -182,6 +287,12 @@ const queryClient = useQueryClient()
 const selectedOrderId = ref(null)
 const selectedOrder = ref(null)
 const updateModal = ref(null)
+const completeOrderModalElement = ref(null)
+const completeOrderBsModal = ref(null)
+const cancelOrderModalElement = ref(null)
+const cancelOrderBsModal = ref(null)
+const orderToComplete = ref(null)
+const orderToCancel = ref(null)
 
 const DEFAULT_FILTERS = Object.freeze({
     supplierId: '',
@@ -332,15 +443,29 @@ const cancelMutation = useMutation({
 })
 
 const handleComplete = (order) => {
-    if (confirm(`Xác nhận hoàn thành phiếu nhập #${order.id}?`)) {
-        completeMutation.mutate(order.id)
-    }
+    orderToComplete.value = order
+    completeOrderBsModal.value?.show()
+}
+
+const confirmCompleteOrder = () => {
+    if (!orderToComplete.value) return
+    const order = orderToComplete.value
+    completeOrderBsModal.value?.hide()
+    completeMutation.mutate(order.id)
+    orderToComplete.value = null
 }
 
 const handleCancel = (order) => {
-    if (confirm(`Bạn có chắc chắn muốn huỷ phiếu nhập #${order.id}?`)) {
-        cancelMutation.mutate(order.id)
-    }
+    orderToCancel.value = order
+    cancelOrderBsModal.value?.show()
+}
+
+const confirmCancelOrder = () => {
+    if (!orderToCancel.value) return
+    const order = orderToCancel.value
+    cancelOrderBsModal.value?.hide()
+    cancelMutation.mutate(order.id)
+    orderToCancel.value = null
 }
 
 const handleUpdate = (order) => {
@@ -371,24 +496,39 @@ const statusLabel = (status) => {
     if (status === 'CANCELLED') return 'Đã huỷ'
     return 'Đang chờ'
 }
+
+onMounted(() => {
+    if (completeOrderModalElement.value) {
+        completeOrderBsModal.value = new Modal(completeOrderModalElement.value)
+    }
+    if (cancelOrderModalElement.value) {
+        cancelOrderBsModal.value = new Modal(cancelOrderModalElement.value)
+    }
+})
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.purchase-orders-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
+}
+
 .purchase-orders-header {
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-card);
+    box-shadow: var(--shadow-soft);
 }
 
 .purchase-orders-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
+    flex-wrap: wrap;
 }
 
 .purchase-orders-header__title-section {
@@ -397,24 +537,25 @@ const statusLabel = (status) => {
 }
 
 .purchase-orders-header__title {
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--spacing-1);
 }
 
 .purchase-orders-header__subtitle {
-    margin-bottom: 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 .purchase-orders-header__actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -422,146 +563,245 @@ const statusLabel = (status) => {
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
+}
+
+.delete-info-card {
+    border: 1px dashed var(--color-primary-border-soft);
+    background: var(--color-primary-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+}
+
+.delete-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
+}
+
+.delete-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.delete-info-label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.delete-info-value {
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    text-align: right;
+    flex: 1;
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-6);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+}
+
+:deep(.modal-header .modal-subtitle) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-6);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: var(--color-card);
 }
 
 .action-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    background: #ffffff;
-    color: #a855f7;
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    background: var(--color-card);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
     white-space: nowrap;
 }
 
-.action-button:hover:not(:disabled) {
-    background: rgba(168, 85, 247, 0.05);
-    border-color: rgba(168, 85, 247, 0.5);
-    transform: translateY(-1px);
+.action-button--primary {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.action-button--primary:hover:not(:disabled) {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .action-button:disabled {
-    opacity: 0.65;
-    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .action-button--success {
-    border-color: rgba(16, 185, 129, 0.3);
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    border-color: var(--color-success);
+    color: var(--color-success);
+    background: var(--color-card);
 }
 
 .action-button--success:hover:not(:disabled) {
-    background: rgba(16, 185, 129, 0.15);
-    border-color: rgba(16, 185, 129, 0.5);
+    background: var(--color-success-soft);
+    border-color: var(--color-success);
+    color: var(--color-success);
 }
 
 .action-button--danger {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: var(--color-card);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.5);
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
-
-/* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card, .state-block) are in components.scss */
 
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    padding: 1rem 1.25rem;
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    gap: var(--spacing-4);
+    border-radius: 24px;
+    padding: var(--spacing-4) var(--spacing-5);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
     height: 100%;
-    min-height: 140px;
+    min-height: 120px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--color-card-muted);
 }
 
 .stat-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: #fff;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    color: #6366f1;
 }
 
-.variant-primary {
-    background: linear-gradient(140deg, #6366f1, #8b5cf6);
+.variant-primary .stat-icon {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
-.variant-warning {
-    background: linear-gradient(140deg, #f97316, #fb923c);
+.variant-warning .stat-icon {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
-.variant-success {
-    background: linear-gradient(140deg, #22c55e, #4ade80);
+.variant-success .stat-icon {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
 }
 
-.variant-info {
-    background: linear-gradient(140deg, #0ea5e9, #38bdf8);
+.variant-info .stat-icon {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .stat-label {
-    font-size: 0.85rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-1);
 }
 
 .stat-value {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
 }
 
 .table-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
+}
+
+.filter-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
 }
 
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.85rem;
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
 }
 
 .status-success {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
+    background: var(--color-success-soft);
+    color: var(--color-success);
 }
 
 .status-danger {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
 }
 
 .status-warning {
-    background: rgba(234, 179, 8, 0.15);
-    color: #ca8a04;
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
 }
 
 @media (max-width: 768px) {
+    .purchase-orders-header {
+        padding: var(--spacing-4);
+    }
+
     .purchase-orders-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -569,7 +809,11 @@ const statusLabel = (status) => {
 
     .purchase-orders-header__actions {
         width: 100%;
-        justify-content: flex-start;
+        justify-content: stretch;
+    }
+
+    .purchase-orders-header__actions .btn {
+        flex: 1;
     }
 
     .action-buttons {
@@ -579,6 +823,10 @@ const statusLabel = (status) => {
 
     .action-button {
         width: 100%;
+    }
+
+    .stat-card {
+        flex-direction: row;
     }
 }
 </style>

@@ -15,14 +15,11 @@
                     </div>
 
                     <div class="modal-body modal-body-scroll">
-                        <div v-if="loading" class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status"></div>
-                            <p class="mt-3 text-muted">Đang tải file...</p>
-                        </div>
-                        <div v-else-if="error" class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            {{ error }}
-                        </div>
+                        <LoadingState v-if="loading" message="Đang tải file..." />
+                        <ErrorState 
+                            v-else-if="error" 
+                            :message="error"
+                        />
                         <div v-else-if="file" class="file-preview-container">
                             <!-- Image Preview -->
                             <div v-if="isImage" class="preview-image">
@@ -90,6 +87,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import { toast } from 'vue3-toastify'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import { getFile } from '@/api/fileService'
 import { formatDateTime } from '@/utils/formatters'
 import logger from '@/utils/logger'
@@ -236,7 +235,7 @@ onBeforeUnmount(() => {
 defineExpose({ show, hide })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .file-preview-container {
     min-height: 400px;
     display: flex;
@@ -246,29 +245,32 @@ defineExpose({ show, hide })
 
 .preview-image img {
     max-height: 70vh;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
 }
 
 .preview-pdf iframe {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
 }
 
 .preview-video video {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
 }
 
 .preview-text pre {
-    font-size: 0.875rem;
-    line-height: 1.6;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-3);
+    background: var(--color-card-muted);
 }
 
 .file-metadata {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 </style>
 

@@ -1,19 +1,19 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modalElement" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
+        <div class="modal fade order-update-modal" ref="modalElement" tabindex="-1" aria-labelledby="orderUpdateModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">Cập nhật đơn hàng #{{ orderId }}</h5>
-                            <p class="mb-0 text-muted small">Cập nhật thông tin khách hàng, bàn và trạng thái đơn hàng.</p>
+                        <div class="modal-header__content">
+                            <h5 class="modal-title" id="orderUpdateModalLabel">Cập nhật đơn hàng #{{ orderId }}</h5>
+                            <p class="modal-subtitle">Cập nhật thông tin khách hàng, bàn và trạng thái đơn hàng.</p>
                         </div>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
+                        <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
                     </div>
                     <div class="modal-body">
-                        <form @submit.prevent="handleSubmit">
+                        <form @submit.prevent="handleSubmit" class="order-update-form">
                             <!-- Customer Selection -->
-                            <div class="mb-3">
+                            <div class="form-group">
                                 <label class="form-label">Khách hàng</label>
                                 <select 
                                     class="form-select" 
@@ -33,7 +33,7 @@
                             </div>
 
                             <!-- Table Selection -->
-                            <div class="mb-3">
+                            <div class="form-group">
                                 <label class="form-label">Bàn</label>
                                 <select 
                                     class="form-select" 
@@ -53,7 +53,7 @@
                             </div>
 
                             <!-- Status -->
-                            <div class="mb-3">
+                            <div class="form-group">
                                 <label class="form-label">Trạng thái</label>
                                 <select 
                                     class="form-select" 
@@ -68,7 +68,7 @@
                             </div>
 
                             <!-- Note -->
-                            <div class="mb-3">
+                            <div class="form-group">
                                 <label class="form-label">Ghi chú</label>
                                 <textarea 
                                     class="form-control" 
@@ -80,7 +80,8 @@
                             </div>
 
                             <!-- Error Message -->
-                            <div v-if="error" class="alert alert-danger mb-0">
+                            <div v-if="error" class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
                                 {{ error }}
                             </div>
                         </form>
@@ -250,83 +251,182 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
-:deep(.modal-content) {
+.order-update-modal :global(.modal-dialog) {
+    max-width: 600px;
+}
+
+.order-update-modal :global(.modal-content) {
     border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: var(--color-card);
     box-shadow: var(--shadow-2xl);
 }
 
-:deep(.modal-header) {
+.order-update-modal :global(.modal-header) {
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-6);
     background: var(--color-card);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-4);
 }
 
-:deep(.modal-header .modal-title) {
+.modal-header__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.order-update-modal :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-bold);
     color: var(--color-heading);
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
+    line-height: var(--line-height-tight);
 }
 
-:deep(.modal-header .text-muted.small) {
+.modal-subtitle {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
+    margin-bottom: 0;
+    line-height: var(--line-height-normal);
 }
 
-.modal-body {
-    max-height: 70vh;
-    overflow-y: auto;
+.order-update-modal :global(.modal-body) {
     padding: var(--spacing-6);
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
 }
 
-:deep(.modal-footer) {
+.order-update-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.order-update-modal :global(.form-label) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    margin-bottom: 0;
+}
+
+.order-update-modal :global(.form-control),
+.order-update-modal :global(.form-select) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    background: var(--color-card);
+    color: var(--color-text);
+}
+
+.order-update-modal :global(.form-control:focus),
+.order-update-modal :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+    outline: none;
+}
+
+.order-update-modal :global(.form-control:disabled),
+.order-update-modal :global(.form-select:disabled) {
+    background: var(--color-card-muted);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.order-update-modal :global(.form-text) {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+.order-update-modal :global(.alert-danger) {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-danger-border);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+}
+
+.order-update-modal :global(.modal-footer) {
     border-top: 1px solid var(--color-border);
     padding: var(--spacing-4) var(--spacing-6);
     background: var(--color-card);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
 }
 
-:deep(.form-label) {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-2);
-    font-size: var(--font-size-sm);
-}
-
-:deep(.form-control),
-:deep(.form-select) {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-2) var(--spacing-4);
-    font-size: var(--font-size-sm);
-}
-
-:deep(.form-control:focus),
-:deep(.form-select:focus) {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-soft);
-}
-
-:deep(.btn-primary) {
+.order-update-modal :global(.btn-primary) {
     background: var(--color-primary);
     border: none;
     border-radius: var(--radius-md);
-    padding: var(--spacing-2) var(--spacing-6);
+    padding: var(--spacing-3) var(--spacing-6);
     font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
 }
 
-:deep(.btn-outline-secondary) {
+.order-update-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.order-update-modal :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.order-update-modal :global(.btn-outline-secondary) {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: var(--spacing-2) var(--spacing-6);
+    padding: var(--spacing-3) var(--spacing-6);
     color: var(--color-text-muted);
     background: var(--color-card);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
 }
 
-:deep(.btn-outline-secondary:hover) {
+.order-update-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
     background: var(--color-card-muted);
     border-color: var(--color-border-soft);
+    color: var(--color-text);
+}
+
+.order-update-modal :global(.btn-outline-secondary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .order-update-modal :global(.modal-dialog) {
+        margin: var(--spacing-4);
+    }
+
+    .order-update-modal :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
+
+    .order-update-modal :global(.modal-footer) {
+        flex-direction: column-reverse;
+    }
+
+    .order-update-modal :global(.modal-footer .btn) {
+        width: 100%;
+    }
 }
 </style>
 

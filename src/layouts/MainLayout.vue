@@ -60,7 +60,7 @@ const sidebarWidth = computed(() => {
 
 const mainMarginLeft = computed(() => {
     if (isMobile.value) return 0
-    return `calc(${sidebarWidth.value}px + 1.75rem + 1.5rem)`
+    return `${sidebarWidth.value}px`
 })
 </script>
 
@@ -75,7 +75,7 @@ const mainMarginLeft = computed(() => {
     display: flex;
     flex-direction: column;
     position: relative;
-    padding: calc(72px + 1.5rem + 1.75rem) 2.25rem 2.5rem 0;
+    padding: calc(72px + 1.5rem) 1.5rem 1.5rem 1.5rem;
     transition: margin-left 0.26s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.24s var(--transition-ease, cubic-bezier(0.4, 0, 0.2, 1));
 }
@@ -116,7 +116,7 @@ const mainMarginLeft = computed(() => {
 
     .layout__main {
         margin-left: 0 !important;
-        padding: calc(72px + 1.5rem + 1.75rem) 1.4rem 2.25rem;
+        padding: calc(72px + 1.5rem) 1rem 1.5rem;
     }
 }
 </style>

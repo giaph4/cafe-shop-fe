@@ -4,11 +4,11 @@
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <div>
+                        <div class="modal-header__content">
                             <h5 class="modal-title">Chi tiết khách hàng #{{ customerId }}</h5>
-                            <p class="mb-0 text-muted small">Xem thông tin chi tiết, lịch sử mua hàng và thống kê của khách hàng.</p>
+                            <p class="modal-subtitle">Xem thông tin chi tiết, lịch sử mua hàng và thống kê của khách hàng.</p>
                         </div>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
+                        <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
                     </div>
                     <div class="modal-body">
                         <LoadingState v-if="loading" />
@@ -433,42 +433,42 @@ defineExpose({ show, hide })
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-md);
-    background: var(--color-card-muted);
-    border: 1px solid var(--color-border);
+    border-radius: 24px;
+    background: #f8fafc;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-full);
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: var(--font-size-xl);
-    color: var(--color-white);
-    border: 2px solid;
+    font-size: 1.75rem;
+    color: #6366f1;
 }
 
 .stat-icon--purple {
-    background: linear-gradient(135deg, #a855f7, #9333ea);
-    border-color: #a855f7;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
 .stat-icon--green {
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-color: #10b981;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
 }
 
 .stat-icon--blue {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    border-color: #3b82f6;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
 }
 
 .stat-icon--yellow {
-    background: linear-gradient(135deg, #eab308, #ca8a04);
-    border-color: #eab308;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
 .stat-info {

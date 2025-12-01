@@ -1,16 +1,27 @@
 <template>
-    <div class="shift-assignment-page container-fluid" data-aos="fade-up">
+    <div class="shift-assignment-page container-fluid">
         <div class="shift-assignment-header">
             <div class="shift-assignment-header__content">
                 <div class="shift-assignment-header__title-section">
-                    <h2 class="page-title">Quản lý Phân công Ca làm</h2>
-                    <p class="page-subtitle">Phân công nhân viên vào ca làm, quản lý thời gian và lương theo ca.</p>
+                    <h2 class="shift-assignment-header__title">Quản lý Phân công Ca làm</h2>
+                    <p class="shift-assignment-header__subtitle">Phân công nhân viên vào ca làm, quản lý thời gian và lương theo ca.</p>
                 </div>
                 <div class="shift-assignment-header__actions">
-                    <button class="btn btn-primary" type="button" @click="openCreateModal" v-if="activeTab === 'list'">
-                        <i class="bi bi-plus-lg me-2"></i>Tạo phân công mới
+                    <button 
+                        class="btn btn-primary" 
+                        type="button" 
+                        @click="openCreateModal" 
+                        v-if="activeTab === 'list'"
+                    >
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Tạo phân công mới
                     </button>
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
+                    <button 
+                        class="btn btn-outline-secondary" 
+                        type="button" 
+                        @click="fetchData" 
+                        :disabled="loading"
+                    >
                         <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
                         <i v-else class="bi bi-arrow-clockwise me-2"></i>
                         Làm mới
@@ -33,12 +44,12 @@
                         </button>
                     </li>
                 </ul>
-                <div v-if="loading && activeTab === 'list'" class="state-block py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else-if="error && activeTab === 'list'" class="state-block py-5">
-                    <div class="alert alert-danger mb-0">{{ error }}</div>
-                </div>
+                <LoadingState v-if="loading && activeTab === 'list'" />
+                <ErrorState 
+                    v-else-if="error && activeTab === 'list'" 
+                    :message="error"
+                    @retry="fetchData"
+                />
                 <div v-else class="tab-content">
                     <ShiftAssignmentListTab
                         v-if="activeTab === 'list'"
@@ -67,27 +78,70 @@
             </div>
         </div>
 
-        <ShiftAssignmentFormModal
-            ref="formModal"
-            :assignment="editingAssignment"
-            :shift-options="shiftOptions"
-            :staff-options="staffOptions"
-            :submitting="formSubmitting"
-            @submit="handleFormSubmit"
-        />
+        <Teleport to="body">
+            <ShiftAssignmentFormModal
+                ref="formModal"
+                :assignment="editingAssignment"
+                :shift-options="shiftOptions"
+                :staff-options="staffOptions"
+                :submitting="formSubmitting"
+                @submit="handleFormSubmit"
+            />
 
-        <ShiftAssignmentStatusUpdateModal
-            ref="statusModal"
-            :status-options="ASSIGNMENT_STATUSES"
-            @submit="handleStatusUpdateSubmit"
-        />
+            <ShiftAssignmentStatusUpdateModal
+                ref="statusModal"
+                :status-options="ASSIGNMENT_STATUSES"
+                @submit="handleStatusUpdateSubmit"
+            />
+
+            <!-- Delete Assignment Confirmation Modal -->
+            <div 
+                class="modal fade" 
+                id="deleteAssignmentModal" 
+                tabindex="-1" 
+                ref="deleteAssignmentModalElement" 
+                aria-labelledby="deleteAssignmentModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteAssignmentModalLabel">Xác nhận xóa</h5>
+                            <button type="button" class="btn-close" @click="deleteAssignmentBsModal?.hide()" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Bạn có chắc chắn muốn xóa phân công này không?</p>
+                            <div v-if="assignmentToDelete" class="card mt-3">
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Nhân viên:</strong> {{ assignmentToDelete.fullName || assignmentToDelete.username || 'N/A' }}</p>
+                                    <p class="mb-2"><strong>Ca làm:</strong> Shift #{{ assignmentToDelete.shiftId || 'N/A' }}</p>
+                                    <p class="mb-0"><strong>Thời gian:</strong> {{ formatTime(assignmentToDelete.plannedStart) }} - {{ formatTime(assignmentToDelete.plannedEnd) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="deleteAssignmentBsModal?.hide()">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="confirmDeleteAssignment">
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { Teleport } from 'vue'
+import { Modal } from 'bootstrap'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/store/auth'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import ShiftAssignmentListTab from '@/components/shift-assignments/ShiftAssignmentListTab.vue'
 import ShiftAssignmentMyTab from '@/components/shift-assignments/ShiftAssignmentMyTab.vue'
 import ShiftAssignmentFormModal from '@/components/shift-assignments/ShiftAssignmentFormModal.vue'
@@ -291,16 +345,28 @@ const handleStatusUpdateSubmit = async (payload) => {
     }
 }
 
-const handleRemove = async (assignment) => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa phân công này?')
-    if (!confirmed) return
+const deleteAssignmentModalElement = ref(null)
+const deleteAssignmentBsModal = ref(null)
+const assignmentToDelete = ref(null)
+
+const handleRemove = (assignment) => {
+    assignmentToDelete.value = assignment
+    deleteAssignmentBsModal.value?.show()
+}
+
+const confirmDeleteAssignment = async () => {
+    if (!assignmentToDelete.value) return
+    const assignment = assignmentToDelete.value
+    deleteAssignmentBsModal.value?.hide()
     try {
         await deleteShiftAssignment(assignment.id)
         toast.success('Đã xóa phân công.')
         await fetchAssignments()
         await fetchMyAssignments()
     } catch (err) {
-        handleError(err, 'Không thể xóa phân công.')
+        toast.error(err.response?.data?.message || 'Không thể xóa phân công.')
+    } finally {
+        assignmentToDelete.value = null
     }
 }
 
@@ -335,6 +401,9 @@ watch(() => filters.shiftId, () => {
 })
 
 onMounted(() => {
+    if (deleteAssignmentModalElement.value) {
+        deleteAssignmentBsModal.value = new Modal(deleteAssignmentModalElement.value)
+    }
     fetchShiftOptions()
     fetchStaffOptions()
     if (activeTab.value === 'my') {
@@ -343,29 +412,27 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .shift-assignment-page {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
-    padding-bottom: 2rem;
+    gap: var(--spacing-6);
+    padding-bottom: var(--spacing-12);
 }
 
 .shift-assignment-header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-md);
 }
 
 .shift-assignment-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
     flex-wrap: wrap;
 }
 
@@ -374,62 +441,67 @@ onMounted(() => {
     min-width: 0;
 }
 
+.shift-assignment-header__title {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--spacing-1);
+}
+
+.shift-assignment-header__subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
 .shift-assignment-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     align-items: center;
     justify-content: flex-end;
 }
 
-.page-title {
-    font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
-}
-
-.page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
 .tabs-card {
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .reports-tabs .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-5);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
+    transition: all var(--transition-base);
+}
+
+.reports-tabs .nav-link:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
-    color: #fff;
-}
-
-.state-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-white);
 }
 
 @media (max-width: 768px) {
+    .shift-assignment-header {
+        padding: var(--spacing-4);
+    }
+
     .shift-assignment-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -437,7 +509,11 @@ onMounted(() => {
 
     .shift-assignment-header__actions {
         width: 100%;
-        justify-content: flex-start;
+        justify-content: stretch;
+
+        .btn {
+            flex: 1;
+        }
     }
 }
 </style>

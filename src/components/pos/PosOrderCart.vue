@@ -14,7 +14,20 @@
                         Chọn bàn
                     </button>
                 </div>
-                <span class="status-pill" :class="orderStatusClass">{{ orderStatusLabel }}</span>
+                <div class="pos-cart__header-right">
+                    <button
+                        v-if="showExpandButton"
+                        class="btn btn-outline-secondary btn-sm pos-cart__expand-btn"
+                        type="button"
+                        @click="openDrawer"
+                        :title="`Mở rộng giỏ hàng (${cartItemCount} sản phẩm)`"
+                    >
+                        <i class="bi bi-arrows-angle-expand me-1"></i>
+                        Mở rộng
+                        <span v-if="cartItemCount > 5" class="badge bg-primary ms-2">{{ cartItemCount }}</span>
+                    </button>
+                    <span class="status-pill" :class="orderStatusClass">{{ orderStatusLabel }}</span>
+                </div>
             </div>
             <p v-if="localOrder.code || localOrder.id" class="pos-cart__order-code">
                 Mã đơn: #{{ localOrder.code || localOrder.id }}
@@ -167,6 +180,25 @@
                     </template>
                 </section>
 
+                <section class="pos-cart__notes">
+                    <div class="pos-cart__notes-header">
+                        <h6 class="pos-cart__notes-title">
+                            <i class="bi bi-sticky me-2"></i>Ghi chú đơn hàng
+                        </h6>
+                    </div>
+                    <textarea
+                        v-model.trim="orderNotes"
+                        class="form-control pos-cart__notes-input"
+                        rows="3"
+                        placeholder="Nhập ghi chú cho đơn hàng (tùy chọn)"
+                        :disabled="isProcessing('save')"
+                    ></textarea>
+                    <small class="pos-cart__notes-hint">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Ghi chú sẽ được lưu khi bạn lưu đơn hàng
+                    </small>
+                </section>
+
                 <section class="pos-cart__summary">
                     <div class="pos-cart__summary-row">
                         <span>Tổng phụ</span>
@@ -206,47 +238,40 @@
                     </template>
                     <div v-else>
                         <div class="input-group mb-2">
+                            <span class="input-group-text voucher-input-icon">
+                                <i class="bi bi-ticket-perforated"></i>
+                            </span>
                             <input
                                 type="text"
                                 class="form-control"
-                                placeholder="Nhập mã voucher"
+                                placeholder="Nhập mã voucher và nhấn Áp dụng"
                                 v-model.trim="voucherCode"
-                                :disabled="!isExistingOrder || isProcessing('apply-voucher') || isProcessing('check-voucher')"
-                                @keyup.enter="handleVoucherCheck"
+                                :disabled="!isExistingOrder || isProcessing('apply-voucher')"
+                                @keyup.enter="applyVoucher"
                             >
                             <button
-                                class="btn btn-outline-info"
+                                v-if="isProcessing('apply-voucher')"
+                                class="btn btn-warning"
                                 type="button"
-                                @click="handleVoucherCheck"
-                                :disabled="!canCheckVoucher"
-                                title="Kiểm tra voucher"
+                                disabled
                             >
-                                <span v-if="isProcessing('check-voucher')" class="spinner-border spinner-border-sm me-2"></span>
-                                <i v-else class="bi bi-search me-1"></i>
-                                Kiểm tra
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                                Đang xử lý...
                             </button>
                             <button
-                                class="btn btn-primary"
+                                v-else
+                                class="btn btn-success"
                                 type="button"
                                 @click="applyVoucher"
                                 :disabled="!canApplyVoucher"
                             >
-                                <span v-if="isProcessing('apply-voucher')" class="spinner-border spinner-border-sm me-2"></span>
+                                <i class="bi bi-check-circle me-1"></i>
                                 Áp dụng
                             </button>
                         </div>
-                        <div v-if="voucherCheckResult" class="pos-cart__voucher-result" :class="voucherCheckResult.valid ? 'pos-cart__voucher-result--success' : 'pos-cart__voucher-result--warning'">
-                            <div v-if="voucherCheckResult.valid">
-                                <i class="bi bi-check-circle me-2"></i>
-                                <strong>Voucher hợp lệ!</strong>
-                                <div class="pos-cart__voucher-result-discount">
-                                    Giảm giá: <strong>{{ formatVoucherDiscount(voucherCheckResult) }}</strong>
-                                </div>
-                            </div>
-                            <div v-else>
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                <strong>{{ voucherCheckResult.message || 'Voucher không hợp lệ' }}</strong>
-                            </div>
+                        <div v-if="voucherError" class="pos-cart__voucher-error mt-2">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            {{ voucherError }}
                         </div>
                         <small v-if="!isExistingOrder" class="pos-cart__voucher-hint">Lưu đơn hàng trước khi áp dụng voucher.</small>
                     </div>
@@ -292,13 +317,281 @@
         @confirm-payment="confirmPayment"
         @closed="handlePaymentModalClosed"
     />
+
+    <!-- Order Cart Drawer -->
+    <Teleport to="body">
+        <div
+            v-if="drawerOpen"
+            class="order-cart-drawer-backdrop"
+            @click="closeDrawer"
+            @keydown.esc="closeDrawer"
+        >
+            <div
+                class="order-cart-drawer"
+                :class="{ 'order-cart-drawer--open': drawerOpen }"
+                @click.stop
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="drawer-title"
+                aria-describedby="drawer-description"
+                tabindex="-1"
+            >
+                <!-- Drawer Header -->
+                <header class="order-cart-drawer__header">
+                    <div class="order-cart-drawer__header-left">
+                        <h5 id="drawer-title" class="order-cart-drawer__title">
+                            <i class="bi bi-cart me-2" aria-hidden="true"></i>
+                            Giỏ hàng
+                            <span class="badge bg-primary ms-2" aria-label="Số lượng sản phẩm">{{ cartItemCount }}</span>
+                        </h5>
+                        <p id="drawer-description" class="visually-hidden">
+                            Danh sách sản phẩm trong giỏ hàng. Sử dụng phím Tab để điều hướng, Escape để đóng.
+                        </p>
+                        <div class="order-cart-drawer__total-badge">
+                            {{ formatCurrencySafe(totalAmount) }}
+                        </div>
+                        <!-- Voucher Progress Bar -->
+                        <div v-if="hasVoucherApplied && localOrder.voucherCode" class="order-cart-drawer__voucher-progress">
+                            <div class="order-cart-drawer__voucher-progress-label">
+                                <i class="bi bi-ticket-perforated me-1"></i>
+                                Voucher: {{ localOrder.voucherCode }}
+                            </div>
+                            <div class="order-cart-drawer__voucher-progress-bar">
+                                <div
+                                    class="order-cart-drawer__voucher-progress-fill"
+                                    :style="{ width: '100%' }"
+                                ></div>
+                            </div>
+                            <small class="order-cart-drawer__voucher-progress-text text-success">
+                                Đã áp dụng: -{{ formatCurrencySafe(discountAmount) }}
+                            </small>
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-sm btn-outline-secondary order-cart-drawer__close-btn"
+                        type="button"
+                        @click="closeDrawer"
+                        aria-label="Đóng giỏ hàng"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </header>
+
+                <!-- Drawer Body -->
+                <div class="order-cart-drawer__body">
+                    <!-- Search and Filters -->
+                    <div v-if="cartItemCount > 3" class="order-cart-drawer__toolbar">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input
+                                v-model.trim="drawerSearchQuery"
+                                type="text"
+                                class="form-control"
+                                placeholder="Tìm kiếm sản phẩm..."
+                                @input="handleDrawerSearch"
+                                aria-label="Tìm kiếm sản phẩm trong giỏ hàng"
+                                autocomplete="off"
+                            />
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <select
+                                v-model="drawerSortBy"
+                                class="form-select form-select-sm"
+                                @change="handleDrawerSort"
+                                aria-label="Sắp xếp sản phẩm"
+                            >
+                                <option value="newest">Mới nhất</option>
+                                <option value="price-asc">Giá: Tăng dần</option>
+                                <option value="price-desc">Giá: Giảm dần</option>
+                                <option value="name-asc">Tên: A-Z</option>
+                                <option value="name-desc">Tên: Z-A</option>
+                            </select>
+                            <select
+                                v-if="drawerCategories.length > 0"
+                                v-model="drawerCategoryFilter"
+                                class="form-select form-select-sm"
+                                @change="handleDrawerFilter"
+                                aria-label="Lọc theo danh mục"
+                            >
+                                <option value="">Tất cả danh mục</option>
+                                <option
+                                    v-for="cat in drawerCategories"
+                                    :key="cat.id"
+                                    :value="cat.id"
+                                >
+                                    {{ cat.name }}
+                                </option>
+                            </select>
+                            <button
+                                v-if="cartItemCount > 1"
+                                class="btn btn-sm btn-outline-danger"
+                                type="button"
+                                @click="handleClearAll"
+                            >
+                                <i class="bi bi-trash me-1"></i>
+                                Xóa tất cả
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div v-if="drawerLoading" class="order-cart-drawer__loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Đang tải sản phẩm...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <EmptyState
+                        v-else-if="filteredDrawerItems.length === 0"
+                        :title="drawerSearchQueryDebounced || drawerCategoryFilter ? 'Không tìm thấy sản phẩm' : 'Giỏ hàng trống'"
+                        :message="drawerSearchQueryDebounced || drawerCategoryFilter ? 'Thử tìm kiếm với từ khóa khác' : 'Chưa có sản phẩm nào trong giỏ hàng'"
+                    >
+                        <template #icon>
+                            <i class="bi bi-basket"></i>
+                        </template>
+                        <template #action>
+                            <button
+                                v-if="!drawerSearchQueryDebounced && !drawerCategoryFilter"
+                                class="btn btn-primary"
+                                @click="closeDrawer"
+                            >
+                                Thêm sản phẩm
+                            </button>
+                        </template>
+                    </EmptyState>
+
+                    <!-- Product List -->
+                    <div v-else class="order-cart-drawer__items">
+                        <div
+                            v-for="(item, index) in filteredDrawerItems"
+                            :key="item.id || item.productId || index"
+                            class="order-cart-drawer__item"
+                        >
+                            <div class="order-cart-drawer__item-image">
+                                <img
+                                    v-if="item.productImage"
+                                    :src="item.productImage"
+                                    :alt="item.productName"
+                                    loading="lazy"
+                                />
+                                <div v-else class="order-cart-drawer__item-placeholder">
+                                    <i class="bi bi-image"></i>
+                                </div>
+                            </div>
+                            <div class="order-cart-drawer__item-info">
+                                <h6 class="order-cart-drawer__item-name">{{ item.productName }}</h6>
+                                <p class="order-cart-drawer__item-price">
+                                    {{ formatCurrencySafe(item.priceAtOrder) }} × {{ item.quantity }}
+                                </p>
+                                <small v-if="item.notes" class="order-cart-drawer__item-notes">
+                                    <i class="bi bi-sticky me-1"></i>{{ item.notes }}
+                                </small>
+                            </div>
+                            <div class="order-cart-drawer__item-actions">
+                                <div class="quantity-controls">
+                                    <button
+                                        class="btn btn-sm btn-outline-secondary"
+                                        type="button"
+                                        @click="updateQuantity(index, -1)"
+                                        :disabled="isProcessing('quantity')"
+                                        :aria-label="`Giảm số lượng ${item.productName}`"
+                                    >
+                                        <i class="bi bi-dash" aria-hidden="true"></i>
+                                    </button>
+                                    <input
+                                        type="number"
+                                        class="quantity-input"
+                                        :value="item.quantity"
+                                        @input="setQuantity(index, $event.target.value)"
+                                        @change="setQuantity(index, item.quantity)"
+                                        min="1"
+                                        :disabled="isProcessing('quantity')"
+                                        :aria-label="`Số lượng ${item.productName}`"
+                                    />
+                                    <button
+                                        class="btn btn-sm btn-outline-secondary"
+                                        type="button"
+                                        @click="updateQuantity(index, 1)"
+                                        :disabled="isProcessing('quantity')"
+                                        :aria-label="`Tăng số lượng ${item.productName}`"
+                                    >
+                                        <i class="bi bi-plus" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <button
+                                    class="btn btn-sm btn-outline-danger"
+                                    type="button"
+                                    @click="removeItem(index)"
+                                    :disabled="isProcessing('quantity')"
+                                    :aria-label="`Xóa ${item.productName} khỏi giỏ hàng`"
+                                >
+                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="order-cart-drawer__item-total">
+                                {{ formatCurrencySafe(item.priceAtOrder * item.quantity) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drawer Footer -->
+                <footer class="order-cart-drawer__footer">
+                    <div class="order-cart-drawer__summary">
+                        <div class="order-cart-drawer__summary-row">
+                            <span>Tổng phụ</span>
+                            <span>{{ formatCurrencySafe(subTotal) }}</span>
+                        </div>
+                        <div v-if="showDiscountRow" class="order-cart-drawer__summary-row">
+                            <span>Giảm giá</span>
+                            <span class="text-danger">-{{ formatCurrencySafe(discountAmount) }}</span>
+                        </div>
+                        <div v-if="showTipRow" class="order-cart-drawer__summary-row">
+                            <span class="text-success">Tiền típ</span>
+                            <span class="text-success">+{{ formatCurrencySafe(tipAmount) }}</span>
+                        </div>
+                        <div class="order-cart-drawer__summary-divider"></div>
+                        <div class="order-cart-drawer__summary-row order-cart-drawer__summary-row--total">
+                            <span>Tổng cộng</span>
+                            <span>{{ formatCurrencySafe(totalAmount) }}</span>
+                        </div>
+                    </div>
+                    <div class="order-cart-drawer__actions">
+                        <button
+                            class="btn btn-success btn-lg w-100"
+                            type="button"
+                            @click="handleDrawerPayment"
+                            :disabled="!canProcessPayment"
+                        >
+                            <span v-if="isProcessing('pay')" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-credit-card me-2"></i>
+                            Thanh toán
+                        </button>
+                        <button
+                            class="btn btn-outline-primary w-100"
+                            type="button"
+                            @click="handleDrawerSave"
+                            :disabled="isProcessing('save') || cartIsEmpty"
+                        >
+                            <span v-if="isProcessing('save')" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-save me-2"></i>
+                            Lưu đơn hàng
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </Teleport>
 </template>
 
 <script setup>
-import { ref, watch, computed, onBeforeUnmount } from 'vue'
+import { ref, watch, computed, onBeforeUnmount, onMounted, nextTick } from 'vue'
 import * as orderService from '@/api/orderService.js'
 import { searchCustomers } from '@/api/customerService.js'
-import { checkVoucher } from '@/api/voucherService.js'
 import { formatCurrency } from '@/utils/formatters.js'
 import { toast } from 'vue3-toastify'
 import PosPaymentModal from './PosPaymentModal.vue'
@@ -325,8 +618,18 @@ const localOrder = ref({
 const originalOrderSnapshot = ref(null)
 const isCreatingNew = ref(false)
 const voucherCode = ref('')
-const voucherCheckResult = ref(null)
+const voucherError = ref(null)
+const orderNotes = ref('')
 const loadingAction = ref(null)
+
+// Drawer state
+const drawerOpen = ref(false)
+const drawerSearchQuery = ref('')
+const drawerSearchQueryDebounced = ref('')
+const drawerSortBy = ref('newest')
+const drawerCategoryFilter = ref('')
+const drawerLoading = ref(false)
+let drawerSearchTimeout = null
 const paymentModalRef = ref(null)
 
 const customerSearchTerm = ref('')
@@ -360,6 +663,9 @@ const normalizeItems = (orderLike) => {
         orderDetailId: detail.id,
         productId: detail.productId ?? detail.product?.id ?? detail.id,
         productName: detail.productName ?? detail.product?.name ?? detail.name ?? 'Sản phẩm',
+        productImage: detail.productImage ?? detail.product?.image ?? detail.product?.imageUrl ?? null,
+        categoryId: detail.categoryId ?? detail.product?.categoryId ?? detail.category?.id ?? null,
+        categoryName: detail.categoryName ?? detail.product?.categoryName ?? detail.category?.name ?? null,
         quantity: toNumberSafe(detail.quantity ?? detail.qty ?? 0),
         priceAtOrder: toNumberSafe(detail.priceAtOrder ?? detail.price ?? detail.unitPrice ?? 0),
         notes: detail.notes ?? '',
@@ -407,6 +713,7 @@ const updateLocalOrderFromServer = (order, { syncBaseline = false } = {}) => {
             customerPhone: null,
             customerEmail: null,
         }
+        orderNotes.value = ''
         if (syncBaseline) {
             originalOrderSnapshot.value = null
         }
@@ -414,6 +721,8 @@ const updateLocalOrderFromServer = (order, { syncBaseline = false } = {}) => {
     }
     const normalized = normalizeOrder(order)
     localOrder.value = normalized
+    // Khôi phục ghi chú từ order
+    orderNotes.value = order.notes || order.note || ''
     if (syncBaseline) {
         originalOrderSnapshot.value = cloneDeep(normalized)
     }
@@ -544,9 +853,69 @@ const showTipRow = computed(() => tipAmount.value > 0)
 const showSelectTableButton = computed(() => !props.table && props.viewIntent !== 'takeaway' && !cartIsEmpty.value)
 
 const trimmedVoucherCode = computed(() => voucherCode.value.trim().toUpperCase())
-const canCheckVoucher = computed(() => isExistingOrder.value && Boolean(trimmedVoucherCode.value) && !isProcessing('check-voucher') && !isProcessing('apply-voucher'))
 const canApplyVoucher = computed(() => isExistingOrder.value && Boolean(trimmedVoucherCode.value) && !isProcessing('apply-voucher'))
 const canProcessPayment = computed(() => isExistingOrder.value && !cartIsEmpty.value && !isProcessing('pay'))
+
+// Drawer computed
+const cartItemCount = computed(() => localOrder.value?.items?.length || 0)
+const showExpandButton = computed(() => cartItemCount.value > 3 || (localOrder.value?.items && localOrder.value.items.length > 0))
+
+const drawerCategories = computed(() => {
+    if (!localOrder.value?.items) return []
+    const categoryMap = new Map()
+    localOrder.value.items.forEach(item => {
+        if (item.categoryId && item.categoryName) {
+            if (!categoryMap.has(item.categoryId)) {
+                categoryMap.set(item.categoryId, {
+                    id: item.categoryId,
+                    name: item.categoryName
+                })
+            }
+        }
+    })
+    return Array.from(categoryMap.values())
+})
+
+const filteredDrawerItems = computed(() => {
+    if (!localOrder.value?.items) return []
+    let items = [...localOrder.value.items]
+
+    // Filter by search query (use debounced value)
+    if (drawerSearchQueryDebounced.value) {
+        const query = drawerSearchQueryDebounced.value.toLowerCase()
+        items = items.filter(item =>
+            item.productName?.toLowerCase().includes(query) ||
+            item.notes?.toLowerCase().includes(query)
+        )
+    }
+
+    // Filter by category
+    if (drawerCategoryFilter.value) {
+        items = items.filter(item => item.categoryId === drawerCategoryFilter.value)
+    }
+
+    // Sort
+    switch (drawerSortBy.value) {
+        case 'price-asc':
+            items.sort((a, b) => (a.priceAtOrder || 0) - (b.priceAtOrder || 0))
+            break
+        case 'price-desc':
+            items.sort((a, b) => (b.priceAtOrder || 0) - (a.priceAtOrder || 0))
+            break
+        case 'name-asc':
+            items.sort((a, b) => (a.productName || '').localeCompare(b.productName || ''))
+            break
+        case 'name-desc':
+            items.sort((a, b) => (b.productName || '').localeCompare(a.productName || ''))
+            break
+        case 'newest':
+        default:
+            // Keep original order (newest first)
+            break
+    }
+
+    return items
+})
 
 const hasSelectedCustomer = computed(() => Boolean(localOrder.value.customerId))
 const selectedCustomerName = computed(() => localOrder.value.customerName || 'Khách lẻ')
@@ -628,6 +997,29 @@ const saveOrder = async () => {
 
         if (localOrder.value.id) {
             const orderId = localOrder.value.id
+            
+            // Kiểm tra order status trước khi cập nhật
+            try {
+                const currentOrder = await orderService.getOrderById(orderId)
+                if (currentOrder.status !== 'PENDING') {
+                    toast.error(`Đơn hàng đã ${currentOrder.status === 'PAID' ? 'được thanh toán' : 'bị hủy'}. Không thể cập nhật.`)
+                    // Refresh order từ server
+                    updateLocalOrderFromServer(currentOrder, { syncBaseline: true })
+                    loadingAction.value = null
+                    return
+                }
+            } catch (error) {
+                // Nếu không lấy được order, có thể order đã bị xóa
+                if (error.response?.status === 404) {
+                    toast.error('Đơn hàng không tồn tại. Vui lòng tạo đơn hàng mới.')
+                    localOrder.value = { items: [] }
+                    originalOrderSnapshot.value = null
+                    loadingAction.value = null
+                    return
+                }
+                // Nếu là lỗi khác, tiếp tục thử cập nhật
+                console.warn('Could not verify order status, proceeding with update:', error)
+            }
             const originalItems = originalOrderSnapshot.value?.items ?? []
             const currentItems = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
 
@@ -640,17 +1032,33 @@ const saveOrder = async () => {
 
             const currentByDetailId = new Map()
             const itemsToAdd = []
-            currentItems.forEach((item) => {
+            for (const item of currentItems) {
                 if (item.orderDetailId) {
                     currentByDetailId.set(item.orderDetailId, item)
                 } else {
-                    itemsToAdd.push({
-                        productId: item.productId,
-                        quantity: Math.max(1, toNumberSafe(item.quantity, 1)),
-                        notes: item.notes || '',
-                    })
+                    // Đảm bảo productId là number và quantity là integer
+                    const productId = Number(item.productId)
+                    const quantity = Math.max(1, Math.floor(toNumberSafe(item.quantity, 1)))
+                    
+                    if (!Number.isFinite(productId) || productId <= 0) {
+                        console.warn('Invalid productId:', item.productId)
+                        continue
+                    }
+                    
+                    const itemToAdd = {
+                        productId: productId,
+                        quantity: quantity
+                    }
+                    
+                    // Chỉ thêm notes nếu có giá trị
+                    const notesValue = item.notes ? String(item.notes).trim() : ''
+                    if (notesValue) {
+                        itemToAdd.notes = notesValue
+                    }
+                    
+                    itemsToAdd.push(itemToAdd)
                 }
-            })
+            }
 
             const itemsToRemove = []
             originalByDetailId.forEach((_, detailId) => {
@@ -674,162 +1082,212 @@ const saveOrder = async () => {
                 }
             })
 
-            if (!itemsToAdd.length && !itemsToUpdate.length && !itemsToRemove.length) {
+            // Kiểm tra thay đổi ghi chú trước
+            const originalNotes = originalOrderSnapshot.value?.notes || originalOrderSnapshot.value?.note || ''
+            const notesChanged = orderNotes.value.trim() !== originalNotes.trim()
+            
+            if (!itemsToAdd.length && !itemsToUpdate.length && !itemsToRemove.length && !notesChanged) {
                 toast.info('Không có thay đổi nào cần lưu.')
+                loadingAction.value = null
+                return
+            }
+
+            // Đảm bảo có ít nhất một item trong giỏ hàng sau khi xóa
+            if (currentItems.length === 0 && itemsToRemove.length > 0) {
+                toast.warning('Không thể xóa tất cả sản phẩm. Đơn hàng phải có ít nhất một sản phẩm.')
+                loadingAction.value = null
                 return
             }
 
             let lastResponse = null
+            let hasError = false
 
-            for (const detailId of itemsToRemove) {
-                lastResponse = await orderService.removeItemFromOrder({ orderId, orderDetailId: detailId })
-                updateLocalOrderFromServer(lastResponse)
+            try {
+                // Xóa items trước
+                for (const detailId of itemsToRemove) {
+                    try {
+                        lastResponse = await orderService.removeItemFromOrder({ orderId, orderDetailId: detailId })
+                    } catch (error) {
+                        console.error('Failed to remove item:', error)
+                        hasError = true
+                        toast.error(`Không thể xóa món: ${error.response?.data?.message || error.message}`)
+                    }
+                }
+
+                // Cập nhật items
+                for (const update of itemsToUpdate) {
+                    try {
+                        lastResponse = await orderService.updateOrderItem({
+                            orderId,
+                            orderDetailId: update.orderDetailId,
+                            updateData: {
+                                quantity: update.quantity,
+                                notes: update.notes || '',
+                            },
+                        })
+                    } catch (error) {
+                        console.error('Failed to update item:', error)
+                        hasError = true
+                        toast.error(`Không thể cập nhật món: ${error.response?.data?.message || error.message}`)
+                    }
+                }
+
+                // Thêm items mới
+                for (const addition of itemsToAdd) {
+                    try {
+                        // Đảm bảo format đúng: productId là Long, quantity là int
+                        const itemData = {
+                            productId: Number(addition.productId),
+                            quantity: Math.max(1, Math.floor(Number(addition.quantity)))
+                        }
+                        
+                        // Chỉ thêm notes nếu có giá trị (không gửi empty string hoặc null)
+                        const notesValue = addition.notes ? String(addition.notes).trim() : null
+                        if (notesValue) {
+                            itemData.notes = notesValue
+                        }
+                        
+                        // Validate trước khi gửi
+                        if (!Number.isFinite(itemData.productId) || itemData.productId <= 0) {
+                            throw new Error(`Product ID không hợp lệ: ${addition.productId}`)
+                        }
+                        if (!Number.isFinite(itemData.quantity) || itemData.quantity < 1) {
+                            throw new Error(`Số lượng không hợp lệ: ${addition.quantity}`)
+                        }
+                        
+                        lastResponse = await orderService.addItemToOrder({
+                            orderId,
+                            itemData
+                        })
+                    } catch (error) {
+                        console.error('Failed to add item:', error, 'Item data:', itemData)
+                        hasError = true
+                        
+                        // Xử lý các loại lỗi cụ thể
+                        let errorMessage = 'Không thể thêm món'
+                        if (error.response?.status === 400) {
+                            errorMessage = error.response?.data?.message || 'Dữ liệu không hợp lệ'
+                        } else if (error.response?.status === 404) {
+                            errorMessage = 'Đơn hàng hoặc sản phẩm không tồn tại'
+                        } else if (error.response?.status === 409 || error.response?.status === 422) {
+                            errorMessage = error.response?.data?.message || 'Đơn hàng không ở trạng thái PENDING'
+                        } else if (error.response?.status === 500) {
+                            errorMessage = error.response?.data?.message || 'Lỗi server. Vui lòng kiểm tra lại đơn hàng.'
+                        } else {
+                            errorMessage = error.response?.data?.message || error.message || 'Không thể thêm món'
+                        }
+                        
+                        toast.error(`Không thể thêm món: ${errorMessage}`)
+                        
+                        // Nếu là lỗi về order status, refresh order
+                        if (error.response?.status === 409 || error.response?.status === 422 || error.response?.status === 500) {
+                            try {
+                                const refreshedOrder = await orderService.getOrderById(orderId)
+                                updateLocalOrderFromServer(refreshedOrder, { syncBaseline: true })
+                            } catch (refreshError) {
+                                console.error('Failed to refresh order:', refreshError)
+                            }
+                        }
+                    }
+                }
+
+                // Cập nhật ghi chú nếu có thay đổi
+                if (notesChanged) {
+                    try {
+                        const updatedOrder = await orderService.updateOrder(orderId, {
+                            note: orderNotes.value.trim() || null
+                        })
+                        lastResponse = updatedOrder
+                    } catch (error) {
+                        console.error('Failed to update notes:', error)
+                        hasError = true
+                        toast.error(`Không thể cập nhật ghi chú: ${error.response?.data?.message || error.message}`)
+                    }
+                }
+
+                // Nếu có lỗi, vẫn cố gắng refresh order để đồng bộ
+                if (hasError && lastResponse) {
+                    updateLocalOrderFromServer(lastResponse, { syncBaseline: true })
+                    toast.warning('Một số thay đổi không thể lưu. Vui lòng kiểm tra lại.')
+                } else if (lastResponse) {
+                    // Chỉ sync baseline một lần sau khi tất cả operations hoàn thành
+                    updateLocalOrderFromServer(lastResponse, { syncBaseline: true })
+                    toast.success('Đơn hàng đã được cập nhật.')
+                } else {
+                    // Nếu không có response nào, refetch order từ server
+                    try {
+                        const refreshedOrder = await orderService.getOrderById(orderId)
+                        updateLocalOrderFromServer(refreshedOrder, { syncBaseline: true })
+                        toast.success('Đơn hàng đã được cập nhật.')
+                    } catch (error) {
+                        console.error('Failed to refresh order:', error)
+                        toast.warning('Đơn hàng đã được cập nhật nhưng không thể tải lại dữ liệu.')
+                    }
+                }
+
+                emitOrderUpdated('update', localOrder.value)
+            } catch (error) {
+                console.error('Unexpected error during save:', error)
+                toast.error('Lưu đơn hàng thất bại. Vui lòng thử lại.')
+                // Không throw error để không làm crash app
+            } finally {
+                loadingAction.value = null
             }
-
-            for (const update of itemsToUpdate) {
-                lastResponse = await orderService.updateOrderItem({
-                    orderId,
-                    orderDetailId: update.orderDetailId,
-                    updateData: {
-                        quantity: update.quantity,
-                        notes: update.notes,
-                    },
-                })
-                updateLocalOrderFromServer(lastResponse)
-            }
-
-            for (const addition of itemsToAdd) {
-                lastResponse = await orderService.addItemToOrder({
-                    orderId,
-                    itemData: {
-                        productId: addition.productId,
-                        quantity: addition.quantity,
-                        notes: addition.notes,
-                    },
-                })
-                updateLocalOrderFromServer(lastResponse)
-            }
-
-            if (lastResponse) {
-                updateLocalOrderFromServer(lastResponse, { syncBaseline: true })
-            }
-
-            toast.success('Đơn hàng đã được cập nhật.')
-            emitOrderUpdated('update', localOrder.value)
         } else {
             const newOrder = await orderService.createOrder(orderData)
             updateLocalOrderFromServer(newOrder, { syncBaseline: true })
+            
+            // Lưu ghi chú sau khi tạo đơn hàng
+            if (orderNotes.value.trim()) {
+                const updatedOrder = await orderService.updateOrder(newOrder.id, {
+                    note: orderNotes.value.trim()
+                })
+                updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
+            }
+            
             isCreatingNew.value = false
             toast.success('Đơn hàng đã được tạo.')
-            emitOrderUpdated('create', newOrder)
+            emitOrderUpdated('create', localOrder.value)
         }
     } catch (error) {
-        toast.error('Lưu đơn hàng thất bại.')
+        console.error('Unexpected error during save:', error)
+        toast.error('Lưu đơn hàng thất bại. Vui lòng thử lại.')
+        // Không throw error để không làm crash app
     } finally {
         loadingAction.value = null
     }
-}
-
-const handleVoucherCheck = async () => {
-    if (!localOrder.value.id) {
-        toast.error('Vui lòng lưu đơn hàng trước khi kiểm tra voucher.')
-        return
-    }
-    if (!trimmedVoucherCode.value) {
-        toast.info('Nhập mã voucher trước khi kiểm tra.')
-        return
-    }
-    
-    try {
-        loadingAction.value = 'check-voucher'
-        voucherCheckResult.value = null
-        
-        const totalAmount = Number(localOrder.value.totalAmount || 0)
-        const result = await checkVoucher(trimmedVoucherCode.value, totalAmount)
-        
-        if (result.isValid) {
-            voucherCheckResult.value = {
-                valid: true,
-                discountAmount: Number(result.discountAmount || 0),
-                message: result.message || null
-            }
-        } else {
-            voucherCheckResult.value = {
-                valid: false,
-                message: result.message || 'Voucher không hợp lệ.'
-            }
-        }
-    } catch (error) {
-        const message = error?.response?.data?.message || 'Voucher không hợp lệ hoặc không thể áp dụng.'
-        voucherCheckResult.value = {
-            valid: false,
-            message: message
-        }
-    } finally {
-        loadingAction.value = null
-    }
-}
-
-const formatVoucherDiscount = (result) => {
-    if (!result || !result.valid) return '—'
-    const discount = Number(result.discountAmount || 0)
-    return formatCurrency(discount)
 }
 
 const applyVoucher = async () => {
     if (!localOrder.value.id) {
+        voucherError.value = 'Vui lòng lưu đơn hàng trước khi áp dụng voucher.'
         toast.error('Vui lòng lưu đơn hàng trước khi áp dụng voucher.')
         return
     }
     if (!trimmedVoucherCode.value) {
+        voucherError.value = 'Vui lòng nhập mã voucher'
         toast.info('Nhập mã voucher trước khi áp dụng.')
         return
     }
     
-    // Validation: Yêu cầu check voucher trước khi apply
-    // Nếu chưa check hoặc check không hợp lệ, yêu cầu user check lại
-    if (!voucherCheckResult.value) {
-        toast.warning('Vui lòng kiểm tra voucher trước khi áp dụng.')
-        return
-    }
-    if (!voucherCheckResult.value.valid) {
-        toast.warning('Voucher không hợp lệ. Vui lòng kiểm tra lại.')
-        return
-    }
-    
-    // Re-check voucher trước khi apply để đảm bảo voucher vẫn còn hợp lệ
-    // (có thể voucher đã hết hạn hoặc hết lượt sử dụng giữa lúc check và apply)
     try {
         loadingAction.value = 'apply-voucher'
+        voucherError.value = null
         
-        // Check lại voucher một lần nữa trước khi apply
-        const totalAmount = Number(localOrder.value.totalAmount || 0)
-        const checkResult = await checkVoucher(trimmedVoucherCode.value, totalAmount)
-        
-        if (!checkResult.isValid) {
-            toast.error(checkResult.message || 'Voucher không hợp lệ hoặc không thể áp dụng.')
-            voucherCheckResult.value = {
-                valid: false,
-                message: checkResult.message || 'Voucher không hợp lệ.'
-            }
-            return
-        }
-        
-        // Nếu voucher hợp lệ, apply voucher
+        // Áp dụng voucher trực tiếp
         const updatedOrder = await orderService.applyVoucher({
             orderId: localOrder.value.id,
             voucherCode: trimmedVoucherCode.value
         })
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
         voucherCode.value = ''
-        voucherCheckResult.value = null
-        toast.success('Áp dụng voucher thành công.')
+        voucherError.value = null
+        toast.success('Áp dụng voucher thành công!')
         emitOrderUpdated('voucher-applied', updatedOrder)
     } catch (error) {
-        const message = error?.response?.data?.message || 'Áp dụng voucher thất bại.'
+        const message = error?.response?.data?.message || 'Không thể áp dụng voucher. Vui lòng kiểm tra lại mã voucher.'
+        voucherError.value = message
         toast.error(message)
-        // Reset check result nếu apply thất bại
-        voucherCheckResult.value = null
     } finally {
         loadingAction.value = null
     }
@@ -841,18 +1299,162 @@ const removeVoucher = async () => {
     }
     try {
         loadingAction.value = 'remove-voucher'
+        voucherError.value = null
         const updatedOrder = await orderService.removeVoucher(localOrder.value.id)
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
-        voucherCheckResult.value = null
+        voucherCode.value = ''
+        voucherError.value = null
         toast.info('Đã bỏ voucher khỏi đơn hàng.')
         emitOrderUpdated('voucher-removed', updatedOrder)
     } catch (error) {
         const message = error?.response?.data?.message || 'Không thể bỏ voucher.'
+        voucherError.value = message
         toast.error(message)
     } finally {
         loadingAction.value = null
     }
 }
+
+// Drawer functions
+const openDrawer = () => {
+    drawerOpen.value = true
+    // Reset filters when opening
+    drawerSearchQuery.value = ''
+    drawerSearchQueryDebounced.value = ''
+    drawerCategoryFilter.value = ''
+    drawerSortBy.value = 'newest'
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden'
+    // Focus trap: focus vào drawer khi mở
+    nextTick(() => {
+        const drawer = document.querySelector('.order-cart-drawer')
+        if (drawer) {
+            const firstFocusable = drawer.querySelector('input, button, select, textarea, [tabindex]:not([tabindex="-1"])')
+            if (firstFocusable) {
+                firstFocusable.focus()
+            }
+        }
+    })
+}
+
+const closeDrawer = () => {
+    drawerOpen.value = false
+    // Restore body scroll
+    document.body.style.overflow = ''
+}
+
+const handleDrawerSearch = () => {
+    // Debounce search query
+    if (drawerSearchTimeout) {
+        clearTimeout(drawerSearchTimeout)
+    }
+    drawerSearchTimeout = setTimeout(() => {
+        drawerSearchQueryDebounced.value = drawerSearchQuery.value.trim()
+    }, 300)
+}
+
+const handleDrawerSort = () => {
+    // Sorting handled by computed
+}
+
+const handleDrawerFilter = () => {
+    // Filtering handled by computed
+}
+
+const handleClearAll = async () => {
+    if (!confirm('Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi giỏ hàng?')) {
+        return
+    }
+    
+    if (!localOrder.value?.items || localOrder.value.items.length === 0) {
+        return
+    }
+
+    try {
+        loadingAction.value = 'quantity'
+        // Remove all items
+        const itemsToRemove = [...localOrder.value.items]
+        for (const item of itemsToRemove) {
+            if (item.orderDetailId && localOrder.value.id) {
+                await orderService.removeItemFromOrder({
+                    orderId: localOrder.value.id,
+                    orderDetailId: item.orderDetailId
+                })
+            }
+        }
+        // Clear local items
+        localOrder.value.items = []
+        toast.success('Đã xóa tất cả sản phẩm khỏi giỏ hàng')
+        emitOrderUpdated('clear-all', localOrder.value)
+    } catch (error) {
+        toast.error('Không thể xóa tất cả sản phẩm')
+        console.error('Failed to clear all items:', error)
+    } finally {
+        loadingAction.value = null
+    }
+}
+
+const handleDrawerPayment = () => {
+    closeDrawer()
+    processPayment()
+}
+
+const handleDrawerSave = async () => {
+    await saveOrder()
+    // Keep drawer open after save
+}
+
+// Handle keyboard navigation and focus trap
+const handleKeydown = (event) => {
+    if (!drawerOpen.value) return
+    
+    if (event.key === 'Escape') {
+        closeDrawer()
+        return
+    }
+    
+    // Focus trap: keep focus within drawer
+    if (event.key === 'Tab') {
+        const drawer = document.querySelector('.order-cart-drawer')
+        if (!drawer) return
+        
+        const focusableElements = drawer.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusableElements.length === 0) return
+        
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+        
+        if (event.shiftKey) {
+            // Shift + Tab
+            if (document.activeElement === firstElement) {
+                event.preventDefault()
+                lastElement.focus()
+            }
+        } else {
+            // Tab
+            if (document.activeElement === lastElement) {
+                event.preventDefault()
+                firstElement.focus()
+            }
+        }
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('keydown', handleKeydown)
+    // Clear search timeout
+    if (drawerSearchTimeout) {
+        clearTimeout(drawerSearchTimeout)
+    }
+    // Restore body scroll
+    document.body.style.overflow = ''
+})
 
 const processPayment = () => {
     if (!localOrder.value.id) {
@@ -862,7 +1464,7 @@ const processPayment = () => {
     paymentModalRef.value?.show()
 }
 
-const confirmPayment = async ({ orderId, paymentMethod, tipAmount: tip } = {}) => {
+const confirmPayment = async ({ orderId, paymentMethod, tipAmount: tip, customerId, voucherCode } = {}) => {
     if (!orderId) {
         toast.error('Thiếu thông tin đơn hàng để thanh toán.')
         return
@@ -876,8 +1478,10 @@ const confirmPayment = async ({ orderId, paymentMethod, tipAmount: tip } = {}) =
             paymentMethod: paymentMethod || 'CASH',
         }
         
-        // Thêm customerId nếu có
-        if (localOrder.value.customerId) {
+        // Thêm customerId từ modal hoặc từ order hiện tại
+        if (customerId) {
+            paymentData.customerId = customerId
+        } else if (localOrder.value.customerId) {
             paymentData.customerId = localOrder.value.customerId
         }
         
@@ -887,8 +1491,10 @@ const confirmPayment = async ({ orderId, paymentMethod, tipAmount: tip } = {}) =
             paymentData.tipAmount = tipValue
         }
         
-        // Thêm voucherCode nếu có
-        if (localOrder.value.voucherCode) {
+        // Thêm voucherCode từ modal hoặc từ order hiện tại
+        if (voucherCode) {
+            paymentData.voucherCode = voucherCode
+        } else if (localOrder.value.voucherCode) {
             paymentData.voucherCode = localOrder.value.voucherCode
         }
         
@@ -1381,37 +1987,80 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     font-weight: var(--font-weight-medium);
 }
 
-.pos-cart__voucher-result {
-    padding: var(--spacing-3) var(--spacing-4);
+.pos-cart__voucher-error {
+    padding: var(--spacing-2) var(--spacing-3);
     border-radius: var(--radius-base);
-    margin-top: var(--spacing-2);
-    font-size: var(--font-size-base);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #b91c1c;
+    font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
-    gap: var(--spacing-2);
-}
-
-.pos-cart__voucher-result--success {
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-success);
-    color: var(--color-success);
-}
-
-.pos-cart__voucher-result--warning {
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-warning);
-    color: var(--color-warning);
-}
-
-.pos-cart__voucher-result-discount {
-    margin-top: var(--spacing-2);
-    font-size: var(--font-size-base);
 }
 
 .pos-cart__voucher-hint {
     color: var(--color-text-muted);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-xs);
     display: block;
+    margin-top: var(--spacing-1);
+}
+
+.voucher-input-icon {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+    transition: all var(--transition-base);
+}
+
+/* Notes Section */
+.pos-cart__notes {
+    padding: var(--spacing-3);
+    background: var(--color-bg);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-3);
+}
+
+.pos-cart__notes-header {
+    margin-bottom: var(--spacing-2);
+}
+
+.pos-cart__notes-title {
+    margin: 0;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+}
+
+.pos-cart__notes-input {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    resize: vertical;
+}
+
+.pos-cart__notes-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    outline: none;
+}
+
+.pos-cart__notes-input:disabled {
+    background: var(--color-bg-muted);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pos-cart__notes-hint {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    display: flex;
+    align-items: center;
     margin-top: var(--spacing-2);
 }
 
@@ -1484,6 +2133,327 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
     .pos-cart__actions {
         grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Drawer Styles */
+.order-cart-drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.order-cart-drawer {
+    width: 50%;
+    max-width: 600px;
+    height: 100vh;
+    background: var(--color-bg);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-out;
+    position: relative;
+    z-index: 1051;
+}
+
+.order-cart-drawer--open {
+    transform: translateX(0);
+}
+
+.order-cart-drawer__header {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.order-cart-drawer__header-left {
+    flex: 1;
+}
+
+.order-cart-drawer__title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+}
+
+.order-cart-drawer__total-badge {
+    margin-top: var(--spacing-2);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+
+.order-cart-drawer__voucher-progress {
+    margin-top: var(--spacing-3);
+    padding-top: var(--spacing-3);
+    border-top: 1px solid var(--color-border);
+}
+
+.order-cart-drawer__voucher-progress-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+    display: flex;
+    align-items: center;
+}
+
+.order-cart-drawer__voucher-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    margin-bottom: var(--spacing-1);
+}
+
+.order-cart-drawer__voucher-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-success), var(--color-primary));
+    border-radius: var(--radius-base);
+    transition: width 0.3s ease;
+}
+
+.order-cart-drawer__voucher-progress-text {
+    font-size: var(--font-size-xs);
+    display: block;
+}
+
+.order-cart-drawer__close-btn {
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.order-cart-drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.order-cart-drawer__toolbar {
+    flex-shrink: 0;
+}
+
+.order-cart-drawer__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-8);
+    color: var(--color-text-muted);
+}
+
+.order-cart-drawer__items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.order-cart-drawer__item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto auto;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    align-items: center;
+    transition: all var(--transition-base);
+}
+
+.order-cart-drawer__item:hover {
+    box-shadow: var(--shadow-base);
+    border-color: var(--color-primary);
+}
+
+.order-cart-drawer__item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    background: var(--color-bg-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.order-cart-drawer__item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-cart-drawer__item-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 24px;
+}
+
+.order-cart-drawer__item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.order-cart-drawer__item-name {
+    margin: 0 0 var(--spacing-1) 0;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.order-cart-drawer__item-price {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.order-cart-drawer__item-notes {
+    margin-top: var(--spacing-1);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+}
+
+.order-cart-drawer__item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    align-items: center;
+}
+
+.order-cart-drawer__item-total {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    text-align: right;
+    min-width: 100px;
+}
+
+.order-cart-drawer__footer {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.order-cart-drawer__summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.order-cart-drawer__summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+}
+
+.order-cart-drawer__summary-row--total {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--color-border);
+}
+
+.order-cart-drawer__summary-divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--spacing-2) 0;
+}
+
+.order-cart-drawer__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.pos-cart__header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.pos-cart__expand-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+/* Responsive Drawer */
+@media (max-width: 992px) {
+    .order-cart-drawer {
+        width: 60%;
+    }
+}
+
+@media (max-width: 768px) {
+    .order-cart-drawer {
+        width: 90%;
+        max-width: none;
+    }
+    
+    .order-cart-drawer__item {
+        grid-template-columns: 50px 1fr;
+        gap: var(--spacing-2);
+    }
+    
+    .order-cart-drawer__item-actions {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    .order-cart-drawer__item-total {
+        grid-column: 1 / -1;
+        text-align: left;
+        margin-top: var(--spacing-2);
     }
 }
 </style>

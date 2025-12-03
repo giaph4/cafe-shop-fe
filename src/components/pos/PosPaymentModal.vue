@@ -87,9 +87,29 @@
                         </section>
 
                         <section v-if="!isPaid" class="payment-options mt-4">
+                            <!-- Order Notes -->
+                            <div class="payment-notes mb-4">
+                                <h6 class="mb-2">
+                                    <i class="bi bi-sticky me-2"></i>Ghi chú đơn hàng
+                                </h6>
+                                <textarea
+                                    v-model.trim="orderNotes"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Nhập ghi chú cho đơn hàng (tùy chọn)"
+                                    :disabled="processing || notesLoading"
+                                ></textarea>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Ghi chú sẽ được lưu vào đơn hàng
+                                </small>
+                            </div>
+
                             <!-- Customer Phone Number -->
                             <div class="payment-customer mb-4">
-                                <h6 class="mb-2">Thông tin khách hàng</h6>
+                                <h6 class="mb-2">
+                                    <i class="bi bi-person me-2"></i>Thông tin khách hàng
+                                </h6>
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="bi bi-telephone"></i>
@@ -140,60 +160,62 @@
 
                             <!-- Voucher Code -->
                             <div class="payment-voucher mb-4">
-                                <h6 class="mb-2">Mã giảm giá</h6>
+                                <h6 class="mb-2">
+                                    <i class="bi bi-ticket-perforated me-2"></i>Mã giảm giá
+                                </h6>
                                 <div class="input-group">
-                                    <span class="input-group-text">
+                                    <span class="input-group-text voucher-input-icon" :class="voucherApplied ? 'voucher-applied' : ''">
                                         <i class="bi bi-ticket-perforated"></i>
                                     </span>
                                     <input
                                         v-model.trim="voucherCode"
                                         type="text"
                                         class="form-control"
-                                        placeholder="Nhập mã voucher"
+                                        :class="voucherApplied ? 'voucher-input-applied' : ''"
+                                        placeholder="Nhập mã voucher và nhấn Áp dụng"
                                         :disabled="processing || voucherLoading || !canApplyVoucher"
-                                        @blur="handleVoucherBlur"
+                                        @keyup.enter="handleApplyVoucher"
                                     />
                                     <button
                                         v-if="voucherLoading"
-                                        class="btn btn-outline-secondary"
+                                        class="btn btn-warning"
                                         type="button"
                                         disabled
                                     >
-                                        <span class="spinner-border spinner-border-sm"></span>
+                                        <span class="spinner-border spinner-border-sm me-1"></span>
+                                        Đang xử lý...
                                     </button>
                                     <button
                                         v-else-if="voucherCode && !voucherApplied"
-                                        class="btn btn-outline-primary"
+                                        class="btn btn-success"
                                         type="button"
                                         :disabled="processing || !canApplyVoucher"
-                                        @click="handleCheckVoucher"
+                                        @click="handleApplyVoucher"
                                     >
-                                        <i class="bi bi-search me-1"></i>Kiểm tra
+                                        <i class="bi bi-check-circle me-1"></i>Áp dụng
                                     </button>
                                     <button
                                         v-else-if="voucherApplied"
-                                        class="btn btn-outline-danger"
+                                        class="btn btn-danger"
                                         type="button"
                                         :disabled="processing"
                                         @click="handleRemoveVoucher"
                                     >
-                                        <i class="bi bi-x-circle me-1"></i>Bỏ
+                                        <i class="bi bi-x-circle me-1"></i>Bỏ voucher
                                     </button>
                                 </div>
-                                <div v-if="voucherCheckResult" class="mt-2">
-                                    <small :class="voucherCheckResult.valid ? 'text-success' : 'text-danger'">
-                                        <i :class="voucherCheckResult.valid ? 'bi bi-check-circle' : 'bi bi-x-circle'" class="me-1"></i>
-                                        {{ voucherCheckResult.message }}
-                                        <span v-if="voucherCheckResult.valid && voucherCheckResult.discountAmount">
-                                            - Giảm: {{ formatCurrency(voucherCheckResult.discountAmount) }}
-                                        </span>
-                                    </small>
+                                <div v-if="voucherApplied && discountAmount > 0" class="voucher-success-message mt-2">
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                    <strong>Voucher đã áp dụng!</strong> Giảm giá: 
+                                    <strong class="text-success">{{ formatCurrency(discountAmount) }}</strong>
                                 </div>
-                                <div v-if="!canApplyVoucher" class="mt-2">
-                                    <small class="text-warning">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Voucher chỉ áp dụng được khi đơn hàng đã được lưu
-                                    </small>
+                                <div v-if="voucherError" class="voucher-error-message mt-2">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    {{ voucherError }}
+                                </div>
+                                <div v-if="!canApplyVoucher" class="voucher-warning-message mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Vui lòng lưu đơn hàng trước khi áp dụng voucher
                                 </div>
                             </div>
 
@@ -289,7 +311,6 @@ import { toast } from 'vue3-toastify'
 import logger from '@/utils/logger'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { getCustomerByPhone, createCustomer } from '@/api/customerService'
-import { checkVoucher, applyVoucher as applyVoucherApi, removeVoucher as removeVoucherApi } from '@/api/voucherService'
 import * as orderService from '@/api/orderService'
 
 const props = defineProps({
@@ -308,6 +329,10 @@ const printing = ref(false)
 const selectedPaymentMethod = ref('CASH')
 const tipAmount = ref(0)
 
+// Order notes
+const orderNotes = ref('')
+const notesLoading = ref(false)
+
 // Customer phone
 const customerPhone = ref('')
 const foundCustomer = ref(null)
@@ -316,9 +341,9 @@ const customerError = ref(null)
 
 // Voucher
 const voucherCode = ref('')
-const voucherCheckResult = ref(null)
 const voucherLoading = ref(false)
 const voucherApplied = ref(false)
+const voucherError = ref(null)
 
 const STATUS_METADATA = Object.freeze({
     PENDING: { label: 'Đang chờ', class: 'status-pill--pending' },
@@ -364,11 +389,7 @@ const displayTipAmount = computed(() => {
 
 const calculatedTotalAmount = computed(() => {
     const baseSubTotal = localOrder.value?.subTotal ?? subTotal.value
-    // Nếu có voucher check result và chưa apply, tính discount từ đó
-    let discount = discountAmount.value
-    if (voucherCheckResult.value?.valid && voucherCheckResult.value.discountAmount && !voucherApplied.value) {
-        discount = voucherCheckResult.value.discountAmount
-    }
+    const discount = discountAmount.value
     const tip = displayTipAmount.value
     const amountAfterDiscount = Math.max(baseSubTotal - discount, 0)
     return Math.max(amountAfterDiscount + tip, 0)
@@ -398,12 +419,13 @@ const syncOrder = (incoming) => {
     if (!incoming) {
         localOrder.value = null
         tipAmount.value = 0
+        orderNotes.value = ''
         customerPhone.value = ''
         foundCustomer.value = null
         customerError.value = null
         voucherCode.value = ''
-        voucherCheckResult.value = null
         voucherApplied.value = false
+        voucherError.value = null
         return
     }
     try {
@@ -425,6 +447,9 @@ const syncOrder = (incoming) => {
         tipAmount.value = 0
     }
 
+    // Khôi phục order notes
+    orderNotes.value = localOrder.value?.notes || localOrder.value?.note || ''
+
     // Khôi phục customer info
     if (localOrder.value?.customerPhone) {
         customerPhone.value = localOrder.value.customerPhone
@@ -437,11 +462,12 @@ const syncOrder = (incoming) => {
     if (localOrder.value?.voucherCode) {
         voucherCode.value = localOrder.value.voucherCode
         voucherApplied.value = true
+        voucherError.value = null
     } else {
         voucherCode.value = ''
         voucherApplied.value = false
+        voucherError.value = null
     }
-    voucherCheckResult.value = null
 }
 
 watch(() => props.order, syncOrder, { immediate: true })
@@ -455,7 +481,123 @@ const applyQuickTip = (amount) => {
     tipAmount.value = Math.max(0, Math.floor(amount))
 }
 
-const handleConfirm = () => {
+// Customer handling
+const handlePhoneBlur = async () => {
+    if (!customerPhone.value || customerPhone.value.length < 10) {
+        foundCustomer.value = null
+        customerError.value = null
+        return
+    }
+    await handleFindOrCreateCustomer()
+}
+
+const handleFindOrCreateCustomer = async () => {
+    if (!customerPhone.value || customerPhone.value.length < 10) {
+        customerError.value = 'Số điện thoại không hợp lệ'
+        return
+    }
+
+    customerLoading.value = true
+    customerError.value = null
+    foundCustomer.value = null
+
+    try {
+        // Tìm customer theo số điện thoại
+        try {
+            const customer = await getCustomerByPhone(customerPhone.value)
+            foundCustomer.value = customer
+            customerError.value = null
+            toast.success(`Đã tìm thấy khách hàng: ${customer.fullName || customer.phone}`)
+        } catch (error) {
+            // Nếu không tìm thấy (404), tạo customer mới
+            if (error.response?.status === 404) {
+                const newCustomer = await createCustomer({
+                    phone: customerPhone.value,
+                    fullName: `Khách hàng ${customerPhone.value}`,
+                    email: null
+                })
+                foundCustomer.value = newCustomer
+                customerError.value = null
+                toast.success(`Đã tạo khách hàng mới: ${newCustomer.fullName || newCustomer.phone}`)
+            } else {
+                throw error
+            }
+        }
+    } catch (error) {
+        const message = error.response?.data?.message || 'Không thể tìm hoặc tạo khách hàng'
+        customerError.value = message
+        foundCustomer.value = null
+        toast.error(message)
+        logger.error('Failed to find/create customer:', error)
+    } finally {
+        customerLoading.value = false
+    }
+}
+
+// Voucher handling - Áp dụng trực tiếp không cần check
+const handleApplyVoucher = async () => {
+    if (!voucherCode.value || !voucherCode.value.trim()) {
+        voucherError.value = 'Vui lòng nhập mã voucher'
+        toast.warning('Vui lòng nhập mã voucher')
+        return
+    }
+    if (!canApplyVoucher.value) {
+        voucherError.value = 'Vui lòng lưu đơn hàng trước khi áp dụng voucher'
+        toast.warning('Vui lòng lưu đơn hàng trước khi áp dụng voucher')
+        return
+    }
+
+    voucherLoading.value = true
+    voucherError.value = null
+
+    try {
+        const updatedOrder = await orderService.applyVoucher({
+            orderId: localOrder.value.id,
+            voucherCode: voucherCode.value.trim().toUpperCase()
+        })
+        
+        // Cập nhật localOrder với dữ liệu mới từ server
+        syncOrder(updatedOrder)
+        voucherApplied.value = true
+        voucherError.value = null
+        toast.success('Áp dụng voucher thành công!')
+    } catch (error) {
+        const message = error.response?.data?.message || 'Không thể áp dụng voucher. Vui lòng kiểm tra lại mã voucher.'
+        voucherError.value = message
+        voucherApplied.value = false
+        toast.error(message)
+        logger.error('Failed to apply voucher:', error)
+    } finally {
+        voucherLoading.value = false
+    }
+}
+
+const handleRemoveVoucher = async () => {
+    if (!localOrder.value?.id || !voucherApplied.value) {
+        return
+    }
+
+    voucherLoading.value = true
+    voucherError.value = null
+
+    try {
+        const updatedOrder = await orderService.removeVoucher(localOrder.value.id)
+        syncOrder(updatedOrder)
+        voucherApplied.value = false
+        voucherCode.value = ''
+        voucherError.value = null
+        toast.info('Đã bỏ voucher khỏi đơn hàng.')
+    } catch (error) {
+        const message = error.response?.data?.message || 'Không thể bỏ voucher'
+        voucherError.value = message
+        toast.error(message)
+        logger.error('Failed to remove voucher:', error)
+    } finally {
+        voucherLoading.value = false
+    }
+}
+
+const handleConfirm = async () => {
     if (!localOrder.value?.id) {
         toast.warning('Thiếu thông tin đơn hàng để thanh toán.')
         return
@@ -466,11 +608,30 @@ const handleConfirm = () => {
         toast.error('Số tiền tip không được nhỏ hơn 0.')
         return
     }
+
+    // Lưu ghi chú nếu có thay đổi
+    const currentNotes = localOrder.value?.notes || localOrder.value?.note || ''
+    if (orderNotes.value.trim() !== currentNotes.trim()) {
+        try {
+            notesLoading.value = true
+            const updatedOrder = await orderService.updateOrder(localOrder.value.id, {
+                note: orderNotes.value.trim() || null
+            })
+            syncOrder(updatedOrder)
+        } catch (error) {
+            logger.error('Failed to update order notes:', error)
+            toast.warning('Không thể lưu ghi chú, tiếp tục thanh toán...')
+        } finally {
+            notesLoading.value = false
+        }
+    }
     
     emit('confirm-payment', {
         orderId: localOrder.value.id,
         paymentMethod: selectedPaymentMethod.value || 'CASH',
         tipAmount: tip,
+        customerId: foundCustomer.value?.id || localOrder.value.customerId || null,
+        voucherCode: voucherApplied.value ? voucherCode.value : null,
     })
 }
 
@@ -673,5 +834,117 @@ defineExpose({ show, hide })
     white-space: nowrap;
     font-size: var(--font-size-sm);
     padding: var(--spacing-2) var(--spacing-3);
+}
+
+/* Voucher Styles */
+/* Payment Notes */
+.payment-notes h6 {
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    align-items: center;
+}
+
+.payment-notes textarea {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.payment-notes textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    outline: none;
+}
+
+.payment-notes textarea:disabled {
+    background: var(--color-bg-muted);
+    opacity: 0.6;
+}
+
+/* Payment Customer */
+.payment-customer h6 {
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    align-items: center;
+}
+
+.payment-customer .input-group-text {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
+    color: var(--color-primary);
+}
+
+.payment-customer .form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+}
+
+/* Payment Voucher */
+.payment-voucher h6 {
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    align-items: center;
+}
+
+.voucher-input-icon {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+    transition: all var(--transition-base);
+}
+
+.voucher-input-icon.voucher-applied {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+
+.voucher-input-applied {
+    border-color: var(--color-success);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.voucher-input-applied:focus {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25);
+}
+
+.voucher-success-message {
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #15803d;
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+}
+
+.voucher-error-message {
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #b91c1c;
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+}
+
+.voucher-warning-message {
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    background: rgba(250, 204, 21, 0.1);
+    border: 1px solid rgba(250, 204, 21, 0.3);
+    color: #a16207;
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
 }
 </style>

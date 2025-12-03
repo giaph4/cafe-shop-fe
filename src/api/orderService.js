@@ -29,7 +29,26 @@ export const getPendingOrderByTable = async (tableId) => {
 
 // 8.5. Thêm món vào order
 export const addItemToOrder = async ({ orderId, itemData }) => {
-    const { data } = await api.post(`/api/v1/orders/${orderId}/items`, itemData);
+    // Đảm bảo format đúng cho backend
+    const payload = {
+        productId: Number(itemData.productId),
+        quantity: Math.max(1, Math.floor(Number(itemData.quantity)))
+    }
+    
+    // Chỉ thêm notes nếu có giá trị (không gửi null hoặc empty string)
+    if (itemData.notes && String(itemData.notes).trim()) {
+        payload.notes = String(itemData.notes).trim()
+    }
+    
+    // Validate
+    if (!Number.isFinite(payload.productId) || payload.productId <= 0) {
+        throw new Error('Product ID không hợp lệ')
+    }
+    if (!Number.isFinite(payload.quantity) || payload.quantity < 1) {
+        throw new Error('Số lượng phải lớn hơn 0')
+    }
+    
+    const { data } = await api.post(`/api/v1/orders/${orderId}/items`, payload);
     return data;
 };
 

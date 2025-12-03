@@ -62,9 +62,10 @@
                             type="button"
                             class="btn btn-sm btn-outline-secondary"
                             :disabled="isLoadingTakeawayOrders"
-                            @click="refetchTakeawayOrders()"
+                            @click="handleRefreshTakeawayOrders"
                         >
                             <span v-if="isLoadingTakeawayOrders" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-arrow-clockwise me-1"></i>
                             Làm mới
                         </button>
                     </header>
@@ -269,6 +270,16 @@ const handleOrderUpdated = async ({ reason, order } = {}) => {
 
     if (targetTableId && shouldFetchPendingOrder.value) {
         refetchPendingOrder()
+    }
+}
+
+const handleRefreshTakeawayOrders = async () => {
+    try {
+        // Invalidate và refetch để đảm bảo dữ liệu mới nhất
+        await queryClient.invalidateQueries({ queryKey: ['pendingTakeawayOrders'] })
+        await refetchTakeawayOrders()
+    } catch (error) {
+        console.error('Failed to refresh takeaway orders:', error)
     }
 }
 

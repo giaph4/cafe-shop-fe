@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1">
+        <div class="modal fade product-modal" ref="modal" tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -124,13 +124,13 @@
 
                                 <div
                                     v-if="form.createdAt"
-                                    class="alert alert-light mt-4 mb-0 d-flex justify-content-between align-items-center"
+                                    class="product-meta-info mt-4 mb-0"
                                 >
                                     <span><i class="bi bi-clock-history me-2"></i>Đã tạo: {{
                                             formatDate(form.createdAt)
                                         }}</span>
-                                    <span class="badge"
-                                          :class="form.available ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
+                                    <span class="product-meta-badge"
+                                          :class="form.available ? 'product-meta-badge--active' : 'product-meta-badge--inactive'">
                                     {{ form.available ? 'Đang kinh doanh' : 'Ngừng bán' }}
                                 </span>
                                 </div>
@@ -365,33 +365,128 @@ defineExpose({show, hide, setTab})
 </script>
 
 <style scoped>
+/* Modal - Chuẩn hóa theo base.css */
+.product-modal :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.product-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.product-modal :global(.modal-title) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.product-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-bg);
+}
+
+.product-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.product-modal :global(.modal-footer .btn) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.product-modal :global(.modal-footer .btn:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.product-modal :global(.modal-footer .btn:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Form Controls - Chuẩn hóa */
+.product-modal :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.product-modal :global(.form-control),
+.product-modal :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.product-modal :global(.form-control:focus),
+.product-modal :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.product-modal :global(textarea.form-control) {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* Tabs - Chuẩn hóa */
 .modal-tabs {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
 }
 
 .tab-btn {
     flex: 1;
     border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     color: var(--color-text);
     font-weight: var(--font-weight-medium);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
     transition: all var(--transition-base);
     font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.tab-btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.tab-btn:hover:not(.active):not(:disabled) {
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    background: var(--color-primary);
     border-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    box-shadow: var(--shadow-md);
+    color: #ffffff;
 }
 
 .tab-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
@@ -402,13 +497,14 @@ defineExpose({show, hide, setTab})
 .modal-body-scroll {
     max-height: 70vh;
     overflow: auto;
-    padding-right: var(--spacing-5);
+    padding-right: var(--spacing-4);
 }
 
+/* Image Uploader - Chuẩn hóa */
 .image-uploader {
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-base);
     padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
@@ -420,8 +516,8 @@ defineExpose({show, hide, setTab})
     width: 100%;
     height: 200px;
     object-fit: cover;
-    border-radius: var(--radius-md);
-    background: var(--color-card);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
 }
 
@@ -430,42 +526,84 @@ defineExpose({show, hide, setTab})
     align-items: center;
     justify-content: center;
     width: 100%;
-    gap: var(--spacing-2);
+    gap: 6px;
     border: 1px solid var(--color-primary);
     color: var(--color-primary);
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
-    background: var(--color-soft-primary);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
     cursor: pointer;
     font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     transition: all var(--transition-base);
 }
 
 .upload-btn:hover {
     background: var(--color-primary);
-    color: var(--color-text-inverse);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+.upload-btn i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .upload-btn input {
     display: none;
 }
 
+.upload-btn + .btn {
+    margin-top: var(--spacing-2);
+}
+
+/* Product Meta Info - Chuẩn hóa */
+.product-meta-info {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-3);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+}
+
+.product-meta-info i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.product-meta-badge {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+.product-meta-badge--active {
+    background: var(--color-bg-muted);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+.product-meta-badge--inactive {
+    background: var(--color-bg-muted);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+}
+
+/* Dual Buttons - Chuẩn hóa */
 .dual-buttons {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    gap: var(--spacing-2);
 }
 
 .dual-buttons .btn {
     width: 100%;
-}
-
-.product-meta {
-    border-radius: 14px;
-    border: 1px solid rgba(228, 220, 211, 0.6);
 }
 
 @keyframes fadeIn {
@@ -476,6 +614,22 @@ defineExpose({show, hide, setTab})
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-tabs {
+        flex-direction: column;
+    }
+
+    .tab-btn {
+        width: 100%;
+    }
+
+    .product-meta-info {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 

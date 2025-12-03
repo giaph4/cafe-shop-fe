@@ -196,18 +196,185 @@ onBeforeUnmount(() => {
 defineExpose({ show, hide })
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+/* Create Conversation Modal - Chuẩn hóa theo base.css */
+.create-conversation-modal :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.create-conversation-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.create-conversation-modal :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
+}
+
+.create-conversation-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    gap: var(--spacing-2);
+}
+
+.create-conversation-modal :global(.modal-title) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+/* Tabs - Chuẩn hóa */
+.create-conversation-modal :global(.nav-tabs) {
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-4);
+    gap: var(--spacing-2);
+}
+
+.create-conversation-modal :global(.nav-tabs .nav-link) {
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.create-conversation-modal :global(.nav-tabs .nav-link:hover:not(.active)) {
+    background: var(--color-bg-muted);
+    color: var(--color-text);
+}
+
+.create-conversation-modal :global(.nav-tabs .nav-link.active) {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-bottom: 2px solid var(--color-primary);
+}
+
+/* Form - Chuẩn hóa */
+.create-conversation-modal :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.create-conversation-modal :global(.form-control),
+.create-conversation-modal :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.create-conversation-modal :global(.form-control:focus),
+.create-conversation-modal :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.create-conversation-modal :global(.form-control:disabled),
+.create-conversation-modal :global(.form-select:disabled) {
+    background: var(--color-bg-muted);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .member-selection {
     max-height: 200px;
     overflow-y: auto;
     border: 1px solid var(--color-border);
-    border-radius: var(--component-radius-sm);
-    padding: var(--component-gap-sm);
-    background: var(--color-card-muted);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2);
+    background: var(--color-bg-muted);
 }
 
-.form-check {
-    padding: 0.5rem 0;
+.create-conversation-modal :global(.form-check) {
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
+    transition: background-color var(--transition-base);
+}
+
+.create-conversation-modal :global(.form-check:hover) {
+    background: var(--color-bg);
+}
+
+.create-conversation-modal :global(.form-check-label) {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.create-conversation-modal :global(.form-check-input) {
+    margin-top: 0.25em;
+}
+
+.create-conversation-modal :global(small.text-muted) {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    display: block;
+    margin-top: var(--spacing-2);
+}
+
+/* Buttons - Chuẩn hóa */
+.create-conversation-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    gap: 6px;
+}
+
+.create-conversation-modal :global(.btn-primary:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.create-conversation-modal :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.create-conversation-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: 8px 16px;
+    color: var(--color-text);
+    background: transparent;
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.create-conversation-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .create-conversation-modal :global(.modal-dialog) {
+        max-width: 90%;
+        margin: var(--spacing-4) auto;
+    }
+
+    .create-conversation-modal :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
 }
 </style>
 

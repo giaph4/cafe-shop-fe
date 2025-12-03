@@ -2,30 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { ROLES } from '@/constants/roles'
 import MainLayout from '@/layouts/MainLayout.vue'
-import Dashboard from '../pages/Dashboard.vue'
-import Login from '../pages/Login.vue'
-import Products from '../pages/Products.vue'
-import Orders from '../pages/Orders.vue'
-import Reports from '../pages/Reports.vue'
-import Chat from '../pages/Chat.vue'
-import Categories from '../pages/Categories.vue'
-import Tables from '../pages/Tables.vue'
-import Ingredients from '../pages/Ingredients.vue'
-import Suppliers from '../pages/Suppliers.vue'
-import PurchaseOrders from '../pages/PurchaseOrders.vue'
-import PurchaseOrderCreate from '../pages/PurchaseOrderCreate.vue'
-import InventoryReport from '../pages/InventoryReport.vue'
-import Expenses from '../pages/Expenses.vue'
-import NotFound from '../pages/NotFound.vue'
-import Pos from '../pages/Pos.vue'
-import Staff from '../pages/Staff.vue'
-import ShiftManagement from '../pages/ShiftManagement.vue'
-import Payroll from '../pages/Payroll.vue'
-import Vouchers from '../pages/Vouchers.vue'
-import ShiftReport from '../pages/ShiftReport.vue'
-import ShiftAssignment from '../pages/ShiftAssignment.vue'
-import PerformanceAdjustment from '../pages/PerformanceAdjustment.vue'
-import Customers from '../pages/Customers.vue'
 
 const routes = [
     {
@@ -36,67 +12,67 @@ const routes = [
             {
                 path: '',
                 name: 'Dashboard',
-                component: Dashboard,
+                component: () => import(/* webpackChunkName: "dashboard" */ '../pages/Dashboard.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'pos',
                 name: 'POS',
-                component: Pos,
+                component: () => import(/* webpackChunkName: "pos" */ '../pages/Pos.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.STAFF] }
             },
             {
                 path: 'products',
                 name: 'Quản lý Sản phẩm',
-                component: Products,
+                component: () => import(/* webpackChunkName: "products" */ '../pages/Products.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'orders',
                 name: 'Quản lý Hoá đơn',
-                component: Orders,
+                component: () => import(/* webpackChunkName: "orders" */ '../pages/Orders.vue'),
                 meta: { allowedRoles: [ROLES.STAFF, ROLES.MANAGER, ROLES.ADMIN] }
             },
             {
                 path: 'customers',
                 name: 'Quản lý Khách hàng',
-                component: Customers,
+                component: () => import(/* webpackChunkName: "customers" */ '../pages/Customers.vue'),
                 meta: { allowedRoles: [ROLES.STAFF, ROLES.MANAGER, ROLES.ADMIN] }
             },
             {
                 path: 'customers/:id',
                 name: 'Chi tiết Khách hàng',
-                component: () => import('../pages/CustomerOrderDetail.vue'),
+                component: () => import(/* webpackChunkName: "customer-order-detail" */ '../pages/CustomerOrderDetail.vue'),
                 meta: { allowedRoles: [ROLES.STAFF, ROLES.MANAGER, ROLES.ADMIN] }
             },
             {
                 path: 'categories',
                 name: 'Quản lý Danh mục',
-                component: Categories,
+                component: () => import(/* webpackChunkName: "categories" */ '../pages/Categories.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'tables',
                 name: 'Quản lý Bàn',
-                component: Tables,
+                component: () => import(/* webpackChunkName: "tables" */ '../pages/Tables.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'vouchers',
                 name: 'Quản lý Voucher',
-                component: Vouchers,
+                component: () => import(/* webpackChunkName: "vouchers" */ '../pages/Vouchers.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'reports',
                 name: 'Báo cáo tổng hợp',
-                component: Reports,
+                component: () => import(/* webpackChunkName: "reports" */ '../pages/Reports.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'chat',
                 name: 'Trò chuyện nội bộ',
-                component: Chat,
+                component: () => import(/* webpackChunkName: "chat" */ '../pages/Chat.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
@@ -106,127 +82,127 @@ const routes = [
             {
                 path: 'ingredients',
                 name: 'Quản lý Nguyên liệu',
-                component: Ingredients,
+                component: () => import(/* webpackChunkName: "ingredients" */ '../pages/Ingredients.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'suppliers',
                 name: 'Quản lý Nhà cung cấp',
-                component: Suppliers,
+                component: () => import(/* webpackChunkName: "suppliers" */ '../pages/Suppliers.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'purchase-orders',
                 name: 'Quản lý Nhập hàng',
-                component: PurchaseOrders,
+                component: () => import(/* webpackChunkName: "purchase-orders" */ '../pages/PurchaseOrders.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'purchase-orders/new',
                 name: 'Tạo Đơn nhập hàng',
-                component: PurchaseOrderCreate,
+                component: () => import(/* webpackChunkName: "purchase-order-create" */ '../pages/PurchaseOrderCreate.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'inventory-report',
                 name: 'Báo cáo tồn kho',
-                component: InventoryReport,
+                component: () => import(/* webpackChunkName: "inventory-report" */ '../pages/InventoryReport.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'expenses',
                 name: 'Quản lý Chi phí',
-                component: Expenses,
+                component: () => import(/* webpackChunkName: "expenses" */ '../pages/Expenses.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'staff',
                 name: 'Quản lý Nhân viên',
-                component: Staff,
+                component: () => import(/* webpackChunkName: "staff" */ '../pages/Staff.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'shifts',
                 name: 'Quản lý Ca làm',
-                component: ShiftManagement,
+                component: () => import(/* webpackChunkName: "shift-management" */ '../pages/ShiftManagement.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'attendance',
                 name: 'Chấm công',
-                component: () => import('../pages/Attendance.vue'),
+                component: () => import(/* webpackChunkName: "attendance" */ '../pages/Attendance.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'shift-report',
                 name: 'Báo cáo Ca làm',
-                component: ShiftReport,
+                component: () => import(/* webpackChunkName: "shift-report" */ '../pages/ShiftReport.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'shift-report/:id',
                 name: 'Chi tiết Báo cáo Ca làm',
-                component: () => import('../pages/ShiftReportDetail.vue'),
+                component: () => import(/* webpackChunkName: "shift-report-detail" */ '../pages/ShiftReportDetail.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'shift-assignment',
                 name: 'Phân công Ca làm',
-                component: ShiftAssignment,
+                component: () => import(/* webpackChunkName: "shift-assignment" */ '../pages/ShiftAssignment.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
                 path: 'performance-adjustment',
                 name: 'Điều chỉnh Hiệu suất',
-                component: PerformanceAdjustment,
+                component: () => import(/* webpackChunkName: "performance-adjustment" */ '../pages/PerformanceAdjustment.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'payroll',
                 name: 'Quản lý Lương',
-                component: Payroll,
+                component: () => import(/* webpackChunkName: "payroll" */ '../pages/Payroll.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'profile',
                 name: 'Hồ sơ cá nhân',
-                component: () => import('../pages/Profile.vue'),
+                component: () => import(/* webpackChunkName: "profile" */ '../pages/Profile.vue'),
                 meta: { requiresAuth: true }
             },
             {
                 path: 'settings',
                 name: 'Cài đặt hệ thống',
-                component: () => import('../pages/Settings.vue'),
+                component: () => import(/* webpackChunkName: "settings" */ '../pages/Settings.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'login-history',
                 name: 'Lịch sử đăng nhập',
-                component: () => import('../pages/LoginHistory.vue'),
+                component: () => import(/* webpackChunkName: "login-history" */ '../pages/LoginHistory.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'file-management',
                 name: 'Quản lý File',
-                component: () => import('../pages/FileManagement.vue'),
+                component: () => import(/* webpackChunkName: "file-management" */ '../pages/FileManagement.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
                 path: 'admin-analytics',
                 name: 'Phân tích AI',
-                component: () => import('../pages/AdminAnalytics.vue'),
+                component: () => import(/* webpackChunkName: "admin-analytics" */ '../pages/AdminAnalytics.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'admin-analytics/:id',
                 name: 'Chi tiết Phân tích AI',
-                component: () => import('../pages/AdminAnalyticsDetail.vue'),
+                component: () => import(/* webpackChunkName: "admin-analytics-detail" */ '../pages/AdminAnalyticsDetail.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN] }
             },
             {
                 path: 'role-dashboards',
                 name: 'Dashboard theo vai trò',
-                component: () => import('../pages/RoleBasedDashboards.vue'),
+                component: () => import(/* webpackChunkName: "role-dashboards" */ '../pages/RoleBasedDashboards.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             }
         ]
@@ -234,13 +210,13 @@ const routes = [
     {
         path: '/login',
         name: 'Login',
-        component: Login,
+        component: () => import(/* webpackChunkName: "login" */ '../pages/Login.vue'),
         meta: { requiresGuest: true },
     },
    {
        path: '/:pathMatch(.*)*',
        name: 'NotFound',
-       component: NotFound
+       component: () => import(/* webpackChunkName: "not-found" */ '../pages/NotFound.vue')
    }
 ]
 

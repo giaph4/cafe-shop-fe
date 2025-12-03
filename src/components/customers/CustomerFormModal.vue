@@ -12,7 +12,7 @@
                     </div>
                     <form @submit.prevent="submitForm" class="customer-form">
                         <div class="modal-body">
-                            <div v-if="error" class="alert alert-danger">
+                            <div v-if="error" class="error-message">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
                                 {{ error }}
                             </div>
@@ -222,21 +222,22 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
+/* Customer Form Modal - Chuẩn hóa theo base.css */
 .customer-form-modal :global(.modal-dialog) {
     max-width: 600px;
 }
 
 .customer-form-modal :global(.modal-content) {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
 }
 
 .customer-form-modal :global(.modal-header) {
+    padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
-    background: var(--color-card);
+    background: var(--color-bg);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -250,16 +251,29 @@ defineExpose({ show, hide })
 
 .customer-form-modal :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-1);
 }
 
 .modal-subtitle {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     margin-bottom: 0;
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
+}
+
+.customer-form-modal :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
+}
+
+.customer-form-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    gap: var(--spacing-2);
+    justify-content: flex-end;
 }
 
 .customer-form {
@@ -272,7 +286,7 @@ defineExpose({ show, hide })
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
 }
 
 .form-group {
@@ -281,58 +295,68 @@ defineExpose({ show, hide })
     gap: var(--spacing-2);
 }
 
+/* Form Controls - Chuẩn hóa */
 .customer-form-modal :global(.form-label) {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    font-size: var(--font-size-sm);
-    margin-bottom: 0;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
 }
 
 .customer-form-modal :global(.form-control) {
+    height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-3) var(--spacing-4);
-    font-size: var(--font-size-sm);
-    transition: all var(--transition-fast);
-    background: var(--color-card);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
     color: var(--color-text);
+    transition: all var(--transition-base);
 }
 
 .customer-form-modal :global(.form-control:focus) {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-soft);
-    outline: none;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
 }
 
 .customer-form-modal :global(.form-control:disabled) {
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     opacity: 0.6;
     cursor: not-allowed;
 }
 
 .customer-form-modal :global(.form-text) {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    margin-top: var(--spacing-1);
+    margin-top: var(--spacing-2);
 }
 
-.customer-form-modal :global(.alert-danger) {
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-danger-border);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
+/* Error message - không dùng alert */
+.error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    font-size: var(--font-size-sm);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-danger);
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
+    font-size: var(--font-size-base);
     display: flex;
     align-items: center;
+    gap: var(--spacing-2);
 }
 
+.error-message i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Customer Meta - Chuẩn hóa */
 .customer-meta {
     margin-top: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card-muted);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--spacing-3);
@@ -345,15 +369,67 @@ defineExpose({ show, hide })
 }
 
 .customer-meta__label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
+    font-weight: var(--font-weight-medium);
 }
 
 .customer-meta__value {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
+    color: var(--color-text);
+}
+
+/* Buttons - Chuẩn hóa */
+.customer-form-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.customer-form-modal :global(.btn-primary:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.customer-form-modal :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.customer-form-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: 8px 16px;
+    color: var(--color-text);
+    background: transparent;
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.customer-form-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .customer-form-modal :global(.modal-dialog) {
+        max-width: 90%;
+        margin: var(--spacing-4) auto;
+    }
+
+    .customer-form-modal :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
+
+    .customer-meta {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

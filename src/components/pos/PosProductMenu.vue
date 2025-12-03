@@ -251,21 +251,22 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Product Menu - Chuẩn hóa theo base.css */
 .pos-product-menu {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: var(--spacing-5);
+    padding: var(--spacing-4);
     overflow: hidden;
 }
 
-/* Header */
+/* Header - Chuẩn hóa */
 .pos-product-menu__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-4);
-    margin-bottom: var(--spacing-5);
+    margin-bottom: var(--spacing-4);
     padding-bottom: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
@@ -274,21 +275,29 @@ onBeforeUnmount(() => {
 .btn-back {
     color: var(--color-text-muted);
     text-decoration: none;
-    padding: 0.5rem;
+    padding: var(--spacing-2);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    transition: color 0.2s;
+    gap: 6px;
+    transition: all var(--transition-base);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
 }
 
 .btn-back:hover {
     color: var(--color-primary);
+    background: var(--color-bg-muted);
+}
+
+.btn-back i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .pos-product-menu__title {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin: 0;
     flex: 1;
     text-align: center;
@@ -297,70 +306,79 @@ onBeforeUnmount(() => {
 
 .pos-product-menu__search-hint {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
 }
 
 kbd {
     background: var(--color-bg-muted);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
-    padding: 0.125rem 0.375rem;
-    font-size: 0.75rem;
+    border-radius: var(--radius-base);
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-base);
     font-family: monospace;
 }
 
-/* Search */
+/* Search - Chuẩn hóa */
 .pos-product-menu__search {
-    margin-bottom: var(--spacing-5);
+    margin-bottom: var(--spacing-4);
     flex-shrink: 0;
 }
 
 .input-group-lg .form-control {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-3);
+    height: 40px;
+    border-radius: var(--radius-base);
 }
 
 .input-group-text {
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     border-color: var(--color-border);
+    border-radius: var(--radius-base) 0 0 var(--radius-base);
 }
 
-/* Categories */
+.input-group-text i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Categories - Chuẩn hóa pill */
 .pos-product-menu__categories {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
-    margin-bottom: var(--spacing-5);
-    padding-bottom: var(--spacing-5);
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
 }
 
 .category-pill {
-    padding: var(--spacing-2) var(--spacing-5);
-    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
+    background: var(--color-bg);
     color: var(--color-text);
     font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-sm);
-    transition: all var(--transition-fast);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
     cursor: pointer;
+    white-space: nowrap;
 }
 
-.category-pill:hover {
-    background: var(--color-primary-soft);
+.category-pill:hover:not(.category-pill--active) {
+    background: var(--color-bg-muted);
     border-color: var(--color-primary);
-    transform: translateY(-1px);
+    color: var(--color-primary);
 }
 
 .category-pill--active {
     background: var(--color-primary);
-    color: var(--color-white);
+    color: #ffffff;
     border-color: var(--color-primary);
 }
 
-/* List Header */
+/* List Header - Chuẩn hóa */
 .pos-product-menu__list-header {
     display: flex;
     justify-content: space-between;
@@ -371,7 +389,7 @@ kbd {
 
 .pos-product-menu__count {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
 }
 
 .pos-product-menu__view-toggle {
@@ -386,15 +404,15 @@ kbd {
     align-items: center;
     justify-content: center;
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    border-radius: var(--radius-base);
     color: var(--color-text-muted);
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
     cursor: pointer;
 }
 
-.view-toggle-btn:hover {
-    background: var(--color-primary-soft);
+.view-toggle-btn:hover:not(.view-toggle-btn--active) {
+    background: var(--color-bg-muted);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
@@ -402,7 +420,12 @@ kbd {
 .view-toggle-btn--active {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: var(--color-white);
+    color: #ffffff;
+}
+
+.view-toggle-btn i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 /* Content */
@@ -426,22 +449,21 @@ kbd {
     grid-template-columns: 1fr;
 }
 
-/* Product Card */
+/* Product Card - Chuẩn hóa */
 .product-card {
     cursor: pointer;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    transition: all var(--transition-fast);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    transition: all var(--transition-base);
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .product-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-hover);
     border-color: var(--color-primary);
 }
 
@@ -456,8 +478,8 @@ kbd {
 }
 
 .product-card--unavailable:hover {
-    transform: none;
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-base);
+    border-color: var(--color-border);
 }
 
 .product-card__image {
@@ -465,33 +487,40 @@ kbd {
     width: 100%;
     height: 180px;
     overflow: hidden;
-    background: var(--color-card-muted, #f1f5f9);
+    background: var(--color-bg-muted);
 }
 
 .product-card__image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
+    transition: transform var(--transition-base);
 }
 
 .product-card:hover .product-card__image img {
     transform: scale(1.05);
 }
 
+/* Badge - Chuẩn hóa theo badge/pill hệ thống */
 .product-card__badge {
     position: absolute;
     top: var(--spacing-2);
     right: var(--spacing-2);
-    background: var(--color-danger);
-    color: var(--color-white);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     display: flex;
     align-items: center;
-    gap: var(--spacing-1);
+    gap: 6px;
+}
+
+.product-card__badge i {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .product-card__body {
@@ -504,10 +533,10 @@ kbd {
 
 .product-card__title {
     font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
-    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
     margin: 0;
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -522,7 +551,7 @@ kbd {
 }
 
 .product-card__description {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     display: -webkit-box;
     -webkit-line-clamp: 2;

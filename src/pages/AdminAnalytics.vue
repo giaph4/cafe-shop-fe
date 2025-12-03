@@ -1,16 +1,18 @@
 <template>
     <div class="admin-analytics-page container-fluid">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">
-                    <i class="bi bi-graph-up-arrow me-2"></i>Phân tích AI
-                </h2>
-                <p class="page-subtitle">Phân tích dữ liệu kinh doanh thông minh với AI, nhận insights và đề xuất hành động.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-outline-secondary" type="button" @click="resetForm" :disabled="loading || generating">
-                    <i class="bi bi-arrow-clockwise me-2"></i>Đặt lại
-                </button>
+        <div class="admin-analytics-header">
+            <div class="admin-analytics-header__content">
+                <div class="admin-analytics-header__title-section">
+                    <h2 class="admin-analytics-header__title">
+                        <i class="bi bi-graph-up-arrow me-2"></i>Phân tích AI
+                    </h2>
+                    <p class="admin-analytics-header__subtitle">Phân tích dữ liệu kinh doanh thông minh với AI, nhận insights và đề xuất hành động.</p>
+                </div>
+                <div class="admin-analytics-header__actions">
+                    <button class="btn btn-outline-secondary" type="button" @click="resetForm" :disabled="loading || generating">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Đặt lại
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -129,7 +131,8 @@
                         </button>
                     </div>
                     <div class="col-lg-12" v-if="validationError">
-                        <div class="alert alert-warning mb-0">
+                        <div class="error-message mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
                             {{ validationError }}
                         </div>
                     </div>
@@ -685,12 +688,8 @@ const revenueChartOptions = computed(() => ({
         }
     },
     fill: {
-        type: 'gradient',
-        gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.7,
-            opacityTo: 0.3
-        }
+        type: 'solid',
+        opacity: 0.15
     }
 }))
 
@@ -773,199 +772,229 @@ const orderStatusChartSeries = computed(() => [{
 }])
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+/* Admin Analytics Page - Chuẩn hóa theo base.css */
 .admin-analytics-page {
-    padding: var(--spacing-6);
-}
-
-.page-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacing-6);
-}
-
-
-.insight-card,
-.metrics-card {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    background: var(--color-card);
-}
-
-.filter-card {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    background: var(--color-card);
-}
-
-.card-header {
-    background: var(--color-card-muted);
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-.ai-insight-content {
-    line-height: 1.8;
-    color: var(--color-heading);
-}
-
-.ai-insight-content :deep(h1),
-.ai-insight-content :deep(h2),
-.ai-insight-content :deep(h3) {
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-    color: var(--color-heading);
-}
-
-.ai-insight-content :deep(h1) {
-    font-size: 1.5rem;
-}
-
-.ai-insight-content :deep(h2) {
-    font-size: 1.25rem;
-}
-
-.ai-insight-content :deep(h3) {
-    font-size: 1.1rem;
-}
-
-.ai-insight-content :deep(p) {
-    margin-bottom: 1rem;
-}
-
-.ai-insight-content :deep(ul) {
-    margin-left: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.ai-insight-content :deep(li) {
-    margin-bottom: 0.5rem;
-}
-
-.ai-insight-content :deep(strong) {
-    font-weight: 600;
-    color: var(--color-heading);
-}
-
-.metrics-summary {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-}
-
-.metric-item {
-    display: flex;
-    align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: 20px;
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
 }
 
-.metric-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    background: var(--color-card-muted);
+/* Header - Chuẩn hóa theo base.css */
+.admin-analytics-header {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
 }
 
-.metric-item__icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+.admin-analytics-header__content {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-    flex-shrink: 0;
-    color: #4338ca;
-    background: #e0e7ff;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
 }
 
-.metric-item--success .metric-item__icon {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-.metric-item--danger .metric-item__icon {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.metric-item--warning .metric-item__icon {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.metric-item--indigo .metric-item__icon {
-    background: #e0e7ff;
-    color: #3730a3;
-}
-
-.metric-item--violet .metric-item__icon {
-    background: #ede9fe;
-    color: #7c3aed;
-}
-
-.metric-item__content {
+.admin-analytics-header__title-section {
     flex: 1;
     min-width: 0;
 }
 
-.metric-label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--spacing-1);
-    letter-spacing: var(--letter-spacing-wide);
-}
-
-.metric-value {
-    font-size: var(--font-size-xl);
+.admin-analytics-header__title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.table {
+.admin-analytics-header__title i {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.admin-analytics-header__subtitle {
     margin-bottom: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
 }
 
-.table thead th {
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    font-size: var(--font-size-xs);
-    letter-spacing: var(--letter-spacing-wide);
-    border-bottom: 2px solid var(--color-border);
+.admin-analytics-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    align-items: center;
+    justify-content: flex-end;
 }
 
-.prompt-templates {
-    background: var(--color-card-muted);
+.admin-analytics-header__actions .btn {
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-analytics-header__actions .btn:hover:not(:disabled) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.admin-analytics-header__actions .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-analytics-header__actions .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Error Message - không dùng alert */
+.error-message {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-warning);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.error-message i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Filter Card - Chuẩn hóa theo base.css */
+.filter-card {
+    margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+}
+
+.filter-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.filter-card :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.filter-card :global(.form-control),
+.filter-card :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.filter-card :global(.form-control:focus),
+.filter-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.filter-card :global(.input-group-text) {
+    height: 40px;
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+    padding: var(--spacing-2) var(--spacing-3);
+}
+
+.filter-card :global(.input-group-text i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.filter-card :global(.form-check-label) {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+}
+
+.filter-card :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-card :global(.btn-primary:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.filter-card :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.filter-card :global(.btn-primary i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Prompt Templates - Chuẩn hóa */
+.prompt-templates {
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
     padding: var(--spacing-4);
     max-height: 500px;
     overflow-y: auto;
+    margin-top: var(--spacing-3);
 }
 
 .prompt-templates__header h6 {
-    color: var(--color-heading);
-    font-weight: 600;
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.prompt-templates__header h6 i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .prompt-templates__list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .prompt-template-item {
@@ -973,9 +1002,9 @@ const orderStatusChartSeries = computed(() => [{
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    background: var(--color-card);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-base);
     cursor: pointer;
     transition: all var(--transition-base);
     text-align: left;
@@ -983,22 +1012,21 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .prompt-template-item:hover {
-    background: var(--color-primary-soft);
+    background: var(--color-bg-muted);
     border-color: var(--color-primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-base);
 }
 
 .prompt-template-item__icon {
     width: 40px;
     height: 40px;
-    border-radius: var(--radius-lg);
-    background: var(--color-primary-soft);
+    border-radius: var(--radius-base);
+    background: var(--color-bg-muted);
     color: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-xl);
+    font-size: 20px;
     flex-shrink: 0;
 }
 
@@ -1009,7 +1037,7 @@ const orderStatusChartSeries = computed(() => [{
 
 .prompt-template-item__content strong {
     display: block;
-    color: var(--color-heading);
+    color: var(--color-text);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     margin-bottom: var(--spacing-1);
@@ -1018,13 +1046,13 @@ const orderStatusChartSeries = computed(() => [{
 .prompt-template-item__content small {
     display: block;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
 }
 
 .prompt-template-item__arrow {
     color: var(--color-text-muted);
-    font-size: var(--font-size-xl);
+    font-size: 18px;
     flex-shrink: 0;
     transition: transform var(--transition-base);
 }
@@ -1034,13 +1062,249 @@ const orderStatusChartSeries = computed(() => [{
     color: var(--color-primary);
 }
 
-@media (max-width: 768px) {
-    .admin-analytics-page {
-        padding: var(--spacing-4);
+/* Cards - Chuẩn hóa theo base.css */
+.insight-card,
+.metrics-card,
+.admin-analytics-page :global(.card) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-4);
+}
+
+.admin-analytics-page :global(.card-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+    border-radius: var(--radius-base) var(--radius-base) 0 0;
+}
+
+.admin-analytics-page :global(.card-header h5) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0;
+}
+
+.admin-analytics-page :global(.card-header h5 i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.admin-analytics-page :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.admin-analytics-page :global(.card-header .btn) {
+    padding: 6px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+}
+
+/* AI Insight Content - Chuẩn hóa */
+.ai-insight-content {
+    line-height: var(--line-height-base);
+    color: var(--color-text);
+}
+
+.ai-insight-content :deep(h1),
+.ai-insight-content :deep(h2),
+.ai-insight-content :deep(h3) {
+    margin-top: var(--spacing-4);
+    margin-bottom: var(--spacing-2);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.ai-insight-content :deep(h1) {
+    font-size: var(--font-size-xl);
+}
+
+.ai-insight-content :deep(h2) {
+    font-size: var(--font-size-lg);
+}
+
+.ai-insight-content :deep(h3) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+}
+
+.ai-insight-content :deep(p) {
+    margin-bottom: var(--spacing-3);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+}
+
+.ai-insight-content :deep(ul) {
+    margin-left: var(--spacing-4);
+    margin-bottom: var(--spacing-3);
+    padding-left: var(--spacing-4);
+}
+
+.ai-insight-content :deep(li) {
+    margin-bottom: var(--spacing-2);
+    font-size: var(--font-size-base);
+}
+
+.ai-insight-content :deep(strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+}
+
+/* Metrics Summary - Chuẩn hóa theo base.css */
+.metrics-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.metric-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    transition: all var(--transition-base);
+}
+
+.metric-item:hover {
+    box-shadow: var(--shadow-hover);
+    background: var(--color-bg-muted);
+}
+
+.metric-item__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
+}
+
+/* Màu icon - không dùng gradient, dùng màu nhạt */
+.metric-item--primary .metric-item__icon {
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
+}
+
+.metric-item--success .metric-item__icon {
+    background: var(--color-bg-muted);
+    color: var(--color-success);
+}
+
+.metric-item--danger .metric-item__icon {
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
+}
+
+.metric-item--warning .metric-item__icon {
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
+}
+
+.metric-item--indigo .metric-item__icon {
+    background: var(--color-bg-muted);
+    color: var(--color-info);
+}
+
+.metric-item--violet .metric-item__icon {
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
+}
+
+.metric-item__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.metric-label {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-2);
+}
+
+.metric-value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    line-height: var(--line-height-tight);
+}
+
+/* Tables - Chuẩn hóa theo base.css */
+.admin-analytics-page :global(.table) {
+    margin-bottom: 0;
+}
+
+.admin-analytics-page :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+    vertical-align: middle;
+}
+
+.admin-analytics-page :global(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.admin-analytics-page :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
+}
+
+/* Responsive cho Admin Analytics Page */
+@media (max-width: 992px) {
+    .admin-analytics-header__content {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .page-header {
-        padding: var(--spacing-4);
+    .admin-analytics-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .metric-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .metric-item__icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-analytics-page {
+        padding: var(--spacing-3);
+    }
+
+    .admin-analytics-header {
+        padding: var(--spacing-3);
+    }
+
+    .prompt-templates {
+        max-height: 400px;
     }
 }
 </style>

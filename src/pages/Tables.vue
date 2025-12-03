@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modalElement" tabindex="-1" aria-hidden="true">
+        <div class="modal fade table-edit-modal" ref="modalElement" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -72,7 +72,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="deleteTableModal" tabindex="-1" ref="deleteModalElement">
+        <div class="modal fade table-delete-modal" id="deleteTableModal" tabindex="-1" ref="deleteModalElement">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -605,57 +605,152 @@ const getStatusMetaRef = getStatusMeta
 </script>
 
 <style scoped>
+/* Page Container - Chuẩn hóa theo base.css */
 .tables-page {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-6);
-    padding-bottom: var(--spacing-12);
+    gap: var(--spacing-4);
+    padding-bottom: var(--spacing-6);
 }
 
+/* Header - Chuẩn hóa theo base.css */
 .tables-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-4);
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
-    margin-bottom: var(--spacing-6);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-4);
 }
 
 .tables-header h2 {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
+}
+
+.tables-header p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    margin-bottom: 0;
 }
 
 .tables-header__actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     flex-wrap: wrap;
 }
 
+/* Layout Toggle - Chuẩn hóa */
 .layout-toggle .btn {
-    min-width: 120px;
-    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
+.layout-toggle .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+
+/* Filter Card - Chuẩn hóa theo base.css */
+.filter-card {
+    margin-bottom: var(--spacing-4);
+}
+
+.filter-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Tabs Card - Chuẩn hóa */
+.tabs-card {
+    margin-bottom: 0;
+}
+
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
 
 .filter-grid {
     display: grid;
     gap: var(--spacing-4);
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: end;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
 }
 
 .filter-item .form-label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+/* Input Group - Chuẩn hóa height */
+.filter-item :global(.input-group) {
+    display: flex;
+}
+
+.filter-item :global(.input-group-text) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-right: none;
+    border-radius: var(--radius-base) 0 0 var(--radius-base);
+    background: var(--color-bg-muted);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacing-3);
+}
+
+.filter-item :global(.input-group-text i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.filter-item :global(.input-group .form-control) {
+    height: 40px;
+    border-left: none;
+    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+}
+
+.filter-item :global(.input-group .form-control:focus) {
+    border-left: none;
+}
+
+/* Form Select - Chuẩn hóa height */
+.filter-item :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.filter-item :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
 }
 
 .filter-actions {
@@ -663,34 +758,72 @@ const getStatusMetaRef = getStatusMeta
     align-items: flex-end;
 }
 
+.filter-actions :global(.btn) {
+    height: 40px;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+/* Table View - Chuẩn hóa theo base.css */
+.tables-page :global(.table) {
+    margin-bottom: 0;
+}
+
+.tables-page :global(.table thead th) {
+    background: var(--color-bg-muted);
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tables-page :global(.table tbody td) {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+    font-size: var(--font-size-base);
+}
+
+.tables-page :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
+}
+
+/* Grid View - Chuẩn hóa */
 .tables-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
 }
 
 .table-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-5);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-5);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    gap: var(--spacing-4);
+    transition: all var(--transition-base);
 }
 
 .table-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
 }
 
 .table-card__header {
     display: flex;
     justify-content: space-between;
     gap: var(--spacing-4);
-    border-bottom: 1px solid var(--color-border-soft);
+    border-bottom: 1px solid var(--color-border);
     padding-bottom: var(--spacing-3);
 }
 
@@ -698,12 +831,12 @@ const getStatusMetaRef = getStatusMeta
     margin-bottom: var(--spacing-0);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
 }
 
 .table-card__header .caption {
     color: var(--color-text-muted);
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
 }
 
 .table-card__body {
@@ -716,57 +849,74 @@ const getStatusMetaRef = getStatusMeta
 .table-status-chip {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    gap: 6px;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+.table-status-chip i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .table-capacity {
     display: inline-flex;
     align-items: baseline;
-    gap: var(--spacing-1);
+    gap: 6px;
     font-size: var(--font-size-lg);
-    color: var(--color-heading);
+    color: var(--color-text);
+}
+
+.table-capacity i {
+    font-size: 18px;
+    line-height: 1;
+    color: var(--color-primary);
 }
 
 .table-card__footer {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-1);
+    gap: var(--spacing-2);
 }
 
 .table-card__footer .form-label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-1);
 }
 
 .actions {
     display: inline-flex;
-    gap: var(--spacing-1);
+    gap: var(--spacing-2);
 }
 
 .btn-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: var(--radius-md);
-    border: 1px solid transparent;
-    background: var(--color-card-muted);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
     color: var(--color-text);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
     cursor: pointer;
+    padding: 0;
 }
 
 .btn-icon:hover {
-    background: var(--color-primary-soft);
-    border-color: var(--color-primary-border-soft);
+    background: var(--color-bg);
+    border-color: var(--color-primary);
     color: var(--color-primary);
+}
+
+.btn-icon i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .btn-icon--danger {
@@ -774,125 +924,141 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .btn-icon--danger:hover {
-    background: var(--color-danger-soft);
-    border-color: var(--color-danger-border-soft);
+    background: var(--color-bg);
+    border-color: var(--color-danger);
     color: var(--color-danger);
 }
 
+/* Status Colors - Chuẩn hóa, bỏ gradient, chỉ dùng border và chip màu nhạt */
 .status-success {
-    border-color: rgba(34, 197, 94, 0.4);
-    background: linear-gradient(170deg, rgba(34, 197, 94, 0.12), transparent);
+    border-color: var(--color-success);
 }
 
 .status-success .table-status-chip {
-    background: rgba(34, 197, 94, 0.18);
+    background: var(--color-bg-muted);
     color: var(--color-success);
 }
 
 .status-warning {
-    border-color: rgba(234, 179, 8, 0.44);
-    background: linear-gradient(170deg, rgba(234, 179, 8, 0.15), transparent);
+    border-color: var(--color-warning);
 }
 
 .status-warning .table-status-chip {
-    background: rgba(234, 179, 8, 0.18);
+    background: var(--color-bg-muted);
     color: var(--color-warning);
 }
 
 .status-danger {
-    border-color: rgba(239, 68, 68, 0.45);
-    background: linear-gradient(170deg, rgba(239, 68, 68, 0.12), transparent);
+    border-color: var(--color-danger);
 }
 
 .status-danger .table-status-chip {
-    background: rgba(248, 113, 113, 0.22);
+    background: var(--color-bg-muted);
     color: var(--color-danger);
 }
 
 .status-info {
-    border-color: rgba(59, 130, 246, 0.38);
-    background: linear-gradient(170deg, rgba(59, 130, 246, 0.12), transparent);
+    border-color: var(--color-info);
 }
 
 .status-info .table-status-chip {
-    background: rgba(59, 130, 246, 0.18);
-    color: #1d4ed8;
+    background: var(--color-bg-muted);
+    color: var(--color-info);
 }
 
 .status-neutral {
-    border-color: var(--color-border-soft);
-    background: linear-gradient(170deg, var(--color-card-muted), transparent);
+    border-color: var(--color-border);
 }
 
 .status-neutral .table-status-chip {
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     color: var(--color-text-muted);
 }
 
-.dark-theme .tables-header,
-.dark-theme .filter-card,
-.dark-theme .table-card {
-    border-color: rgba(129, 140, 248, 0.28);
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.92));
-    box-shadow: 0 24px 46px rgba(2, 6, 23, 0.55);
-}
-
-.dark-theme .table-status-chip {
-    background: rgba(148, 163, 184, 0.18);
-    color: #e2e8f0;
-}
-
-.comfort-theme .tables-header,
-.comfort-theme .filter-card,
-.comfort-theme .table-card {
-    border-color: rgba(95, 111, 148, 0.25);
-    background: linear-gradient(170deg, rgba(245, 241, 235, 0.98), rgba(236, 232, 226, 0.92));
-}
-
-.comfort-theme .table-status-chip {
-    background: rgba(95, 111, 148, 0.16);
-    color: #374151;
-}
-
-:deep(.modal-content) {
-    border-radius: var(--radius-xl);
+/* Modal - Chuẩn hóa theo base.css */
+.table-edit-modal :global(.modal-content),
+.table-delete-modal :global(.modal-content) {
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-lg);
 }
 
-:deep(.modal-header) {
+.table-edit-modal :global(.modal-header),
+.table-delete-modal :global(.modal-header) {
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
-    background: var(--color-card);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
 }
 
-:deep(.modal-header .modal-title) {
+.table-edit-modal :global(.modal-header .modal-title),
+.table-delete-modal :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-1);
 }
 
-:deep(.modal-header .text-muted.small) {
+.table-edit-modal :global(.modal-header .text-muted.small),
+.table-delete-modal :global(.modal-header .text-muted.small) {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
 }
 
-:deep(.modal-body) {
-    padding: var(--spacing-6);
+.table-edit-modal :global(.modal-body),
+.table-delete-modal :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
 }
 
-:deep(.modal-footer) {
+/* Form Controls trong Modal - Chuẩn hóa */
+.table-edit-modal :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.table-edit-modal :global(.form-control),
+.table-edit-modal :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.table-edit-modal :global(.form-control:focus),
+.table-edit-modal :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.table-delete-modal :global(.modal-body .card) {
+    border-radius: var(--radius-base);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+}
+
+.table-edit-modal :global(.modal-footer),
+.table-delete-modal :global(.modal-footer) {
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
-    background: var(--color-card);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
+    gap: var(--spacing-2);
+    justify-content: flex-end;
 }
 
+/* Action Buttons - Chuẩn hóa theo OrderListTab */
 .action-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: center;
 }
 
@@ -900,24 +1066,27 @@ const getStatusMetaRef = getStatusMeta
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
+    background: var(--color-bg);
     color: var(--color-primary);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    transition: all var(--transition-fast);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
     cursor: pointer;
     white-space: nowrap;
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-soft-primary);
+    background: var(--color-primary);
+    color: #ffffff;
     border-color: var(--color-primary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+}
+
+.action-button:active:not(:disabled) {
+    filter: brightness(0.95);
 }
 
 .action-button:disabled {
@@ -926,21 +1095,44 @@ const getStatusMetaRef = getStatusMeta
     pointer-events: none;
 }
 
+.action-button i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.action-button--primary {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.action-button--primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+
 .action-button--danger {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--color-danger);
+    background: var(--color-bg);
     color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.15);
+    background: var(--color-danger);
+    color: #ffffff;
     border-color: var(--color-danger);
 }
 
+/* Responsive - Chuẩn hóa */
 @media (max-width: 768px) {
+    .tables-page {
+        padding: var(--spacing-2);
+        gap: var(--spacing-3);
+    }
+
     .tables-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: var(--spacing-3);
     }
 
     .tables-header__actions {
@@ -958,10 +1150,28 @@ const getStatusMetaRef = getStatusMeta
 
     .tables-grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: var(--spacing-3);
     }
 
     .action-grid {
         flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .table-edit-modal :global(.modal-dialog),
+    .table-delete-modal :global(.modal-dialog) {
+        max-width: 90%;
+        margin: var(--spacing-4) auto;
+    }
+
+    .table-edit-modal :global(.modal-body),
+    .table-delete-modal :global(.modal-body) {
+        padding: var(--spacing-4);
     }
 }
 

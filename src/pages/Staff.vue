@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="staff-page container-fluid" data-aos="fade-up">
         <div class="staff-header">
             <div class="staff-header__content">
                 <div class="staff-header__title-section">
@@ -344,7 +344,7 @@
                         </div>
                         <form @submit.prevent="submitResetPassword">
                             <div class="modal-body">
-                                <div class="alert alert-warning mb-3">
+                                <div class="error-message mb-3">
                                     <i class="bi bi-exclamation-triangle me-2"></i>
                                     Mật khẩu mới sẽ được áp dụng ngay lập tức. Người dùng sẽ cần đăng nhập lại với mật
                                     khẩu mới.
@@ -545,7 +545,7 @@
                         </div>
                         <div class="modal-body">
                             <p class="mb-3">Bạn có chắc chắn muốn {{ bulkActionTarget?.action === 'activate' ? 'kích hoạt' : 'vô hiệu hóa' }} <strong>{{ bulkActionTarget?.count || 0 }}</strong> nhân viên đã chọn không?</p>
-                            <div class="alert alert-warning">
+                            <div class="error-message">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
                                 {{ bulkActionTarget?.action === 'activate' ? 'Các nhân viên sẽ được kích hoạt và có thể đăng nhập vào hệ thống.' : 'Các nhân viên sẽ bị vô hiệu hóa và không thể đăng nhập vào hệ thống.' }}
                             </div>
@@ -1587,21 +1587,21 @@ const hideUserActivityLogModal = () => {
 </script>
 
 <style scoped>
-/* Header Styles */
+/* Header - Chuẩn hóa theo base.css */
 .staff-header {
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-md);
-    margin-bottom: var(--spacing-6);
-    padding: var(--spacing-6);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
 }
 
 .staff-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -1613,118 +1613,138 @@ const hideUserActivityLogModal = () => {
 .staff-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
 }
 
-/* View mode tabs - Giống Dashboard */
+.staff-header__actions .btn {
+    font-size: var(--font-size-base);
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.staff-header__actions .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.staff-header__actions .btn-sm {
+    padding: 6px 12px;
+}
+
+.page-title {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
+}
+
+.page-subtitle {
+    margin-bottom: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+}
+
+/* View mode tabs - Chuẩn hóa theo base.css */
 .staff-view-tabs {
     display: inline-flex;
-    gap: 0.75rem;
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    padding: 0.6rem;
-    border-radius: var(--radius-md);
+    gap: var(--spacing-2);
+    background: var(--color-bg-muted);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-soft);
     overflow-x: auto;
 }
 
 .staff-view-tab {
     border: none;
     background: transparent;
-    padding: 0.75rem 1.35rem;
-    border-radius: 12px;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    font-weight: 600;
+    gap: 6px;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: all var(--transition-base);
+    white-space: nowrap;
 }
 
 .staff-view-tab i {
-    font-size: 1.15rem;
+    font-size: 18px;
+    line-height: 1;
 }
 
-.staff-view-tab:hover {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--color-primary);
+.staff-view-tab:hover:not(.active) {
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 .staff-view-tab.active {
-    background: var(--color-soft-primary);
-    color: var(--color-primary);
+    background: var(--color-primary);
+    color: #ffffff;
 }
 
-.page-title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
-    line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
-}
-
-.page-subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
-}
-
-/* KPI Cards - Giống Dashboard */
+/* KPI Cards - Chuẩn hóa theo base.css */
 .kpi-card {
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    border-radius: 24px;
-    padding: var(--spacing-6);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
     transition: all var(--transition-base);
-    min-height: 140px;
+    min-height: 120px;
     height: 100%;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-hover);
 }
 
 .kpi-card__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: 24px;
     flex-shrink: 0;
-    color: #6366f1;
-    position: relative;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
 }
 
+/* Màu icon - không dùng gradient, dùng màu nhạt */
 .kpi-card--people .kpi-card__icon {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .kpi-card--active .kpi-card__icon {
-    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-success);
 }
 
 .kpi-card--role .kpi-card__icon {
-    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-secondary);
 }
 
 .kpi-card--recent .kpi-card__icon {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
 }
 
 .kpi-card__content {
@@ -1733,87 +1753,186 @@ const hideUserActivityLogModal = () => {
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: none;
-    letter-spacing: normal;
     margin-bottom: var(--spacing-2);
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
-    margin-bottom: var(--spacing-1);
 }
 
-/* Action Buttons */
-.action-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-2);
-    justify-content: flex-end;
-    align-items: center;
+/* Filter Card - Chuẩn hóa */
+.filter-card {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
 }
 
-.action-button {
+.filter-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.filter-card :global(.card-body h5) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-3);
+}
+
+.filter-card :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.filter-card :global(.form-control),
+.filter-card :global(.form-select) {
+    height: 40px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.filter-card :global(.form-control:focus),
+.filter-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.filter-card :global(.input-group-text) {
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
+    border-right: none;
+    color: var(--color-text-muted);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base) 0 0 var(--radius-base);
+}
+
+.filter-card :global(.input-group .form-control) {
+    border-left: none;
+    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+}
+
+.filter-card :global(.btn) {
+    font-size: var(--font-size-base);
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.filter-card :global(.btn i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Bulk Actions Bar - Chuẩn hóa */
+.staff-page :global(.card.border-primary) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-primary);
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
+}
+
+.staff-page :global(.card.border-primary .card-body) {
+    padding: var(--spacing-4);
+}
+
+.staff-page :global(.card.border-primary .btn) {
+    font-size: var(--font-size-base);
+    padding: 6px 12px;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
-    border: 1px solid;
-    background: var(--color-card);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    transition: all var(--transition-fast);
-    white-space: nowrap;
+    gap: 6px;
 }
 
-.action-button--primary {
+.staff-page :global(.card.border-primary .btn i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Data Card - Chuẩn hóa */
+.data-card {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
+}
+
+.data-card :global(.card-body) {
+    padding: 0;
+}
+
+.data-card :global(.card-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+/* Table - Chuẩn hóa theo base.css */
+.staff-page :global(.table) {
+    margin-bottom: 0;
+}
+
+.staff-page :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+.staff-page :global(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.staff-page :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
+}
+
+.staff-page :global(.table .form-check-input) {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+}
+
+.staff-page :global(.table .form-check-input:checked) {
+    background-color: var(--color-primary);
     border-color: var(--color-primary);
+}
+
+.staff-page :global(.table .btn-link) {
+    padding: 0;
+    border: none;
+    background: transparent;
     color: var(--color-primary);
-    background: var(--color-card);
+    text-decoration: none;
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
 }
 
-.action-button--primary:hover {
-    background: var(--color-primary-soft);
-    border-color: var(--color-primary);
+.staff-page :global(.table .btn-link:hover) {
     color: var(--color-primary);
+    text-decoration: underline;
 }
-
-.action-button--info {
-    border-color: var(--color-info);
-    color: var(--color-info);
-    background: var(--color-card);
-}
-
-.action-button--info:hover {
-    background: var(--color-info-soft);
-    border-color: var(--color-info);
-    color: var(--color-info);
-}
-
-.action-button--warning {
-    border-color: var(--color-warning);
-    color: var(--color-warning);
-    background: var(--color-card);
-}
-
-.action-button--warning:hover {
-    background: var(--color-warning-soft);
-    border-color: var(--color-warning);
-    color: var(--color-warning);
-}
-
-.action-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 
 .table-avatar {
     width: 42px;
@@ -1826,27 +1945,132 @@ const hideUserActivityLogModal = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(129, 140, 248, 0.18);
+    background: var(--color-bg-muted);
     color: var(--color-primary);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
 }
 
+/* Action Buttons - Chuẩn hóa theo base.css */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.action-button:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+.action-button:active:not(:disabled) {
+    filter: brightness(0.95);
+}
+
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.action-button i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.action-button--primary {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.action-button--primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+
+.action-button--info {
+    border-color: var(--color-info);
+    background: var(--color-bg);
+    color: var(--color-info);
+}
+
+.action-button--info:hover:not(:disabled) {
+    background: var(--color-info);
+    color: #ffffff;
+    border-color: var(--color-info);
+}
+
+.action-button--warning {
+    border-color: var(--color-warning);
+    background: var(--color-bg);
+    color: var(--color-warning);
+}
+
+.action-button--warning:hover:not(:disabled) {
+    background: var(--color-warning);
+    color: #ffffff;
+    border-color: var(--color-warning);
+}
+
+/* Badge - Chuẩn hóa */
+.staff-page :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+.staff-role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    color: var(--color-text);
+}
+
+/* Avatar Upload Box - Chuẩn hóa */
 .avatar-upload-box {
-    border: 1px dashed rgba(148, 163, 184, 0.4);
-    border-radius: 16px;
-    padding: 1rem;
-    background: var(--color-card-muted);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    background: var(--color-bg-muted);
     display: inline-flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .avatar-preview-wrapper {
     width: 156px;
     height: 156px;
-    border-radius: 12px;
+    border-radius: var(--radius-base);
     overflow: hidden;
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1865,92 +2089,201 @@ const hideUserActivityLogModal = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-text-subtle);
-    font-size: 2.25rem;
+    color: var(--color-text-muted);
+    font-size: 48px;
 }
 
-
-.staff-role-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 58px;
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    text-transform: capitalize;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    box-shadow: inset 0 0.5px 1px rgba(255, 255, 255, 0.24), 0 8px 16px rgba(15, 23, 42, 0.12);
+.avatar-upload-box .btn {
+    font-size: var(--font-size-base);
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
 }
 
-.dark-theme .staff-role-badge {
-    border-color: rgba(129, 140, 248, 0.35);
-    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.08), 0 10px 18px rgba(15, 23, 42, 0.35);
+.avatar-upload-box .btn i {
+    font-size: 18px;
+    line-height: 1;
 }
 
-.comfort-theme .staff-role-badge {
-    border-color: rgba(95, 111, 148, 0.28);
-}
-
+/* Role Box - Chuẩn hóa */
 .role-box {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-base);
     padding: var(--spacing-3) var(--spacing-4);
     max-height: 220px;
     overflow-y: auto;
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
 }
 
 .role-box.is-invalid {
     border-color: var(--color-danger) !important;
 }
 
-.modal-body label {
-    font-weight: var(--font-weight-semibold);
+.role-box :global(.form-check) {
+    margin-bottom: var(--spacing-2);
 }
 
-:deep(.modal-content) {
-    border-radius: var(--radius-xl);
+.role-box :global(.form-check-label) {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.role-box :global(.form-check-input) {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
+    cursor: pointer;
 }
 
-:deep(.modal-header) {
+.role-box :global(.form-check-input:checked) {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* Error Message - Thay thế alert */
+.error-message {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-warning);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.error-message i {
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Modal - Chuẩn hóa theo base.css */
+.staff-page :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.staff-page :global(.modal-header) {
+    padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
-    background: var(--color-card);
+    background: var(--color-bg);
 }
 
-:deep(.modal-header .modal-title) {
+.staff-page :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-1);
 }
 
-:deep(.modal-header .text-muted) {
+.staff-page :global(.modal-header .text-muted) {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
 }
 
-:deep(.modal-body) {
-    padding: var(--spacing-6);
+.staff-page :global(.modal-header .btn-close) {
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
 }
 
-:deep(.modal-footer) {
+.staff-page :global(.modal-header .btn-close:hover) {
+    background: var(--color-bg-muted);
+}
+
+.staff-page :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
+}
+
+.staff-page :global(.modal-body .form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.staff-page :global(.modal-body .form-label .text-danger) {
+    color: var(--color-danger);
+}
+
+.staff-page :global(.modal-body .form-control),
+.staff-page :global(.modal-body .form-select) {
+    height: 40px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.staff-page :global(.modal-body .form-control:focus),
+.staff-page :global(.modal-body .form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.staff-page :global(.modal-body .form-control.is-invalid),
+.staff-page :global(.modal-body .form-select.is-invalid) {
+    border-color: var(--color-danger);
+}
+
+.staff-page :global(.modal-body .form-control.is-invalid:focus),
+.staff-page :global(.modal-body .form-select.is-invalid:focus) {
+    outline-color: var(--color-danger);
+}
+
+.staff-page :global(.modal-body .invalid-feedback) {
+    font-size: var(--font-size-base);
+    color: var(--color-danger);
+    margin-top: var(--spacing-1);
+}
+
+.staff-page :global(.modal-body .form-text) {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+.staff-page :global(.modal-body .form-text.text-warning) {
+    color: var(--color-warning);
+}
+
+.staff-page :global(.modal-footer) {
+    padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
-    background: var(--color-card);
+    background: var(--color-bg);
+}
+
+.staff-page :global(.modal-footer .btn) {
+    font-size: var(--font-size-base);
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.staff-page :global(.modal-footer .btn i) {
+    font-size: 18px;
+    line-height: 1;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
     .staff-header__content {
         flex-direction: column;
         align-items: flex-start;
+        gap: var(--spacing-3);
     }
 
     .staff-header__actions {
@@ -1961,6 +2294,12 @@ const hideUserActivityLogModal = () => {
     .staff-view-tabs {
         width: 100%;
     }
+}
+
+@media (max-width: 768px) {
+    .staff-header {
+        padding: var(--spacing-3);
+    }
 
     .kpi-card {
         flex-direction: column;
@@ -1969,9 +2308,9 @@ const hideUserActivityLogModal = () => {
     }
 
     .kpi-card__icon {
-        width: 56px;
-        height: 56px;
-        font-size: 1.5rem;
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
     }
 
     .action-buttons {
@@ -1983,19 +2322,35 @@ const hideUserActivityLogModal = () => {
         width: 100%;
         justify-content: center;
     }
+
+    .filter-card :global(.card-body) {
+        padding: var(--spacing-3);
+    }
+
+    .staff-page :global(.table thead th),
+    .staff-page :global(.table tbody td) {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-base);
+    }
 }
 
 @media (max-width: 576px) {
-    .staff-header {
-        padding: var(--spacing-4);
+    .staff-header__actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .staff-header__actions .btn {
+        width: 100%;
+        justify-content: center;
     }
 
     .kpi-card {
-        padding: var(--spacing-4);
+        padding: var(--spacing-3);
     }
 
     .kpi-card__value {
-        font-size: var(--font-size-xl);
+        font-size: var(--font-size-lg);
     }
 }
 </style>

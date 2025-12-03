@@ -126,49 +126,52 @@ const getIconClass = (index) => {
 </script>
 
 <style scoped>
-/* KPI cards giống Dashboard */
+/* KPI Cards - Chuẩn hóa theo base.css */
 .stat-card {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    padding: var(--spacing-5);
-    border-radius: 24px;
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    transition: all var(--transition-base);
+    min-height: 120px;
+    height: 100%;
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-hover);
 }
 
 .stat-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.75rem;
-    color: #6366f1;
+    font-size: 24px;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
 }
 
+/* Màu icon - không dùng gradient, dùng màu nhạt */
 .stat-icon--purple {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .stat-icon--green {
-    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    background: var(--color-bg-muted);
+    color: var(--color-success);
 }
 
 .stat-icon--yellow {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
 }
 
 .stat-content {
@@ -177,17 +180,67 @@ const getIconClass = (index) => {
 }
 
 .stat-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-1);
+    margin-bottom: var(--spacing-2);
     font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
+}
+
+/* Card và progress - Chuẩn hóa */
+.customer-statistics-tab :global(.card) {
+    margin-bottom: 0;
+}
+
+.customer-statistics-tab :global(.card-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.customer-statistics-tab :global(.card-header h5) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.customer-statistics-tab :global(.card-header h5 i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.customer-statistics-tab :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Progress - Chuẩn hóa */
+.customer-statistics-tab :global(.progress) {
+    height: 8px;
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+}
+
+.customer-statistics-tab :global(.progress-bar) {
+    background: var(--color-primary);
+    border-radius: var(--radius-base);
+}
+
+/* Badge - Chuẩn hóa */
+.customer-statistics-tab :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
 }
 
 .distribution-item:last-child {
@@ -198,14 +251,18 @@ const getIconClass = (index) => {
     border-bottom: none !important;
 }
 
-.progress {
-    border-radius: var(--radius-full);
-    background-color: var(--color-primary-soft);
-}
-
-.progress-bar {
-    background: var(--color-primary);
-    border-radius: var(--radius-full);
+@media (max-width: 768px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
 }
 </style>
 

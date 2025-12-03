@@ -38,7 +38,7 @@
                     <p class="mt-3 text-muted">Đang tải dữ liệu...</p>
                 </div>
 
-                <div v-else-if="error" class="alert alert-danger mb-0">{{ error }}</div>
+                <div v-else-if="error" class="error-message mb-0">{{ error }}</div>
 
                 <div v-else class="tab-content">
                     <AdminDashboardTab
@@ -200,25 +200,24 @@ onMounted(() => {
 
 <style scoped>
 .role-dashboards-page {
-    padding-bottom: 3rem;
+    padding-bottom: var(--spacing-6);
 }
 
-/* Header Styles */
+/* Header - Chuẩn hóa theo base.css */
 .role-dashboards-header {
-    background: #ffffff;
-    background: linear-gradient(165deg, #ffffff, rgba(255, 255, 255, 0.95));
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
+    padding: var(--spacing-4);
 }
 
 .role-dashboards-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -230,56 +229,110 @@ onMounted(() => {
 .role-dashboards-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
 }
 
 .page-title {
-    font-weight: 700;
-    color: var(--color-heading, #1e293b);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
+}
+
+.page-title i {
+    font-size: 20px;
+    line-height: 1;
 }
 
 .page-subtitle {
     margin-bottom: 0;
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
 }
 
+/* Tabs Card - Chuẩn hóa */
 .tabs-card {
-    border-radius: 18px;
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
 }
 
 .reports-tabs {
+    display: flex;
+    gap: var(--spacing-2);
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.5rem;
+    padding-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+    overflow-x: auto;
 }
 
 .reports-tabs .nav-link {
     border: none;
     background: transparent;
     color: var(--color-text-muted);
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    transition: all 0.2s ease;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
-.reports-tabs .nav-link:hover {
-    background: rgba(148, 163, 184, 0.1);
-    color: var(--color-heading);
+.reports-tabs .nav-link i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.reports-tabs .nav-link:hover:not(.active) {
+    background: var(--color-bg-muted);
+    color: var(--color-text);
 }
 
 .reports-tabs .nav-link.active {
-    background: var(--color-soft-primary);
-    color: var(--color-primary);
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+/* Error message - không dùng alert */
+.error-message {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-danger);
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+@media (max-width: 768px) {
+    .role-dashboards-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .role-dashboards-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .reports-tabs {
+        gap: var(--spacing-1);
+    }
+
+    .reports-tabs .nav-link {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-base);
+    }
 }
 </style>
 

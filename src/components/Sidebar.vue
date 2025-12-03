@@ -12,7 +12,7 @@
     >
         <div class="neo-sidebar__inner">
             <header class="neo-sidebar__header">
-                <router-link class="neo-sidebar__brand" to="/">
+                <router-link class="neo-sidebar__brand" to="/" @click="handleNavigate({ id: null })">
                     <span class="neo-sidebar__brand-icon">
                         <i class="bi bi-cup-hot"></i>
                     </span>
@@ -20,18 +20,32 @@
                         <strong>Café Dash</strong>
                         <small>Hệ thống quản lý</small>
                     </span>
+                    <span v-else class="neo-sidebar__brand-text-collapsed">
+                        <strong>Café</strong>
+                    </span>
                 </router-link>
 
                 <button
-                    v-if="!isMobile"
+                    v-if="!isMobile && !displayCollapsed"
                     class="neo-sidebar__collapse"
                     type="button"
-                    :aria-label="displayCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
+                    aria-label="Thu gọn sidebar"
                     @click="toggleCollapsed"
                 >
-                    <i class="bi" :class="displayCollapsed ? sidebarIcons.expand : sidebarIcons.collapse"></i>
+                    <i class="bi" :class="sidebarIcons.collapse"></i>
                 </button>
             </header>
+            
+            <!-- Nút mở rộng khi collapsed - hiển thị bên ngoài sidebar -->
+            <button
+                v-if="!isMobile && displayCollapsed"
+                class="neo-sidebar__expand-button"
+                type="button"
+                aria-label="Mở rộng sidebar"
+                @click="toggleCollapsed"
+            >
+                <i class="bi bi-chevron-right"></i>
+            </button>
 
             <nav class="neo-sidebar__sections" aria-label="Nhóm menu">
                 <section
@@ -356,6 +370,24 @@ function searchItems(items, parents, targetPath) {
     box-shadow: 0 0 0 rgba(15, 23, 42, 0);
 }
 
+.neo-sidebar.is-collapsed .neo-sidebar__header {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+}
+
+.neo-sidebar.is-collapsed .neo-sidebar__brand {
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.neo-sidebar.is-collapsed .neo-sidebar__brand-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+}
+
 .neo-sidebar.is-mobile {
     position: fixed;
     inset: 0 auto 0 0;
@@ -422,6 +454,19 @@ function searchItems(items, parents, targetPath) {
     color: var(--color-text-subtle);
 }
 
+.neo-sidebar__brand-text-collapsed {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.neo-sidebar__brand-text-collapsed strong {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-heading);
+}
+
 .neo-sidebar__collapse {
     width: 42px;
     height: 42px;
@@ -440,6 +485,42 @@ function searchItems(items, parents, targetPath) {
     background: var(--color-soft-primary);
     border-color: var(--color-primary);
     color: var(--color-primary);
+}
+
+.neo-sidebar__expand-button {
+    position: fixed;
+    top: 50%;
+    left: 76px;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+    border: 1px solid var(--color-border);
+    border-left: none;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 20px;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-base);
+    z-index: 109;
+    cursor: pointer;
+}
+
+.neo-sidebar__expand-button:hover,
+.neo-sidebar__expand-button:focus-visible {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+    box-shadow: 4px 0 12px rgba(79, 70, 229, 0.3);
+    transform: translateY(-50%) translateX(2px);
+}
+
+.neo-sidebar__expand-button i {
+    font-size: 20px;
+    line-height: 1;
 }
 
 .neo-sidebar__sections {

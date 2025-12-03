@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modalRef" tabindex="-1" aria-hidden="true">
+        <div class="modal fade product-recipe-modal" ref="modalRef" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -14,7 +14,7 @@
                         <div v-if="loading" class="text-center py-5">
                             <div class="spinner-border text-primary"></div>
                         </div>
-                        <div v-else-if="error" class="alert alert-danger">
+                        <div v-else-if="error" class="error-message">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             {{ error }}
                         </div>
@@ -331,35 +331,166 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.modal-content {
-    border-radius: var(--radius-xl);
+/* Modal - Chuẩn hóa theo base.css */
+.product-recipe-modal :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
 }
 
-.modal-header {
+.product-recipe-modal :global(.modal-header) {
+    padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-5) var(--spacing-6);
+    background: var(--color-bg);
 }
 
-.modal-body {
-    padding: var(--spacing-6);
+.product-recipe-modal :global(.modal-title) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product-recipe-modal :global(.modal-title i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.product-recipe-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-bg);
     max-height: 60vh;
     overflow-y: auto;
 }
 
-.modal-footer {
+.product-recipe-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-5) var(--spacing-6);
+    background: var(--color-bg);
 }
 
-.table th {
+.product-recipe-modal :global(.modal-footer .btn) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product-recipe-modal :global(.modal-footer .btn:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.product-recipe-modal :global(.modal-footer .btn:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.product-recipe-modal :global(.modal-footer .btn i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Error Message - không dùng alert */
+.error-message {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-danger);
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.error-message i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Form Controls - Chuẩn hóa */
+.product-recipe-modal :global(.form-select),
+.product-recipe-modal :global(.form-control) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.product-recipe-modal :global(.form-select:focus),
+.product-recipe-modal :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.product-recipe-modal :global(.form-select.is-invalid),
+.product-recipe-modal :global(.form-control.is-invalid) {
+    border-color: var(--color-danger);
+}
+
+.product-recipe-modal :global(.invalid-feedback) {
+    font-size: var(--font-size-base);
+    color: var(--color-danger);
+    margin-top: var(--spacing-1);
+}
+
+/* Table - Chuẩn hóa */
+.product-recipe-modal :global(.table) {
+    margin-bottom: 0;
+}
+
+.product-recipe-modal :global(.table thead th) {
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
 }
 
-.table td {
+.product-recipe-modal :global(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+}
+
+.product-recipe-modal :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
+}
+
+/* Badge - Chuẩn hóa */
+.product-recipe-modal :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Buttons - Chuẩn hóa */
+.product-recipe-modal :global(.btn-sm) {
+    padding: 6px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+}
+
+.product-recipe-modal :global(.btn-sm i) {
+    font-size: 18px;
+    line-height: 1;
 }
 </style>
 

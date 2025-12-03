@@ -157,7 +157,6 @@ import { useAuthStore } from '@/store/auth'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
 import { toast } from 'vue3-toastify'
-import '@/assets/styles/login.scss'
 
 const router = useRouter()
 const authStore = useAuthStore()

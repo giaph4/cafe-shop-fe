@@ -83,17 +83,16 @@ const formatRole = (roleName) => {
 
 <style scoped>
 .staff-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-md);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
     color: var(--color-text);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition: all var(--transition-base);
 }
 
 .staff-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-hover);
 }
 
 .avatar-wrapper {
@@ -115,31 +114,62 @@ const formatRole = (roleName) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(129, 140, 248, 0.12));
+    background: var(--color-bg-muted);
     color: var(--color-primary);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
 }
 
 .badge.bg-soft {
-    background: var(--color-badge-soft-bg);
-    color: var(--color-badge-soft-text);
+    background: var(--color-bg-muted);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
 }
 
 .card-footer {
-    background: var(--color-card-muted);
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+}
+
+.card-footer .btn {
+    font-size: var(--font-size-base);
+    padding: 6px 12px;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.card-footer .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.card-footer .btn-outline-primary {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-bg);
+}
+
+.card-footer .btn-outline-primary:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
 }
 
 .card-footer .btn-outline-secondary,
 .card-footer .btn-outline-dark {
     border-color: var(--color-border);
     color: var(--color-text);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--color-bg);
 }
 
 .card-footer .btn-outline-secondary:hover,
 .card-footer .btn-outline-dark:hover {
-    background: var(--color-soft-primary);
+    background: var(--color-bg-muted);
     color: var(--color-primary);
     border-color: var(--color-primary);
 }

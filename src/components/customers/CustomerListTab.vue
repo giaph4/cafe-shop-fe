@@ -201,6 +201,11 @@ const handleExport = () => {
 </script>
 
 <style scoped>
+.customer-list-tab {
+    padding: 0;
+}
+
+/* Action buttons - Chuẩn hóa theo base.css */
 .action-grid {
     display: flex;
     flex-wrap: wrap;
@@ -212,62 +217,98 @@ const handleExport = () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-1);
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-primary-border-soft);
-    background: var(--color-card);
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
     color: var(--color-primary);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     text-decoration: none;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
     cursor: pointer;
     min-width: auto;
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-primary-soft);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-    border-color: var(--color-primary-border);
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+.action-button:active:not(:disabled) {
+    filter: brightness(0.95);
 }
 
 .action-button:disabled {
-    opacity: 0.65;
+    opacity: 0.6;
     cursor: not-allowed;
     pointer-events: none;
 }
 
 .action-button i {
-    font-size: var(--font-size-base);
+    font-size: 18px;
+    line-height: 1;
 }
 
 .action-button--danger {
-    border-color: var(--color-danger-border);
-    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    background: var(--color-bg);
     color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
     background: var(--color-danger);
-    color: var(--color-white);
+    color: #ffffff;
     border-color: var(--color-danger);
-    box-shadow: var(--shadow-md);
+}
+
+/* Table - Chuẩn hóa theo base.css */
+.customer-list-tab :global(.table) {
+    margin-bottom: 0;
+}
+
+.customer-list-tab :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+.customer-list-tab :global(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.customer-list-tab :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
+}
+
+/* Badge - Chuẩn hóa */
+.customer-list-tab :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
 }
 
 .bg-soft-primary {
-    background: var(--color-primary-soft);
+    background: var(--color-bg-muted);
     color: var(--color-primary);
-    font-weight: var(--font-weight-semibold);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
 }
 
 @media (max-width: 768px) {
     .action-grid {
         flex-direction: column;
-        gap: var(--spacing-1);
+        width: 100%;
     }
     
     .action-button {

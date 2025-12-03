@@ -49,6 +49,14 @@ export const getCustomerById = async (id) => {
 }
 
 /**
+ * 7.5. Lấy khách hàng theo số điện thoại
+ */
+export const getCustomerByPhone = async (phone) => {
+    const { data } = await api.get(`${BASE_URL}/phone/${encodeURIComponent(phone)}`)
+    return data
+}
+
+/**
  * 7.6. Cập nhật khách hàng
  */
 export const updateCustomer = async ({ id, data: customerData }) => {

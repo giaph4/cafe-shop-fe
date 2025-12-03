@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
+        <div class="modal fade product-detail-modal" ref="modal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header align-items-start">
@@ -17,7 +17,7 @@
                         <div v-if="loading" class="detail-state">
                             <div class="spinner-border text-primary" role="status"></div>
                         </div>
-                        <div v-else-if="error" class="alert alert-danger d-flex align-items-center gap-2">
+                        <div v-else-if="error" class="error-message d-flex align-items-center gap-2">
                             <i class="bi bi-exclamation-triangle"></i>
                             <span>{{ error }}</span>
                         </div>
@@ -100,7 +100,7 @@
                                         </button>
                                     </div>
 
-                                    <div v-if="recipeError" class="alert alert-warning d-flex align-items-center gap-2">
+                                    <div v-if="recipeError" class="error-message d-flex align-items-center gap-2">
                                         <i class="bi bi-exclamation-circle"></i>
                                         <span>{{ recipeError }}</span>
                                     </div>
@@ -257,6 +257,67 @@ defineExpose({show, hide})
 </script>
 
 <style scoped>
+/* Modal - Chuẩn hóa theo base.css */
+.product-detail-modal :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.product-detail-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.product-detail-modal :global(.modal-title) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.product-detail-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-bg);
+}
+
+.product-detail-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.product-detail-modal :global(.modal-footer .btn) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.product-detail-modal :global(.modal-footer .btn:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+/* Error Message - không dùng alert */
+.error-message {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-danger);
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.error-message i {
+    font-size: 18px;
+    line-height: 1;
+}
+
 .detail-state {
     min-height: 220px;
     display: flex;
@@ -268,20 +329,20 @@ defineExpose({show, hide})
 .detail-grid {
     display: grid;
     grid-template-columns: minmax(240px, 320px) 1fr;
-    gap: var(--spacing-8);
+    gap: var(--spacing-6);
 }
 
 .detail-media {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
 }
 
 .image-frame {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-base);
     overflow: hidden;
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-base);
 }
 
 .image-frame img {
@@ -293,125 +354,167 @@ defineExpose({show, hide})
 .status-block {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-full);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
+    gap: 6px;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     width: fit-content;
 }
 
+.status-block i {
+    font-size: 18px;
+    line-height: 1;
+}
+
 .status-block--active {
-    background: var(--color-soft-emerald);
+    background: var(--color-bg-muted);
     color: var(--color-success);
+    border: 1px solid var(--color-success);
 }
 
 .status-block--inactive {
-    background: rgba(239, 68, 68, 0.18);
+    background: var(--color-bg-muted);
     color: var(--color-danger);
+    border: 1px solid var(--color-danger);
 }
 
 .meta-list {
     display: grid;
     gap: var(--spacing-3);
-    padding: var(--spacing-5);
-    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px dashed var(--color-border);
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
 }
 
 .meta-list dt {
-    font-size: var(--font-size-xs);
-    letter-spacing: var(--letter-spacing-wide);
-    text-transform: uppercase;
-    color: var(--color-text-subtle);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-1);
 }
 
 .meta-list dd {
     margin: 0;
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
+    color: var(--color-text);
     font-size: var(--font-size-base);
 }
 
 .detail-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-6);
+    gap: var(--spacing-5);
 }
 
 .detail-header h3 {
     font-weight: var(--font-weight-bold);
     margin-bottom: var(--spacing-2);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    color: var(--color-heading);
+    color: var(--color-text);
 }
 
 .info-cards {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--spacing-4);
+    gap: var(--spacing-3);
 }
 
 .info-card {
-    background: var(--color-card);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-4) var(--spacing-5);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-2);
-    box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    box-shadow: var(--shadow-base);
+    transition: all var(--transition-base);
 }
 
 .info-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-hover);
 }
 
 .info-card .label {
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-    color: var(--color-text-subtle);
-    letter-spacing: var(--letter-spacing-wide);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
 }
 
 .info-card .value {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
 }
 
 .recipe-section {
     border-top: 1px solid var(--color-border);
-    padding-top: var(--spacing-5);
+    padding-top: var(--spacing-4);
+}
+
+.recipe-section h5 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-3);
+}
+
+.recipe-section .btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+}
+
+.recipe-section .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Table - Chuẩn hóa */
+.product-detail-modal :global(.table) {
+    margin-bottom: 0;
+}
+
+.product-detail-modal :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+.product-detail-modal :global(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.product-detail-modal :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
 }
 
 .empty-recipe {
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-8);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-6);
     text-align: center;
-    color: var(--color-text-subtle);
+    color: var(--color-text-muted);
     display: grid;
     gap: var(--spacing-3);
     justify-items: center;
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
 }
 
 .empty-recipe i {
-    font-size: var(--font-size-3xl);
+    font-size: 48px;
     color: var(--color-primary);
-}
-
-.product-detail-modal :global(.modal-backdrop.show) {
-    background-color: rgba(15, 23, 42, 0.3);
-    backdrop-filter: blur(2px);
 }
 
 @media (max-width: 992px) {

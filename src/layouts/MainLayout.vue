@@ -5,7 +5,16 @@
         <div class="layout__main" :style="{ marginLeft: mainMarginLeft }">
             <Topbar :is-sidebar-collapsed="sidebarToggleState" @toggleSidebar="toggleSidebar" />
             <main class="layout__content">
-                <router-view />
+                <router-view v-slot="{ Component }">
+                    <Suspense>
+                        <template #default>
+                            <component :is="Component" />
+                        </template>
+                        <template #fallback>
+                            <LoadingSpinner />
+                        </template>
+                    </Suspense>
+                </router-view>
             </main>
         </div>
         <transition name="layout-overlay">
@@ -16,27 +25,54 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, Suspense } from 'vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Topbar from '@/components/Topbar.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { useSidebarStore } from '@/store/sidebar'
 
 const sidebarStore = useSidebarStore()
 const isMobile = ref(false)
+const isAutoCollapsed = ref(false) // Track xem có phải tự động collapse không
 
 const handleResize = () => {
-    const mobile = window.innerWidth <= 992
+    const width = window.innerWidth
+    const mobile = width <= 992
+    const shouldCollapse = width <= 1200 && width > 992
+    
     if (mobile !== isMobile.value) {
         isMobile.value = mobile
         if (!mobile) {
             sidebarStore.closeMobile()
         }
     }
+    
+    // Tự động collapse sidebar khi màn hình nhỏ (nhưng không phải mobile)
+    if (!mobile && shouldCollapse) {
+        if (!sidebarStore.isCollapsed) {
+            sidebarStore.setCollapsed(true, { persist: false })
+            isAutoCollapsed.value = true
+        }
+    } else if (!mobile && !shouldCollapse && width > 1200) {
+        // Tự động mở rộng khi màn hình lớn hơn 1200px
+        if (isAutoCollapsed.value && sidebarStore.isCollapsed) {
+            sidebarStore.setCollapsed(false, { persist: false })
+            isAutoCollapsed.value = false
+        }
+    }
 }
 
 onMounted(() => {
+    // Gọi ngay khi mount để set initial state
     handleResize()
     window.addEventListener('resize', handleResize, { passive: true })
+    
+    // Đảm bảo collapse đúng khi load trang
+    const width = window.innerWidth
+    if (width <= 1200 && width > 992 && !sidebarStore.isCollapsed) {
+        sidebarStore.setCollapsed(true, { persist: false })
+        isAutoCollapsed.value = true
+    }
 })
 
 onBeforeUnmount(() => {
@@ -48,6 +84,8 @@ const toggleSidebar = () => {
         sidebarStore.toggleMobile()
         return
     }
+    // Khi user toggle thủ công, reset auto collapse flag
+    isAutoCollapsed.value = false
     sidebarStore.toggleCollapsed()
 }
 
@@ -108,6 +146,7 @@ const mainMarginLeft = computed(() => {
 .layout-overlay-leave-to {
     opacity: 0;
 }
+
 
 @media (max-width: 992px) {
     .layout {

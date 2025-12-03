@@ -291,9 +291,14 @@
             </article>
         </div>
 
-        <div v-if="errorMessage" class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            {{ errorMessage }}
+        <div v-if="errorMessage" class="error-banner">
+            <span class="error-banner__icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </span>
+            <div class="error-banner__content">
+                <p class="error-banner__title">Không thể tải dữ liệu voucher</p>
+                <p class="error-banner__message mb-0">{{ errorMessage }}</p>
+            </div>
         </div>
 
         <div class="card filter-card mb-4">

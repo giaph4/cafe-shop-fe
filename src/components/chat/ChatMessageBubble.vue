@@ -152,67 +152,62 @@ const handleFileClick = (file) => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+/* Message Bubble - Chuẩn hóa theo base.css */
 .message-bubble {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    padding: 0 1rem;
-    transition: background 0.2s;
-
-    &:hover .message-bubble__actions {
-        opacity: 1;
-    }
-
-    &--own {
-        flex-direction: row-reverse;
-
-        .message-bubble__content {
-            align-items: flex-end;
-        }
-
-        .message-bubble__body {
-            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-            color: white;
-            border-radius: var(--component-radius-sm) var(--component-radius-sm) 4px var(--component-radius-sm);
-        }
-    }
-
-    &--recalled {
-        opacity: 0.6;
-    }
-    
-    // Hiển thị preview cho image
-    .message-bubble__attachment-image {
-        max-width: 300px;
-        max-height: 300px;
-        border-radius: 8px;
-        cursor: pointer;
-    }
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+    padding: 0 var(--spacing-4);
+    transition: background var(--transition-base);
 }
 
+.message-bubble:hover .message-bubble__actions {
+    opacity: 1;
+}
+
+.message-bubble--own {
+    flex-direction: row-reverse;
+}
+
+.message-bubble--own .message-bubble__content {
+    align-items: flex-end;
+}
+
+.message-bubble--own .message-bubble__body {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-radius: var(--radius-base) var(--radius-base) 4px var(--radius-base);
+}
+
+.message-bubble--recalled {
+    opacity: 0.6;
+}
+
+/* Avatar - Chuẩn hóa, không dùng gradient */
 .message-bubble__avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: center;
+}
 
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+.message-bubble__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .message-bubble__avatar-placeholder {
-    color: white;
-    font-weight: 600;
-    font-size: 0.75rem;
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
 }
 
 .message-bubble__content {
@@ -224,27 +219,33 @@ const handleFileClick = (file) => {
 }
 
 .message-bubble__header {
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--spacing-1);
 }
 
 .message-bubble__sender {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
 }
 
 .message-bubble__body {
-    background: var(--color-card-muted);
-    color: var(--color-heading);
-    padding: 0.75rem var(--component-padding-sm);
-    border-radius: var(--component-radius-sm) var(--component-radius-sm) var(--component-radius-sm) 4px;
+    background: var(--color-bg-muted);
+    color: var(--color-text);
+    padding: var(--spacing-3) var(--spacing-3);
+    border-radius: var(--radius-base) var(--radius-base) var(--radius-base) 4px;
     max-width: 70%;
     word-wrap: break-word;
+    border: 1px solid var(--color-border);
+}
+
+.message-bubble--own .message-bubble__body {
+    border-color: var(--color-primary);
 }
 
 .message-bubble__text {
     white-space: pre-wrap;
-    line-height: 1.5;
+    line-height: var(--line-height-base);
+    font-size: var(--font-size-base);
 }
 
 .message-bubble__emoji {
@@ -252,76 +253,102 @@ const handleFileClick = (file) => {
     line-height: 1;
 }
 
-.message-bubble__attachment {
-    .message-bubble__files {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
+.message-bubble__attachment .message-bubble__files {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
 
-    .message-bubble__file {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
+.message-bubble__attachment .message-bubble__file {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
 
-    .message-bubble__file-item {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.2s;
+.message-bubble__attachment .message-bubble__file-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-2);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: background var(--transition-base);
+    font-size: var(--font-size-base);
+    gap: var(--spacing-2);
+}
 
-        &:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-    }
+.message-bubble__attachment .message-bubble__file-item:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
 
-    .message-bubble__image-preview {
-        border-radius: 8px;
-        overflow: hidden;
-        max-width: 300px;
-        cursor: pointer;
-        transition: transform 0.2s;
+.message-bubble__attachment .message-bubble__file-item i {
+    font-size: 18px;
+    line-height: 1;
+}
 
-        &:hover {
-            transform: scale(1.02);
-        }
-    }
+.message-bubble__attachment .message-bubble__image-preview {
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    max-width: 300px;
+    cursor: pointer;
+    transition: transform var(--transition-base);
+}
 
-    .message-bubble__image {
-        width: 100%;
-        height: auto;
-        display: block;
-        max-height: 300px;
-        object-fit: contain;
-    }
+.message-bubble__attachment .message-bubble__image-preview:hover {
+    transform: scale(1.02);
+}
+
+.message-bubble__attachment .message-bubble__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 300px;
+    object-fit: contain;
 }
 
 .message-bubble__recalled {
     font-style: italic;
     color: var(--color-text-muted);
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
 }
 
 .message-bubble__footer {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    margin-top: 0.25rem;
-    font-size: 0.75rem;
+    gap: var(--spacing-1);
+    margin-top: var(--spacing-1);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
+}
+
+.message-bubble__footer i {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .message-bubble__actions {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
     opacity: 0;
-    transition: opacity 0.2s;
-    padding: 0.25rem 0;
+    transition: opacity var(--transition-base);
+    padding: var(--spacing-1) 0;
+}
+
+.message-bubble__actions .btn {
+    padding: var(--spacing-1);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.message-bubble__actions .btn:hover {
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
+}
+
+.message-bubble__actions .btn i {
+    font-size: 16px;
+    line-height: 1;
 }
 </style>
 

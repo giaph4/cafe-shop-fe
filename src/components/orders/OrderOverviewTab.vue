@@ -305,83 +305,77 @@ const getStatusProgressClass = (status) => {
 </script>
 
 <style scoped>
-/* KPI Cards - đồng bộ với Dashboard */
+/* KPI Cards - Chuẩn hóa theo base.css */
 .kpi-card {
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    border-radius: 24px;
-    padding: var(--spacing-6);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
     transition: all var(--transition-base);
-    min-height: 140px;
+    min-height: 120px;
     height: 100%;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-hover);
 }
 
 .kpi-card__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: 24px;
     flex-shrink: 0;
-    color: #6366f1;
-    position: relative;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
 }
 
-.kpi-card__icon i {
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Màu icon giống Dashboard */
+/* Màu icon - không dùng gradient, dùng màu nhạt */
 .kpi-card--revenue .kpi-card__icon {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .kpi-card--month .kpi-card__icon {
-    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-secondary);
 }
 
 .kpi-card--orders .kpi-card__icon {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-accent);
 }
 
 .kpi-card--pending .kpi-card__icon {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
 }
 
 .kpi-card--average .kpi-card__icon {
-    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-info);
 }
 
 .kpi-card--profit .kpi-card__icon {
-    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    background: var(--color-bg-muted);
+    color: var(--color-success);
 }
 
 .kpi-card--paid .kpi-card__icon {
-    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
+    background: var(--color-bg-muted);
+    color: var(--color-info);
 }
 
 .kpi-card--total .kpi-card__icon {
-    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-    box-shadow: 0 2px 8px rgba(129, 140, 248, 0.18);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .kpi-card__content {
@@ -390,29 +384,81 @@ const getStatusProgressClass = (status) => {
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
     margin-bottom: var(--spacing-2);
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
-    margin-bottom: var(--spacing-1);
 }
 
-.list-group-item {
-    transition: background-color var(--transition-fast);
+/* Card và list - Chuẩn hóa */
+.order-overview-tab :global(.card) {
+    margin-bottom: 0;
 }
 
-.list-group-item:hover {
-    background-color: var(--color-card-muted);
+.order-overview-tab :global(.card-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.order-overview-tab :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.order-overview-tab :global(.list-group-item) {
+    padding: var(--spacing-3) 0;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color var(--transition-base);
+}
+
+.order-overview-tab :global(.list-group-item:hover) {
+    background-color: var(--color-bg-muted);
+}
+
+.order-overview-tab :global(.list-group-item:last-child) {
+    border-bottom: none;
+}
+
+/* Progress bar - Chuẩn hóa */
+.order-overview-tab :global(.progress) {
+    height: 8px;
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+}
+
+.order-overview-tab :global(.progress-bar) {
+    border-radius: var(--radius-base);
+}
+
+/* Badge - Chuẩn hóa */
+.order-overview-tab :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 768px) {
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
+    }
+    
+    .kpi-card__icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
 }
 </style>
 

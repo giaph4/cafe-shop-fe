@@ -228,21 +228,22 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
+/* Modal - Chuẩn hóa theo base.css */
 .order-detail-modal :global(.modal-dialog) {
     max-width: 900px;
 }
 
 .order-detail-modal :global(.modal-content) {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
 }
 
 .order-detail-modal :global(.modal-header) {
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
-    background: var(--color-card);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -255,8 +256,8 @@ defineExpose({ show, hide })
 }
 
 .order-detail-modal :global(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
     line-height: var(--line-height-tight);
@@ -264,9 +265,9 @@ defineExpose({ show, hide })
 
 .modal-subtitle {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     margin-bottom: 0;
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
 }
 
 .modal-header__actions {
@@ -277,42 +278,42 @@ defineExpose({ show, hide })
 }
 
 .order-detail-modal :global(.modal-body) {
-    padding: var(--spacing-6);
+    padding: var(--spacing-5);
     max-height: calc(100vh - 200px);
     overflow-y: auto;
 }
 
 .order-detail-modal :global(.modal-footer) {
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
-    background: var(--color-card);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-2);
 }
 
-/* Info Grid */
+/* Info Grid - Chuẩn hóa */
 .order-detail__info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--spacing-5);
-    margin-bottom: var(--spacing-6);
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-5);
 }
 
 .order-detail__info-card {
-    padding: var(--spacing-5);
-    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
+    background: var(--color-bg);
 }
 
 .order-detail__info-title {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-4);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-3);
     padding-bottom: var(--spacing-2);
-    border-bottom: 1px solid var(--color-border-soft);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .order-detail__info-list {
@@ -329,7 +330,7 @@ defineExpose({ show, hide })
 }
 
 .order-detail__info-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     flex-shrink: 0;
@@ -337,24 +338,24 @@ defineExpose({ show, hide })
 }
 
 .order-detail__info-value {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text);
     text-align: right;
     word-break: break-word;
 }
 
-/* Products Section */
+/* Products Section - Chuẩn hóa */
 .order-detail__products-section {
-    margin-bottom: var(--spacing-6);
+    margin-bottom: var(--spacing-5);
 }
 
 .order-detail__section-title {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-4);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-3);
     padding-bottom: var(--spacing-2);
-    border-bottom: 1px solid var(--color-border-soft);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .order-detail__table {
@@ -362,18 +363,18 @@ defineExpose({ show, hide })
 }
 
 .order-detail__table thead th {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    background: var(--color-card-muted);
-    border-bottom: 2px solid var(--color-border);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-3) var(--spacing-4);
 }
 
 .order-detail__table tbody td {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     padding: var(--spacing-3) var(--spacing-4);
-    border-bottom: 1px solid var(--color-border-soft);
+    border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
 }
 
@@ -381,12 +382,12 @@ defineExpose({ show, hide })
     border-bottom: none;
 }
 
-/* Summary */
+/* Summary - Chuẩn hóa */
 .order-detail__summary {
-    padding: var(--spacing-5);
-    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
@@ -400,12 +401,12 @@ defineExpose({ show, hide })
 }
 
 .order-detail__summary-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
 }
 
 .order-detail__summary-value {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text);
 }
@@ -421,15 +422,23 @@ defineExpose({ show, hide })
 }
 
 .order-detail__summary-item--total .order-detail__summary-label {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-md);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
 }
 
 .order-detail__summary-value--total {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
+}
+
+/* Badge - Chuẩn hóa */
+.order-detail-modal :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
 }
 
 /* Responsive */
@@ -439,7 +448,8 @@ defineExpose({ show, hide })
     }
 
     .order-detail-modal :global(.modal-dialog) {
-        margin: var(--spacing-4);
+        max-width: 90%;
+        margin: var(--spacing-4) auto;
     }
 
     .order-detail-modal :global(.modal-body) {
@@ -447,7 +457,7 @@ defineExpose({ show, hide })
     }
 
     .order-detail__table {
-        font-size: var(--font-size-xs);
+        font-size: var(--font-size-base);
     }
 
     .order-detail__table thead th,

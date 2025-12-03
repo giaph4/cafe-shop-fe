@@ -87,9 +87,9 @@
 
                     <Form @submit="handleAdjustSubmit" :validation-schema="adjustSchema" v-slot="{ errors }">
                         <div class="modal-body">
-                            <div class="inventory-summary rounded-3 p-3 mb-3">
-                                <h6 class="mb-1">{{ adjustData.name }}</h6>
-                                <p class="mb-0 text-muted">Tồn kho hiện tại: <strong>{{ formatQuantity(adjustData.currentStock) }}</strong></p>
+                            <div class="inventory-summary">
+                                <h6 class="inventory-summary__title">{{ adjustData.name }}</h6>
+                                <p class="inventory-summary__text">Tồn kho hiện tại: <strong>{{ formatQuantity(adjustData.currentStock) }}</strong></p>
                             </div>
 
                             <div class="mb-3">
@@ -154,16 +154,14 @@
                     </div>
                     <div class="modal-body">
                         <p class="mb-3">Bạn có chắc chắn muốn xóa nguyên liệu này không?</p>
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <strong class="text-muted d-block mb-1">Tên nguyên liệu:</strong>
-                                    <span>{{ deleteTarget?.name || '—' }}</span>
+                        <div class="delete-info-card">
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Tên nguyên liệu:</span>
+                                <span class="delete-info-value">{{ deleteTarget?.name || '—' }}</span>
                                 </div>
-                                <div class="mb-0">
-                                    <strong class="text-muted d-block mb-1">Đơn vị:</strong>
-                                    <span>{{ deleteTarget?.unit || '—' }}</span>
-                                </div>
+                            <div class="delete-info-item">
+                                <span class="delete-info-label">Đơn vị:</span>
+                                <span class="delete-info-value">{{ deleteTarget?.unit || '—' }}</span>
                             </div>
                         </div>
                     </div>
@@ -202,31 +200,29 @@
                         <button type="button" class="btn-close" @click="handleAdjustCancel" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" v-if="adjustConfirmData">
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h6 class="mb-3">{{ adjustConfirmData.name }}</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <strong class="text-muted d-block mb-1">Tồn kho hiện tại:</strong>
-                                        <span class="fs-5">{{ formatQuantity(adjustConfirmData.currentQuantity) }}</span>
+                        <div class="confirm-info-card">
+                            <h6 class="confirm-info-card__title">{{ adjustConfirmData.name }}</h6>
+                            <div class="confirm-info-grid">
+                                <div class="confirm-info-item">
+                                    <span class="confirm-info-label">Tồn kho hiện tại:</span>
+                                    <span class="confirm-info-value">{{ formatQuantity(adjustConfirmData.currentQuantity) }}</span>
                                     </div>
-                                    <div class="col-md-6">
-                                        <strong class="text-muted d-block mb-1">Tồn kho mới:</strong>
-                                        <span class="fs-5">{{ formatQuantity(adjustConfirmData.newQuantity) }}</span>
+                                <div class="confirm-info-item">
+                                    <span class="confirm-info-label">Tồn kho mới:</span>
+                                    <span class="confirm-info-value">{{ formatQuantity(adjustConfirmData.newQuantity) }}</span>
                                     </div>
-                                    <div class="col-12">
-                                        <strong class="text-muted d-block mb-1">Chênh lệch:</strong>
+                                <div class="confirm-info-item">
+                                    <span class="confirm-info-label">Chênh lệch:</span>
                                         <span
-                                            class="fs-5"
-                                            :class="adjustConfirmData.isIncrease ? 'text-success' : adjustConfirmData.isDecrease ? 'text-danger' : 'text-muted'"
+                                        class="confirm-info-value"
+                                        :class="adjustConfirmData.isIncrease ? 'confirm-info-value--success' : adjustConfirmData.isDecrease ? 'confirm-info-value--danger' : ''"
                                         >
                                             {{ adjustConfirmData.isIncrease ? '+' : '' }}{{ formatQuantity(adjustConfirmData.difference) }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div v-if="adjustConfirmData.willBeBelowReorder" class="alert" :class="adjustConfirmData.isCurrentlyBelowReorder ? 'alert-warning' : 'alert-danger'">
+                        <div v-if="adjustConfirmData.willBeBelowReorder" class="error-message" :class="adjustConfirmData.isCurrentlyBelowReorder ? 'error-message--warning' : 'error-message--danger'">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             <strong v-if="!adjustConfirmData.isCurrentlyBelowReorder">CẢNH BÁO:</strong>
                             <span v-else>LƯU Ý:</span>
@@ -738,157 +734,21 @@ const handlePageChange = (page) => {
 </script>
 
 <style scoped>
-.ingredients-page {
-    padding-bottom: var(--spacing-8);
-}
-
-.stat-card {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-4);
-    border-radius: 24px;
-    padding: var(--spacing-4) var(--spacing-5);
-    background: var(--color-card);
-    border: 1px solid var(--color-border-soft);
-    box-shadow: var(--shadow-soft);
-    height: 100%;
-    min-height: 120px;
-    transition:
-        transform var(--transition-fast),
-        box-shadow var(--transition-fast),
-        background-color var(--transition-fast);
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    background: var(--color-card-muted);
-}
-
-.stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 18px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    flex-shrink: 0;
-    color: #4338ca;
-}
-
-.variant-primary {
-    background-color: #e0e7ff;
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.18);
-}
-
-.variant-warning {
-    background-color: #fef3c7;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18);
-}
-
-.variant-success {
-    background-color: #dcfce7;
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.18);
-}
-
-.stat-label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    font-weight: var(--font-weight-medium);
-}
-
-.stat-value {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-xl);
-}
-
-.table-card {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    box-shadow: var(--shadow-soft);
-    background: var(--color-card);
-}
-
-.search-group .input-group-text {
-    background: var(--color-card-muted);
-    border-right: none;
-    color: var(--color-text-muted);
-}
-
-.search-group .form-control {
-    border-left: none;
-    background: var(--color-card);
-}
-
-.table-card .table {
-    margin-bottom: 0;
-}
-
-
-:deep(.modal-content) {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
-}
-
-:deep(.modal-header) {
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
-    background: var(--color-card);
-}
-
-:deep(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-1);
-}
-
-:deep(.modal-header .text-muted) {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-}
-
-:deep(.modal-body) {
-    padding: var(--spacing-6);
-}
-
-:deep(.modal-footer) {
-    border-top: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
-    background: var(--color-card);
-}
-
-:deep(.modal-body label) {
-    font-weight: var(--font-weight-semibold);
-}
-
-.inventory-summary {
-    border: 1px dashed var(--color-primary-border-soft);
-    background: var(--color-primary-soft);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-3);
-}
-
+/* Header - Chuẩn hóa theo base.css */
 .ingredients-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
 }
 
 .ingredients-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
 .ingredients-header__title-section {
@@ -898,28 +758,205 @@ const handlePageChange = (page) => {
 
 .ingredients-header__title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
 }
 
 .ingredients-header__subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
 }
 
 .ingredients-header__actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
 
+.ingredients-header__actions .btn {
+    font-size: var(--font-size-base);
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.ingredients-header__actions .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Stat Cards (KPI) - Chuẩn hóa theo base.css */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    height: 100%;
+    min-height: 120px;
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
+}
+
+/* Màu icon - không dùng gradient, dùng màu nhạt */
+.variant-primary {
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
+}
+
+.variant-warning {
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
+}
+
+.variant-success {
+    background: var(--color-bg-muted);
+    color: var(--color-success);
+}
+
+.stat-label {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-2);
+}
+
+.stat-value {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    font-size: var(--font-size-xl);
+}
+
+/* Filter Card - Chuẩn hóa */
+.filter-card {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
+}
+
+.filter-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.filter-card :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.filter-card :global(.form-control),
+.filter-card :global(.form-select) {
+    height: 40px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.filter-card :global(.form-control:focus),
+.filter-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.search-group :global(.input-group-text) {
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
+    border-right: none;
+    color: var(--color-text-muted);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base) 0 0 var(--radius-base);
+}
+
+.search-group :global(.form-control) {
+    border-left: none;
+    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+}
+
+/* Table Card - Chuẩn hóa */
+.table-card {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
+}
+
+.table-card :global(.card-body) {
+    padding: 0;
+}
+
+.table-card :global(.card-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.table-card :global(.table) {
+    margin-bottom: 0;
+}
+
+.table-card :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+.table-card :global(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.table-card :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
+}
+
+.table-card :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Badge - Chuẩn hóa */
+.table-card :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Action Buttons - Chuẩn hóa theo base.css */
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -931,55 +968,352 @@ const handlePageChange = (page) => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
-    border: 1px solid;
-    background: var(--color-card);
-    font-size: var(--font-size-sm);
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-primary);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
     white-space: nowrap;
+    cursor: pointer;
+}
+
+.action-button:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+.action-button:active:not(:disabled) {
+    filter: brightness(0.95);
+}
+
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.action-button i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .action-button--primary {
     border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-card);
+    background: var(--color-primary);
+    color: #ffffff;
 }
 
 .action-button--primary:hover:not(:disabled) {
-    background: var(--color-primary-soft);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-
-.action-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    filter: brightness(1.05);
 }
 
 .action-button--danger {
     border-color: var(--color-danger);
+    background: var(--color-bg);
     color: var(--color-danger);
-    background: var(--color-card);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: var(--color-danger-soft);
+    background: var(--color-danger);
+    color: #ffffff;
     border-color: var(--color-danger);
+}
+
+/* Modal - Chuẩn hóa theo base.css */
+.ingredients-page :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.ingredients-page :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.ingredients-page :global(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+}
+
+.ingredients-page :global(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+}
+
+.ingredients-page :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
+}
+
+.ingredients-page :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.ingredients-page :global(.modal-body .form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.ingredients-page :global(.modal-body .form-control),
+.ingredients-page :global(.modal-body .form-select) {
+    height: 40px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.ingredients-page :global(.modal-body .form-control:focus),
+.ingredients-page :global(.modal-body .form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.ingredients-page :global(.modal-body textarea.form-control) {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.ingredients-page :global(.modal-body .form-text) {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+.ingredients-page :global(.modal-body .invalid-feedback) {
+    font-size: var(--font-size-base);
+    color: var(--color-danger);
+    margin-top: var(--spacing-1);
+}
+
+.ingredients-page :global(.modal-footer .btn) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+}
+
+.ingredients-page :global(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.ingredients-page :global(.modal-footer .btn-primary:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.ingredients-page :global(.modal-footer .btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ingredients-page :global(.modal-footer .btn-outline-secondary) {
+    border-color: var(--color-border);
+    color: var(--color-text);
+    background: var(--color-bg);
+}
+
+.ingredients-page :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+}
+
+.ingredients-page :global(.modal-footer .btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: #ffffff;
+}
+
+.ingredients-page :global(.modal-footer .btn-danger:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.ingredients-page :global(.modal-footer .btn-danger:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Inventory Summary - Chuẩn hóa */
+.inventory-summary {
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.inventory-summary__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.inventory-summary__text {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+}
+
+.inventory-summary__text strong {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Delete Info Card - Chuẩn hóa */
+.delete-info-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.delete-info-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.delete-info-label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+.delete-info-value {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    text-align: right;
+    word-break: break-word;
+}
+
+/* Confirm Info Card - Chuẩn hóa */
+.confirm-info-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    margin-bottom: var(--spacing-4);
+}
+
+.confirm-info-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-3);
+}
+
+.confirm-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-3);
+}
+
+.confirm-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.confirm-info-label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+}
+
+.confirm-info-value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.confirm-info-value--success {
+    color: var(--color-success);
+}
+
+.confirm-info-value--danger {
     color: var(--color-danger);
 }
 
+/* Error Message - Thay thế alert */
+.error-message {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid;
+    background: var(--color-bg-muted);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.error-message i {
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.error-message--warning {
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+    background: var(--color-bg-muted);
+}
+
+.error-message--danger {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: var(--color-bg-muted);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .ingredients-header__content {
         flex-direction: column;
         align-items: flex-start;
+        gap: var(--spacing-3);
     }
 
     .ingredients-header__actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
     }
 
     .action-buttons {
@@ -991,8 +1325,8 @@ const handlePageChange = (page) => {
         width: 100%;
     }
 
-    .stat-card {
-        flex-direction: row;
+    .confirm-info-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>

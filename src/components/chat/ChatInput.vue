@@ -154,23 +154,40 @@ const removeFile = (index) => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+/* Chat Input - Chuẩn hóa theo base.css */
 .chat-input {
     position: relative;
-    padding: var(--component-padding-sm);
-    background: var(--color-card);
+    padding: var(--spacing-3);
+    background: var(--color-bg);
     border-top: 1px solid var(--color-border);
 }
 
 .chat-input__toolbar {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+}
+
+.chat-input__toolbar .btn {
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.chat-input__toolbar .btn:hover {
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
+}
+
+.chat-input__toolbar .btn i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .chat-input__main {
     display: flex;
-    gap: 0.75rem;
+    gap: var(--spacing-2);
     align-items: flex-end;
 }
 
@@ -178,61 +195,76 @@ const removeFile = (index) => {
     flex: 1;
     resize: none;
     border: 1px solid var(--color-border);
-    border-radius: var(--component-radius-sm);
-    padding: 0.75rem var(--component-padding-sm);
-    font-size: 0.9375rem;
-    line-height: 1.5;
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     max-height: 120px;
-    transition: border-color var(--component-transition);
-    background: var(--color-card);
+    transition: all var(--transition-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+}
 
-    &:focus {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 0.2rem var(--color-soft-primary);
-    }
+.chat-input__textarea:focus {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
 }
 
 .chat-input__send {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
     flex-shrink: 0;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    background: var(--color-primary);
     border: none;
-    transition: transform var(--component-transition), box-shadow var(--component-transition);
+    color: #ffffff;
+    transition: all var(--transition-base);
+}
 
-    &:hover:not(:disabled) {
-        transform: scale(1.05);
-        box-shadow: var(--component-shadow-hover);
-    }
+.chat-input__send:hover:not(:disabled) {
+    filter: brightness(1.05);
+    box-shadow: var(--shadow-base);
+}
 
-    &:disabled {
-        opacity: 0.5;
-    }
+.chat-input__send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.chat-input__send i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .chat-input__files {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: var(--component-gap-sm);
-    padding-top: var(--component-gap-sm);
-    border-top: 1px solid var(--color-border-light);
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-2);
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--color-border);
 }
 
 .chat-input__file-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem var(--component-gap-sm);
-    background: var(--color-card-muted);
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: var(--color-bg-muted);
     border: 1px solid var(--color-border);
-    border-radius: var(--component-radius-sm);
-    font-size: 0.875rem;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.chat-input__file-item:hover {
+    background: var(--color-bg);
+    border-color: var(--color-primary);
 }
 
 .chat-input__file-name {
@@ -240,6 +272,23 @@ const removeFile = (index) => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--color-text);
+}
+
+.chat-input__file-item .btn {
+    padding: var(--spacing-1);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.chat-input__file-item .btn:hover {
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
+}
+
+.chat-input__file-item .btn i {
+    font-size: 16px;
+    line-height: 1;
 }
 </style>
 

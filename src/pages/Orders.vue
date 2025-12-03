@@ -573,20 +573,21 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Header - Chuẩn hóa theo base.css */
 .orders-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
 }
 
 .orders-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
 .orders-header__title-section {
@@ -596,25 +597,24 @@ onBeforeUnmount(() => {
 
 .orders-header__title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
 }
 
 .orders-header__subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
 }
 
 .orders-header__actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -629,43 +629,82 @@ onBeforeUnmount(() => {
 .orders-header__actions .form-check-label {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     white-space: nowrap;
 }
 
-/* Tabs giống Dashboard */
+/* Tabs - Chuẩn hóa theo base.css */
 .orders-tabs {
     display: flex;
-    gap: 0.75rem;
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    padding: 0.6rem;
-    border-radius: var(--radius-md);
+    gap: var(--spacing-2);
+    background: var(--color-bg-muted);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-soft);
     overflow-x: auto;
 }
 
 .orders-tab {
     border: none;
     background: transparent;
-    padding: 0.75rem 1.35rem;
-    border-radius: 12px;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    font-weight: 600;
+    gap: 6px;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all var(--transition-base);
 }
 
 .orders-tab i {
-    font-size: 1.15rem;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.orders-tab:hover:not(.active) {
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 .orders-tab.active {
-    background: var(--color-soft-primary);
-    color: var(--color-primary);
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+/* Delete info card trong modal */
+.delete-info-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.delete-info-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.delete-info-label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+.delete-info-value {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    text-align: right;
+    word-break: break-word;
 }
 
 @media (max-width: 768px) {
@@ -680,12 +719,12 @@ onBeforeUnmount(() => {
     }
 
     .orders-tabs {
-        gap: var(--spacing-2);
+        gap: var(--spacing-1);
     }
 
     .orders-tab {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-base);
     }
 }
 </style>

@@ -930,27 +930,29 @@ onMounted(() => {
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .shift-management-page {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-6);
-    padding-bottom: var(--spacing-12);
+    gap: var(--spacing-4);
+    padding-bottom: var(--spacing-10);
 }
 
+/* Header */
 .shift-management-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-4);
 }
 
 .shift-management-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -961,107 +963,127 @@ onMounted(() => {
 
 .shift-management-header__title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-2xl);
+    color: var(--color-text);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
     margin-bottom: var(--spacing-1);
 }
 
 .shift-management-header__subtitle {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     line-height: var(--line-height-relaxed);
 }
 
 .shift-management-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
 }
 
+/* Tabs Card */
 .tabs-card {
-    border-radius: var(--component-radius-lg);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--component-shadow);
-    background: linear-gradient(180deg, var(--color-card) 0%, var(--color-card-accent) 100%);
-    transition: box-shadow var(--component-transition);
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
+    transition: box-shadow var(--transition-base);
 }
 
 .tabs-card:hover {
-    box-shadow: var(--component-shadow-hover);
+    box-shadow: var(--shadow-hover);
 }
 
-.tabs-card .card-body {
-    padding: var(--component-padding-lg);
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
 }
 
+/* Tabs Navigation */
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--component-gap-sm);
-    border-bottom: 2px solid var(--color-border);
-    padding-bottom: 0.5rem;
-    margin-bottom: 0;
+    gap: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
 }
 
 .reports-tabs .nav-link {
-    border-radius: 999px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
-    font-size: 0.9rem;
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    background: rgba(148, 163, 184, 0.12);
-    transition: all var(--component-transition);
+    background: var(--color-bg-muted);
+    transition: all var(--transition-base);
     border: 1px solid transparent;
     cursor: pointer;
-    position: relative;
-    overflow: hidden;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
 }
 
 .reports-tabs .nav-link i {
-    font-size: 1rem;
+    font-size: 18px;
     line-height: 1;
 }
 
-.reports-tabs .nav-link::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.4s ease;
-}
-
-.reports-tabs .nav-link:hover {
+.reports-tabs .nav-link:hover:not(.active) {
     color: var(--color-primary);
-    background: rgba(99, 102, 241, 0.1);
-    border-color: rgba(99, 102, 241, 0.2);
-    transform: translateY(-1px);
-}
-
-.reports-tabs .nav-link:hover::before {
-    left: 100%;
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #3b82f6 100%);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3), 0 2px 4px rgba(79, 70, 229, 0.2);
-    border-color: transparent;
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
 }
 
-@media (max-width: 768px) {
+/* Modal Styles */
+:deep(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+:deep(.modal-header) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    font-size: var(--font-size-xl);
+    margin-bottom: 0;
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-4);
+}
+
+:deep(.modal-footer) {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--color-bg);
+}
+
+:deep(.modal-body label) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
     .shift-management-header {
-        padding: var(--spacing-4);
+        padding: var(--spacing-3);
     }
 
     .shift-management-header__content {
@@ -1071,15 +1093,16 @@ onMounted(() => {
 
     .shift-management-header__actions {
         width: 100%;
-        justify-content: stretch;
-
-        .btn {
-            flex: 1;
-        }
+        justify-content: flex-start;
     }
 
-    .tabs-card .card-body {
-        padding: var(--component-padding-sm);
+    .shift-management-header__actions :global(.btn) {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .tabs-card :global(.card-body) {
+        padding: var(--spacing-3);
     }
 
     .reports-tabs {
@@ -1087,8 +1110,8 @@ onMounted(() => {
     }
 
     .reports-tabs .nav-link {
-        padding: var(--spacing-2) var(--spacing-4);
-        font-size: 0.85rem;
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-sm);
     }
 }
 </style>

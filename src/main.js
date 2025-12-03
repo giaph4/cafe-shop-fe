@@ -10,8 +10,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import 'aos/dist/aos.css'
 import 'vue3-toastify/dist/index.css'
-import './style.css'
-import './assets/dynamic-island-toast.css'
+import './assets/styles/base.css'
 
 // PrimeVue
 import PrimeVue from 'primevue/config'

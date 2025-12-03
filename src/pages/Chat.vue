@@ -774,28 +774,31 @@ const handleUpdateRole = async (memberId, newRole) => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+/* Chat Page - Chuẩn hóa theo base.css */
 .chat-page {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 80px);
-    padding: 1.5rem;
+    padding: var(--spacing-4);
+    gap: var(--spacing-4);
 }
 
+/* Header - Chuẩn hóa */
 .chat-page__header {
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: var(--component-radius-lg);
-    box-shadow: var(--component-shadow);
-    margin-bottom: var(--component-gap-lg);
-    padding: var(--component-padding);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-base);
+    margin-bottom: 0;
+    padding: var(--spacing-4);
 }
 
 .chat-page__header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -805,31 +808,31 @@ const handleUpdateRole = async (memberId, newRole) => {
 }
 
 .chat-page__title {
-    font-weight: 700;
-    color: var(--color-heading);
-    margin-bottom: 0.35rem;
-    font-size: 1.5rem;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
 }
 
 .chat-page__subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    font-weight: 400;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-weight: var(--font-weight-normal);
 }
 
+/* Container - Chuẩn hóa */
 .chat-container {
     display: flex;
     flex: 1;
     min-height: 0;
-    background: var(--color-card);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: var(--component-radius-lg);
+    border-radius: var(--radius-base);
     overflow: hidden;
-    box-shadow: var(--component-shadow);
+    box-shadow: var(--shadow-base);
 }
 
 .chat-main {
@@ -846,8 +849,21 @@ const handleUpdateRole = async (memberId, newRole) => {
     justify-content: center;
     height: 100%;
     color: var(--color-text-muted);
+    gap: var(--spacing-3);
 }
 
+.chat-empty i {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.chat-empty h5 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+}
+
+/* Chat Window - Chuẩn hóa */
 .chat-window {
     display: flex;
     flex-direction: column;
@@ -858,15 +874,15 @@ const handleUpdateRole = async (memberId, newRole) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--component-padding-sm) var(--component-padding);
+    padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
 }
 
 .chat-window__header-info {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-2);
 }
 
 .chat-window__avatar {
@@ -874,35 +890,38 @@ const handleUpdateRole = async (memberId, newRole) => {
     height: 40px;
     border-radius: 50%;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+}
 
-    img {
+.chat-window__avatar img {
     width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+    height: 100%;
+    object-fit: cover;
 }
 
 .chat-window__avatar-placeholder {
-    color: white;
-    font-weight: 600;
-    font-size: 0.875rem;
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
 }
 
 .chat-window__name {
-    font-weight: 600;
-    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    margin-bottom: 0;
 }
 
 .chat-window__messages {
     flex: 1;
     overflow-y: auto;
-    padding: var(--component-padding-sm) 0;
-    background: var(--color-card-muted);
+    padding: var(--spacing-3) 0;
+    background: var(--color-bg-muted);
 }
 
 .chat-window__loading,
@@ -911,14 +930,16 @@ const handleUpdateRole = async (memberId, newRole) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: var(--spacing-6);
     color: var(--color-text-muted);
+    font-size: var(--font-size-base);
 }
 
+/* Chat Details - Chuẩn hóa */
 .chat-details {
     width: 300px;
     border-left: 1px solid var(--color-border);
-    background: var(--color-card);
+    background: var(--color-bg);
     display: flex;
     flex-direction: column;
 }
@@ -927,47 +948,59 @@ const handleUpdateRole = async (memberId, newRole) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--component-padding-sm) var(--component-padding);
+    padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
+}
+
+.chat-details__header h6 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: 0;
 }
 
 .chat-details__content {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem 1.5rem;
+    padding: var(--spacing-4) var(--spacing-5);
 }
 
 .chat-details__section {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-5);
 }
 
 .chat-details__section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-4);
 }
 
 .chat-details__section-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: 0;
 }
 
 .chat-details__members {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .chat-details__member {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
+    transition: background-color var(--transition-base);
+}
+
+.chat-details__member:hover {
+    background: var(--color-bg-muted);
 }
 
 .chat-details__member-avatar {
@@ -975,23 +1008,24 @@ const handleUpdateRole = async (memberId, newRole) => {
     height: 40px;
     border-radius: 50%;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+}
 
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+.chat-details__member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .chat-details__member-placeholder {
-    color: white;
-    font-weight: 600;
-    font-size: 0.75rem;
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
 }
 
 .chat-details__member-info {
@@ -1000,14 +1034,87 @@ const handleUpdateRole = async (memberId, newRole) => {
 }
 
 .chat-details__member-name {
-    font-weight: 600;
-    color: var(--color-heading);
-    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-1);
 }
 
 .chat-details__member-role {
-    font-size: 0.75rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
+}
+
+.chat-details__member-role select {
+    font-size: var(--font-size-base);
+    height: 32px;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+}
+
+/* Modal - Chuẩn hóa */
+.chat-page :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.chat-page :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.chat-page :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
+}
+
+.chat-page :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    gap: var(--spacing-2);
+}
+
+.chat-page :global(.modal-title) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.chat-page :global(.member-selection) {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: var(--spacing-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background: var(--color-bg-muted);
+}
+
+.chat-page :global(.form-check) {
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
+    transition: background-color var(--transition-base);
+}
+
+.chat-page :global(.form-check:hover) {
+    background: var(--color-bg);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chat-page {
+        padding: var(--spacing-2);
+        gap: var(--spacing-3);
+    }
+
+    .chat-details {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--color-border);
+    }
 }
 </style>
 

@@ -119,7 +119,7 @@
         </div>
     </Teleport>
 
-    <div class="page-container container-fluid">
+    <div class="categories-page container-fluid">
         <div class="categories-header">
             <div class="categories-header__content">
                 <div class="categories-header__title-section">
@@ -417,20 +417,30 @@ const closeDeleteModal = () => {
 </script>
 
 <style scoped>
+/* Categories Page - Chuẩn hóa theo base.css */
+.categories-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+}
+
+/* Header - Chuẩn hóa theo base.css */
 .categories-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
 }
 
 .categories-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
 }
 
 .categories-header__title-section {
@@ -440,182 +450,369 @@ const closeDeleteModal = () => {
 
 .categories-header__title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
 }
 
 .categories-header__subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
 }
 
 .categories-header__actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
 
-:deep(.modal-content) {
-    border-radius: var(--radius-xl);
+.categories-header__actions .btn {
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.categories-header__actions .btn:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+
+.categories-header__actions .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.categories-header__actions .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Modal - Chuẩn hóa theo base.css */
+:global(.modal#categoryModal .modal-content),
+:global(.modal#deleteCategoryModal .modal-content) {
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
 }
 
-:deep(.modal-header) {
+:global(.modal#categoryModal .modal-header),
+:global(.modal#deleteCategoryModal .modal-header) {
+    padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
-    background: var(--color-card);
+    background: var(--color-bg);
 }
 
-:deep(.modal-header .modal-title) {
+:global(.modal#categoryModal .modal-header .modal-title),
+:global(.modal#deleteCategoryModal .modal-header .modal-title) {
+    font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-1);
+    color: var(--color-text);
+    margin-bottom: 0;
 }
 
-:deep(.modal-header .text-muted.small) {
+:global(.modal#categoryModal .modal-header .text-muted.small),
+:global(.modal#deleteCategoryModal .modal-header .text-muted.small) {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
+    margin-top: var(--spacing-1);
+    margin-bottom: 0;
 }
 
-:deep(.modal-body) {
-    padding: var(--spacing-6);
+:global(.modal#categoryModal .modal-body),
+:global(.modal#deleteCategoryModal .modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-bg);
 }
 
-:deep(.modal-footer) {
+:global(.modal#categoryModal .modal-footer),
+:global(.modal#deleteCategoryModal .modal-footer) {
+    padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
-    background: var(--color-card);
+    background: var(--color-bg);
 }
 
+:global(.modal#categoryModal .modal-footer .btn),
+:global(.modal#deleteCategoryModal .modal-footer .btn) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+:global(.modal#categoryModal .modal-footer .btn:hover:not(:disabled)),
+:global(.modal#deleteCategoryModal .modal-footer .btn:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+:global(.modal#categoryModal .modal-footer .btn:disabled),
+:global(.modal#deleteCategoryModal .modal-footer .btn:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+:global(.modal#categoryModal .modal-footer .btn i),
+:global(.modal#deleteCategoryModal .modal-footer .btn i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Form Controls - Chuẩn hóa */
+:global(.modal#categoryModal .form-label),
+:global(.modal#deleteCategoryModal .form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+:global(.modal#categoryModal .form-control),
+:global(.modal#deleteCategoryModal .form-control) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+:global(.modal#categoryModal .form-control:focus),
+:global(.modal#deleteCategoryModal .form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+:global(.modal#categoryModal textarea.form-control),
+:global(.modal#deleteCategoryModal textarea.form-control) {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+}
+
+:global(.modal#categoryModal .form-control.is-invalid),
+:global(.modal#deleteCategoryModal .form-control.is-invalid) {
+    border-color: var(--color-danger);
+}
+
+:global(.modal#categoryModal .invalid-feedback),
+:global(.modal#deleteCategoryModal .invalid-feedback) {
+    font-size: var(--font-size-base);
+    color: var(--color-danger);
+    margin-top: var(--spacing-1);
+}
+
+/* Delete Info Card - Chuẩn hóa */
 .delete-info-card {
-    border: 1px dashed var(--color-primary-border-soft);
-    background: var(--color-primary-soft);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-3);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
 }
 
 .delete-info-item {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
+    justify-content: space-between;
     gap: var(--spacing-3);
-    margin-bottom: var(--spacing-2);
-}
-
-.delete-info-item:last-child {
-    margin-bottom: 0;
 }
 
 .delete-info-label {
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+    min-width: 120px;
 }
 
 .delete-info-value {
-    color: var(--color-heading);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
     text-align: right;
-    flex: 1;
+    word-break: break-word;
 }
 
+/* Stat Cards (KPI Cards) - Chuẩn hóa theo base.css */
 .stat-card {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    border-radius: 24px;
-    padding: var(--spacing-4) var(--spacing-5);
-    background: var(--color-card);
-    border: 1px solid var(--color-border-soft);
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
     height: 100%;
     min-height: 120px;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+    transition: all var(--transition-base);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    background: var(--color-card-muted);
+    box-shadow: var(--shadow-hover);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: 18px;
+    border-radius: var(--radius-base);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
+    font-size: 24px;
     flex-shrink: 0;
-    color: #4338ca;
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
-.variant-primary {
-    background-color: #e0e7ff;
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.18);
+/* Màu icon - không dùng gradient, dùng màu nhạt */
+.stat-icon.variant-primary {
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
-.variant-success {
-    background-color: #dcfce7;
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.18);
+.stat-icon.variant-success {
+    background: var(--color-bg-muted);
+    color: var(--color-success);
 }
 
-.variant-warning {
-    background-color: #fef3c7;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18);
+.stat-icon.variant-warning {
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
 }
 
 .stat-label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
     font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-2);
 }
 
 .stat-value {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
 }
 
+/* Filter Card - Chuẩn hóa theo base.css */
 .filter-card {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    box-shadow: var(--shadow-soft);
-    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
 }
 
-.filter-card .input-group-text {
-    background: var(--color-card-muted);
-    border-right: none;
+.filter-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.filter-card :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.filter-card :global(.form-control) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.filter-card :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.filter-card :global(.input-group-text) {
+    height: 40px;
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
     color: var(--color-text-muted);
+    padding: var(--spacing-2) var(--spacing-3);
 }
 
-.filter-card .form-control {
-    border-left: none;
-    background: var(--color-card);
+.filter-card :global(.input-group-text i) {
+    font-size: 18px;
+    line-height: 1;
 }
 
+/* Tabs Card - Chuẩn hóa */
 .tabs-card {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    box-shadow: var(--shadow-soft);
-    background: var(--color-card);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
 }
 
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Table - Chuẩn hóa theo base.css */
+.categories-page :global(.table) {
+    margin-bottom: 0;
+}
+
+.categories-page :global(.table thead),
+.categories-page :global(.table thead.table-light) {
+    background: var(--color-bg-muted);
+}
+
+.categories-page :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+    vertical-align: middle;
+}
+
+.categories-page :global(.table tbody td),
+.categories-page :global(.table tbody th) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.categories-page :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
+}
+
+.categories-page :global(.table tbody .fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+}
+
+/* Action Buttons - Chuẩn hóa theo base.css */
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -627,47 +824,89 @@ const closeDeleteModal = () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
-    border: 1px solid;
-    background: var(--color-card);
-    font-size: var(--font-size-sm);
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
     white-space: nowrap;
+    cursor: pointer;
+}
+
+.action-button i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .action-button--primary {
     border-color: var(--color-primary);
     color: var(--color-primary);
-    background: var(--color-card);
+    background: var(--color-bg);
 }
 
 .action-button--primary:hover:not(:disabled) {
-    background: var(--color-primary-soft);
+    background: var(--color-primary);
+    color: #ffffff;
     border-color: var(--color-primary);
-    color: var(--color-primary);
 }
 
-.action-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.action-button--primary:active:not(:disabled) {
+    filter: brightness(0.95);
 }
 
 .action-button--danger {
     border-color: var(--color-danger);
     color: var(--color-danger);
-    background: var(--color-card);
+    background: var(--color-bg);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: var(--color-danger-soft);
+    background: var(--color-danger);
+    color: #ffffff;
     border-color: var(--color-danger);
-    color: var(--color-danger);
 }
 
-@media (max-width: 768px) {
+.action-button--danger:active:not(:disabled) {
+    filter: brightness(0.95);
+}
+
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* EmptyState Button - Chuẩn hóa */
+.categories-page :global(.btn-primary) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.categories-page :global(.btn-primary:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.categories-page :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.categories-page :global(.btn-primary i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
     .categories-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -676,6 +915,24 @@ const closeDeleteModal = () => {
     .categories-header__actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .categories-page {
+        padding: var(--spacing-3);
     }
 
     .action-buttons {
@@ -687,8 +944,8 @@ const closeDeleteModal = () => {
         width: 100%;
     }
 
-    .stat-card {
-        flex-direction: row;
+    .categories-page :global(.table-responsive) {
+        overflow-x: auto;
     }
 }
 </style>

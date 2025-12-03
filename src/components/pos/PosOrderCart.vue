@@ -1064,21 +1064,22 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 </script>
 
 <style scoped>
+/* Cart - Chuẩn hóa theo base.css */
 .pos-cart {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-5);
-    border-radius: var(--radius-xl);
-    background: var(--color-card);
-    border: 1px solid var(--color-border-soft);
-    padding: var(--spacing-5);
+    gap: var(--spacing-4);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-4);
 }
 
 .pos-cart__header {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding-bottom: 1rem;
+    gap: var(--spacing-2);
+    padding-bottom: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -1086,25 +1087,25 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
 .pos-cart__header-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-2);
 }
 
 .pos-cart__title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin: 0;
 }
 
 .pos-cart__order-code {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     margin: 0;
 }
@@ -1116,25 +1117,29 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     gap: var(--spacing-4);
 }
 
+/* Cart Item - Chuẩn hóa */
 .pos-cart__item {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
     gap: var(--spacing-3);
     align-items: center;
     padding: var(--spacing-3) var(--spacing-4);
-    border: 1px solid var(--color-border-soft);
-    border-radius: var(--radius-md);
-    background: var(--color-card);
-    transition: all var(--transition-fast);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
+    transition: all var(--transition-base);
 }
 
 .pos-cart__item:hover {
-    background: var(--color-card-muted);
-    box-shadow: var(--shadow-soft);
+    background: var(--color-bg-muted);
+    box-shadow: var(--shadow-base);
 }
 
 .pos-cart__item-info h6 {
     font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-1);
 }
 
 .pos-cart__item-actions {
@@ -1143,14 +1148,16 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     gap: var(--spacing-2);
 }
 
+/* Quantity Controls - Chuẩn hóa */
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: var(--spacing-1);
-    border: 1px solid var(--color-border-soft);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-0);
-    background: var(--color-card);
+    gap: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: 0;
+    background: var(--color-bg);
+    overflow: hidden;
 }
 
 .quantity-btn {
@@ -1162,100 +1169,131 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     justify-content: center;
     border: none;
     background: transparent;
-    transition: background-color var(--transition-fast);
+    color: var(--color-text-muted);
+    transition: all var(--transition-base);
+    cursor: pointer;
 }
 
 .quantity-btn:hover:not(:disabled) {
-    background: var(--color-primary-soft);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
+}
+
+.quantity-btn:active:not(:disabled) {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.quantity-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quantity-btn i {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .quantity-input {
     width: 50px;
     text-align: center;
     border: none;
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
     background: transparent;
     font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     padding: var(--spacing-1);
+    color: var(--color-text);
 }
 
 .quantity-input:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: -2px;
-    border-radius: var(--radius-xs);
+    border-radius: 0;
 }
 
 .pos-cart__item-total {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
 }
 
+/* Summary - Chuẩn hóa */
 .pos-cart__summary {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    border-radius: var(--radius-lg);
-    background: var(--color-card-muted);
+    border-radius: var(--radius-base);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
 }
 
 .pos-cart__summary-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
 }
 
 .pos-cart__summary-row--total {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-top: var(--spacing-1);
 }
 
 .pos-cart__summary-divider {
     height: 1px;
-    background: var(--color-border-soft);
+    background: var(--color-border);
+    margin: var(--spacing-2) 0;
 }
 
+/* Customer Section - Chuẩn hóa */
 .pos-cart__customer {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .pos-cart__customer-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-2);
 }
 
 .pos-cart__customer-title {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin: 0;
 }
 
 .pos-cart__customer-clear {
-    padding: 0;
+    padding: var(--spacing-1) var(--spacing-2);
     border: none;
     background: transparent;
     color: var(--color-danger);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     cursor: pointer;
-    transition: opacity var(--transition-fast);
+    transition: all var(--transition-base);
+    border-radius: var(--radius-base);
 }
 
 .pos-cart__customer-clear:hover {
-    opacity: 0.8;
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
 }
 
 .pos-cart__customer-results {
     max-height: 220px;
     overflow-y: auto;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
     list-style: none;
     padding: 0;
     margin: var(--spacing-2) 0 0 0;
@@ -1264,8 +1302,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .pos-cart__customer-item {
     padding: var(--spacing-3) var(--spacing-4);
     cursor: pointer;
-    border-bottom: 1px solid var(--color-border-soft);
-    transition: background-color var(--transition-fast);
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color var(--transition-base);
 }
 
 .pos-cart__customer-item:last-child {
@@ -1273,13 +1311,13 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .pos-cart__customer-item:hover {
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
 }
 
 .pos-cart__customer-item--empty {
     text-align: center;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm, 0.875rem);
+    font-size: var(--font-size-base);
     cursor: default;
 }
 
@@ -1289,36 +1327,40 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .pos-cart__customer-item-name {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-base);
 }
 
 .pos-cart__customer-item-phone {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
 }
 
 .pos-cart__customer-hint {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     display: block;
     margin-top: var(--spacing-2);
 }
 
+/* Customer Chip - Chuẩn hóa theo badge/pill */
 .pos-cart__customer-chip {
     display: flex;
     align-items: center;
     gap: var(--spacing-3);
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-md);
-    background: var(--color-primary-soft);
-    border: 1px solid var(--color-primary-border-soft);
+    border-radius: var(--radius-base);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
 }
 
+/* Voucher Section - Chuẩn hóa */
 .pos-cart__voucher {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .pos-cart__voucher-applied {
@@ -1326,42 +1368,49 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-md);
-    background: var(--color-success-soft);
-    border: 1px solid var(--color-success-border-soft);
+    border-radius: var(--radius-base);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-success);
     color: var(--color-success);
-    margin-bottom: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
 }
 
 .pos-cart__voucher-applied-content {
     flex: 1;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
 }
 
 .pos-cart__voucher-result {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-base);
     margin-top: var(--spacing-2);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
 }
 
 .pos-cart__voucher-result--success {
-    background: var(--color-success-soft);
-    border: 1px solid var(--color-success-border-soft);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-success);
     color: var(--color-success);
 }
 
 .pos-cart__voucher-result--warning {
-    background: var(--color-warning-soft);
-    border: 1px solid var(--color-warning-border-soft);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-warning);
     color: var(--color-warning);
 }
 
 .pos-cart__voucher-result-discount {
-    margin-top: 0.5rem;
+    margin-top: var(--spacing-2);
+    font-size: var(--font-size-base);
 }
 
 .pos-cart__voucher-hint {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     display: block;
     margin-top: var(--spacing-2);
 }
@@ -1371,46 +1420,56 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     gap: var(--spacing-3);
 }
 
+/* Status Pill - Chuẩn hóa theo badge/pill hệ thống */
 .status-pill {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-1);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
+    gap: 6px;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+.status-pill i {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .status-pill--pending {
-    background: var(--color-warning-soft);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-warning);
     color: var(--color-warning);
 }
 
 .status-pill--paid {
-    background: var(--color-success-soft);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-success);
     color: var(--color-success);
 }
 
 .status-pill--cancelled {
-    background: var(--color-danger-soft);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-danger);
     color: var(--color-danger);
 }
 
 .status-pill--transferred {
-    background: var(--color-info-soft);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-info);
     color: var(--color-info);
 }
 
 .status-pill--takeaway {
-    background: var(--color-primary-soft);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-primary);
     color: var(--color-primary);
 }
 
 .status-pill--draft,
 .status-pill--default {
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
     color: var(--color-text-muted);
 }
 

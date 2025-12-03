@@ -199,117 +199,149 @@ const handleSearch = () => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+/* Chat Sidebar - Chuẩn hóa theo base.css */
 .chat-sidebar {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--color-card);
+    background: var(--color-bg);
     border-right: 1px solid var(--color-border);
+    width: 320px;
+    flex-shrink: 0;
 }
 
+/* Header - Chuẩn hóa, không dùng gradient */
 .chat-sidebar__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--component-padding-sm) var(--component-padding);
+    padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-    color: white;
-
-    .chat-sidebar__title {
-        margin: 0;
-        font-weight: 700;
-        font-size: 1.25rem;
-        color: white;
-    }
-
-    .btn {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.3);
-        color: white;
-
-        &:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-    }
+    background: var(--color-bg-muted);
 }
 
+.chat-sidebar__title {
+    margin: 0;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+}
+
+.chat-sidebar__header .btn {
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    gap: 6px;
+}
+
+.chat-sidebar__header .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Search - Chuẩn hóa */
 .chat-sidebar__search {
-    padding: var(--component-padding-sm);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-card-muted);
-
-    .input-group-text {
-        border-right: none;
-        border-color: var(--color-border);
-        background: var(--color-card);
-    }
-
-    .form-control {
-        border-left: none;
-        border-color: var(--color-border);
-        background: var(--color-card);
-
-        &:focus {
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 0.2rem var(--color-soft-primary);
-        }
-    }
+    background: var(--color-bg-muted);
 }
 
+.chat-sidebar__search .input-group-text {
+    border-right: none;
+    border-color: var(--color-border);
+    background: var(--color-bg);
+    border-radius: var(--radius-base) 0 0 var(--radius-base);
+}
+
+.chat-sidebar__search .input-group-text i {
+    font-size: 18px;
+    line-height: 1;
+    color: var(--color-text-muted);
+}
+
+.chat-sidebar__search .form-control {
+    border-left: none;
+    border-color: var(--color-border);
+    background: var(--color-bg);
+    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+    height: 40px;
+    font-size: var(--font-size-base);
+    padding: var(--spacing-2) var(--spacing-3);
+}
+
+.chat-sidebar__search .form-control:focus {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+/* List - Chuẩn hóa */
 .chat-sidebar__list {
     flex: 1;
     overflow-y: auto;
-    padding: 0.5rem 0;
+    padding: var(--spacing-2) 0;
 }
 
 .conversation-item {
     display: flex;
     align-items: center;
-    gap: var(--component-gap-sm);
-    padding: 0.875rem var(--component-padding);
+    gap: var(--spacing-2);
+    padding: var(--spacing-3) var(--spacing-4);
     cursor: pointer;
-    transition: all var(--component-transition);
-    border-bottom: 1px solid var(--color-border-light);
-
-    &:hover {
-        background: var(--color-card-muted);
-    }
-
-    &--active {
-        background: linear-gradient(90deg, var(--color-soft-primary), transparent);
-        border-left: 3px solid var(--color-primary);
-    }
-
-    &--pinned {
-        background: var(--color-warning-light);
-    }
+    transition: all var(--transition-base);
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
 }
 
+.conversation-item:hover {
+    background: var(--color-bg-muted);
+}
+
+.conversation-item--active {
+    background: var(--color-bg-muted);
+    border-left: 3px solid var(--color-primary);
+}
+
+.conversation-item--pinned {
+    background: var(--color-bg-muted);
+}
+
+.conversation-item--pinned::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--color-warning);
+}
+
+/* Avatar - Chuẩn hóa, không dùng gradient */
 .conversation-item__avatar {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: var(--radius-base);
     overflow: hidden;
     flex-shrink: 0;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: center;
+}
 
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+.conversation-item__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .conversation-item__avatar-placeholder {
-    color: white;
-    font-weight: 700;
-    font-size: 1.125rem;
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
 }
 
 .conversation-item__content {
@@ -321,22 +353,22 @@ const handleSearch = () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-1);
 }
 
 .conversation-item__name {
     margin: 0;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .conversation-item__time {
-    font-size: 0.75rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     white-space: nowrap;
     flex-shrink: 0;
@@ -348,7 +380,7 @@ const handleSearch = () => {
 }
 
 .conversation-item__last-message {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -360,21 +392,41 @@ const handleSearch = () => {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
     flex-shrink: 0;
+}
+
+.conversation-item__badges .badge {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    background: var(--color-primary);
+    color: #ffffff;
 }
 
 .conversation-item__actions {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-base);
     flex-shrink: 0;
 }
 
 .conversation-item:hover .conversation-item__actions {
     opacity: 1;
+}
+
+.conversation-item__actions .btn {
+    padding: var(--spacing-1);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+}
+
+.conversation-item__actions .btn:hover {
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .chat-sidebar__loading,
@@ -383,14 +435,48 @@ const handleSearch = () => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem var(--component-padding);
+    padding: var(--spacing-6) var(--spacing-4);
+    color: var(--color-text-muted);
+    gap: var(--spacing-3);
+}
+
+.chat-sidebar__loading i,
+.chat-sidebar__empty i {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.chat-sidebar__loading span,
+.chat-sidebar__empty p {
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
 }
 
 .chat-sidebar__pagination {
-    padding: var(--component-padding-sm);
+    padding: var(--spacing-3);
     border-top: 1px solid var(--color-border);
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
+}
+
+.chat-sidebar__pagination .btn {
+    width: 100%;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    gap: 6px;
+}
+
+.chat-sidebar__pagination .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chat-sidebar {
+        width: 100%;
+    }
 }
 </style>
 

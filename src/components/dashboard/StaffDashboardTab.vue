@@ -216,57 +216,57 @@ defineProps({
     padding: 0;
 }
 
-/* KPI Cards */
+/* KPI Cards - Chuẩn hóa theo base.css */
 .kpi-card {
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    border-radius: 24px;
-    padding: var(--spacing-6);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
     transition: all var(--transition-base);
-    min-height: 140px;
+    min-height: 120px;
     height: 100%;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-hover);
 }
 
 .kpi-card__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: 24px;
     flex-shrink: 0;
-    color: #6366f1;
-    position: relative;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
 }
 
+/* Màu icon - không dùng gradient, dùng màu nhạt */
 .kpi-card--revenue .kpi-card__icon {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .kpi-card--average .kpi-card__icon {
-    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-info);
 }
 
 .kpi-card--shifts .kpi-card__icon {
-    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-secondary);
 }
 
 .kpi-card--salary .kpi-card__icon {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-accent);
 }
 
 .kpi-card__content {
@@ -275,89 +275,76 @@ defineProps({
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: none;
-    letter-spacing: normal;
     margin-bottom: var(--spacing-2);
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
-    margin-bottom: var(--spacing-1);
 }
 
 .kpi-card__detail {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     margin-top: var(--spacing-1);
-    line-height: var(--line-height-relaxed);
+    line-height: var(--line-height-base);
 }
 
-/* Info Cards */
+/* Info Cards - Chuẩn hóa */
 .info-card {
     height: 100%;
 }
 
 .info-card .card-header {
     border-bottom: 1px solid var(--color-border);
-    padding: 1.25rem 1.5rem;
-    background: var(--color-card-muted);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
 }
 
 .info-card__icon {
     width: 40px;
     height: 40px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    border-radius: var(--radius-base);
+    background: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 1.25rem;
+    font-size: 20px;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    filter: brightness(1.05) contrast(1.1);
 }
 
-.info-card__icon i {
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-}
-
-
-/* Attendance Status */
+/* Attendance Status - Chuẩn hóa */
 .attendance-status {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: var(--spacing-4);
 }
 
 .attendance-status__indicator {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 32px;
     flex-shrink: 0;
-    color: white;
+    color: #ffffff;
 }
 
 .attendance-status__indicator--active {
-    background: linear-gradient(135deg, #22c55e, #4ade80);
-    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+    background: var(--color-success);
 }
 
 .attendance-status__indicator--inactive {
-    background: linear-gradient(135deg, #94a3b8, #cbd5e1);
-    box-shadow: 0 10px 25px rgba(148, 163, 184, 0.3);
+    background: var(--color-secondary);
 }
 
 .attendance-status__info {
@@ -365,144 +352,156 @@ defineProps({
 }
 
 .attendance-status__label {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-heading);
-    margin-bottom: 0.5rem;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
 }
 
 .attendance-status__detail {
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
 }
 
-/* Shift Summary */
+/* Shift Summary - Chuẩn hóa */
 .shift-summary {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: var(--spacing-3);
 }
 
 .shift-summary__item {
-    padding: 1rem;
-    background: rgba(148, 163, 184, 0.05);
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--color-bg-muted);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
+    border-radius: var(--radius-base);
 }
 
 .shift-summary__label {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-2);
 }
 
 .shift-summary__value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
 }
 
 .shift-summary__value--success {
-    color: #22c55e;
+    color: var(--color-success);
 }
 
 .shift-summary__value--warning {
-    color: #f59e0b;
+    color: var(--color-warning);
 }
 
 .shift-summary__value--danger {
-    color: #ef4444;
+    color: var(--color-danger);
 }
 
 .shift-summary__value--info {
-    color: #3b82f6;
+    color: var(--color-info);
 }
 
-/* Performance Metrics */
+/* Performance Metrics - Chuẩn hóa */
 .performance-metrics {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--spacing-3);
 }
 
 .performance-metrics__item {
-    padding: 1rem;
-    background: rgba(148, 163, 184, 0.05);
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--color-bg-muted);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
+    border-radius: var(--radius-base);
 }
 
 .performance-metrics__label {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-2);
 }
 
 .performance-metrics__value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
 }
 
 .performance-metrics__value--success {
-    color: #22c55e;
+    color: var(--color-success);
 }
 
 .performance-metrics__value--danger {
-    color: #ef4444;
+    color: var(--color-danger);
 }
 
-/* Payroll Details */
+/* Payroll Details - Chuẩn hóa */
 .payroll-details {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--spacing-3);
 }
 
 .payroll-details__item {
-    padding: 1rem;
-    background: rgba(148, 163, 184, 0.05);
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--color-bg-muted);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
+    border-radius: var(--radius-base);
 }
 
 .payroll-details__label {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-2);
 }
 
 .payroll-details__value {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
 }
 
 .payroll-details__value--success {
-    color: #22c55e;
+    color: var(--color-success);
 }
 
 .payroll-details__value--danger {
-    color: #ef4444;
+    color: var(--color-danger);
 }
 
 @media (max-width: 768px) {
     .kpi-card {
         flex-direction: column;
         text-align: center;
+        min-height: auto;
+    }
+    
+    .kpi-card__icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
     }
 
     .shift-summary {
         grid-template-columns: 1fr;
+    }
+    
+    .attendance-status {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .attendance-status__indicator {
+        width: 56px;
+        height: 56px;
+        font-size: 28px;
     }
 }
 </style>

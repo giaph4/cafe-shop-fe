@@ -281,58 +281,57 @@ watch(() => props.range, (newRange) => {
     padding: 0;
 }
 
-
-/* KPI Cards */
+/* KPI Cards - Chuẩn hóa theo base.css */
 .kpi-card {
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    border-radius: 24px;
-    padding: var(--spacing-6);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
     transition: all var(--transition-base);
-    min-height: 140px;
+    min-height: 120px;
     height: 100%;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-hover);
 }
 
 .kpi-card__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: 24px;
     flex-shrink: 0;
-    color: #6366f1;
-    position: relative;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
 }
 
+/* Màu icon - không dùng gradient, dùng màu nhạt */
 .kpi-card--revenue .kpi-card__icon {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .kpi-card--month .kpi-card__icon {
-    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-secondary);
 }
 
 .kpi-card--orders .kpi-card__icon {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-accent);
 }
 
 .kpi-card--inventory .kpi-card__icon {
-    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
-    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
 }
 
 .kpi-card__content {
@@ -341,134 +340,125 @@ watch(() => props.range, (newRange) => {
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: none;
-    letter-spacing: normal;
     margin-bottom: var(--spacing-2);
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
-    margin-bottom: var(--spacing-1);
 }
 
 .kpi-card__detail {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     margin-top: var(--spacing-1);
-    line-height: var(--line-height-relaxed);
+    line-height: var(--line-height-base);
 }
 
-/* Info Cards */
+/* Info Cards - Chuẩn hóa */
 .info-card {
     height: 100%;
 }
 
 .info-card .card-header {
     border-bottom: 1px solid var(--color-border);
-    padding: 1.25rem 1.5rem;
-    background: var(--color-card-muted);
+    padding: var(--spacing-4);
+    background: var(--color-bg);
 }
 
 .info-card__icon {
     width: 40px;
     height: 40px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    border-radius: var(--radius-base);
+    background: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 1.25rem;
+    font-size: 20px;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    filter: brightness(1.05) contrast(1.1);
 }
 
-.info-card__icon i {
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-}
-
-
-/* Alert List */
+/* Alert List - Chuẩn hóa, không dùng alert */
 .alert-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
 }
 
 .alert-item {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-radius: 12px;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
     border: 1px solid;
+    font-size: var(--font-size-base);
 }
 
 .alert-item__icon {
-    font-size: 1.25rem;
+    font-size: 20px;
     flex-shrink: 0;
-    margin-top: 0.125rem;
+    margin-top: 2px;
 }
 
 .alert-item__content {
     flex: 1;
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
 }
 
 .alert-item--danger {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #dc2626;
+    background: var(--color-bg-muted);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
 .alert-item--warning {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: rgba(245, 158, 11, 0.3);
-    color: #d97706;
+    background: var(--color-bg-muted);
+    border-color: var(--color-warning);
+    color: var(--color-warning);
 }
 
 .alert-item--info {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #2563eb;
+    background: var(--color-bg-muted);
+    border-color: var(--color-info);
+    color: var(--color-info);
 }
 
 .alert-item--secondary {
-    background: rgba(148, 163, 184, 0.1);
-    border-color: rgba(148, 163, 184, 0.3);
-    color: #64748b;
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
 }
 
-/* Top List */
+/* Top List - Chuẩn hóa */
 .top-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
 }
 
 .top-list-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background: rgba(148, 163, 184, 0.05);
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--color-bg-muted);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
 }
 
 .top-list-item:hover {
-    background: rgba(148, 163, 184, 0.1);
-    transform: translateX(4px);
+    background: var(--color-bg);
+    border-color: var(--color-border-strong);
 }
 
 .top-list-item__content {
@@ -477,34 +467,40 @@ watch(() => props.range, (newRange) => {
 }
 
 .top-list-item__name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--color-heading);
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-1);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .top-list-item__detail {
-    font-size: 0.85rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
 }
 
 .top-list-item__value {
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
     color: var(--color-primary);
     white-space: nowrap;
-    margin-left: 1rem;
+    margin-left: var(--spacing-4);
     flex-shrink: 0;
 }
-
 
 @media (max-width: 768px) {
     .kpi-card {
         flex-direction: column;
         text-align: center;
+        min-height: auto;
+    }
+    
+    .kpi-card__icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
     }
 }
 </style>

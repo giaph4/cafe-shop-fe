@@ -1092,7 +1092,7 @@ onBeforeUnmount(() => modalInstance?.dispose())
 @media (max-width: 992px) {
     .assignment-form .card-body,
     .assignment-table .card-body {
-        padding: var(--component-padding-sm);
+        padding: var(--spacing-3);
     }
 }
 

@@ -148,8 +148,8 @@
         />
 
         <Teleport to="body">
-            <div class="modal fade" tabindex="-1" aria-labelledby="deleteCustomerModalLabel" aria-hidden="true" ref="deleteModalRef">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal fade customer-delete-modal" tabindex="-1" aria-labelledby="deleteCustomerModalLabel" aria-hidden="true" ref="deleteModalRef">
+                <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="modal-header__content">
@@ -778,20 +778,21 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Header - Chuẩn hóa theo base.css */
 .customers-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
 }
 
 .customers-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
 .customers-header__title-section {
@@ -801,25 +802,24 @@ onBeforeUnmount(() => {
 
 .customers-header__title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
 }
 
 .customers-header__subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
 }
 
 .customers-header__actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
@@ -834,65 +834,186 @@ onBeforeUnmount(() => {
 .customers-header__actions .form-check-label {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     white-space: nowrap;
 }
 
-@media (max-width: 768px) {
-    .customers-header__content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .customers-header__actions {
-        width: 100%;
-        justify-content: flex-start;
-    }
+.customers-header__actions .btn {
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
 }
-</style>
 
-<style scoped>
-/* Page-specific styles only - Global styles (.page-header.card-shadow, .page-title, .page-subtitle, .filter-card, .tabs-card, .reports-tabs, .state-block) are in components.scss */
+.customers-header__actions .btn:hover:not(:disabled) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
 
+.customers-header__actions .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.customers-header__actions .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Filter Card - Chuẩn hóa theo base.css */
+.filter-card {
+    margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+}
+
+.filter-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.filter-card :global(.row.g-3) {
+    row-gap: var(--spacing-3);
+}
+
+.filter-card :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.filter-card :global(.input-group-text) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-right: none;
+    border-radius: var(--radius-base) 0 0 var(--radius-base);
+    background: var(--color-bg-muted);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacing-3);
+}
+
+.filter-card :global(.input-group-text i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.filter-card :global(.input-group .form-control) {
+    height: 40px;
+    border-left: none;
+    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+}
+
+.filter-card :global(.form-control),
+.filter-card :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.filter-card :global(.form-control:focus),
+.filter-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.filter-card :global(.btn) {
+    height: 40px;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    color: var(--color-text);
+    border-color: var(--color-border);
+    background: transparent;
+}
+
+.filter-card :global(.btn:hover:not(:disabled)) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.filter-card :global(.btn i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Tabs Card - Chuẩn hóa theo base.css */
+.tabs-card {
+    margin-bottom: 0;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+}
+
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Customer Tabs - Chuẩn hóa theo base.css */
 .customer-tabs {
     display: flex;
-    gap: 0.75rem;
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    padding: 0.6rem;
-    border-radius: var(--radius-md);
+    gap: var(--spacing-2);
+    background: var(--color-bg-muted);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-soft);
     overflow-x: auto;
+    margin-bottom: var(--spacing-4);
 }
 
 .customer-tab {
     border: none;
     background: transparent;
-    padding: 0.75rem 1.35rem;
-    border-radius: 12px;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    font-weight: 600;
+    gap: 6px;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all var(--transition-base);
+    white-space: nowrap;
 }
 
 .customer-tab i {
-    font-size: 1.15rem;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.customer-tab:hover:not(.active) {
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 .customer-tab.active {
-    background: var(--color-soft-primary);
-    color: var(--color-primary);
+    background: var(--color-primary);
+    color: #ffffff;
 }
 
+/* Delete Info Card in Modal - Chuẩn hóa */
 .delete-info-card {
     padding: var(--spacing-4);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
@@ -906,7 +1027,7 @@ onBeforeUnmount(() => {
 }
 
 .delete-info-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     flex-shrink: 0;
@@ -914,9 +1035,121 @@ onBeforeUnmount(() => {
 }
 
 .delete-info-value {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text);
     text-align: right;
     word-break: break-word;
+}
+
+/* Delete Modal - Chuẩn hóa theo base.css */
+.customer-delete-modal :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.customer-delete-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.customer-delete-modal :global(.modal-header__content) {
+    flex: 1;
+}
+
+.customer-delete-modal :global(.modal-title) {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+}
+
+.customer-delete-modal :global(.modal-subtitle) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    margin-bottom: 0;
+}
+
+.customer-delete-modal :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
+}
+
+.customer-delete-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    gap: var(--spacing-2);
+    justify-content: flex-end;
+}
+
+.customer-delete-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: 8px 16px;
+    color: var(--color-text);
+    background: transparent;
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.customer-delete-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.customer-delete-modal :global(.btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    gap: 6px;
+}
+
+.customer-delete-modal :global(.btn-danger:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.customer-delete-modal :global(.btn-danger:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive cho Customers Page */
+@media (max-width: 768px) {
+    .customers-header__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .customers-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .customer-tabs {
+        gap: var(--spacing-1);
+    }
+
+    .customer-tab {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-base);
+    }
+
+    .customer-delete-modal :global(.modal-dialog) {
+        max-width: 90%;
+        margin: var(--spacing-4) auto;
+    }
+
+    .customer-delete-modal :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
 }
 </style>

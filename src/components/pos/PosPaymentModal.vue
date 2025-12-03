@@ -87,6 +87,116 @@
                         </section>
 
                         <section v-if="!isPaid" class="payment-options mt-4">
+                            <!-- Customer Phone Number -->
+                            <div class="payment-customer mb-4">
+                                <h6 class="mb-2">Thông tin khách hàng</h6>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-telephone"></i>
+                                    </span>
+                                    <input
+                                        v-model.trim="customerPhone"
+                                        type="tel"
+                                        class="form-control"
+                                        placeholder="Nhập số điện thoại (tùy chọn)"
+                                        :disabled="processing || customerLoading"
+                                        @blur="handlePhoneBlur"
+                                    />
+                                    <button
+                                        v-if="customerLoading"
+                                        class="btn btn-outline-secondary"
+                                        type="button"
+                                        disabled
+                                    >
+                                        <span class="spinner-border spinner-border-sm"></span>
+                                    </button>
+                                    <button
+                                        v-else-if="customerPhone && !foundCustomer"
+                                        class="btn btn-outline-primary"
+                                        type="button"
+                                        :disabled="processing"
+                                        @click="handleFindOrCreateCustomer"
+                                    >
+                                        <i class="bi bi-search me-1"></i>Tìm/Tạo
+                                    </button>
+                                </div>
+                                <div v-if="foundCustomer" class="mt-2">
+                                    <small class="text-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Khách hàng: {{ foundCustomer.fullName || foundCustomer.phone }}
+                                    </small>
+                                </div>
+                                <div v-if="customerError" class="mt-2">
+                                    <small class="text-danger">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        {{ customerError }}
+                                    </small>
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Nếu số điện thoại không tồn tại, hệ thống sẽ tự động tạo khách hàng mới
+                                </small>
+                            </div>
+
+                            <!-- Voucher Code -->
+                            <div class="payment-voucher mb-4">
+                                <h6 class="mb-2">Mã giảm giá</h6>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-ticket-perforated"></i>
+                                    </span>
+                                    <input
+                                        v-model.trim="voucherCode"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="Nhập mã voucher"
+                                        :disabled="processing || voucherLoading || !canApplyVoucher"
+                                        @blur="handleVoucherBlur"
+                                    />
+                                    <button
+                                        v-if="voucherLoading"
+                                        class="btn btn-outline-secondary"
+                                        type="button"
+                                        disabled
+                                    >
+                                        <span class="spinner-border spinner-border-sm"></span>
+                                    </button>
+                                    <button
+                                        v-else-if="voucherCode && !voucherApplied"
+                                        class="btn btn-outline-primary"
+                                        type="button"
+                                        :disabled="processing || !canApplyVoucher"
+                                        @click="handleCheckVoucher"
+                                    >
+                                        <i class="bi bi-search me-1"></i>Kiểm tra
+                                    </button>
+                                    <button
+                                        v-else-if="voucherApplied"
+                                        class="btn btn-outline-danger"
+                                        type="button"
+                                        :disabled="processing"
+                                        @click="handleRemoveVoucher"
+                                    >
+                                        <i class="bi bi-x-circle me-1"></i>Bỏ
+                                    </button>
+                                </div>
+                                <div v-if="voucherCheckResult" class="mt-2">
+                                    <small :class="voucherCheckResult.valid ? 'text-success' : 'text-danger'">
+                                        <i :class="voucherCheckResult.valid ? 'bi bi-check-circle' : 'bi bi-x-circle'" class="me-1"></i>
+                                        {{ voucherCheckResult.message }}
+                                        <span v-if="voucherCheckResult.valid && voucherCheckResult.discountAmount">
+                                            - Giảm: {{ formatCurrency(voucherCheckResult.discountAmount) }}
+                                        </span>
+                                    </small>
+                                </div>
+                                <div v-if="!canApplyVoucher" class="mt-2">
+                                    <small class="text-warning">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Voucher chỉ áp dụng được khi đơn hàng đã được lưu
+                                    </small>
+                                </div>
+                            </div>
+
                             <div class="payment-methods mb-4">
                                 <h6 class="mb-2">Chọn phương thức thanh toán</h6>
                                 <div class="btn-group payment-methods__group" role="group">
@@ -178,6 +288,9 @@ import { printInvoiceToWindow } from '@/utils/invoicePrinter'
 import { toast } from 'vue3-toastify'
 import logger from '@/utils/logger'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { getCustomerByPhone, createCustomer } from '@/api/customerService'
+import { checkVoucher, applyVoucher as applyVoucherApi, removeVoucher as removeVoucherApi } from '@/api/voucherService'
+import * as orderService from '@/api/orderService'
 
 const props = defineProps({
     order: { type: Object, default: null },
@@ -194,6 +307,18 @@ const localOrder = ref(null)
 const printing = ref(false)
 const selectedPaymentMethod = ref('CASH')
 const tipAmount = ref(0)
+
+// Customer phone
+const customerPhone = ref('')
+const foundCustomer = ref(null)
+const customerLoading = ref(false)
+const customerError = ref(null)
+
+// Voucher
+const voucherCode = ref('')
+const voucherCheckResult = ref(null)
+const voucherLoading = ref(false)
+const voucherApplied = ref(false)
 
 const STATUS_METADATA = Object.freeze({
     PENDING: { label: 'Đang chờ', class: 'status-pill--pending' },
@@ -239,10 +364,18 @@ const displayTipAmount = computed(() => {
 
 const calculatedTotalAmount = computed(() => {
     const baseSubTotal = localOrder.value?.subTotal ?? subTotal.value
-    const discount = discountAmount.value
+    // Nếu có voucher check result và chưa apply, tính discount từ đó
+    let discount = discountAmount.value
+    if (voucherCheckResult.value?.valid && voucherCheckResult.value.discountAmount && !voucherApplied.value) {
+        discount = voucherCheckResult.value.discountAmount
+    }
     const tip = displayTipAmount.value
     const amountAfterDiscount = Math.max(baseSubTotal - discount, 0)
     return Math.max(amountAfterDiscount + tip, 0)
+})
+
+const canApplyVoucher = computed(() => {
+    return localOrder.value?.id != null
 })
 const tableLabel = computed(() => {
     if (localOrder.value?.tableName) return localOrder.value.tableName
@@ -265,6 +398,12 @@ const syncOrder = (incoming) => {
     if (!incoming) {
         localOrder.value = null
         tipAmount.value = 0
+        customerPhone.value = ''
+        foundCustomer.value = null
+        customerError.value = null
+        voucherCode.value = ''
+        voucherCheckResult.value = null
+        voucherApplied.value = false
         return
     }
     try {
@@ -285,6 +424,24 @@ const syncOrder = (incoming) => {
     } else {
         tipAmount.value = 0
     }
+
+    // Khôi phục customer info
+    if (localOrder.value?.customerPhone) {
+        customerPhone.value = localOrder.value.customerPhone
+    } else if (localOrder.value?.customer?.phone) {
+        customerPhone.value = localOrder.value.customer.phone
+        foundCustomer.value = localOrder.value.customer
+    }
+
+    // Khôi phục voucher info
+    if (localOrder.value?.voucherCode) {
+        voucherCode.value = localOrder.value.voucherCode
+        voucherApplied.value = true
+    } else {
+        voucherCode.value = ''
+        voucherApplied.value = false
+    }
+    voucherCheckResult.value = null
 }
 
 watch(() => props.order, syncOrder, { immediate: true })
@@ -369,25 +526,29 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
+/* Modal - Chuẩn hóa theo base.css */
 .pos-payment-modal :global(.modal-content) {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
 }
 
 .pos-payment-modal :global(.modal-header) {
-    padding: var(--spacing-6) var(--spacing-6) var(--spacing-4);
+    padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
 }
 
 .pos-payment-modal :global(.modal-body) {
-    padding: 0 var(--spacing-6) var(--spacing-6);
+    padding: var(--spacing-5);
+    background: var(--color-bg);
 }
 
 .pos-payment-modal :global(.modal-footer) {
-    padding: var(--spacing-4) var(--spacing-6) var(--spacing-6);
+    padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
 }
 
 .payment-meta li {
@@ -498,8 +659,8 @@ defineExpose({ show, hide })
 }
 
 .payment-tip .input-group-text {
-    background: var(--color-success-soft);
-    border-color: var(--color-success-border-soft);
+    background: var(--color-bg-muted);
+    border-color: var(--color-success);
     color: var(--color-success);
 }
 

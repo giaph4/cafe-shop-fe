@@ -129,7 +129,8 @@
                                 <div v-if="ordersLoading" class="text-center py-3">
                                     <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                 </div>
-                                <div v-else-if="ordersError" class="alert alert-warning mb-0">
+                                <div v-else-if="ordersError" class="error-message mb-0">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
                                     {{ ordersError }}
                                 </div>
                                 <EmptyState
@@ -355,59 +356,80 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
-:deep(.modal-content) {
-    border-radius: var(--radius-xl);
+/* Customer Detail Modal - Chuẩn hóa theo base.css */
+.customer-detail-modal :global(.modal-content) {
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
 }
 
-:deep(.modal-header) {
+.customer-detail-modal :global(.modal-header) {
+    padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
-    background: var(--color-card);
+    background: var(--color-bg);
 }
 
-:deep(.modal-header .modal-title) {
+.modal-header__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.customer-detail-modal :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-1);
 }
 
-:deep(.modal-header .text-muted.small) {
+.modal-subtitle {
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
+    margin-bottom: 0;
+    line-height: var(--line-height-base);
 }
 
-.modal-body {
-    padding: var(--spacing-6);
+.customer-detail-modal :global(.modal-body) {
+    padding: var(--spacing-5);
+    background: var(--color-bg);
     max-height: 70vh;
     overflow-y: auto;
 }
 
-:deep(.modal-footer) {
+.customer-detail-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
-    background: var(--color-card);
+    background: var(--color-bg);
+    gap: var(--spacing-2);
+    justify-content: flex-end;
 }
 
+/* Info Section - Chuẩn hóa */
 .info-section {
-    padding-bottom: var(--spacing-6);
+    padding-bottom: var(--spacing-5);
     border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-5);
 }
 
 .info-section:last-of-type {
     border-bottom: none;
     padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 .section-title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
-    font-size: var(--font-size-base);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
     display: flex;
     align-items: center;
+    gap: 6px;
+    margin-bottom: var(--spacing-3);
+}
+
+.section-title i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .info-item {
@@ -417,58 +439,66 @@ defineExpose({ show, hide })
 }
 
 .info-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
 }
 
 .info-value {
-    font-size: var(--font-size-sm);
-    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
     font-weight: var(--font-weight-semibold);
 }
 
+/* Stat Box - Chuẩn hóa */
 .stat-box {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: 24px;
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    transition: all var(--transition-base);
+}
+
+.stat-box:hover {
+    box-shadow: var(--shadow-hover);
 }
 
 .stat-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.75rem;
-    color: #6366f1;
+    font-size: 24px;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
 }
 
+/* Màu icon - không dùng gradient, dùng màu nhạt */
 .stat-icon--purple {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .stat-icon--green {
-    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    background: var(--color-bg-muted);
+    color: var(--color-success);
 }
 
 .stat-icon--blue {
-    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
+    background: var(--color-bg-muted);
+    color: var(--color-info);
 }
 
 .stat-icon--yellow {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
 }
 
 .stat-info {
@@ -477,23 +507,24 @@ defineExpose({ show, hide })
 }
 
 .stat-label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-1);
+    margin-bottom: var(--spacing-2);
     font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
 }
 
 .stat-value.small {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
 }
 
+/* Orders List - Chuẩn hóa */
 .orders-list {
     display: flex;
     flex-direction: column;
@@ -502,13 +533,103 @@ defineExpose({ show, hide })
 
 .order-item {
     padding: var(--spacing-4);
-    border-radius: var(--radius-md);
-    background: var(--color-card-muted);
+    border-radius: var(--radius-base);
+    background: var(--color-bg-muted);
     border: 1px solid var(--color-border);
-    transition: background-color var(--transition-fast);
+    transition: all var(--transition-base);
 }
 
 .order-item:hover {
-    background: var(--color-card-accent);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+}
+
+/* Badge - Chuẩn hóa */
+.customer-detail-modal :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Error message - không dùng alert */
+.error-message {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-warning);
+    background: var(--color-bg-muted);
+    color: var(--color-warning);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.error-message i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Buttons - Chuẩn hóa */
+.customer-detail-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.customer-detail-modal :global(.btn-primary:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.customer-detail-modal :global(.btn-primary i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.customer-detail-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: 8px 16px;
+    color: var(--color-text);
+    background: transparent;
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.customer-detail-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .customer-detail-modal :global(.modal-dialog) {
+        max-width: 90%;
+        margin: var(--spacing-4) auto;
+    }
+
+    .customer-detail-modal :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
+
+    .stat-box {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
 }
 </style>

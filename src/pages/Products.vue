@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="products-page container-fluid" data-aos="fade-up">
         <div class="products-header">
             <div class="products-header__content">
                 <div class="products-header__title-section">
@@ -206,7 +206,7 @@
                                             class="btn btn-sm status-toggle-btn"
                                             :class="product.available ? 'status-toggle-btn--active' : 'status-toggle-btn--inactive'"
                                             :disabled="isToggling(product.id)"
-                                            @click="handleToggleAvailability(product)"
+                                            @click="openToggleModal(product)"
                                         >
                                             <span v-if="isToggling(product.id)" class="spinner-border spinner-border-sm"></span>
                                             <template v-else>
@@ -273,7 +273,7 @@
                                     class="btn btn-sm status-toggle-btn"
                                     :class="product.available ? 'status-toggle-btn--active' : 'status-toggle-btn--inactive'"
                                     :disabled="isToggling(product.id)"
-                                    @click="handleToggleAvailability(product)"
+                                    @click="openToggleModal(product)"
                                 >
                                     <span v-if="isToggling(product.id)" class="spinner-border spinner-border-sm"></span>
                                     <template v-else>
@@ -538,6 +538,10 @@ const deleteModalRef = ref(null)
 const deletingProduct = ref(false)
 let deleteModalInstance = null
 
+const toggleTarget = ref(null)
+const toggleModalRef = ref(null)
+let toggleModalInstance = null
+
 const debounce = (fn, delay = 300) => {
     let timeoutId
     return (...args) => {
@@ -561,6 +565,7 @@ const isTableLayout = computed(() => layoutMode.value === 'table')
 const router = useRouter()
 const route = useRoute()
 
+// Pagination truyền thống
 const {
     zeroBasedPage,
     currentPage,
@@ -584,10 +589,6 @@ syncQuery(route, router, {
     sizeParam: 'size'
 })
 
-onBeforeRouteLeave(() => {
-    rememberCurrent()
-})
-
 const setLayout = (mode) => {
     if (layoutMode.value === mode) return
     layoutMode.value = mode
@@ -601,7 +602,7 @@ let suppressWatcherFetch = false
 
 const fetchProducts = async () => {
     const requestedPage = zeroBasedPage.value
-    
+
     await execute(async () => {
         const response = await productService.getProducts({
             name: filters.name,
@@ -631,7 +632,7 @@ const fetchProducts = async () => {
         })
         suppressWatcherFetch = false
         if (adjusted) {
-            toast.info('Trang đang xem đã được điều chỉnh theo số trang khả dụng.', {autoClose: 2500})
+            restoreRemembered()
         }
     }, 'Không thể tải danh sách sản phẩm.')
 }
@@ -709,6 +710,25 @@ const confirmDeleteProduct = async () => {
     }
 }
 
+const openToggleModal = (product) => {
+    if (!product?.id) return
+    toggleTarget.value = product
+    nextTick(() => {
+        toggleModalInstance?.show()
+    })
+}
+
+const closeToggleModal = () => {
+    toggleModalInstance?.hide()
+    toggleTarget.value = null
+}
+
+const handleToggleConfirm = async () => {
+    if (!toggleTarget.value?.id) return
+    await handleToggleAvailability(toggleTarget.value)
+    closeToggleModal()
+}
+
 const handleToggleAvailability = async (product) => {
     if (!product?.id) return
     togglingAvailability[product.id] = true
@@ -757,6 +777,10 @@ watch(
     {immediate: true}
 )
 
+onBeforeRouteLeave(() => {
+    rememberCurrent()
+})
+
 fetchCategories()
 
 // Khởi tạo modal xóa
@@ -768,60 +792,163 @@ watch(
     },
     {immediate: true}
 )
+
+// Khởi tạo modal toggle
+watch(
+    () => toggleModalRef.value,
+    (element) => {
+        if (!element) return
+        toggleModalInstance = new Modal(element, {backdrop: 'static'})
+    },
+    {immediate: true}
+)
 </script>
 
 <style scoped>
 /* Page-specific styles only - Global styles (.page-header, .page-title, .page-subtitle, .filter-card, .state-block) are in components.scss */
 
+/* Filter Card - Chuẩn hóa theo base.css */
+.filter-card {
+    margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+}
+
+.filter-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.filter-card :global(.form-label) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.filter-card :global(.form-control),
+.filter-card :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.filter-card :global(.form-control:focus),
+.filter-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+}
+
+.filter-card :global(.input-group-text) {
+    height: 40px;
+    background: var(--color-bg-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+    padding: var(--spacing-2) var(--spacing-3);
+}
+
+.filter-card :global(.input-group-text i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.filter-card :global(.btn-outline-secondary) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-card :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-bg-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.filter-card :global(.btn-outline-secondary i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
 .layout-toggle .btn {
     min-width: 120px;
+    font-weight: var(--font-weight-medium);
+}
+
+/* Table - Chuẩn hóa theo base.css */
+.products-page :global(.table) {
+    margin-bottom: 0;
+}
+
+.products-page :global(.table thead th) {
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3) var(--spacing-4);
+    vertical-align: middle;
 }
 
-.search-field .input-group-text {
-    background: var(--color-card-muted);
-    border-right: none;
-    color: var(--color-text-muted);
+.products-page :global(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
 }
 
-.search-field .form-control {
-    border-left: none;
-    background: var(--color-card);
+.products-page :global(.table tbody tr:hover) {
+    background: var(--color-bg-muted);
 }
 
 .product-thumb {
     width: 56px;
     height: 56px;
     object-fit: cover;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
 }
 
+/* Status Pill - Chuẩn hóa */
 .status-pill {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-normal);
+    gap: 6px;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-base);
 }
 
 .status-pill--active {
-    background: var(--color-pill-active-bg);
-    color: var(--color-pill-active-text);
+    background: var(--color-bg-muted);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
 }
 
 .status-pill--inactive {
-    background: var(--color-pill-inactive-bg);
-    color: var(--color-pill-inactive-text);
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
 }
 
+/* Action Buttons - Chuẩn hóa theo base.css */
 .action-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: center;
 }
 
@@ -829,24 +956,27 @@ watch(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
+    background: var(--color-bg);
     color: var(--color-primary);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     white-space: nowrap;
     cursor: pointer;
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-soft-primary);
+    background: var(--color-primary);
+    color: #ffffff;
     border-color: var(--color-primary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+}
+
+.action-button:active:not(:disabled) {
+    filter: brightness(0.95);
 }
 
 .action-button:disabled {
@@ -855,98 +985,108 @@ watch(
     pointer-events: none;
 }
 
-.action-button--success {
-    border-color: rgba(16, 185, 129, 0.3);
-    color: var(--color-success);
-}
-
-.action-button--success:hover:not(:disabled) {
-    background: var(--color-soft-emerald);
-    border-color: var(--color-success);
-}
-
-.action-button--warning {
-    border-color: rgba(245, 158, 11, 0.3);
-    color: var(--color-warning);
-}
-
-.action-button--warning:hover:not(:disabled) {
-    background: var(--color-soft-amber);
-    border-color: var(--color-warning);
+.action-button i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .action-button--info {
-    border-color: rgba(99, 102, 241, 0.3);
+    border-color: var(--color-primary);
+    background: var(--color-bg);
     color: var(--color-primary);
 }
 
 .action-button--info:hover:not(:disabled) {
-    background: var(--color-soft-primary);
+    background: var(--color-primary);
+    color: #ffffff;
     border-color: var(--color-primary);
 }
 
 .action-button--danger {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--color-danger);
+    background: var(--color-bg);
     color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.15);
+    background: var(--color-danger);
+    color: #ffffff;
     border-color: var(--color-danger);
 }
 
-/* Status toggle button (table & grid) */
+/* Status Toggle Button - Chuẩn hóa */
 .status-toggle-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     border-width: 1px;
+    transition: all var(--transition-base);
+}
+
+.status-toggle-btn i {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .status-toggle-btn--active {
-    border-color: rgba(245, 158, 11, 0.4);
+    border-color: var(--color-warning);
     color: var(--color-warning);
-    background: var(--color-soft-amber);
+    background: var(--color-bg);
+}
+
+.status-toggle-btn--active:hover:not(:disabled) {
+    background: var(--color-warning);
+    color: #ffffff;
+    border-color: var(--color-warning);
 }
 
 .status-toggle-btn--inactive {
-    border-color: rgba(16, 185, 129, 0.4);
+    border-color: var(--color-success);
     color: var(--color-success);
-    background: var(--color-soft-emerald);
+    background: var(--color-bg);
+}
+
+.status-toggle-btn--inactive:hover:not(:disabled) {
+    background: var(--color-success);
+    color: #ffffff;
+    border-color: var(--color-success);
+}
+
+.status-toggle-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .status-toggle-btn__label {
     white-space: nowrap;
 }
 
-/* Product grid layout */
+/* Product Grid Layout - Chuẩn hóa */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
 .product-card {
-    border: 1px solid var(--color-border-soft);
-    border-radius: 24px;
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-4);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: all var(--transition-base);
 }
 
 .product-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-hover);
 }
 
 .product-card__media {
@@ -961,27 +1101,14 @@ watch(
 
 .product-card__media .status-pill {
     position: absolute;
-    top: var(--spacing-4);
-    left: var(--spacing-4);
+    top: var(--spacing-3);
+    left: var(--spacing-3);
     backdrop-filter: blur(6px);
-    border: 1px solid transparent;
-    box-shadow: var(--shadow-md);
-}
-
-.product-card__media .status-pill--active {
-    background: var(--color-pill-active-overlay-bg);
-    color: var(--color-pill-active-overlay-text);
-    border-color: var(--color-pill-active-overlay-border);
-}
-
-.product-card__media .status-pill--inactive {
-    background: var(--color-pill-inactive-overlay-bg);
-    color: var(--color-pill-inactive-overlay-text);
-    border-color: var(--color-pill-inactive-overlay-border);
+    box-shadow: var(--shadow-base);
 }
 
 .product-card__body {
-    padding: 0 var(--spacing-5);
+    padding: 0 var(--spacing-4);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-2);
@@ -990,7 +1117,7 @@ watch(
 .product-card__title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
 }
 
@@ -999,8 +1126,13 @@ watch(
     flex-wrap: wrap;
     gap: var(--spacing-3);
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+}
+
+.product-card__meta i {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .product-card__price {
@@ -1013,7 +1145,7 @@ watch(
 }
 
 .product-card__actions {
-    padding: 0 var(--spacing-5) var(--spacing-5);
+    padding: 0 var(--spacing-4) var(--spacing-4);
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--spacing-2);
@@ -1024,21 +1156,22 @@ watch(
 }
 
 
-/* Header */
+/* Header - Chuẩn hóa theo base.css */
 .products-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-soft);
-    background: var(--color-card);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+    margin-bottom: var(--spacing-5);
 }
 
 .products-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
 }
 
 .products-header__title-section {
@@ -1048,118 +1181,159 @@ watch(
 
 .products-header__title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
 }
 
 .products-header__subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
 }
 
 .products-header__actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     flex-wrap: wrap;
     justify-content: flex-end;
 }
 
-/* Dashboard-like layout tabs */
+.products-header__actions .btn {
+    padding: 8px 12px;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.products-header__actions .btn:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+
+.products-header__actions .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.products-header__actions .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.products-header__actions .btn-group {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.products-header__actions .btn-group .btn {
+    min-width: 120px;
+}
+
+/* Tabs - Chuẩn hóa theo base.css */
 .products-tabs {
     display: flex;
-    gap: 0.75rem;
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    padding: 0.6rem;
-    border-radius: var(--radius-md);
+    gap: var(--spacing-2);
+    background: var(--color-bg-muted);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-soft);
     overflow-x: auto;
 }
 
 .products-tab {
     border: none;
     background: transparent;
-    padding: 0.75rem 1.35rem;
-    border-radius: 12px;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    font-weight: 600;
+    gap: 6px;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all var(--transition-base);
+    white-space: nowrap;
 }
 
 .products-tab i {
-    font-size: 1.15rem;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.products-tab:hover:not(.active) {
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 .products-tab.active {
-    background: var(--color-soft-primary);
-    color: var(--color-primary);
+    background: var(--color-primary);
+    color: #ffffff;
 }
 
-/* KPI summary cards */
+/* KPI Cards - Chuẩn hóa theo base.css */
 .products-summary {
     margin-bottom: var(--spacing-4);
 }
 
 .kpi-card {
-    background: #f8fafc;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    border-radius: 24px;
-    padding: var(--spacing-5);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
     min-height: 120px;
     height: 100%;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition: all var(--transition-base);
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-hover);
 }
 
 .kpi-card__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: 24px;
     flex-shrink: 0;
-    color: #6366f1;
+    color: var(--color-primary);
+    background: var(--color-bg-muted);
 }
 
+/* Màu icon - không dùng gradient, dùng màu nhạt */
 .kpi-card--total .kpi-card__icon {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
 }
 
 .kpi-card--active .kpi-card__icon {
-    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    background: var(--color-bg-muted);
+    color: var(--color-success);
 }
 
 .kpi-card--inactive .kpi-card__icon {
-    background: linear-gradient(135deg, #fee2e2, #fecaca);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.18);
+    background: var(--color-bg-muted);
+    color: var(--color-danger);
 }
 
 .kpi-card--categories .kpi-card__icon {
-    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
+    background: var(--color-bg-muted);
+    color: var(--color-info);
 }
 
 .kpi-card__content {
@@ -1168,22 +1342,158 @@ watch(
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
     margin-bottom: var(--spacing-2);
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
+    color: var(--color-text);
     line-height: var(--line-height-tight);
 }
 
-@media (max-width: 768px) {
+/* Cards - Chuẩn hóa */
+.products-page :global(.card) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-base);
+}
+
+.products-page :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Delete Info Card - Chuẩn hóa */
+.delete-info-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.delete-info-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.delete-info-label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+.delete-info-value {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    text-align: right;
+    word-break: break-word;
+}
+
+/* Confirm Card - Chuẩn hóa */
+.confirm-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.confirm-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+}
+
+.confirm-label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+.confirm-value {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    text-align: right;
+    word-break: break-word;
+}
+
+/* Modal - Chuẩn hóa */
+.products-page :global(.modal-content) {
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-modal);
+}
+
+.products-page :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.products-page :global(.modal-header__content) {
+    flex: 1;
+}
+
+.products-page :global(.modal-title) {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: 0;
+}
+
+.products-page :global(.modal-subtitle) {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+.products-page :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-bg);
+}
+
+.products-page :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.products-page :global(.modal-footer .btn) {
+    padding: 8px 16px;
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.products-page :global(.modal-footer .btn:hover:not(:disabled)) {
+    filter: brightness(1.05);
+}
+
+.products-page :global(.modal-footer .btn:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
     .products-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -1194,12 +1504,31 @@ watch(
         justify-content: flex-start;
     }
 
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
+    }
+
+    .kpi-card__icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px) {
     .product-card__actions {
         grid-template-columns: 1fr;
     }
 
     .action-grid {
         flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
     }
 
     .layout-toggle {
@@ -1213,6 +1542,42 @@ watch(
     .status-toggle-btn__label {
         display: none;
     }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Infinite scroll sentinel */
+.infinite-scroll-sentinel {
+    padding: var(--spacing-6) var(--spacing-4);
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+}
+
+.no-more-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+}
+
+.no-more-data i {
+    font-size: 18px;
 }
 
 </style>

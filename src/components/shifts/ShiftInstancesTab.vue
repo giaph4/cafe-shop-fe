@@ -208,26 +208,66 @@ const handleRemove = (instance) => emit('remove', instance)
 const handlePageChange = (page) => emit('page-change', page)
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .filter-card,
 .table-card {
-    border-radius: var(--component-radius-lg);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--component-shadow);
-    background: var(--color-card);
+    box-shadow: var(--shadow-base);
+    background: var(--color-bg);
+}
+
+.filter-card :global(.card-body),
+.table-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.filter-card :global(.form-label) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2);
+}
+
+.table-card :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    background: var(--color-bg-muted);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table-card :global(.table tbody td) {
+    vertical-align: middle;
 }
 
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-2);
     justify-content: flex-end;
     align-items: center;
 }
 
+.action-buttons :global(.btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+}
+
+.action-buttons :global(.btn i) {
+    font-size: 16px;
+    line-height: 1;
+}
+
 @media (max-width: 992px) {
-    .filter-card .card-body {
-        padding: var(--component-padding-sm);
+    .filter-card :global(.card-body),
+    .table-card :global(.card-body) {
+        padding: var(--spacing-3);
     }
 }
 
@@ -237,19 +277,19 @@ const handlePageChange = (page) => emit('page-change', page)
         width: 100%;
     }
 
-    .action-buttons .btn {
+    .action-buttons :global(.btn) {
         width: 100%;
         justify-content: center;
     }
 
-    .filter-card .row {
+    .filter-card :global(.row) {
         margin-bottom: var(--spacing-3);
     }
 }
 
 @media (max-width: 576px) {
-    .table-responsive {
-        font-size: 0.875rem;
+    .table-card :global(.table-responsive) {
+        font-size: var(--font-size-sm);
     }
 }
 </style>

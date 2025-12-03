@@ -269,25 +269,20 @@ const fetchData = async () => {
 }
 
 const buildRevenueOptions = (categories) => ({
-    chart: {type: 'area', toolbar: {show: false}},
+    chart: { type: 'area', toolbar: { show: false } },
     xaxis: {
         categories,
-        labels: {style: {colors: '#7a706a', fontSize: '12px'}}
+        labels: { style: { colors: '#64748b', fontSize: '12px' } }
     },
     yaxis: {
-        labels: {formatter: (val) => formatCurrency(val), style: {colors: '#7a706a'}}
+        labels: { formatter: (val) => formatCurrency(val), style: { colors: '#64748b' } }
     },
-    dataLabels: {enabled: false},
-    stroke: {curve: 'smooth', width: 3},
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 3 },
     colors: ['#4f46e5'],
     fill: {
-        type: 'gradient',
-        gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.45,
-            opacityTo: 0.05,
-            stops: [0, 90, 100]
-        }
+        type: 'solid',
+        opacity: 0.15,
     }
 })
 
@@ -316,49 +311,57 @@ onBeforeUnmount(() => {
 .dashboard {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: var(--spacing-4);
 }
 
 .dashboard__header {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-4);
+}
+
+/* Tabs - Chuẩn theo base.css, tối giản, không gradient mạnh */
+.dashboard__tabs {
+    margin-bottom: var(--spacing-4);
 }
 
 .dashboard__tabs .tabs {
     display: flex;
-    gap: 0.75rem;
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    padding: 0.6rem;
-    border-radius: var(--radius-md);
+    gap: var(--spacing-2);
+    background: var(--color-bg-muted);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-soft);
     overflow-x: auto;
 }
 
 .tab {
     border: none;
     background: transparent;
-    padding: 0.75rem 1.35rem;
-    border-radius: 12px;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    font-weight: 600;
+    gap: 6px;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all var(--transition-base);
+    white-space: nowrap;
 }
 
 .tab i {
-    font-size: 1.15rem;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.tab:hover:not(.active) {
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 .tab.active {
-    background: var(--color-soft-primary);
-    color: var(--color-primary);
-}
-
-.dashboard__tabs {
-    margin-bottom: 1.5rem;
+    background: var(--color-primary);
+    color: #ffffff;
 }
 
 .dashboard__content {
@@ -367,7 +370,7 @@ onBeforeUnmount(() => {
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.2s ease;
+    transition: opacity var(--transition-base);
 }
 
 .fade-enter-from,
@@ -376,8 +379,12 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 992px) {
-    .filter-dates {
-        width: 100%;
+    .dashboard__header {
+        margin-bottom: var(--spacing-3);
+    }
+
+    .dashboard__tabs {
+        margin-bottom: var(--spacing-3);
     }
 
     .btn-group {

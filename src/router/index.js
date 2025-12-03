@@ -213,6 +213,12 @@ const routes = [
         component: () => import(/* webpackChunkName: "login" */ '../pages/Login.vue'),
         meta: { requiresGuest: true },
     },
+    {
+        path: '/portfolio',
+        name: 'Portfolio',
+        component: () => import(/* webpackChunkName: "portfolio" */ '../pages/Portfolio.vue'),
+        meta: { requiresAuth: false },
+    },
    {
        path: '/:pathMatch(.*)*',
        name: 'NotFound',

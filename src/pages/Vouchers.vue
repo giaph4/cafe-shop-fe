@@ -6,7 +6,7 @@
                     <div class="modal-header">
                         <div>
                             <h5 class="modal-title">{{ isEditing ? 'Cập nhật voucher' : 'Thêm voucher mới' }}</h5>
-                            <p class="mb-0 text-muted small">Điền đầy đủ thông tin voucher. Hệ thống sẽ kiểm tra tính hợp lệ trước khi lưu.</p>
+                            <p class="modal-subtitle">Điền đầy đủ thông tin voucher. Hệ thống sẽ kiểm tra tính hợp lệ trước khi lưu.</p>
                         </div>
                         <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                     </div>
@@ -23,7 +23,7 @@
                         <div class="modal-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Mã voucher <span class="text-danger">*</span></label>
+                                    <label class="form-label">Mã voucher <span class="required-mark">*</span></label>
                                     <Field
                                         name="code"
                                         type="text"
@@ -36,7 +36,7 @@
                                     <ErrorMessage name="code" class="invalid-feedback" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Loại voucher <span class="text-danger">*</span></label>
+                                    <label class="form-label">Loại voucher <span class="required-mark">*</span></label>
                                     <Field
                                         name="type"
                                         as="select"
@@ -50,7 +50,7 @@
                                     <ErrorMessage name="type" class="invalid-feedback" />
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Mô tả <span class="text-danger">*</span></label>
+                                    <label class="form-label">Mô tả <span class="required-mark">*</span></label>
                                     <Field
                                         name="description"
                                         as="textarea"
@@ -63,7 +63,7 @@
                                     <ErrorMessage name="description" class="invalid-feedback" />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Giá trị giảm <span class="text-danger">*</span></label>
+                                    <label class="form-label">Giá trị giảm <span class="required-mark">*</span></label>
                                     <div class="input-group">
                                         <Field
                                             name="discountValue"
@@ -112,7 +112,7 @@
                                     <ErrorMessage name="maximumDiscountAmount" class="invalid-feedback" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Hiệu lực từ <span class="text-danger">*</span></label>
+                                    <label class="form-label">Hiệu lực từ <span class="required-mark">*</span></label>
                                     <Field
                                         name="validFrom"
                                         type="datetime-local"
@@ -123,7 +123,7 @@
                                     <ErrorMessage name="validFrom" class="invalid-feedback" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Hiệu lực đến <span class="text-danger">*</span></label>
+                                    <label class="form-label">Hiệu lực đến <span class="required-mark">*</span></label>
                                     <Field
                                         name="validTo"
                                         type="datetime-local"
@@ -134,7 +134,7 @@
                                     <ErrorMessage name="validTo" class="invalid-feedback" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Giới hạn lượt sử dụng <span class="text-danger">*</span></label>
+                                    <label class="form-label">Giới hạn lượt sử dụng <span class="required-mark">*</span></label>
                                     <Field
                                         name="usageLimit"
                                         type="number"
@@ -147,7 +147,7 @@
                                     <ErrorMessage name="usageLimit" class="invalid-feedback" />
                                 </div>
                                 <div class="col-md-6 d-flex align-items-center">
-                                    <div class="form-check form-switch mt-4 pt-1">
+                                    <div class="form-switch-wrapper">
                                         <Field
                                             name="active"
                                             type="checkbox"
@@ -178,22 +178,20 @@
                     <div class="modal-header">
                         <div>
                             <h5 class="modal-title">Xóa voucher</h5>
-                            <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
+                            <p class="modal-subtitle">Hành động này không thể hoàn tác.</p>
                         </div>
                         <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="voucherStore.deleting" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="mb-3">Bạn có chắc chắn muốn xóa voucher này không?</p>
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <strong class="text-muted d-block mb-1">Mã voucher:</strong>
-                                    <span>{{ deleteTarget?.code || '—' }}</span>
-                                </div>
-                                <div class="mb-0">
-                                    <strong class="text-muted d-block mb-1">Mô tả:</strong>
-                                    <span>{{ deleteTarget?.description || '—' }}</span>
-                                </div>
+                        <p class="delete-confirm-text">Bạn có chắc chắn muốn xóa voucher này không?</p>
+                        <div class="delete-info-card">
+                            <div class="delete-info-item">
+                                <strong class="delete-info-label">Mã voucher:</strong>
+                                <span class="delete-info-value">{{ deleteTarget?.code || '—' }}</span>
+                            </div>
+                            <div class="delete-info-item">
+                                <strong class="delete-info-label">Mô tả:</strong>
+                                <span class="delete-info-value">{{ deleteTarget?.description || '—' }}</span>
                             </div>
                         </div>
                     </div>
@@ -221,7 +219,7 @@
         </div>
     </Teleport>
 
-    <section class="page-container container-fluid vouchers-page" data-aos="fade-up">
+    <section class="page-container container-fluid vouchers-page">
         <div class="vouchers-header">
             <div class="vouchers-header__content">
                 <div class="vouchers-header__title-section">
@@ -247,9 +245,11 @@
         </div>
 
         <div class="summary-grid" v-if="summaryLoading">
-            <article class="summary-card text-center justify-content-center">
-                <div class="spinner-border text-primary" role="status"></div>
-                <p class="mt-2 mb-0 text-muted">Đang tải thống kê voucher...</p>
+            <article class="summary-card summary-card--loading">
+                <div class="summary-loading">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <p class="summary-loading-text">Đang tải thống kê voucher...</p>
+                </div>
             </article>
         </div>
         <div class="summary-grid" v-else>
@@ -297,11 +297,11 @@
             </span>
             <div class="error-banner__content">
                 <p class="error-banner__title">Không thể tải dữ liệu voucher</p>
-                <p class="error-banner__message mb-0">{{ errorMessage }}</p>
+                <p class="error-banner__message">{{ errorMessage }}</p>
             </div>
         </div>
 
-        <div class="card filter-card mb-4">
+        <div class="card filter-card">
             <div class="card-body">
             <div class="filter-grid">
                 <div class="filter-item">
@@ -361,17 +361,17 @@
                             <th scope="col">Sử dụng</th>
                             <th scope="col">Trạng thái</th>
                             <th scope="col">Cập nhật</th>
-                            <th scope="col" class="text-end">Thao tác</th>
+                            <th scope="col" class="table-actions-header">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="loading">
-                            <td colspan="11" class="text-center py-5">
+                            <td colspan="11" class="table-loading">
                                 <LoadingState text="Đang tải dữ liệu voucher..." />
                             </td>
                         </tr>
                         <tr v-else-if="!items.length">
-                            <td colspan="11" class="text-center py-5">
+                            <td colspan="11" class="table-empty">
                                 <EmptyState
                                     title="Không có voucher"
                                     message="Không có voucher nào phù hợp với bộ lọc hiện tại."
@@ -383,10 +383,10 @@
                             </td>
                         </tr>
                         <tr v-for="voucher in items" :key="voucher.id">
-                            <td class="fw-semibold">{{ voucher.code }}</td>
+                            <td class="voucher-code">{{ voucher.code }}</td>
                             <td>{{ voucher.description }}</td>
                             <td>
-                                <span class="badge rounded-pill" :class="voucher.type === 'PERCENTAGE' ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary'">
+                                <span class="badge badge-type" :class="voucher.type === 'PERCENTAGE' ? 'badge-type--percentage' : 'badge-type--fixed'">
                                     {{ voucher.type === 'PERCENTAGE' ? 'Giảm %' : 'Giảm cố định' }}
                                 </span>
                             </td>
@@ -397,19 +397,25 @@
                             <td>{{ voucher.minimumOrderAmount ? formatCurrencySafe(voucher.minimumOrderAmount) : '—' }}</td>
                             <td>{{ voucher.maximumDiscountAmount ? formatCurrencySafe(voucher.maximumDiscountAmount) : (voucher.type === 'PERCENTAGE' ? 'Không giới hạn' : '—') }}</td>
                             <td>
-                                <div class="d-flex flex-column gap-1">
-                                    <small class="text-muted">Từ: {{ formatDateTime(voucher.validFrom) }}</small>
-                                    <small class="text-muted">Đến: {{ formatDateTime(voucher.validTo) }}</small>
+                                <div class="voucher-validity">
+                                    <div class="voucher-validity-item">
+                                        <span class="voucher-validity-label">Từ:</span>
+                                        <span class="voucher-validity-value">{{ formatDateTime(voucher.validFrom) }}</span>
+                                    </div>
+                                    <div class="voucher-validity-item">
+                                        <span class="voucher-validity-label">Đến:</span>
+                                        <span class="voucher-validity-value">{{ formatDateTime(voucher.validTo) }}</span>
+                                    </div>
                                 </div>
                             </td>
                             <td>{{ voucher.timesUsed }} / {{ voucher.usageLimit }}</td>
                             <td>
-                                <span class="badge rounded-pill" :class="voucher.active ? 'bg-success' : 'bg-secondary'">
+                                <span class="badge badge-status" :class="voucher.active ? 'badge-status--active' : 'badge-status--inactive'">
                                     {{ voucher.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
                                 </span>
                             </td>
                             <td>{{ formatDateTime(voucher.updatedAt || voucher.createdAt) }}</td>
-                            <td class="text-end">
+                            <td class="table-actions-cell">
                                 <div class="action-buttons">
                                     <button class="action-button action-button--primary" type="button" @click="openEditModal(voucher)" title="Chỉnh sửa">
                                         <i class="bi bi-pencil"></i>
@@ -444,13 +450,13 @@
 
             <div class="table-footer" v-if="pagination.totalPages > 1">
                 <div>
-                    <label class="form-label me-2 mb-0">Hiển thị</label>
-                    <select class="form-select form-select-sm d-inline-flex w-auto" :value="pagination.size" @change="handlePageSizeChange($event.target.value)">
+                    <label class="pagination-label">Hiển thị</label>
+                    <select class="pagination-select" :value="pagination.size" @change="handlePageSizeChange($event.target.value)">
                         <option value="10">10</option>
                         <option value="20">20</option>
                         <option value="50">50</option>
                     </select>
-                    <span class="ms-2 text-muted">mục / trang</span>
+                    <span class="pagination-text">mục / trang</span>
                 </div>
                 <Pagination
                     :current-page="pagination.page"
@@ -847,6 +853,7 @@ onUnmounted(() => {
     padding-bottom: var(--spacing-12);
 }
 
+/* Modal Styles */
 :deep(.modal-content) {
     border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
@@ -884,15 +891,37 @@ onUnmounted(() => {
 
 :deep(.modal-body label) {
     font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-2);
+}
+
+:deep(.form-control.is-invalid),
+:deep(.form-select.is-invalid) {
+    border-color: var(--color-danger);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ef4444'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6 .4.4.4-.4m0 4.8-.4-.4-.4.4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    padding-right: calc(1.5em + 0.75rem);
+}
+
+:deep(.invalid-feedback) {
+    display: block;
+    width: 100%;
+    margin-top: var(--spacing-1);
+    font-size: var(--font-size-xs);
+    color: var(--color-danger);
+    font-weight: var(--font-weight-medium);
 }
 
 /* Header Styles */
 .vouchers-header {
     background: var(--color-card);
-    border: 1px solid var(--color-border-soft);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacing-6);
+    box-shadow: var(--shadow-base);
+    margin-bottom: 0;
     padding: var(--spacing-6);
 }
 
@@ -933,6 +962,43 @@ onUnmounted(() => {
     line-height: var(--line-height-relaxed);
 }
 
+/* Error Banner */
+.error-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+    padding: var(--spacing-4) var(--spacing-5);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-6);
+}
+
+.error-banner__icon {
+    color: var(--color-danger);
+    font-size: var(--font-size-lg);
+    flex-shrink: 0;
+    margin-top: var(--spacing-1);
+}
+
+.error-banner__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.error-banner__title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-1);
+}
+
+.error-banner__message {
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
 /* Action Buttons */
 .action-buttons {
     display: flex;
@@ -954,6 +1020,7 @@ onUnmounted(() => {
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-fast);
     white-space: nowrap;
+    cursor: pointer;
 }
 
 .action-button--primary {
@@ -962,10 +1029,15 @@ onUnmounted(() => {
     background: var(--color-card);
 }
 
-.action-button--primary:hover {
+.action-button--primary:hover:not(:disabled) {
     background: var(--color-primary-soft);
     border-color: var(--color-primary);
     color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.action-button--primary:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .action-button--warning {
@@ -974,10 +1046,15 @@ onUnmounted(() => {
     background: var(--color-card);
 }
 
-.action-button--warning:hover {
+.action-button--warning:hover:not(:disabled) {
     background: var(--color-warning-soft);
     border-color: var(--color-warning);
     color: var(--color-warning);
+    transform: translateY(-1px);
+}
+
+.action-button--warning:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .action-button--danger {
@@ -986,17 +1063,24 @@ onUnmounted(() => {
     background: var(--color-card);
 }
 
-.action-button--danger:hover {
+.action-button--danger:hover:not(:disabled) {
     background: var(--color-danger-soft);
     border-color: var(--color-danger);
     color: var(--color-danger);
+    transform: translateY(-1px);
+}
+
+.action-button--danger:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .action-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
+/* Summary Cards */
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1007,47 +1091,47 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    border-radius: 24px;
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    background: #f8fafc;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
     padding: var(--spacing-5) var(--spacing-6);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    box-shadow: var(--shadow-base);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .summary-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-md);
 }
 
 .summary-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
     display: grid;
     place-items: center;
-    font-size: 1.75rem;
-    color: #6366f1;
+    font-size: var(--font-size-2xl);
+    flex-shrink: 0;
 }
 
 .summary-icon--active {
-    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
 }
 
 .summary-icon--inactive {
-    background: linear-gradient(135deg, #e5e7eb, #e2e8f0);
-    box-shadow: 0 2px 8px rgba(148, 163, 184, 0.18);
+    background: var(--color-soft-neutral);
+    color: var(--color-text-muted);
 }
 
 .summary-icon--expiring {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
 }
 
 .summary-icon--redeemed {
-    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.18);
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
 }
 
 .summary-label {
@@ -1061,8 +1145,22 @@ onUnmounted(() => {
     font-weight: var(--font-weight-bold);
     font-size: var(--font-size-xl);
     color: var(--color-heading);
+    line-height: var(--line-height-tight);
 }
 
+/* Filter Card */
+.filter-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-base);
+    padding: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
+}
+
+.filter-card .card-body {
+    padding: 0;
+}
 
 .filter-grid {
     display: grid;
@@ -1073,6 +1171,8 @@ onUnmounted(() => {
 .filter-item .form-label {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-2);
 }
 
 .filter-actions {
@@ -1081,11 +1181,12 @@ onUnmounted(() => {
     align-items: flex-end;
 }
 
+/* Table Card */
 .table-card {
     border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-base);
     overflow: hidden;
 }
 
@@ -1094,7 +1195,7 @@ onUnmounted(() => {
 }
 
 .table-card thead {
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-table-header);
 }
 
 .table-card th {
@@ -1103,10 +1204,23 @@ onUnmounted(() => {
     color: var(--color-text-muted);
     text-transform: uppercase;
     font-size: var(--font-size-xs);
+    letter-spacing: var(--letter-spacing-wide);
+    padding: var(--spacing-4) var(--spacing-5);
+}
+
+.table-card tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.table-card tbody tr:hover {
+    background: var(--color-table-hover);
 }
 
 .table-card td {
     vertical-align: middle;
+    padding: var(--spacing-4) var(--spacing-5);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
 }
 
 .table-footer {
@@ -1114,10 +1228,275 @@ onUnmounted(() => {
     justify-content: space-between;
     align-items: center;
     gap: var(--spacing-4);
-    padding: var(--spacing-3) var(--spacing-6) var(--spacing-5);
+    padding: var(--spacing-4) var(--spacing-6);
     border-top: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
+/* Badge Styles */
+.badge-type {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+}
+
+.badge-type--percentage {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--color-info);
+}
+
+.badge-type--fixed {
+    background: var(--color-badge-soft-bg);
+    color: var(--color-badge-soft-text);
+}
+
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+}
+
+.badge-status--active {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-success);
+}
+
+.badge-status--inactive {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--color-text-muted);
+}
+
+/* Delete Modal Info Card */
+.delete-info-card {
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-4) var(--spacing-5);
+}
+
+.delete-info-item {
+    margin-bottom: var(--spacing-3);
+}
+
+.delete-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.delete-info-label {
+    display: block;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    margin-bottom: var(--spacing-1);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+}
+
+.delete-info-value {
+    display: block;
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Summary Loading State */
+.summary-card--loading {
+    justify-content: center;
+    align-items: center;
+    min-height: 120px;
+}
+
+.summary-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.summary-loading .spinner-border {
+    width: 2rem;
+    height: 2rem;
+    border-width: 0.2em;
+    color: var(--color-primary);
+}
+
+.summary-loading-text {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+/* Required Mark */
+.required-mark {
+    color: var(--color-danger);
+    font-weight: var(--font-weight-bold);
+    margin-left: var(--spacing-1);
+}
+
+/* Modal Subtitle */
+.modal-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Delete Confirm Text */
+.delete-confirm-text {
+    margin-bottom: var(--spacing-4);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Voucher Code */
+.voucher-code {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+}
+
+/* Voucher Validity */
+.voucher-validity {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.voucher-validity-item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-2);
+}
+
+.voucher-validity-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    min-width: 32px;
+}
+
+.voucher-validity-value {
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+    line-height: var(--line-height-normal);
+}
+
+/* Table Loading/Empty States */
+.table-loading,
+.table-empty {
+    text-align: center;
+    padding: var(--spacing-12) var(--spacing-6);
+}
+
+.table-actions-header {
+    text-align: right;
+}
+
+.table-actions-cell {
+    text-align: right;
+}
+
+/* Pagination Controls */
+.pagination-label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    margin: 0 var(--spacing-2) 0 0;
+}
+
+.pagination-select {
+    display: inline-flex;
+    width: auto;
+    min-width: 80px;
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-text);
+    margin-right: var(--spacing-2);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.pagination-select:hover {
+    border-color: var(--color-border-strong);
+}
+
+.pagination-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.pagination-text {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+/* Form Switch Wrapper */
+.form-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding-top: var(--spacing-4);
+}
+
+.form-switch-wrapper .form-check-input {
+    margin-top: 0;
+    cursor: pointer;
+}
+
+.form-switch-wrapper .form-check-label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+}
+
+/* Input Group Text */
+:deep(.input-group-text) {
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+:deep(.input-group .form-control:first-child),
+:deep(.input-group .form-select:first-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+:deep(.input-group .form-control:last-child),
+:deep(.input-group .form-select:last-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+:deep(.input-group-text:first-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+:deep(.input-group-text:last-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Responsive */
 @media (max-width: 992px) {
     .vouchers-header__content {
         flex-direction: column;
@@ -1127,6 +1506,27 @@ onUnmounted(() => {
     .vouchers-header__actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .vouchers-header__actions .btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+        width: 100%;
+    }
+
+    .filter-actions .btn {
+        flex: 1;
     }
 
     .action-buttons {
@@ -1139,8 +1539,14 @@ onUnmounted(() => {
         justify-content: center;
     }
 
+    .table-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-3);
+    }
+
     .table-card {
-        border-radius: 16px;
+        overflow-x: auto;
     }
 
     .table-card table {
@@ -1148,20 +1554,48 @@ onUnmounted(() => {
     }
 }
 
-.dark-theme .vouchers-header,
-.dark-theme .filter-card,
-.dark-theme .table-card,
-.dark-theme .summary-card {
-    border-color: rgba(129, 140, 248, 0.28);
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.92));
-    box-shadow: 0 24px 46px rgba(2, 6, 23, 0.55);
-}
+@media (max-width: 768px) {
+    .vouchers-page {
+        gap: var(--spacing-4);
+        padding-bottom: var(--spacing-8);
+    }
 
-.comfort-theme .vouchers-header,
-.comfort-theme .filter-card,
-.comfort-theme .table-card,
-.comfort-theme .summary-card {
-    border-color: rgba(95, 111, 148, 0.25);
-    background: linear-gradient(170deg, rgba(245, 241, 235, 0.98), rgba(236, 232, 226, 0.92));
+    .vouchers-header {
+        padding: var(--spacing-4);
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-card {
+        padding: var(--spacing-4) var(--spacing-5);
+    }
+
+    .summary-icon {
+        width: 48px;
+        height: 48px;
+        font-size: var(--font-size-xl);
+    }
+
+    .filter-card {
+        padding: var(--spacing-4);
+    }
+
+    .table-card th,
+    .table-card td {
+        padding: var(--spacing-3) var(--spacing-4);
+        font-size: var(--font-size-xs);
+    }
+
+    .action-button span {
+        display: none;
+    }
+
+    .action-button {
+        min-width: 36px;
+        padding: var(--spacing-2);
+        justify-content: center;
+    }
 }
 </style>

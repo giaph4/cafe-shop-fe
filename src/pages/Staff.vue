@@ -1073,11 +1073,11 @@ const buildInitials = (user) => {
 const statusBadgeClass = (status) => {
     switch (status) {
         case 'ACTIVE':
-            return 'bg-success'
+            return 'status-badge status-badge--active'
         case 'INACTIVE':
-            return 'bg-danger'
+            return 'status-badge status-badge--inactive'
         default:
-            return 'bg-secondary'
+            return 'status-badge status-badge--neutral'
     }
 }
 
@@ -1587,14 +1587,26 @@ const hideUserActivityLogModal = () => {
 </script>
 
 <style scoped>
-/* Header - Chuẩn hóa theo base.css */
+.staff-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--component-gap-lg);
+    padding-bottom: var(--component-padding-lg);
+}
+
+/* Header - Chuẩn hóa theo base.css, giữ nguyên nội dung */
 .staff-header {
-    padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
-    margin-bottom: var(--spacing-5);
+    background: var(--color-card);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-6);
+    transition: box-shadow var(--transition-base);
+}
+
+.staff-header:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .staff-header__content {
@@ -1620,12 +1632,14 @@ const hideUserActivityLogModal = () => {
 
 .staff-header__actions .btn {
     font-size: var(--font-size-base);
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-3) var(--spacing-5);
+    border-radius: var(--radius-md);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
 }
 
 .staff-header__actions .btn i {
@@ -1634,31 +1648,34 @@ const hideUserActivityLogModal = () => {
 }
 
 .staff-header__actions .btn-sm {
-    padding: 6px 12px;
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
 }
 
 .page-title {
     font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-xl);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-2);
+    font-size: var(--font-size-2xl);
     line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .page-subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-base);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-normal);
 }
 
-/* View mode tabs - Chuẩn hóa theo base.css */
+/* View mode tabs - Chuẩn hóa theo base.css, tối giản, không gradient */
 .staff-view-tabs {
     display: inline-flex;
     gap: var(--spacing-2);
     background: var(--color-bg-muted);
     padding: var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     overflow-x: auto;
 }
@@ -1667,10 +1684,10 @@ const hideUserActivityLogModal = () => {
     border: none;
     background: transparent;
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
@@ -1691,16 +1708,17 @@ const hideUserActivityLogModal = () => {
 
 .staff-view-tab.active {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
+    box-shadow: var(--shadow-xs);
 }
 
-/* KPI Cards - Chuẩn hóa theo base.css */
+/* KPI Cards - Chuẩn hóa theo base.css, màu nhạt, không gradient */
 .kpi-card {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    padding: var(--spacing-4);
-    box-shadow: var(--shadow-base);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-5);
+    box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
@@ -1710,40 +1728,40 @@ const hideUserActivityLogModal = () => {
 }
 
 .kpi-card:hover {
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .kpi-card__icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    color: var(--color-primary);
-    background: var(--color-bg-muted);
+    transition: all var(--transition-base);
 }
 
-/* Màu icon - không dùng gradient, dùng màu nhạt */
+/* Màu icon - không dùng gradient, dùng màu nhạt, đồng bộ với card */
 .kpi-card--people .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .kpi-card--active .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .kpi-card--role .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-indigo);
     color: var(--color-secondary);
 }
 
 .kpi-card--recent .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
 }
 
@@ -1753,82 +1771,105 @@ const hideUserActivityLogModal = () => {
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
-    line-height: var(--line-height-base);
+    line-height: var(--line-height-normal);
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
 }
 
-/* Filter Card - Chuẩn hóa */
+/* Filter Card - Chuẩn hóa theo base.css */
 .filter-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+    transition: box-shadow var(--transition-base);
+}
+
+.filter-card:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .filter-card :global(.card-body) {
-    padding: var(--spacing-4);
+    padding: var(--spacing-5);
 }
 
 .filter-card :global(.card-body h5) {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--spacing-3);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-4);
+    line-height: var(--line-height-tight);
 }
 
 .filter-card :global(.form-label) {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    line-height: var(--line-height-normal);
+    display: block;
 }
 
 .filter-card :global(.form-control),
 .filter-card :global(.form-select) {
-    height: 40px;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-border);
-    padding: var(--spacing-2) var(--spacing-3);
+    height: 44px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-input-border);
+    background: var(--color-input-bg);
+    padding: var(--spacing-3) var(--spacing-4);
     font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
     transition: all var(--transition-base);
+    color: var(--color-text);
 }
 
 .filter-card :global(.form-control:focus),
 .filter-card :global(.form-select:focus) {
-    border-color: var(--color-primary);
-    outline: 2px solid var(--color-primary);
-    outline-offset: 0;
+    border-color: var(--color-input-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: var(--color-card);
+    outline: none;
+}
+
+.filter-card :global(.form-control:hover:not(:focus)),
+.filter-card :global(.form-select:hover:not(:focus)) {
+    border-color: var(--color-border-strong);
 }
 
 .filter-card :global(.input-group-text) {
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    border: 1.5px solid var(--color-input-border);
     border-right: none;
     color: var(--color-text-muted);
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base) 0 0 var(--radius-base);
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    font-size: 0.9rem;
 }
 
 .filter-card :global(.input-group .form-control) {
     border-left: none;
-    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .filter-card :global(.btn) {
     font-size: var(--font-size-base);
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-3) var(--spacing-5);
+    border-radius: var(--radius-md);
     transition: all var(--transition-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
 }
 
 .filter-card :global(.btn i) {
@@ -1838,10 +1879,15 @@ const hideUserActivityLogModal = () => {
 
 /* Bulk Actions Bar - Chuẩn hóa */
 .staff-page :global(.card.border-primary) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-primary);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+    transition: box-shadow var(--transition-base);
+}
+
+.staff-page :global(.card.border-primary:hover) {
+    box-shadow: var(--shadow-md);
 }
 
 .staff-page :global(.card.border-primary .card-body) {
@@ -1849,13 +1895,15 @@ const hideUserActivityLogModal = () => {
 }
 
 .staff-page :global(.card.border-primary .btn) {
-    font-size: var(--font-size-base);
-    padding: 6px 12px;
-    border-radius: var(--radius-base);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
 }
 
 .staff-page :global(.card.border-primary .btn i) {
@@ -1865,58 +1913,92 @@ const hideUserActivityLogModal = () => {
 
 /* Data Card - Chuẩn hóa */
 .data-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+    transition: box-shadow var(--transition-base);
+}
+
+.data-card:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .data-card :global(.card-body) {
-    padding: 0;
+    padding: var(--spacing-5);
 }
 
 .data-card :global(.card-footer) {
-    padding: var(--spacing-4);
+    padding: var(--spacing-4) var(--spacing-5);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 /* Table - Chuẩn hóa theo base.css */
 .staff-page :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    color: var(--color-text);
+    width: 100%;
+}
+
+.staff-page :global(.table thead) {
+    background: var(--color-table-header);
+    color: var(--color-heading);
 }
 
 .staff-page :global(.table thead th) {
-    font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-3) var(--spacing-4);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--color-border);
+    padding: var(--spacing-4) var(--spacing-5);
+    vertical-align: middle;
+    border-color: var(--color-border);
 }
 
 .staff-page :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-4) var(--spacing-5);
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+    border-color: var(--color-border);
+    line-height: var(--line-height-normal);
+}
+
+.staff-page :global(.table tbody tr) {
+    transition: background-color var(--component-transition);
 }
 
 .staff-page :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-table-hover);
 }
 
 .staff-page :global(.table .form-check-input) {
-    width: 18px;
-    height: 18px;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-border);
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-input-border);
+    background: var(--color-input-bg);
     cursor: pointer;
+    transition: all var(--transition-base);
+    margin-top: 0.15rem;
 }
 
 .staff-page :global(.table .form-check-input:checked) {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
+}
+
+.staff-page :global(.table .form-check-input:focus) {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .staff-page :global(.table .btn-link) {
@@ -1939,16 +2021,18 @@ const hideUserActivityLogModal = () => {
     height: 42px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--color-border);
 }
 
 .table-avatar.placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
+    border: 2px solid var(--color-border);
 }
 
 /* Action Buttons - Chuẩn hóa theo base.css */
@@ -1964,14 +2048,15 @@ const hideUserActivityLogModal = () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-primary);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
     transition: all var(--transition-base);
     white-space: nowrap;
     cursor: pointer;
@@ -1979,11 +2064,14 @@ const hideUserActivityLogModal = () => {
 
 .action-button:hover:not(:disabled) {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .action-button:active:not(:disabled) {
+    transform: translateY(0);
     filter: brightness(0.95);
 }
 
@@ -2001,43 +2089,52 @@ const hideUserActivityLogModal = () => {
 .action-button--primary {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 .action-button--primary:hover:not(:disabled) {
     filter: brightness(1.05);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
 }
 
 .action-button--info {
     border-color: var(--color-info);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-info);
 }
 
 .action-button--info:hover:not(:disabled) {
     background: var(--color-info);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-info);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
 }
 
 .action-button--warning {
     border-color: var(--color-warning);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-warning);
 }
 
 .action-button--warning:hover:not(:disabled) {
     background: var(--color-warning);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-warning);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.2);
 }
 
-/* Badge - Chuẩn hóa */
+/* Badge - Chuẩn hóa theo base.css */
 .staff-page :global(.badge) {
-    padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-normal);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .staff-role-badge {
@@ -2046,18 +2143,48 @@ const hideUserActivityLogModal = () => {
     justify-content: center;
     min-width: 58px;
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
-    color: var(--color-text);
+    background: var(--color-badge-soft-bg);
+    color: var(--color-badge-soft-text);
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* Trạng thái nhân viên - badge mềm, đồng bộ toàn hệ thống */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+}
+
+.status-badge--active {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+}
+
+.status-badge--inactive {
+    background: var(--color-soft-neutral);
+    color: var(--color-text-muted);
+}
+
+.status-badge--neutral {
+    background: var(--color-badge-soft-bg);
+    color: var(--color-badge-soft-text);
 }
 
 /* Avatar Upload Box - Chuẩn hóa */
 .avatar-upload-box {
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     padding: var(--spacing-4);
     background: var(--color-bg-muted);
     display: inline-flex;
@@ -2068,7 +2195,7 @@ const hideUserActivityLogModal = () => {
 .avatar-preview-wrapper {
     width: 156px;
     height: 156px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     overflow: hidden;
     background: var(--color-bg-muted);
     display: flex;
@@ -2095,9 +2222,14 @@ const hideUserActivityLogModal = () => {
 
 .avatar-upload-box .btn {
     font-size: var(--font-size-base);
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
     transition: all var(--transition-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
 }
 
 .avatar-upload-box .btn i {
@@ -2108,11 +2240,12 @@ const hideUserActivityLogModal = () => {
 /* Role Box - Chuẩn hóa */
 .role-box {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     padding: var(--spacing-3) var(--spacing-4);
     max-height: 220px;
     overflow-y: auto;
     background: var(--color-bg-muted);
+    transition: border-color var(--transition-base);
 }
 
 .role-box.is-invalid {
@@ -2127,14 +2260,20 @@ const hideUserActivityLogModal = () => {
     font-size: var(--font-size-base);
     color: var(--color-text);
     cursor: pointer;
+    margin-left: var(--spacing-2);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-normal);
 }
 
 .role-box :global(.form-check-input) {
-    width: 18px;
-    height: 18px;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-border);
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-input-border);
+    background: var(--color-input-bg);
     cursor: pointer;
+    margin-top: 0.15rem;
+    transition: all var(--transition-base);
 }
 
 .role-box :global(.form-check-input:checked) {
@@ -2142,14 +2281,19 @@ const hideUserActivityLogModal = () => {
     border-color: var(--color-primary);
 }
 
-/* Error Message - Thay thế alert */
+.role-box :global(.form-check-input:focus) {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Error Message - Thay thế alert, không dùng alert */
 .error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-warning);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.1);
     color: var(--color-warning);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-2);
@@ -2164,50 +2308,88 @@ const hideUserActivityLogModal = () => {
 
 /* Modal - Chuẩn hóa theo base.css */
 .staff-page :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--component-radius-lg);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-modal);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 .staff-page :global(.modal-header) {
-    padding: var(--spacing-4);
+    padding: var(--spacing-6);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    flex-shrink: 0;
 }
 
 .staff-page :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    font-size: var(--font-size-lg);
-    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-xl);
+    color: var(--color-heading);
+    margin: 0 0 var(--spacing-1) 0;
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .staff-page :global(.modal-header .text-muted) {
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    font-size: var(--font-size-base);
+    margin: 0;
+    line-height: var(--line-height-normal);
 }
 
 .staff-page :global(.modal-header .btn-close) {
-    padding: var(--spacing-2);
-    border-radius: var(--radius-base);
-    transition: all var(--transition-base);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--component-radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    opacity: 0.7;
+    transition: all var(--component-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
 }
 
-.staff-page :global(.modal-header .btn-close:hover) {
-    background: var(--color-bg-muted);
+.staff-page :global(.modal-header .btn-close:hover),
+.staff-page :global(.modal-header .btn-close:focus) {
+    opacity: 1;
+    background: var(--color-danger-soft, rgba(239, 68, 68, 0.1));
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    transform: scale(1.05);
+}
+
+.staff-page :global(.modal-header .btn-close:active) {
+    transform: scale(0.95);
 }
 
 .staff-page :global(.modal-body) {
-    padding: var(--spacing-5);
-    background: var(--color-bg);
+    padding: var(--spacing-6);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    flex: 1 1 auto;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
 }
 
 .staff-page :global(.modal-body .form-label) {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    display: block;
 }
 
 .staff-page :global(.modal-body .form-label .text-danger) {
@@ -2216,19 +2398,28 @@ const hideUserActivityLogModal = () => {
 
 .staff-page :global(.modal-body .form-control),
 .staff-page :global(.modal-body .form-select) {
-    height: 40px;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-border);
-    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-input-border);
+    background: var(--color-input-bg);
+    color: var(--color-text);
+    padding: var(--spacing-3) var(--spacing-4);
     font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
     transition: all var(--transition-base);
+    width: 100%;
 }
 
 .staff-page :global(.modal-body .form-control:focus),
 .staff-page :global(.modal-body .form-select:focus) {
-    border-color: var(--color-primary);
-    outline: 2px solid var(--color-primary);
-    outline-offset: 0;
+    border-color: var(--color-input-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: var(--color-card);
+    outline: none;
+}
+
+.staff-page :global(.modal-body .form-control:hover:not(:focus)),
+.staff-page :global(.modal-body .form-select:hover:not(:focus)) {
+    border-color: var(--color-border-strong);
 }
 
 .staff-page :global(.modal-body .form-control.is-invalid),
@@ -2238,19 +2429,21 @@ const hideUserActivityLogModal = () => {
 
 .staff-page :global(.modal-body .form-control.is-invalid:focus),
 .staff-page :global(.modal-body .form-select.is-invalid:focus) {
-    outline-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .staff-page :global(.modal-body .invalid-feedback) {
-    font-size: var(--font-size-base);
-    color: var(--color-danger);
+    display: block;
     margin-top: var(--spacing-1);
+    font-size: var(--font-size-xs);
+    color: var(--color-danger);
 }
 
 .staff-page :global(.modal-body .form-text) {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: var(--spacing-1);
+    line-height: var(--line-height-normal);
 }
 
 .staff-page :global(.modal-body .form-text.text-warning) {
@@ -2258,19 +2451,26 @@ const hideUserActivityLogModal = () => {
 }
 
 .staff-page :global(.modal-footer) {
-    padding: var(--spacing-4);
+    padding: var(--spacing-4) var(--spacing-6);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
 }
 
 .staff-page :global(.modal-footer .btn) {
     font-size: var(--font-size-base);
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-3) var(--spacing-5);
+    border-radius: var(--radius-md);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
 }
 
 .staff-page :global(.modal-footer .btn i) {
@@ -2279,7 +2479,12 @@ const hideUserActivityLogModal = () => {
 }
 
 /* Responsive */
+/* Responsive - Tối ưu trên mọi kích thước màn hình */
 @media (max-width: 992px) {
+    .staff-header {
+        padding: var(--spacing-4);
+    }
+
     .staff-header__content {
         flex-direction: column;
         align-items: flex-start;
@@ -2294,17 +2499,23 @@ const hideUserActivityLogModal = () => {
     .staff-view-tabs {
         width: 100%;
     }
+
+    .kpi-card {
+        min-height: 100px;
+    }
 }
 
 @media (max-width: 768px) {
     .staff-header {
-        padding: var(--spacing-3);
+        padding: var(--spacing-4);
+        margin-bottom: var(--spacing-4);
     }
 
     .kpi-card {
-        flex-direction: column;
-        text-align: center;
+        flex-direction: row;
+        text-align: left;
         min-height: auto;
+        padding: var(--spacing-4);
     }
 
     .kpi-card__icon {
@@ -2313,28 +2524,47 @@ const hideUserActivityLogModal = () => {
         font-size: 20px;
     }
 
+    .kpi-card__value {
+        font-size: var(--font-size-xl);
+    }
+
     .action-buttons {
-        flex-direction: column;
-        width: 100%;
+        flex-direction: row;
+        width: auto;
+        flex-wrap: wrap;
     }
 
     .action-button {
-        width: 100%;
+        width: auto;
         justify-content: center;
     }
 
     .filter-card :global(.card-body) {
-        padding: var(--spacing-3);
+        padding: var(--spacing-4);
     }
 
     .staff-page :global(.table thead th),
     .staff-page :global(.table tbody td) {
-        padding: var(--spacing-2) var(--spacing-3);
-        font-size: var(--font-size-base);
+        padding: var(--spacing-3) var(--spacing-4);
+        font-size: var(--font-size-sm);
+    }
+
+    .data-card :global(.card-body) {
+        padding: var(--spacing-4);
     }
 }
 
 @media (max-width: 576px) {
+    .staff-page {
+        gap: var(--spacing-4);
+        padding-bottom: var(--spacing-4);
+    }
+
+    .staff-header {
+        padding: var(--spacing-3);
+        margin-bottom: var(--spacing-3);
+    }
+
     .staff-header__actions {
         flex-direction: column;
         width: 100%;
@@ -2347,10 +2577,57 @@ const hideUserActivityLogModal = () => {
 
     .kpi-card {
         padding: var(--spacing-3);
+        gap: var(--spacing-3);
+    }
+
+    .kpi-card__icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
     }
 
     .kpi-card__value {
         font-size: var(--font-size-lg);
+    }
+
+    .kpi-card__label {
+        font-size: var(--font-size-xs);
+    }
+
+    .filter-card :global(.card-body) {
+        padding: var(--spacing-3);
+    }
+
+    .staff-page :global(.table thead th),
+    .staff-page :global(.table tbody td) {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-xs);
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-button {
+        width: 100%;
+    }
+
+    .staff-page :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
+
+    .staff-page :global(.modal-header) {
+        padding: var(--spacing-4);
+    }
+
+    .staff-page :global(.modal-footer) {
+        padding: var(--spacing-3) var(--spacing-4);
+        flex-direction: column;
+    }
+
+    .staff-page :global(.modal-footer .btn) {
+        width: 100%;
     }
 }
 </style>

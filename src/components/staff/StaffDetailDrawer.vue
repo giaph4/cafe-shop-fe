@@ -267,22 +267,25 @@ const formatRole = (roleName) => {
 }
 
 .staff-detail-modal-content {
-    border-radius: var(--radius-base);
+    border-radius: var(--component-radius-lg);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-modal);
+    background: var(--color-card);
+    box-shadow: var(--shadow-2xl);
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 80px);
+    overflow: hidden;
 }
 
 .staff-detail-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: var(--spacing-4);
+    padding: var(--spacing-6);
     border-bottom: 1px solid var(--color-border);
-    gap: var(--spacing-3);
+    gap: var(--spacing-4);
+    background: var(--color-card);
+    flex-shrink: 0;
 }
 
 .staff-detail-modal-header-main {

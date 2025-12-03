@@ -12,7 +12,7 @@
                             <h5 class="mb-1">{{ staff.fullName || staff.username }}</h5>
                             <p class="text-muted mb-1">@{{ staff.username }}</p>
                         </div>
-                        <span class="badge" :class="statusClass">{{ staff.status }}</span>
+                        <span :class="['status-badge', statusClass]">{{ staff.status }}</span>
                     </div>
                     <div class="text-muted small mb-2">
                         <div v-if="staff.phone">{{ staff.phone }}</div>
@@ -67,11 +67,11 @@ const initials = computed(() => {
 const statusClass = computed(() => {
     switch (props.staff.status) {
         case 'ACTIVE':
-            return 'bg-success'
+            return 'status-badge--active'
         case 'INACTIVE':
-            return 'bg-danger'
+            return 'status-badge--inactive'
         default:
-            return 'bg-secondary'
+            return 'status-badge--neutral'
     }
 })
 
@@ -83,16 +83,18 @@ const formatRole = (roleName) => {
 
 <style scoped>
 .staff-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
     color: var(--color-text);
     transition: all var(--transition-base);
+    height: 100%;
 }
 
 .staff-card:hover {
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .avatar-wrapper {
@@ -105,42 +107,76 @@ const formatRole = (roleName) => {
 .avatar {
     width: 100%;
     height: 100%;
-    border-radius: var(--radius-full);
+    border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--color-border-soft);
+    border: 2px solid var(--color-border);
 }
 
 .avatar.placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
+    border: 2px solid var(--color-border);
 }
 
 .badge.bg-soft {
-    background: var(--color-bg-muted);
-    color: var(--color-text);
+    background: var(--color-badge-soft-bg);
+    color: var(--color-badge-soft-text);
     border: 1px solid var(--color-border);
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
 }
 
+/* Trạng thái nhân viên trên card */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+}
+
+.status-badge--active {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+}
+
+.status-badge--inactive {
+    background: var(--color-soft-neutral);
+    color: var(--color-text-muted);
+}
+
+.status-badge--neutral {
+    background: var(--color-badge-soft-bg);
+    color: var(--color-badge-soft-text);
+}
+
 .card-footer {
-    background: var(--color-bg);
+    background: var(--color-card);
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
 }
 
 .card-footer .btn {
-    font-size: var(--font-size-base);
-    padding: 6px 12px;
-    border-radius: var(--radius-base);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
     transition: all var(--transition-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
 }
 
 .card-footer .btn i {
@@ -151,26 +187,39 @@ const formatRole = (roleName) => {
 .card-footer .btn-outline-primary {
     border-color: var(--color-primary);
     color: var(--color-primary);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
-.card-footer .btn-outline-primary:hover {
+.card-footer .btn-outline-primary:hover:not(:disabled) {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.card-footer .btn-outline-primary:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .card-footer .btn-outline-secondary,
 .card-footer .btn-outline-dark {
     border-color: var(--color-border);
     color: var(--color-text);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
-.card-footer .btn-outline-secondary:hover,
-.card-footer .btn-outline-dark:hover {
+.card-footer .btn-outline-secondary:hover:not(:disabled),
+.card-footer .btn-outline-dark:hover:not(:disabled) {
     background: var(--color-bg-muted);
     color: var(--color-primary);
     border-color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.card-footer .btn-outline-secondary:active:not(:disabled),
+.card-footer .btn-outline-dark:active:not(:disabled) {
+    transform: translateY(0);
 }
 </style>

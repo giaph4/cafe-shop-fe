@@ -29,32 +29,118 @@ export const getPendingOrderByTable = async (tableId) => {
 
 // 8.5. Thêm món vào order
 export const addItemToOrder = async ({ orderId, itemData }) => {
-    // Đảm bảo format đúng cho backend
+    // Validate input
+    if (!itemData) {
+        throw new Error('Item data là bắt buộc')
+    }
+    
+    if (itemData.productId == null || itemData.productId === undefined) {
+        throw new Error('Product ID là bắt buộc')
+    }
+    
+    // Đảm bảo format đúng cho backend: productId là Long, quantity là int
+    const productId = Number(itemData.productId)
+    const quantity = Math.max(1, Math.floor(Number(itemData.quantity || 1)))
+    
+    // Validate
+    if (!Number.isFinite(productId) || productId <= 0 || !Number.isInteger(productId)) {
+        throw new Error(`Product ID không hợp lệ: ${itemData.productId} (phải là số nguyên dương)`)
+    }
+    if (!Number.isFinite(quantity) || quantity < 1 || !Number.isInteger(quantity)) {
+        throw new Error(`Số lượng không hợp lệ: ${itemData.quantity} (phải là số nguyên >= 1)`)
+    }
+    
+    // Tạo payload theo đúng format backend yêu cầu
+    // Backend OrderDetailRequestDTO: productId (Long, @NotNull), quantity (int, @Min(1)), notes (String, optional)
     const payload = {
-        productId: Number(itemData.productId),
-        quantity: Math.max(1, Math.floor(Number(itemData.quantity)))
+        productId: productId,
+        quantity: quantity
     }
     
     // Chỉ thêm notes nếu có giá trị (không gửi null hoặc empty string)
-    if (itemData.notes && String(itemData.notes).trim()) {
+    // Backend sử dụng StringUtils.hasText() để kiểm tra, nên chỉ gửi khi có giá trị
+    if (itemData.notes != null && itemData.notes !== undefined && String(itemData.notes).trim()) {
         payload.notes = String(itemData.notes).trim()
     }
     
-    // Validate
-    if (!Number.isFinite(payload.productId) || payload.productId <= 0) {
-        throw new Error('Product ID không hợp lệ')
-    }
-    if (!Number.isFinite(payload.quantity) || payload.quantity < 1) {
-        throw new Error('Số lượng phải lớn hơn 0')
+    // Log payload để debug (chỉ trong development)
+    if (import.meta.env.DEV) {
+        console.log('[OrderService] Adding item to order:', {
+            orderId,
+            payload,
+            payloadString: JSON.stringify(payload),
+            payloadType: {
+                productId: typeof payload.productId,
+                quantity: typeof payload.quantity,
+                notes: typeof payload.notes
+            }
+        })
     }
     
-    const { data } = await api.post(`/api/v1/orders/${orderId}/items`, payload);
-    return data;
+    try {
+        const { data } = await api.post(`/api/v1/orders/${orderId}/items`, payload);
+        return data;
+    } catch (error) {
+        // Log chi tiết lỗi để debug
+        const errorResponse = error.response?.data
+        const errorDetails = {
+            orderId,
+            payload,
+            payloadString: JSON.stringify(payload),
+            url: `/api/v1/orders/${orderId}/items`,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            errorMessage: errorResponse?.message || errorResponse?.error || error.message,
+            errorData: errorResponse,
+            errorHeaders: error.response?.headers,
+            // Log toàn bộ response để debug
+            fullResponse: error.response
+        }
+        
+        console.error('[OrderService] Failed to add item:', errorDetails)
+        console.error('[OrderService] Full error:', error)
+        console.error('[OrderService] Error response data:', errorResponse)
+        
+        // Tạo error message thân thiện hơn
+        let userFriendlyMessage = 'Không thể thêm món vào đơn hàng'
+        if (errorResponse?.message) {
+            userFriendlyMessage = errorResponse.message
+        } else if (errorResponse?.error) {
+            userFriendlyMessage = errorResponse.error
+        } else if (error.response?.status === 500) {
+            userFriendlyMessage = 'Lỗi server. Vui lòng kiểm tra lại đơn hàng và sản phẩm.'
+        }
+        
+        // Tạo error mới với message rõ ràng hơn
+        const enhancedError = new Error(userFriendlyMessage)
+        enhancedError.originalError = error
+        enhancedError.status = error.response?.status
+        enhancedError.response = error.response
+        enhancedError.payload = payload
+        enhancedError.orderId = orderId
+        
+        throw enhancedError;
+    }
 };
 
 // 8.6. Cập nhật món trong order
 export const updateOrderItem = async ({ orderId, orderDetailId, updateData }) => {
-    const { data } = await api.put(`/api/v1/orders/${orderId}/items/${orderDetailId}`, updateData);
+    // Đảm bảo format đúng cho backend
+    const payload = {
+        quantity: Math.max(1, Math.floor(Number(updateData.quantity)))
+    }
+    
+    // Chỉ thêm notes nếu có giá trị (không gửi null hoặc empty string)
+    if (updateData.notes && String(updateData.notes).trim()) {
+        payload.notes = String(updateData.notes).trim()
+    }
+    
+    // Validate
+    if (!Number.isFinite(payload.quantity) || payload.quantity < 1) {
+        throw new Error('Số lượng phải lớn hơn 0')
+    }
+    
+    const { data } = await api.put(`/api/v1/orders/${orderId}/items/${orderDetailId}`, payload);
     return data;
 };
 
@@ -228,36 +314,20 @@ export const cancelOrder = async (orderId) => {
 }
 
 // 8.14. Cập nhật thông tin order (ngoài items)
+// LƯU Ý: Backend KHÔNG có endpoint PUT /api/v1/orders/{orderId}
+// Order entity KHÔNG có field `note` - chỉ có OrderDetail có `notes` (item-level)
+// Nếu cần order-level note, cần:
+// 1. Thêm field `note` vào Order entity
+// 2. Thêm endpoint PUT /api/v1/orders/{orderId} vào OrderController
+// 3. Thêm method updateOrder vào OrderService
 /**
+ * @deprecated Backend không hỗ trợ endpoint này
  * Cập nhật thông tin order như customer, note, table, etc.
  * @param {string|number} orderId - ID của order cần cập nhật
  * @param {Object} orderData - Dữ liệu order cần cập nhật
- * @param {number} [orderData.customerId] - ID khách hàng
- * @param {number} [orderData.tableId] - ID bàn
- * @param {string} [orderData.note] - Ghi chú
- * @param {string} [orderData.status] - Trạng thái order
  * @returns {Promise<Object>} Order đã được cập nhật
+ * @throws {Error} Backend không hỗ trợ endpoint này
  */
 export const updateOrder = async (orderId, orderData) => {
-    if (!orderId) {
-        throw new Error('Order ID is required')
-    }
-    
-    // Chuẩn hóa payload: chỉ gửi các trường có giá trị
-    const body = {}
-    if (orderData.customerId !== undefined) {
-        body.customerId = orderData.customerId
-    }
-    if (orderData.tableId !== undefined) {
-        body.tableId = orderData.tableId
-    }
-    if (orderData.note !== undefined) {
-        body.note = typeof orderData.note === 'string' ? orderData.note.trim() : orderData.note
-    }
-    if (orderData.status !== undefined) {
-        body.status = orderData.status
-    }
-    
-    const { data } = await api.put(`/api/v1/orders/${orderId}`, body)
-    return data
+    throw new Error('Backend không hỗ trợ cập nhật order-level note. Chỉ có thể cập nhật item-level notes (OrderDetail.notes)')
 }

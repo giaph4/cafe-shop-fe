@@ -303,49 +303,207 @@ defineExpose({show, hide})
 <style scoped>
 .role-box {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     padding: var(--spacing-3) var(--spacing-4);
     max-height: 220px;
     overflow-y: auto;
-    background: var(--color-card-muted);
+    background: var(--color-bg-muted);
+    transition: border-color var(--transition-base);
+}
+
+.role-box :global(.form-check) {
+    margin-bottom: var(--spacing-2);
+}
+
+.role-box :global(.form-check-label) {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    cursor: pointer;
+    margin-left: var(--spacing-2);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-normal);
+}
+
+.role-box :global(.form-check-input) {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-input-border);
+    background: var(--color-input-bg);
+    cursor: pointer;
+    margin-top: 0.15rem;
+    transition: all var(--transition-base);
+}
+
+.role-box :global(.form-check-input:checked) {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.role-box :global(.form-check-input:focus) {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 :deep(.modal-content) {
-    border-radius: var(--radius-xl);
+    border-radius: var(--component-radius-lg);
     border: 1px solid var(--color-border);
     background: var(--color-card);
     box-shadow: var(--shadow-2xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 :deep(.modal-header) {
-    border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-6);
+    border-bottom: 1px solid var(--color-border);
     background: var(--color-card);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    flex-shrink: 0;
 }
 
 :deep(.modal-header .modal-title) {
     font-weight: var(--font-weight-bold);
-    color: var(--color-heading);
     font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-1);
+    color: var(--color-heading);
+    margin: 0 0 var(--spacing-1) 0;
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 :deep(.modal-header .text-muted) {
-    color: var(--color-text-muted);
     font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+:deep(.modal-header .btn-close) {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--component-radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    opacity: 0.7;
+    transition: all var(--component-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+}
+
+:deep(.modal-header .btn-close:hover),
+:deep(.modal-header .btn-close:focus) {
+    opacity: 1;
+    background: var(--color-danger-soft, rgba(239, 68, 68, 0.1));
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    transform: scale(1.05);
+}
+
+:deep(.modal-header .btn-close:active) {
+    transform: scale(0.95);
 }
 
 :deep(.modal-body) {
     padding: var(--spacing-6);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    flex: 1 1 auto;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+:deep(.modal-body .form-label) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-2);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    display: block;
+}
+
+:deep(.modal-body .form-control),
+:deep(.modal-body .form-select) {
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-input-border);
+    background: var(--color-input-bg);
+    color: var(--color-text);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    transition: all var(--transition-base);
+    width: 100%;
+}
+
+:deep(.modal-body .form-control:focus),
+:deep(.modal-body .form-select:focus) {
+    border-color: var(--color-input-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: var(--color-card);
+    outline: none;
+}
+
+:deep(.modal-body .form-control:hover:not(:focus)),
+:deep(.modal-body .form-select:hover:not(:focus)) {
+    border-color: var(--color-border-strong);
+}
+
+:deep(.modal-body .form-control.is-invalid),
+:deep(.modal-body .form-select.is-invalid) {
+    border-color: var(--color-danger);
+}
+
+:deep(.modal-body .form-control.is-invalid:focus),
+:deep(.modal-body .form-select.is-invalid:focus) {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+:deep(.modal-body .invalid-feedback) {
+    display: block;
+    margin-top: var(--spacing-1);
+    font-size: var(--font-size-xs);
+    color: var(--color-danger);
+}
+
+:deep(.modal-body .form-text) {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+    line-height: var(--line-height-normal);
 }
 
 :deep(.modal-footer) {
-    border-top: 1px solid var(--color-border);
     padding: var(--spacing-4) var(--spacing-6);
+    border-top: 1px solid var(--color-border);
     background: var(--color-card);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
 }
 
-:deep(.form-label) {
-    font-weight: var(--font-weight-semibold);
+:deep(.modal-footer .btn) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-5);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+}
+
+:deep(.modal-footer .btn i) {
+    font-size: 18px;
+    line-height: 1;
 }
 </style>

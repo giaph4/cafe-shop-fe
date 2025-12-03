@@ -1074,19 +1074,24 @@ const saveOrder = async () => {
                 const quantityChanged = Number(item.quantity) !== Number(original.quantity)
                 const notesChanged = (item.notes || '') !== (original.notes || '')
                 if (quantityChanged || notesChanged) {
-                    itemsToUpdate.push({
+                    const updateData = {
                         orderDetailId: detailId,
-                        quantity: Math.max(1, toNumberSafe(item.quantity, 1)),
-                        notes: item.notes || '',
-                    })
+                        quantity: Math.max(1, toNumberSafe(item.quantity, 1))
+                    }
+                    
+                    // Chỉ thêm notes nếu có giá trị (không gửi empty string)
+                    const notesValue = item.notes ? String(item.notes).trim() : null
+                    if (notesValue) {
+                        updateData.notes = notesValue
+                    }
+                    
+                    itemsToUpdate.push(updateData)
                 }
             })
 
-            // Kiểm tra thay đổi ghi chú trước
-            const originalNotes = originalOrderSnapshot.value?.notes || originalOrderSnapshot.value?.note || ''
-            const notesChanged = orderNotes.value.trim() !== originalNotes.trim()
-            
-            if (!itemsToAdd.length && !itemsToUpdate.length && !itemsToRemove.length && !notesChanged) {
+            // Lưu ý: Backend không hỗ trợ order-level note, chỉ có item-level notes
+            // Kiểm tra thay đổi items
+            if (!itemsToAdd.length && !itemsToUpdate.length && !itemsToRemove.length) {
                 toast.info('Không có thay đổi nào cần lưu.')
                 loadingAction.value = null
                 return
@@ -1117,13 +1122,19 @@ const saveOrder = async () => {
                 // Cập nhật items
                 for (const update of itemsToUpdate) {
                     try {
+                        const updateData = {
+                            quantity: update.quantity
+                        }
+                        
+                        // Chỉ thêm notes nếu có giá trị (không gửi empty string)
+                        if (update.notes && String(update.notes).trim()) {
+                            updateData.notes = String(update.notes).trim()
+                        }
+                        
                         lastResponse = await orderService.updateOrderItem({
                             orderId,
                             orderDetailId: update.orderDetailId,
-                            updateData: {
-                                quantity: update.quantity,
-                                notes: update.notes || '',
-                            },
+                            updateData
                         })
                     } catch (error) {
                         console.error('Failed to update item:', error)
@@ -1132,78 +1143,176 @@ const saveOrder = async () => {
                     }
                 }
 
-                // Thêm items mới
-                for (const addition of itemsToAdd) {
+                // Thêm items mới - thêm delay giữa các requests để tránh Hibernate orphan deletion
+                for (let i = 0; i < itemsToAdd.length; i++) {
+                    const addition = itemsToAdd[i]
+                    let itemData = null
                     try {
+                        // Thêm delay giữa các requests (trừ request đầu tiên)
+                        if (i > 0) {
+                            await new Promise(resolve => setTimeout(resolve, 200)) // 200ms delay
+                        }
+                        
+                        // Log addition để debug
+                        if (import.meta.env.DEV) {
+                            console.log('[PosOrderCart] Processing addition:', {
+                                addition,
+                                productIdType: typeof addition.productId,
+                                quantityType: typeof addition.quantity,
+                                notesType: typeof addition.notes,
+                                orderId,
+                                orderStatus: localOrder.value?.status,
+                                index: i + 1,
+                                total: itemsToAdd.length
+                            })
+                        }
+                        
+                        // Kiểm tra order status một lần nữa trước khi thêm item
+                        if (localOrder.value?.status && localOrder.value.status !== 'PENDING') {
+                            throw new Error(`Đơn hàng đã ${localOrder.value.status === 'PAID' ? 'được thanh toán' : 'bị hủy'}. Không thể thêm món.`)
+                        }
+                        
                         // Đảm bảo format đúng: productId là Long, quantity là int
-                        const itemData = {
-                            productId: Number(addition.productId),
-                            quantity: Math.max(1, Math.floor(Number(addition.quantity)))
+                        const productId = Number(addition.productId)
+                        const quantity = Math.max(1, Math.floor(Number(addition.quantity || 1)))
+                        
+                        // Validate trước khi tạo itemData
+                        if (!Number.isFinite(productId) || productId <= 0 || !Number.isInteger(productId)) {
+                            throw new Error(`Product ID không hợp lệ: ${addition.productId} (phải là số nguyên dương)`)
+                        }
+                        if (!Number.isFinite(quantity) || quantity < 1 || !Number.isInteger(quantity)) {
+                            throw new Error(`Số lượng không hợp lệ: ${addition.quantity} (phải là số nguyên >= 1)`)
+                        }
+                        
+                        itemData = {
+                            productId: productId,
+                            quantity: quantity
                         }
                         
                         // Chỉ thêm notes nếu có giá trị (không gửi empty string hoặc null)
-                        const notesValue = addition.notes ? String(addition.notes).trim() : null
-                        if (notesValue) {
-                            itemData.notes = notesValue
+                        if (addition.notes != null && addition.notes !== undefined && String(addition.notes).trim()) {
+                            itemData.notes = String(addition.notes).trim()
                         }
                         
-                        // Validate trước khi gửi
-                        if (!Number.isFinite(itemData.productId) || itemData.productId <= 0) {
-                            throw new Error(`Product ID không hợp lệ: ${addition.productId}`)
-                        }
-                        if (!Number.isFinite(itemData.quantity) || itemData.quantity < 1) {
-                            throw new Error(`Số lượng không hợp lệ: ${addition.quantity}`)
+                        // Log itemData trước khi gửi
+                        if (import.meta.env.DEV) {
+                            console.log('[PosOrderCart] Prepared itemData:', {
+                                itemData,
+                                itemDataString: JSON.stringify(itemData),
+                                itemDataType: {
+                                    productId: typeof itemData.productId,
+                                    quantity: typeof itemData.quantity,
+                                    notes: typeof itemData.notes
+                                }
+                            })
                         }
                         
-                        lastResponse = await orderService.addItemToOrder({
-                            orderId,
-                            itemData
-                        })
+                        // Retry logic với exponential backoff cho lỗi 500
+                        let retries = 0
+                        const maxRetries = 2
+                        let lastError = null
+                        
+                        while (retries <= maxRetries) {
+                            try {
+                                lastResponse = await orderService.addItemToOrder({
+                                    orderId,
+                                    itemData
+                                })
+                                
+                                // Refresh order sau mỗi lần thêm thành công để đồng bộ state
+                                // Điều này giúp tránh lỗi Hibernate orphan deletion khi gọi request tiếp theo
+                                if (lastResponse) {
+                                    updateLocalOrderFromServer(lastResponse, { syncBaseline: false })
+                                }
+                                
+                                // Thành công, break khỏi retry loop
+                                break
+                            } catch (retryError) {
+                                lastError = retryError
+                                const retryStatus = retryError.response?.status || retryError.status
+                                
+                                // Chỉ retry nếu là lỗi 500 và chưa vượt quá maxRetries
+                                if (retryStatus === 500 && retries < maxRetries) {
+                                    retries++
+                                    const delay = Math.min(300 * Math.pow(2, retries - 1), 1000) // Exponential backoff: 300ms, 600ms, max 1000ms
+                                    
+                                    if (import.meta.env.DEV) {
+                                        console.log(`[PosOrderCart] Retrying addItemToOrder (attempt ${retries}/${maxRetries}) after ${delay}ms delay`)
+                                    }
+                                    
+                                    // Refresh order trước khi retry để đảm bảo state đồng bộ
+                                    try {
+                                        const refreshedOrder = await orderService.getOrderById(orderId)
+                                        updateLocalOrderFromServer(refreshedOrder, { syncBaseline: true })
+                                    } catch (refreshError) {
+                                        console.error('[PosOrderCart] Failed to refresh order before retry:', refreshError)
+                                    }
+                                    
+                                    await new Promise(resolve => setTimeout(resolve, delay))
+                                    continue
+                                } else {
+                                    // Không retry hoặc đã hết retries, throw error
+                                    throw retryError
+                                }
+                            }
+                        }
                     } catch (error) {
-                        console.error('Failed to add item:', error, 'Item data:', itemData)
+                        const errorResponse = error.response?.data || error.originalError?.response?.data
+                        const errorStatus = error.response?.status || error.status || error.originalError?.response?.status
+                        
+                        console.error('[PosOrderCart] Failed to add item:', {
+                            error,
+                            errorMessage: error.message,
+                            errorResponse,
+                            errorStatus,
+                            itemData: itemData || addition,
+                            orderId,
+                            // Log chi tiết hơn
+                            productId: itemData?.productId || addition?.productId,
+                            quantity: itemData?.quantity || addition?.quantity
+                        })
                         hasError = true
                         
                         // Xử lý các loại lỗi cụ thể
-                        let errorMessage = 'Không thể thêm món'
-                        if (error.response?.status === 400) {
-                            errorMessage = error.response?.data?.message || 'Dữ liệu không hợp lệ'
-                        } else if (error.response?.status === 404) {
-                            errorMessage = 'Đơn hàng hoặc sản phẩm không tồn tại'
-                        } else if (error.response?.status === 409 || error.response?.status === 422) {
-                            errorMessage = error.response?.data?.message || 'Đơn hàng không ở trạng thái PENDING'
-                        } else if (error.response?.status === 500) {
-                            errorMessage = error.response?.data?.message || 'Lỗi server. Vui lòng kiểm tra lại đơn hàng.'
+                        let errorMessage = error.message || 'Không thể thêm món'
+                        
+                        if (errorStatus === 400) {
+                            errorMessage = errorResponse?.message || errorResponse?.error || 'Dữ liệu không hợp lệ'
+                        } else if (errorStatus === 404) {
+                            errorMessage = errorResponse?.message || errorResponse?.error || 'Đơn hàng hoặc sản phẩm không tồn tại'
+                        } else if (errorStatus === 409 || errorStatus === 422) {
+                            errorMessage = errorResponse?.message || errorResponse?.error || 'Đơn hàng không ở trạng thái PENDING'
+                        } else if (errorStatus === 500) {
+                            // Lỗi 500 có thể do nhiều nguyên nhân
+                            if (errorResponse?.message) {
+                                errorMessage = errorResponse.message
+                            } else if (errorResponse?.error) {
+                                errorMessage = errorResponse.error
+                            } else {
+                                errorMessage = 'Lỗi server. Có thể do: đơn hàng không ở trạng thái PENDING, sản phẩm không tồn tại hoặc không available, hoặc lỗi hệ thống.'
+                            }
                         } else {
-                            errorMessage = error.response?.data?.message || error.message || 'Không thể thêm món'
+                            errorMessage = errorResponse?.message || errorResponse?.error || error.message || 'Không thể thêm món'
                         }
                         
                         toast.error(`Không thể thêm món: ${errorMessage}`)
                         
-                        // Nếu là lỗi về order status, refresh order
-                        if (error.response?.status === 409 || error.response?.status === 422 || error.response?.status === 500) {
+                        // Nếu là lỗi về order status hoặc 500, refresh order để đồng bộ
+                        if (errorStatus === 409 || errorStatus === 422 || errorStatus === 500) {
                             try {
                                 const refreshedOrder = await orderService.getOrderById(orderId)
                                 updateLocalOrderFromServer(refreshedOrder, { syncBaseline: true })
+                                console.log('[PosOrderCart] Order refreshed after error')
                             } catch (refreshError) {
-                                console.error('Failed to refresh order:', refreshError)
+                                console.error('[PosOrderCart] Failed to refresh order:', refreshError)
                             }
                         }
                     }
                 }
 
-                // Cập nhật ghi chú nếu có thay đổi
-                if (notesChanged) {
-                    try {
-                        const updatedOrder = await orderService.updateOrder(orderId, {
-                            note: orderNotes.value.trim() || null
-                        })
-                        lastResponse = updatedOrder
-                    } catch (error) {
-                        console.error('Failed to update notes:', error)
-                        hasError = true
-                        toast.error(`Không thể cập nhật ghi chú: ${error.response?.data?.message || error.message}`)
-                    }
-                }
+                // Lưu ý: Backend không hỗ trợ order-level note
+                // Ghi chú chỉ có thể lưu ở item-level (OrderDetail.notes)
+                // Nếu cần order-level note, cần thêm field vào Order entity và endpoint PUT /api/v1/orders/{orderId}
 
                 // Nếu có lỗi, vẫn cố gắng refresh order để đồng bộ
                 if (hasError && lastResponse) {
@@ -1237,13 +1346,9 @@ const saveOrder = async () => {
             const newOrder = await orderService.createOrder(orderData)
             updateLocalOrderFromServer(newOrder, { syncBaseline: true })
             
-            // Lưu ghi chú sau khi tạo đơn hàng
-            if (orderNotes.value.trim()) {
-                const updatedOrder = await orderService.updateOrder(newOrder.id, {
-                    note: orderNotes.value.trim()
-                })
-                updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
-            }
+            // Lưu ý: Backend không hỗ trợ order-level note
+            // Ghi chú chỉ có thể lưu ở item-level (OrderDetail.notes)
+            // Nếu cần order-level note, cần thêm field vào Order entity và endpoint PUT /api/v1/orders/{orderId}
             
             isCreatingNew.value = false
             toast.success('Đơn hàng đã được tạo.')

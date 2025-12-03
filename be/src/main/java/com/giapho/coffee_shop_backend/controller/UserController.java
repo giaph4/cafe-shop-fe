@@ -1,9 +1,6 @@
 package com.giapho.coffee_shop_backend.controller;
 
-import com.giapho.coffee_shop_backend.dto.ChangePasswordRequestDTO;
-import com.giapho.coffee_shop_backend.dto.RoleDTO;
-import com.giapho.coffee_shop_backend.dto.UserResponseDTO;
-import com.giapho.coffee_shop_backend.dto.UserUpdateRequestDTO;
+import com.giapho.coffee_shop_backend.dto.*;
 import com.giapho.coffee_shop_backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -23,6 +22,15 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    @PostMapping
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<UserResponseDTO> registerUser(
+            @Valid @RequestBody RegisterRequest registerRequest
+    ) {
+        UserResponseDTO createdUser = userService.registerUser(registerRequest);
+        return ResponseEntity.ok(createdUser);
+    }
 
 
     // lay tat ca roles
@@ -68,5 +76,14 @@ public class UserController {
         return ResponseEntity.ok("Password changed successfully");
     }
 
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> resetPassword(@PathVariable Long id) {
+        String tempPassword = userService.resetPassword(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Mật khẩu đã được đặt lại. Vui lòng kiểm tra email của bạn.");
+        response.put("temporaryPassword", tempPassword); // Only include in development
+        return ResponseEntity.ok(response);
+    }
 
 }

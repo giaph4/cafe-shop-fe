@@ -1,5 +1,5 @@
 <template>
-    <div class="attendance-page container-fluid">
+    <div class="attendance-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="attendance-header">
             <div class="attendance-header__content">
                 <div class="attendance-header__title-section">
@@ -477,11 +477,10 @@ onMounted(() => {
 }
 
 .attendance-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    background: var(--color-card);
 }
 
 .attendance-header__content {
@@ -489,7 +488,7 @@ onMounted(() => {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
 .attendance-header__title-section {
@@ -498,35 +497,124 @@ onMounted(() => {
 }
 
 .attendance-header__title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .attendance-header__subtitle {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .attendance-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
 }
 
+.attendance-header__actions .btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.attendance-header__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.attendance-header__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
 .filter-card,
 .tabs-card {
-    border-radius: var(--component-radius-lg);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--component-shadow);
     background: var(--color-card);
+}
+
+.filter-card :global(.card-body),
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.filter-card :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control),
+.filter-card :global(.form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control:focus),
+.filter-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.filter-card :global(.btn-group .btn) {
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.btn-group .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.filter-card :global(.btn-group .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.filter-card :global(.btn-group .btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.filter-card :global(.btn-group .btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.filter-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
 }
 
 .attendance-tabs {
@@ -535,43 +623,44 @@ onMounted(() => {
 
 .attendance-tabs .tabs {
     display: flex;
-    gap: 0.75rem;
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    padding: 0.6rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-soft);
+    gap: var(--spacing-2);
+    background: transparent;
+    padding: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border);
     overflow-x: auto;
 }
 
 .attendance-tabs .tab {
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
-    padding: 0.75rem 1.35rem;
-    border-radius: 12px;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    font-weight: 600;
+    gap: var(--spacing-2);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     cursor: pointer;
-    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+    transition: all var(--transition-base);
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 .attendance-tabs .tab i {
-    font-size: 1.15rem;
+    font-size: 18px;
+    line-height: 1;
 }
 
 .attendance-tabs .tab.active {
-    background: var(--color-soft-primary);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-md);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
 }
 
 .attendance-tabs .tab:hover:not(.active) {
     background: var(--color-card-muted);
-    transform: translateY(-1px);
+    border-color: var(--color-border);
+    color: var(--color-heading);
 }
 
 @media (max-width: 768px) {

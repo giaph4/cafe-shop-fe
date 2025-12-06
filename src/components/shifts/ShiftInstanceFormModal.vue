@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
+        <div class="modal fade shift-instance-form-modal" ref="modal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -42,9 +42,9 @@
                             </div>
 
                             <div v-if="form.extraDates.length" class="mb-4">
-                                <span class="badge bg-primary-subtle text-primary me-2" v-for="date in form.extraDates" :key="date">
+                                <span class="badge badge-extra-date me-2" v-for="date in form.extraDates" :key="date">
                                     {{ date }}
-                                    <button type="button" class="btn-close btn-close-white ms-2" aria-label="X" @click="removeExtraDate(date)"></button>
+                                    <button type="button" class="btn-close btn-close-sm ms-2" aria-label="X" @click="removeExtraDate(date)"></button>
                                 </span>
                             </div>
 
@@ -220,5 +220,128 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Badge styles đã được chuẩn hóa trong components.scss */
+.shift-instance-form-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-instance-form-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-instance-form-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-form-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.shift-instance-form-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-instance-form-modal :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-form-modal :global(.form-control),
+.shift-instance-form-modal :global(.form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-form-modal :global(.form-control:focus),
+.shift-instance-form-modal :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.shift-instance-form-modal :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-form-modal :global(.btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-form-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.shift-instance-form-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.shift-instance-form-modal :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.shift-instance-form-modal :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.shift-instance-form-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.shift-instance-form-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.badge-extra-date {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-1) var(--spacing-2);
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.btn-close-sm {
+    width: 0.75rem;
+    height: 0.75rem;
+    opacity: 0.7;
+}
 </style>

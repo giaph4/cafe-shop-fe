@@ -149,99 +149,65 @@ const groupedByAssignment = computed(() => {
 <style scoped lang="scss">
 .metric-card {
     position: relative;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-6);
+    padding: var(--spacing-4);
     display: flex;
     align-items: center;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4);
     transition: all var(--transition-base);
-    overflow: hidden;
     height: 100%;
     min-height: 140px;
 }
 
-.metric-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, transparent, currentColor, transparent);
-    opacity: 0.3;
-}
-
 .metric-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .metric-card__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: var(--radius-lg);
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     flex-shrink: 0;
     background: var(--color-card-muted);
-    box-shadow: var(--shadow-sm);
-}
-
-.metric-card--primary {
-    background: var(--color-primary-soft);
-    border-color: var(--color-primary-soft);
 }
 
 .metric-card--primary .metric-card__icon {
-    background: var(--color-primary);
-    color: var(--color-white);
+    background: var(--color-soft-indigo);
+    color: var(--color-primary);
 }
 
 .metric-card--primary .metric-value {
     color: var(--color-primary);
 }
 
-.metric-card--success {
-    background: var(--color-success-soft);
-    border-color: var(--color-success-soft);
-}
-
 .metric-card--success .metric-card__icon {
-    background: var(--color-success);
-    color: var(--color-white);
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
 }
 
 .metric-card--success .metric-value {
     color: var(--color-success);
 }
 
-.metric-card--danger {
-    background: var(--color-danger-soft);
-    border-color: var(--color-danger-soft);
-}
-
 .metric-card--danger .metric-card__icon {
-    background: var(--color-danger);
-    color: var(--color-white);
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
 }
 
 .metric-card--danger .metric-value {
     color: var(--color-danger);
 }
 
-.metric-card--warning {
-    background: var(--color-warning-soft);
-    border-color: var(--color-warning-soft);
-}
-
 .metric-card--warning .metric-card__icon {
-    background: var(--color-warning);
-    color: var(--color-white);
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
 }
 
 .metric-card--warning .metric-value {
@@ -256,30 +222,92 @@ const groupedByAssignment = computed(() => {
 }
 
 .metric-label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .metric-value {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .metric-detail {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .table-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
+}
+
+.table-card :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.table-card :global(.card-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table) {
+    margin-bottom: 0;
+}
+
+.table-card :global(.table thead),
+.table-card :global(.table thead.table-light) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody td) {
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody tr:last-child td) {
+    border-bottom: none;
+}
+
+.table-card :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.text-success) {
+    color: var(--color-success);
+}
+
+.table-card :global(.text-danger) {
+    color: var(--color-danger);
 }
 
 @media (max-width: 768px) {

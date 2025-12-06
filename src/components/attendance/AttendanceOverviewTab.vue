@@ -256,18 +256,51 @@ const getStatusLabel = (status) => {
 
 .check-in-out-card,
 .assignments-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
+}
+
+.check-in-out-card :global(.card-body),
+.assignments-card :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.check-in-out-card :global(h5),
+.assignments-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.check-in-out-card :global(.text-muted),
+.assignments-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.check-in-out-card :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.check-in-out-card :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .current-session {
     padding: var(--spacing-4);
-    background: linear-gradient(160deg, rgba(244, 246, 255, 0.92), rgba(233, 240, 255, 0.84));
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
 }
 
 .session-info-card {
@@ -285,53 +318,117 @@ const getStatusLabel = (status) => {
 .session-info-card__icon {
     width: 56px;
     height: 56px;
-    border-radius: 14px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    color: #fff;
+}
+
+.session-info-card__icon.bg-success {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
 }
 
 .session-info-card__meta h6 {
     margin: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .session-info-card__details {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    gap: var(--spacing-3);
+    padding-top: var(--spacing-3);
+    border-top: 1px solid var(--color-border);
 }
 
 .detail-item {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
 }
 
 .detail-item__label {
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.detail-item strong {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .check-actions {
-    padding-top: 1rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    padding-top: var(--spacing-3);
+    border-top: 1px solid var(--color-border);
 }
 
 .check-form {
     padding: var(--spacing-4);
     background: var(--color-card);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-xs);
+}
+
+.check-form :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.check-form :global(.form-control),
+.check-form :global(.form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.check-form :global(.form-control:focus),
+.check-form :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.check-form :global(.btn) {
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.check-form :global(.btn-success) {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: var(--color-text-inverse);
+}
+
+.check-form :global(.btn-success:hover:not(:disabled)) {
+    background: var(--color-success-dark, #059669);
+}
+
+.check-form :global(.btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+}
+
+.check-form :global(.btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark, #a0281d);
 }
 
 .no-session {
@@ -358,17 +455,16 @@ const getStatusLabel = (status) => {
 }
 
 .assignment-item {
-    padding: var(--spacing-5);
-    background: linear-gradient(160deg, rgba(244, 246, 255, 0.92), rgba(233, 240, 255, 0.84));
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
-    transition: transform var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
+    padding: var(--spacing-4);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    transition: all var(--transition-base);
 }
 
 .assignment-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .assignment-item__header {
@@ -381,12 +477,31 @@ const getStatusLabel = (status) => {
 .assignment-item__icon {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
-    color: #fff;
+}
+
+.assignment-item__icon.bg-warning {
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
+}
+
+.assignment-item__icon.bg-success {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+}
+
+.assignment-item__icon.bg-danger {
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+}
+
+.assignment-item__icon.bg-secondary {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
 }
 
 .assignment-item__meta {
@@ -395,32 +510,68 @@ const getStatusLabel = (status) => {
 
 .assignment-item__meta h6 {
     margin: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-item :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-item :global(.badge.bg-warning-subtle) {
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+}
+
+.assignment-item :global(.badge.bg-success-subtle) {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+.assignment-item :global(.badge.bg-danger-subtle) {
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+}
+
+.assignment-item :global(.badge.bg-secondary-subtle) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
 }
 
 .assignment-item__details {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.15);
+    gap: var(--spacing-2);
+    padding-top: var(--spacing-3);
+    border-top: 1px solid var(--color-border);
 }
 
 .detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .detail-row span {
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .detail-row strong {
     color: var(--color-heading);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 </style>
 

@@ -68,7 +68,8 @@
                 <span class="message-bubble__time">{{ formatTime(message.createdAt) }}</span>
                 <i
                     v-if="isOwn && message.seenByUserIds && message.seenByUserIds.length > 0"
-                    class="bi bi-check2-all text-primary ms-1"
+                    class="bi bi-check2-all ms-1"
+                    :style="{ color: 'var(--color-primary)' }"
                     :title="`Đã xem bởi ${message.seenByUserIds.length} người`"
                 ></i>
                 <i
@@ -176,8 +177,8 @@ const handleFileClick = (file) => {
 
 .message-bubble--own .message-bubble__body {
     background: var(--color-primary);
-    color: #ffffff;
-    border-radius: var(--radius-base) var(--radius-base) 4px var(--radius-base);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm) var(--radius-sm) 4px var(--radius-sm);
 }
 
 .message-bubble--recalled {
@@ -191,7 +192,7 @@ const handleFileClick = (file) => {
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
@@ -226,13 +227,14 @@ const handleFileClick = (file) => {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .message-bubble__body {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-text);
     padding: var(--spacing-3) var(--spacing-3);
-    border-radius: var(--radius-base) var(--radius-base) var(--radius-base) 4px;
+    border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 4px;
     max-width: 70%;
     word-wrap: break-word;
     border: 1px solid var(--color-border);
@@ -246,6 +248,7 @@ const handleFileClick = (file) => {
     white-space: pre-wrap;
     line-height: var(--line-height-base);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .message-bubble__emoji {
@@ -287,7 +290,7 @@ const handleFileClick = (file) => {
 }
 
 .message-bubble__attachment .message-bubble__image-preview {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     max-width: 300px;
     cursor: pointer;
@@ -310,6 +313,7 @@ const handleFileClick = (file) => {
     font-style: italic;
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .message-bubble__footer {
@@ -317,8 +321,9 @@ const handleFileClick = (file) => {
     align-items: center;
     gap: var(--spacing-1);
     margin-top: var(--spacing-1);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .message-bubble__footer i {
@@ -337,12 +342,12 @@ const handleFileClick = (file) => {
 
 .message-bubble__actions .btn {
     padding: var(--spacing-1);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
 }
 
 .message-bubble__actions .btn:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-primary);
 }
 

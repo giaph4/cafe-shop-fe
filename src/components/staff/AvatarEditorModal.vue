@@ -335,11 +335,10 @@ defineExpose({open, hide})
 
 .canvas-container {
     position: relative;
-    border-radius: 16px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
-    background: #ffffff;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 canvas {
@@ -352,15 +351,16 @@ canvas {
 .canvas-placeholder {
     position: absolute;
     inset: 0;
-    background: rgba(248, 249, 252, 0.92);
+    background: var(--color-card-muted);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #64748b;
+    color: var(--color-text-muted);
     text-align: center;
-    padding: 1rem;
-    gap: 0.75rem;
+    padding: var(--spacing-4);
+    gap: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .canvas-placeholder i {
@@ -384,6 +384,126 @@ canvas {
 
 .tool-actions .btn {
     min-width: 110px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.tool-actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.tool-actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.tool-actions .btn-outline-danger {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+}
+
+.tool-actions .btn-outline-danger:hover:not(:disabled) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.tool-group .form-label {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.tool-group .form-control-color {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+}
+
+.tool-group .form-range {
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:deep(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xl);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+:deep(.modal-body .alert-light) {
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body .alert-light .fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:deep(.modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+:deep(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+:deep(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+:deep(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 @media (max-width: 768px) {

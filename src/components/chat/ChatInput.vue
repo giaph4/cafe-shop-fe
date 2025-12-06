@@ -159,7 +159,7 @@ const removeFile = (index) => {
 .chat-input {
     position: relative;
     padding: var(--spacing-3);
-    background: var(--color-bg);
+    background: var(--color-card);
     border-top: 1px solid var(--color-border);
 }
 
@@ -171,12 +171,12 @@ const removeFile = (index) => {
 
 .chat-input__toolbar .btn {
     padding: var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
 }
 
 .chat-input__toolbar .btn:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-primary);
 }
 
@@ -195,26 +195,28 @@ const removeFile = (index) => {
     flex: 1;
     resize: none;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     max-height: 120px;
     transition: all var(--transition-base);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-text);
+    font-family: var(--font-family-sans);
 }
 
 .chat-input__textarea:focus {
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .chat-input__send {
     width: 40px;
     height: 40px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -222,13 +224,12 @@ const removeFile = (index) => {
     flex-shrink: 0;
     background: var(--color-primary);
     border: none;
-    color: #ffffff;
+    color: var(--color-text-inverse);
     transition: all var(--transition-base);
 }
 
 .chat-input__send:hover:not(:disabled) {
-    filter: brightness(1.05);
-    box-shadow: var(--shadow-base);
+    background: var(--color-primary-dark);
 }
 
 .chat-input__send:disabled {
@@ -255,15 +256,16 @@ const removeFile = (index) => {
     align-items: center;
     gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-3);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .chat-input__file-item:hover {
-    background: var(--color-bg);
+    background: var(--color-card);
     border-color: var(--color-primary);
 }
 
@@ -277,12 +279,12 @@ const removeFile = (index) => {
 
 .chat-input__file-item .btn {
     padding: var(--spacing-1);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
 }
 
 .chat-input__file-item .btn:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-danger);
 }
 

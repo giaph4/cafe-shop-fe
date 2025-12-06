@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Báo cáo tổng hợp</h2>
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="card filter-card mb-4 mt-4">
+        <div class="card filter-card">
             <div class="card-body">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-3 col-md-4">
@@ -834,40 +834,47 @@ onBeforeUnmount(() => {
 /* Page-specific styles only - Global styles (.page-container) are in components.scss */
 
 .card-shadow {
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-6) var(--spacing-8);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-4);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
-    box-shadow: var(--shadow-md);
+    gap: var(--spacing-4);
 }
 
 .page-title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
+    font-family: var(--font-family-sans);
 }
 
 .page-subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card,
 .tabs-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-md);
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
+    background: var(--color-card);
+}
+
+.filter-card .card-body {
+    background: var(--color-card);
+}
+
+.tabs-card .card-body {
+    background: var(--color-card);
 }
 
 .insights-card {
@@ -975,32 +982,121 @@ onBeforeUnmount(() => {
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
+    background: var(--color-card-muted);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
 }
 
 .reports-tabs .nav-link {
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-5);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    background: var(--color-card-muted);
-    transition: all var(--transition-fast);
+    background: transparent;
+    transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
-.reports-tabs .nav-link:hover {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+.reports-tabs .nav-link:hover:not(.active) {
+    background: var(--color-card);
+    color: var(--color-heading);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-primary-contrast);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+/* Form Controls - Chuẩn hóa */
+.filter-card :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control),
+.filter-card :global(.form-select) {
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    background: var(--color-card);
+    color: var(--color-heading);
+    transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control:focus),
+.filter-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+/* Button Group - Chuẩn hóa */
+.filter-card :global(.btn-group .btn) {
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.filter-card :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.filter-card :global(.btn-outline-primary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.filter-card :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* Header Buttons - Chuẩn hóa */
+.card-shadow :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.card-shadow :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.card-shadow :global(.btn-outline-secondary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.card-shadow :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 @media (max-width: 768px) {
     .card-shadow {
-        padding: var(--spacing-5);
+        padding: var(--spacing-4);
         flex-direction: column;
         align-items: flex-start;
     }

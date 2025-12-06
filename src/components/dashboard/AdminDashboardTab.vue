@@ -281,23 +281,24 @@ watch(() => props.range, (newRange) => {
     padding: 0;
 }
 
-/* KPI Cards - Chuẩn hóa theo base.css */
+/* KPI Cards - Flat design, NO shadow */
 .kpi-card {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-base);
-    padding: var(--spacing-4);
-    box-shadow: var(--shadow-base);
+    padding: var(--spacing-5) var(--spacing-6);
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    transition: all var(--transition-base);
+    transition: background-color var(--transition-base), border-color var(--transition-base);
     min-height: 120px;
     height: 100%;
 }
 
 .kpi-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-border-strong);
+    /* NO transform, NO shadow */
 }
 
 .kpi-card__icon {
@@ -380,7 +381,7 @@ watch(() => props.range, (newRange) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: var(--color-text-inverse);
     font-size: 20px;
     flex-shrink: 0;
 }

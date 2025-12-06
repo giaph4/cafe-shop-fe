@@ -1,5 +1,5 @@
 <template>
-    <div class="performance-adjustment-page container-fluid">
+    <div class="performance-adjustment-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="performance-adjustment-header">
             <div class="performance-adjustment-header__content">
                 <div class="performance-adjustment-header__title-section">
@@ -86,7 +86,7 @@
 
             <!-- Revoke Adjustment Confirmation Modal -->
             <div 
-                class="modal fade" 
+                class="modal fade performance-adjustment-revoke-modal" 
                 id="revokeAdjustmentModal" 
                 tabindex="-1" 
                 ref="revokeAdjustmentModalElement" 
@@ -133,7 +133,7 @@
 
             <!-- Delete Adjustment Confirmation Modal -->
             <div 
-                class="modal fade" 
+                class="modal fade performance-adjustment-delete-modal" 
                 id="deleteAdjustmentModal" 
                 tabindex="-1" 
                 ref="deleteAdjustmentModalElement" 
@@ -411,18 +411,17 @@ onMounted(() => {
 }
 
 .performance-adjustment-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    background: var(--color-card);
 }
 
 .performance-adjustment-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -432,64 +431,244 @@ onMounted(() => {
 }
 
 .performance-adjustment-header__title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .performance-adjustment-header__subtitle {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .performance-adjustment-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
 }
 
+.performance-adjustment-header__actions .btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.performance-adjustment-header__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.performance-adjustment-header__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+}
+
+.performance-adjustment-header__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.performance-adjustment-header__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
 .tabs-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+}
+
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
     background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
 }
 
 .reports-tabs .nav-link {
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-5);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    background: var(--color-card-muted);
+    background: transparent;
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
-.reports-tabs .nav-link:hover {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+.reports-tabs .nav-link:hover:not(.active) {
+    background: var(--color-card-muted);
+    border-color: var(--color-border);
+    color: var(--color-heading);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-white);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-content),
+.performance-adjustment-delete-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-header),
+.performance-adjustment-delete-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-title),
+.performance-adjustment-delete-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-body),
+.performance-adjustment-delete-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-body p),
+.performance-adjustment-delete-modal :global(.modal-body p) {
+    font-family: var(--font-family-sans);
+    color: var(--color-heading);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-body .card),
+.performance-adjustment-delete-modal :global(.modal-body .card) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-body .card-body),
+.performance-adjustment-delete-modal :global(.modal-body .card-body) {
+    padding: var(--spacing-3);
+    background: var(--color-card-muted);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-body strong),
+.performance-adjustment-delete-modal :global(.modal-body strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.performance-adjustment-revoke-modal :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.performance-adjustment-revoke-modal :global(.form-control) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.performance-adjustment-revoke-modal :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.performance-adjustment-delete-modal :global(.alert-warning) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-warning);
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-family: var(--font-family-sans);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-footer),
+.performance-adjustment-delete-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-footer .btn),
+.performance-adjustment-delete-modal :global(.modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-footer .btn-warning) {
+    background: var(--color-warning);
+    border-color: var(--color-warning);
+    color: var(--color-text-inverse);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-footer .btn-warning:hover:not(:disabled)) {
+    background: var(--color-warning-dark, #d97706);
+}
+
+.performance-adjustment-delete-modal :global(.modal-footer .btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+}
+
+.performance-adjustment-delete-modal :global(.modal-footer .btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark, #a0281d);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-footer .btn-outline-secondary),
+.performance-adjustment-delete-modal :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.performance-adjustment-revoke-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)),
+.performance-adjustment-delete-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 @media (max-width: 768px) {
     .performance-adjustment-header {
-        padding: var(--spacing-4);
+        padding: var(--spacing-3);
     }
 
     .performance-adjustment-header__content {
@@ -500,10 +679,10 @@ onMounted(() => {
     .performance-adjustment-header__actions {
         width: 100%;
         justify-content: stretch;
+    }
 
-        .btn {
-            flex: 1;
-        }
+    .performance-adjustment-header__actions .btn {
+        flex: 1;
     }
 }
 </style>

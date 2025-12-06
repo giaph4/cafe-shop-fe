@@ -72,7 +72,7 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="badge" :class="statusClass(assignment.status)">
+                                <span class="badge text-light" :class="statusClass(assignment.status)">
                                     {{ translateStatus(assignment.status) }}
                                 </span>
                             </td>
@@ -135,10 +135,127 @@ const handleRefresh = () => emit('refresh')
 
 <style scoped lang="scss">
 .table-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
+}
+
+.table-card :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.table-card :global(.card-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.table-card :global(.table) {
+    margin-bottom: 0;
+}
+
+.table-card :global(.table thead),
+.table-card :global(.table thead.table-light) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody td) {
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody tr:last-child td) {
+    border-bottom: none;
+}
+
+.table-card :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.badge.bg-success) {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+.table-card :global(.badge.bg-warning) {
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+}
+
+.table-card :global(.badge.bg-info) {
+    background: var(--color-soft-indigo);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.table-card :global(.badge.bg-danger) {
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+}
+
+.table-card :global(.badge.bg-secondary) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
+}
+
+.table-card :global(.text-success) {
+    color: var(--color-success);
+}
+
+.table-card :global(.text-danger) {
+    color: var(--color-danger);
 }
 </style>
 

@@ -77,12 +77,12 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 /* Table Chip - Chuẩn hóa */
 .table-chip {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-3) var(--spacing-4);
     display: grid;
     gap: var(--spacing-1);
     text-align: left;
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-text);
     transition: all var(--transition-base);
     cursor: pointer;
@@ -90,14 +90,15 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 
 .table-chip:hover,
 .table-chip:focus {
-    box-shadow: var(--shadow-hover);
     border-color: var(--color-primary);
+    background: var(--color-card-muted);
 }
 
 .table-chip__name {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .table-chip__status {
@@ -106,6 +107,7 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
     gap: 6px;
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .table-chip__status i {
@@ -129,7 +131,7 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 /* Table Chip Variants - Chuẩn hóa theo màu nhạt */
 .table-chip--success {
     border-color: var(--color-success);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
 }
 
 .table-chip--success .table-chip__status {
@@ -138,7 +140,7 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 
 .table-chip--warning {
     border-color: var(--color-warning);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
 }
 
 .table-chip--warning .table-chip__status {
@@ -147,7 +149,7 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 
 .table-chip--danger {
     border-color: var(--color-danger);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
 }
 
 .table-chip--danger .table-chip__status {
@@ -156,7 +158,7 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 
 .table-chip--info {
     border-color: var(--color-info);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
 }
 
 .table-chip--info .table-chip__status {
@@ -165,7 +167,7 @@ const getStatusVariant = (status) => `table-chip--${getStatusMeta(status).tone}`
 
 .table-chip--neutral {
     border-color: var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .table-chip--neutral .table-chip__status {

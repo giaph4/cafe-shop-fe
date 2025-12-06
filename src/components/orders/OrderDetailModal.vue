@@ -54,7 +54,7 @@
                                 <div class="order-detail__info-list">
                                     <div class="order-detail__info-item">
                                         <span class="order-detail__info-label">Trạng thái:</span>
-                                        <span :class="['badge', getStatusClass(order.status)]">{{ getStatusLabel(order.status) }}</span>
+                                        <span :class="['badge', getStatusClass(order.status)]" :style="getStatusStyle(order.status)">{{ getStatusLabel(order.status) }}</span>
                                     </div>
                                     <div class="order-detail__info-item">
                                         <span class="order-detail__info-label">Ngày tạo:</span>
@@ -173,12 +173,36 @@ const fetchOrderDetail = async (id) => {
 }
 
 const getStatusClass = (status) => {
-    switch (status) {
-        case 'PENDING': return 'badge bg-warning-subtle text-warning'
-        case 'PAID': return 'badge bg-success-subtle text-success'
-        case 'CANCELLED': return 'badge bg-danger-subtle text-danger'
-        case 'TRANSFERRED': return 'badge bg-info-subtle text-info'
-        default: return 'badge bg-secondary-subtle text-secondary'
+    return 'badge'
+}
+
+const getStatusStyle = (status) => {
+    const styles = {
+        PENDING: {
+            background: 'var(--color-soft-amber)',
+            border: '1px solid var(--color-warning)',
+            color: 'var(--color-warning)'
+        },
+        PAID: {
+            background: 'var(--color-soft-emerald)',
+            border: '1px solid var(--color-success)',
+            color: 'var(--color-success)'
+        },
+        CANCELLED: {
+            background: 'var(--color-soft-rose)',
+            border: '1px solid var(--color-danger)',
+            color: 'var(--color-danger)'
+        },
+        TRANSFERRED: {
+            background: 'var(--color-soft-sky)',
+            border: '1px solid var(--color-info)',
+            color: 'var(--color-info)'
+        }
+    }
+    return styles[status] || {
+        background: 'var(--color-card-muted)',
+        border: '1px solid var(--color-border)',
+        color: 'var(--color-text-muted)'
     }
 }
 
@@ -234,16 +258,16 @@ defineExpose({ show, hide })
 }
 
 .order-detail-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     box-shadow: var(--shadow-modal);
 }
 
 .order-detail-modal :global(.modal-header) {
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -257,10 +281,11 @@ defineExpose({ show, hide })
 
 .order-detail-modal :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .modal-subtitle {
@@ -268,6 +293,7 @@ defineExpose({ show, hide })
     font-size: var(--font-size-base);
     margin-bottom: 0;
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .modal-header__actions {
@@ -281,12 +307,13 @@ defineExpose({ show, hide })
     padding: var(--spacing-5);
     max-height: calc(100vh - 200px);
     overflow-y: auto;
+    background: var(--color-card);
 }
 
 .order-detail-modal :global(.modal-footer) {
     border-top: 1px solid var(--color-border);
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-2);
@@ -302,18 +329,19 @@ defineExpose({ show, hide })
 
 .order-detail__info-card {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .order-detail__info-title {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-3);
     padding-bottom: var(--spacing-2);
     border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__info-list {
@@ -335,13 +363,15 @@ defineExpose({ show, hide })
     color: var(--color-text-muted);
     flex-shrink: 0;
     min-width: 100px;
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__info-value {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     text-align: right;
     word-break: break-word;
+    font-family: var(--font-family-sans);
 }
 
 /* Products Section - Chuẩn hóa */
@@ -352,30 +382,41 @@ defineExpose({ show, hide })
 .order-detail__section-title {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-3);
     padding-bottom: var(--spacing-2);
     border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__table {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .order-detail__table thead th {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     padding: var(--spacing-3) var(--spacing-4);
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__table tbody td {
     font-size: var(--font-size-base);
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     vertical-align: middle;
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__table tbody tr:last-child td {
@@ -385,9 +426,9 @@ defineExpose({ show, hide })
 /* Summary - Chuẩn hóa */
 .order-detail__summary {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
@@ -403,12 +444,14 @@ defineExpose({ show, hide })
 .order-detail__summary-label {
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__summary-value {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__summary-divider {
@@ -423,22 +466,25 @@ defineExpose({ show, hide })
 
 .order-detail__summary-item--total .order-detail__summary-label {
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .order-detail__summary-value--total {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
+    font-family: var(--font-family-sans);
 }
 
 /* Badge - Chuẩn hóa */
 .order-detail-modal :global(.badge) {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 /* Responsive */

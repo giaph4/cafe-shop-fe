@@ -31,7 +31,7 @@
 
                         <div v-if="conversationType === 'direct'">
                             <div v-if="loadingUsers" class="text-center py-3">
-                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                                <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
                                 <span class="ms-2 text-muted">Đang tải danh sách người dùng...</span>
                             </div>
                             <div v-else>
@@ -62,7 +62,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Thành viên <span class="text-danger">*</span></label>
                                 <div v-if="loadingUsers" class="text-center py-3">
-                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
                                     <span class="ms-2 text-muted">Đang tải danh sách người dùng...</span>
                                 </div>
                                 <div v-else class="member-selection">
@@ -199,34 +199,35 @@ defineExpose({ show, hide })
 <style scoped>
 /* Create Conversation Modal - Chuẩn hóa theo base.css */
 .create-conversation-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     box-shadow: var(--shadow-modal);
 }
 
 .create-conversation-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .create-conversation-modal :global(.modal-body) {
     padding: var(--spacing-5);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .create-conversation-modal :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     gap: var(--spacing-2);
 }
 
 .create-conversation-modal :global(.modal-title) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 /* Tabs - Chuẩn hóa */
@@ -243,18 +244,19 @@ defineExpose({ show, hide })
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .create-conversation-modal :global(.nav-tabs .nav-link:hover:not(.active)) {
-    background: var(--color-bg-muted);
-    color: var(--color-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
 }
 
 .create-conversation-modal :global(.nav-tabs .nav-link.active) {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-bottom: 2px solid var(--color-primary);
 }
 
@@ -262,20 +264,22 @@ defineExpose({ show, hide })
 .create-conversation-modal :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .create-conversation-modal :global(.form-control),
 .create-conversation-modal :global(.form-select) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-text);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .create-conversation-modal :global(.form-control:focus),
@@ -283,11 +287,12 @@ defineExpose({ show, hide })
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .create-conversation-modal :global(.form-control:disabled),
 .create-conversation-modal :global(.form-select:disabled) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -296,25 +301,26 @@ defineExpose({ show, hide })
     max-height: 200px;
     overflow-y: auto;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .create-conversation-modal :global(.form-check) {
     padding: var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     transition: background-color var(--transition-base);
 }
 
 .create-conversation-modal :global(.form-check:hover) {
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .create-conversation-modal :global(.form-check-label) {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     cursor: pointer;
+    font-family: var(--font-family-sans);
 }
 
 .create-conversation-modal :global(.form-check-input) {
@@ -332,17 +338,19 @@ defineExpose({ show, hide })
 .create-conversation-modal :global(.btn-primary) {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     padding: 8px 16px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     gap: 6px;
+    font-family: var(--font-family-sans);
 }
 
 .create-conversation-modal :global(.btn-primary:hover:not(:disabled)) {
-    filter: brightness(1.05);
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
 }
 
 .create-conversation-modal :global(.btn-primary:disabled) {
@@ -352,16 +360,17 @@ defineExpose({ show, hide })
 
 .create-conversation-modal :global(.btn-outline-secondary) {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: 8px 16px;
     color: var(--color-text);
     background: transparent;
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .create-conversation-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-border-strong);
 }
 

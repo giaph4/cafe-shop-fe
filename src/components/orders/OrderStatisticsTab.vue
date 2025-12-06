@@ -50,7 +50,7 @@
         <div class="row g-3">
             <div class="col-lg-12">
                 <div class="card card-shadow">
-                    <div class="card-header bg-white">
+                    <div class="card-header">
                         <h5 class="mb-0">Phân bổ theo trạng thái</h5>
                     </div>
                     <div class="card-body">
@@ -159,11 +159,10 @@ const getStatusProgressClass = (status) => {
 <style scoped>
 /* KPI Cards - Chuẩn hóa theo base.css */
 .kpi-card {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
-    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
@@ -173,40 +172,41 @@ const getStatusProgressClass = (status) => {
 }
 
 .kpi-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .kpi-card__icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
     color: var(--color-primary);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Màu icon - không dùng gradient, dùng màu nhạt */
 .kpi-card--total .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .kpi-card--revenue .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-secondary);
 }
 
 .kpi-card--average .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
     color: var(--color-info);
 }
 
 .kpi-card--rate .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
@@ -221,39 +221,51 @@ const getStatusProgressClass = (status) => {
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .kpi-card__value {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 /* Card và progress - Chuẩn hóa */
 .order-statistics-tab :global(.card) {
     margin-bottom: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 .order-statistics-tab :global(.card-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card-muted);
+}
+
+.order-statistics-tab :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .order-statistics-tab :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .order-statistics-tab :global(.progress) {
     height: 8px;
-    background: var(--color-bg-muted);
-    border-radius: var(--radius-base);
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
 .order-statistics-tab :global(.progress-bar) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
 }
 
 @media (max-width: 768px) {

@@ -152,61 +152,77 @@ const prettyRole = (role) => {
 .customers-tab {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .customers-tab__summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
+/* Flat design - NO gradient, NO shadow */
 .summary-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.1rem 1.35rem;
-    border-radius: var(--radius-md);
+    gap: var(--spacing-4);
+    padding: var(--spacing-5) var(--spacing-6);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
+    transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.summary-card:hover {
+    background: var(--color-card-muted);
+    border-color: var(--color-border-strong);
+    /* NO transform, NO shadow */
 }
 
 .summary-card__icon {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-base);
     display: grid;
     place-items: center;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     color: var(--color-primary);
+    flex-shrink: 0;
+    /* NO shadow, NO gradient */
 }
 
 .summary-card__meta {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
 }
 
 .summary-card__meta span {
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+}
+
+.summary-card__meta strong {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
 }
 
 .summary-card__meta small {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
 }
 
 .customers-tab__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-    gap: 1.5rem;
+    gap: var(--spacing-6);
 }
 
 .card-header {
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 1rem;
+    padding-bottom: var(--spacing-4);
     margin-bottom: 0;
 }
 
@@ -218,30 +234,22 @@ const prettyRole = (role) => {
     vertical-align: middle;
 }
 
+/* Flat design - NO shadow, border-radius theo design system */
 .customers-tab__role-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 64px;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-wide);
     text-transform: capitalize;
     color: var(--color-badge-soft-text);
     background: var(--color-badge-soft-bg);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 6px 14px rgba(15, 23, 42, 0.12);
-    border: 1px solid rgba(148, 163, 184, 0.25);
-}
-
-.dark-theme .customers-tab__role-badge {
-    border-color: rgba(129, 140, 248, 0.32);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 18px rgba(15, 23, 42, 0.35);
-}
-
-.comfort-theme .customers-tab__role-badge {
-    border-color: rgba(95, 111, 148, 0.28);
+    border: 1px solid var(--color-border);
+    /* NO shadow */
 }
 
 @media (max-width: 992px) {

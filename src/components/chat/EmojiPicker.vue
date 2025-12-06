@@ -56,7 +56,7 @@ const handleSelect = (emoji) => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .emoji-picker {
     position: absolute;
     bottom: 100%;
@@ -65,8 +65,8 @@ const handleSelect = (emoji) => {
     max-height: 300px;
     background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--component-radius-sm);
-    box-shadow: var(--component-shadow-hover);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-modal);
     z-index: 1000;
     margin-bottom: 0.5rem;
     overflow: hidden;
@@ -78,9 +78,28 @@ const handleSelect = (emoji) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--component-gap-sm) var(--component-padding-sm);
+    padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-card-muted);
+}
+
+.emoji-picker__header h6 {
+    margin: 0;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.emoji-picker__header .btn {
+    padding: var(--spacing-1);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-base);
+}
+
+.emoji-picker__header .btn:hover {
+    background: var(--color-card);
+    color: var(--color-primary);
 }
 
 .emoji-picker__grid {
@@ -96,15 +115,14 @@ const handleSelect = (emoji) => {
     background: transparent;
     border: none;
     padding: 0.5rem;
-    border-radius: var(--component-radius-sm);
+    border-radius: var(--radius-sm);
     font-size: 1.5rem;
     cursor: pointer;
-    transition: all var(--component-transition);
+    transition: all var(--transition-base);
+}
 
-    &:hover {
-        background: var(--color-card-muted);
-        transform: scale(1.2);
-    }
+.emoji-picker__item:hover {
+    background: var(--color-card-muted);
 }
 </style>
 

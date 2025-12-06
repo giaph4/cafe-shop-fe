@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid">
+    <div class="page-container container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Báo cáo ca làm việc</h2>
@@ -268,63 +268,94 @@ onBeforeUnmount(() => {
 }
 
 .card-shadow {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    background: var(--color-card);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
 .page-title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .page-subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
+}
+
+.card-shadow .btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.card-shadow .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.card-shadow .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .tabs-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+}
+
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
     background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
 }
 
 .reports-tabs .nav-link {
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-5);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    background: var(--color-card-muted);
+    background: transparent;
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
-.reports-tabs .nav-link:hover {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+.reports-tabs .nav-link:hover:not(.active) {
+    background: var(--color-card-muted);
+    border-color: var(--color-border);
+    color: var(--color-heading);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-white);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
 }
 
 @media (max-width: 768px) {

@@ -1,34 +1,34 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Chi tiết Phân tích AI</h2>
                 <p class="page-subtitle">Xem chi tiết phân tích #{{ analyticsId }}</p>
             </div>
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                <router-link to="/admin-analytics" class="btn btn-outline-secondary">
+                <router-link to="/admin-analytics" class="btn btn-outline-secondary" style="border-radius: var(--radius-sm); font-family: var(--font-family-sans);">
                     <i class="bi bi-arrow-left me-2"></i>
                     Quay lại
                 </router-link>
             </div>
         </div>
 
-        <div v-if="loading" class="card">
+        <div v-if="loading" class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
             <div class="card-body text-center py-5">
-                <div class="spinner-border text-primary" role="status"></div>
-                <p class="mt-3 text-muted">Đang tải dữ liệu...</p>
+                <div class="spinner-border" role="status" style="color: var(--color-primary);"></div>
+                <p class="mt-3" style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Đang tải dữ liệu...</p>
             </div>
         </div>
 
-        <div v-else-if="error" class="card">
+        <div v-else-if="error" class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
             <div class="card-body">
-                <div class="alert alert-danger mb-0">
+                <div class="alert alert-danger mb-0" style="background: var(--color-soft-rose); border: 1px solid var(--color-danger); color: var(--color-danger); border-radius: var(--radius-sm); font-family: var(--font-family-sans);">
                     {{ error }}
                 </div>
             </div>
         </div>
 
-        <div v-else-if="analytics" class="card">
+        <div v-else-if="analytics" class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
             <div class="card-body">
                 <div class="row g-4">
                     <div class="col-md-6">
@@ -111,10 +111,10 @@
             </div>
         </div>
 
-        <div v-else class="card">
+        <div v-else class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
             <div class="card-body text-center py-5">
-                <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-                <p class="text-muted">Không tìm thấy phân tích với ID này.</p>
+                <i class="bi bi-inbox fs-1 d-block mb-3" style="color: var(--color-text-muted);"></i>
+                <p style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Không tìm thấy phân tích với ID này.</p>
             </div>
         </div>
     </div>
@@ -170,9 +170,125 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.table th {
-    color: #6c757d;
-    font-weight: 500;
+/* Chuẩn hóa theo Global Design System */
+.page-container :global(.card) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.page-container :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.page-container :global(.card-body h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.page-container :global(.card-body .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+/* Minimal Table Styling */
+.page-container :global(.table) {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.page-container :global(.table th) {
+    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+    padding: var(--spacing-3);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.page-container :global(.table td) {
+    padding: var(--spacing-3);
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.page-container :global(.table tbody tr:last-child td) {
+    border-bottom: none;
+}
+
+.page-container :global(.table-borderless th),
+.page-container :global(.table-borderless td) {
+    border-bottom: none;
+}
+
+/* Badge Styling */
+.page-container :global(.badge) {
+    font-family: var(--font-family-sans);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+}
+
+/* List Group Styling */
+.page-container :global(.list-group-item) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-2);
+    padding: var(--spacing-3);
+    background: var(--color-card);
+    font-family: var(--font-family-sans);
+}
+
+.page-container :global(.list-group-item strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.page-container :global(.list-group-item p) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.page-container :global(.list-group-item .text-warning) {
+    color: var(--color-warning);
+}
+
+.page-container :global(.list-group-item .text-success) {
+    color: var(--color-success);
+}
+
+/* Results Display */
+.page-container :global(.border.rounded) {
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--color-card-muted) !important;
+    padding: var(--spacing-3) !important;
+}
+
+.page-container :global(pre) {
+    font-family: var(--font-family-mono);
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-base);
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Button Styling */
+.page-container :global(.btn-outline-secondary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.page-container :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 </style>
 

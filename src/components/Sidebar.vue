@@ -428,13 +428,13 @@ function searchItems(items, parents, targetPath) {
 .neo-sidebar__brand-icon {
     width: 46px;
     height: 46px;
-    border-radius: 16px;
+    border-radius: var(--radius-sm);
     display: grid;
     place-items: center;
     font-size: 1.32rem;
-    color: var(--color-primary-contrast, #ffffff);
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    box-shadow: 0 18px 36px rgba(79, 70, 229, 0.32);
+    color: var(--color-text-inverse);
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
 }
 
 .neo-sidebar__brand-text {
@@ -445,13 +445,15 @@ function searchItems(items, parents, targetPath) {
 
 .neo-sidebar__brand-text strong {
     font-size: 1.09rem;
-    font-weight: 700;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .neo-sidebar__brand-text small {
     font-size: 0.76rem;
-    color: var(--color-text-subtle);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .neo-sidebar__brand-text-collapsed {
@@ -463,8 +465,9 @@ function searchItems(items, parents, targetPath) {
 
 .neo-sidebar__brand-text-collapsed strong {
     font-size: 0.875rem;
-    font-weight: 700;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .neo-sidebar__collapse {
@@ -472,7 +475,7 @@ function searchItems(items, parents, targetPath) {
     height: 42px;
     display: grid;
     place-items: center;
-    border-radius: 14px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card-muted);
     color: var(--color-text-muted);
@@ -482,7 +485,7 @@ function searchItems(items, parents, targetPath) {
 
 .neo-sidebar__collapse:hover,
 .neo-sidebar__collapse:focus-visible {
-    background: var(--color-soft-primary);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
@@ -497,11 +500,11 @@ function searchItems(items, parents, targetPath) {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     border: 1px solid var(--color-border);
     border-left: none;
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     font-size: 20px;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     transition: all var(--transition-base);
@@ -513,8 +516,8 @@ function searchItems(items, parents, targetPath) {
 .neo-sidebar__expand-button:focus-visible {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
-    box-shadow: 4px 0 12px rgba(79, 70, 229, 0.3);
+    color: var(--color-text-inverse);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     transform: translateY(-50%) translateX(2px);
 }
 
@@ -539,10 +542,11 @@ function searchItems(items, parents, targetPath) {
 
 .neo-sidebar__section-label {
     font-size: 0.76rem;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--color-text-subtle);
+    color: var(--color-text-muted);
     margin: 0 0 0.65rem 0.45rem;
 }
 
@@ -556,30 +560,33 @@ function searchItems(items, parents, targetPath) {
 }
 
 .neo-sidebar__footer {
-    padding: 1.1rem 1.25rem 1.35rem;
+    padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.08), transparent);
+    background: var(--color-card);
 }
 
 .neo-sidebar__quick {
     width: 100%;
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     justify-content: center;
-    padding: 0.7rem 0.85rem;
-    border-radius: 14px;
-    border: 1px solid transparent;
-    background: rgba(99, 102, 241, 0.12);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
     color: var(--color-primary);
-    font-weight: 600;
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .neo-sidebar__quick:hover,
 .neo-sidebar__quick:focus-visible {
-    background: rgba(99, 102, 241, 0.18);
-    border-color: rgba(99, 102, 241, 0.28);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .neo-sidebar::-webkit-scrollbar {

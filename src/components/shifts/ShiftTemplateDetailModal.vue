@@ -1,6 +1,6 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
+        <Teleport to="body">
+        <div class="modal fade shift-template-detail-modal" ref="modal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header align-items-start">
@@ -181,23 +181,82 @@ defineExpose({ show, hide })
 </script>
 
 <style scoped>
+.shift-template-detail-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-template-detail-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-template-detail-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-detail-modal :global(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-detail-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.shift-template-detail-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-template-detail-modal :global(.modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-detail-modal :global(.modal-footer .btn-outline-secondary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.shift-template-detail-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
 .detail-state {
     min-height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .detail-content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--spacing-5);
 }
 
 .info-section {
     border-top: 1px solid var(--color-border);
-    padding-top: var(--spacing-5);
+    padding-top: var(--spacing-4);
 }
 
 .info-section:first-child {
@@ -208,8 +267,9 @@ defineExpose({ show, hide })
 .section-title {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    margin-bottom: var(--spacing-4);
-    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-3);
+    font-size: var(--font-size-lg);
+    font-family: var(--font-family-sans);
 }
 
 .info-grid {
@@ -230,12 +290,40 @@ defineExpose({ show, hide })
     color: var(--color-text-muted);
     letter-spacing: 0.06em;
     font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 
 .info-value {
     font-size: var(--font-size-base);
     color: var(--color-heading);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.info-value :global(.text-primary) {
+    color: var(--color-primary);
+}
+
+.info-value :global(.text-success) {
+    color: var(--color-success);
+}
+
+.info-value :global(.text-info) {
+    color: var(--color-info, #0dcaf0);
+}
+
+.shift-template-detail-modal :global(.badge) {
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-detail-modal :global(.badge.bg-primary-subtle) {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
 }
 
 @media (max-width: 768px) {

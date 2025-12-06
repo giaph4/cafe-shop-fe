@@ -22,7 +22,7 @@
                                 </div>
                             </div>
                             <div class="staff-detail-modal-header-meta">
-                                <span class="badge" :class="statusClass">{{ staff.status }}</span>
+                                <span class="status-badge" :class="statusClass">{{ statusLabel }}</span>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" @click="$emit('close')">
                                     <i class="bi bi-x-lg"></i>
                                 </button>
@@ -235,11 +235,22 @@ const initials = computed(() => {
 const statusClass = computed(() => {
     switch (props.staff?.status) {
         case 'ACTIVE':
-            return 'bg-success'
+            return 'status-badge--active'
         case 'INACTIVE':
-            return 'bg-danger'
+            return 'status-badge--inactive'
         default:
-            return 'bg-secondary'
+            return 'status-badge--neutral'
+    }
+})
+
+const statusLabel = computed(() => {
+    switch (props.staff?.status) {
+        case 'ACTIVE':
+            return 'Đang hoạt động'
+        case 'INACTIVE':
+            return 'Đã khóa'
+        default:
+            return props.staff?.status || '—'
     }
 })
 
@@ -267,10 +278,9 @@ const formatRole = (roleName) => {
 }
 
 .staff-detail-modal-content {
-    border-radius: var(--component-radius-lg);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 80px);
@@ -297,8 +307,9 @@ const formatRole = (roleName) => {
 
 .staff-detail-modal-header-text h4 {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .staff-detail-modal-header-text p {
@@ -331,9 +342,22 @@ const formatRole = (roleName) => {
 
 .staff-detail-modal-footer .btn {
     font-size: var(--font-size-base);
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.staff-detail-modal-footer .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.staff-detail-modal-footer .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .staff-detail-modal-footer .btn i {
@@ -341,11 +365,29 @@ const formatRole = (roleName) => {
     line-height: 1;
 }
 
+.staff-detail-modal-header-meta .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.staff-detail-modal-header-meta .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
 .info-card {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
-    background: var(--color-bg-muted);
+    background: var(--color-card);
+    transition: all var(--transition-base);
+}
+
+.info-card:hover {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .section-header {
@@ -359,8 +401,9 @@ const formatRole = (roleName) => {
 .section-header h6 {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .info-grid {
@@ -371,17 +414,18 @@ const formatRole = (roleName) => {
 
 .info-grid label {
     display: block;
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .info-grid p {
     margin-bottom: 0;
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .kpi-grid {
@@ -392,9 +436,15 @@ const formatRole = (roleName) => {
 
 .kpi-item {
     padding: var(--spacing-3);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
+    transition: all var(--transition-base);
+}
+
+.kpi-item:hover {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .kpi-label {
@@ -402,12 +452,14 @@ const formatRole = (roleName) => {
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-1);
     display: block;
+    font-family: var(--font-family-sans);
 }
 
 .kpi-value {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .avatar-wrapper {
@@ -436,13 +488,45 @@ const formatRole = (roleName) => {
 }
 
 .badge.bg-soft {
-    background: var(--color-bg-muted);
-    color: var(--color-text);
-    border-radius: var(--radius-base);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-1) var(--spacing-2);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.staff-detail-modal-header-meta .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+    min-width: 120px;
+    text-align: center;
+}
+
+.staff-detail-modal-header-meta .status-badge--active {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+    border: 2px solid var(--color-success);
+}
+
+.staff-detail-modal-header-meta .status-badge--inactive {
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+    border: 2px solid var(--color-danger);
+}
+
+.staff-detail-modal-header-meta .status-badge--neutral {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 2px solid var(--color-border);
 }
 
 .staff-detail-upcoming-list :global(.list-group-item) {

@@ -333,25 +333,25 @@ onBeforeUnmount(() => {
 <style scoped>
 /* Modal - Chuẩn hóa theo base.css */
 .product-recipe-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-modal);
+    background: var(--color-card);
 }
 
 .product-recipe-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-recipe-modal :global(.modal-title) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .product-recipe-modal :global(.modal-title i) {
@@ -361,30 +361,53 @@ onBeforeUnmount(() => {
 
 .product-recipe-modal :global(.modal-body) {
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
     max-height: 60vh;
     overflow-y: auto;
+}
+
+.product-recipe-modal :global(.modal-body .text-muted) {
+    font-family: var(--font-family-sans);
 }
 
 .product-recipe-modal :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-recipe-modal :global(.modal-footer .btn) {
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
-.product-recipe-modal :global(.modal-footer .btn:hover:not(:disabled)) {
-    filter: brightness(1.05);
+.product-recipe-modal :global(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.product-recipe-modal :global(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.product-recipe-modal :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.product-recipe-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .product-recipe-modal :global(.modal-footer .btn:disabled) {
@@ -400,14 +423,15 @@ onBeforeUnmount(() => {
 /* Error Message - không dùng alert */
 .error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-danger);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
     font-size: var(--font-size-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .error-message i {
@@ -415,17 +439,18 @@ onBeforeUnmount(() => {
     line-height: 1;
 }
 
-/* Form Controls - Chuẩn hóa */
+/* Form Controls - Clean Input Style */
 .product-recipe-modal :global(.form-select),
 .product-recipe-modal :global(.form-control) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .product-recipe-modal :global(.form-select:focus),
@@ -433,6 +458,7 @@ onBeforeUnmount(() => {
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .product-recipe-modal :global(.form-select.is-invalid),
@@ -441,55 +467,95 @@ onBeforeUnmount(() => {
 }
 
 .product-recipe-modal :global(.invalid-feedback) {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-danger);
     margin-top: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
-/* Table - Chuẩn hóa */
+/* Table - Minimal Table Styling */
 .product-recipe-modal :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
 }
 
 .product-recipe-modal :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .product-recipe-modal :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+    font-family: var(--font-family-sans);
+}
+
+.product-recipe-modal :global(.table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 .product-recipe-modal :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Badge - Chuẩn hóa */
 .product-recipe-modal :global(.badge) {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
-/* Buttons - Chuẩn hóa */
+.product-recipe-modal :global(.badge.bg-secondary) {
+    background: var(--color-card-muted) !important;
+    color: var(--color-heading) !important;
+    border: 1px solid var(--color-border);
+}
+
+/* Buttons - Flat Design */
 .product-recipe-modal :global(.btn-sm) {
-    padding: 6px 12px;
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.product-recipe-modal :global(.btn-sm.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.product-recipe-modal :global(.btn-sm.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.product-recipe-modal :global(.btn-sm.btn-outline-danger) {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+}
+
+.product-recipe-modal :global(.btn-sm.btn-outline-danger:hover:not(:disabled)) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
 .product-recipe-modal :global(.btn-sm i) {
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1;
 }
 </style>

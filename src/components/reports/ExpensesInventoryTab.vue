@@ -382,44 +382,115 @@ const handleExportInventory = () => emit('export:inventory')
 }
 
 .export-row {
-    margin-bottom: -0.5rem;
+    margin-bottom: var(--spacing-2);
+}
+
+.export-row :global(.btn) {
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.export-row :global(.btn-outline-primary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.export-row :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.export-row :global(.btn-outline-secondary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.export-row :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
+    gap: var(--spacing-4);
 }
 
 .chart-card,
 .summary-card,
 .inventory-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+}
+
+.chart-card :global(.card-header),
+.inventory-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.chart-card :global(.card-header h5),
+.inventory-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-header .text-muted),
+.inventory-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-body),
+.inventory-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.inventory-card :global(.form-check-input) {
+    border-radius: var(--radius-sm);
+}
+
+.inventory-card :global(.form-check-label) {
+    font-family: var(--font-family-sans);
 }
 
 .summary-card__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    padding: 1.5rem;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
 }
 
 .summary-card__item {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--spacing-1);
 }
 
 .summary-card__item span {
-    font-size: 0.85rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .summary-card__item strong {
-    font-size: 1.2rem;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.summary-card__item small {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .inventory-grid {
@@ -431,39 +502,74 @@ const handleExportInventory = () => emit('export:inventory')
 .mini-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    border-radius: 16px;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     background: var(--color-card-muted);
 }
 
 .mini-card__icon {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
+    border-radius: var(--radius-sm);
     display: grid;
     place-items: center;
-    color: #fff;
-    font-size: 1.35rem;
+    font-size: 20px;
 }
 
-.variant-primary { background: linear-gradient(135deg, #4f46e5, #6366f1); }
-.variant-warning { background: linear-gradient(135deg, #f97316, #fb923c); }
-.variant-success { background: linear-gradient(135deg, #22c55e, #4ade80); }
+.variant-primary { background: var(--color-soft-primary); color: var(--color-primary); }
+.variant-warning { background: var(--color-soft-amber); color: var(--color-warning); }
+.variant-success { background: var(--color-soft-emerald); color: var(--color-success); }
 
 .mini-card__meta span {
-    font-size: 0.82rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .mini-card__meta strong {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
-.table {
+/* Minimal Table Styling */
+.inventory-card :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.inventory-card :global(.table thead th) {
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+    text-align: left;
+}
+
+.inventory-card :global(.table tbody td) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.inventory-card :global(.table tbody tr:last-child td) {
+    border-bottom: none;
+}
+
+.inventory-card :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.inventory-card :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 
 @media (max-width: 768px) {

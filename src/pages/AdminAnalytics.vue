@@ -1,5 +1,5 @@
 <template>
-    <div class="admin-analytics-page container-fluid">
+    <div class="admin-analytics-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="admin-analytics-header">
             <div class="admin-analytics-header__content">
                 <div class="admin-analytics-header__title-section">
@@ -784,11 +784,10 @@ const orderStatusChartSeries = computed(() => [{
 /* Header - Chuẩn hóa theo base.css */
 .admin-analytics-header {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
-    margin-bottom: var(--spacing-5);
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .admin-analytics-header__content {
@@ -805,14 +804,15 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .admin-analytics-header__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .admin-analytics-header__title i {
@@ -825,6 +825,7 @@ const orderStatusChartSeries = computed(() => [{
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .admin-analytics-header__actions {
@@ -836,20 +837,27 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .admin-analytics-header__actions .btn {
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
-.admin-analytics-header__actions .btn:hover:not(:disabled) {
-    background: var(--color-bg-muted);
-    border-color: var(--color-border-strong);
-    color: var(--color-text);
+.admin-analytics-header__actions .btn-outline-secondary {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.admin-analytics-header__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .admin-analytics-header__actions .btn:disabled {
@@ -865,14 +873,15 @@ const orderStatusChartSeries = computed(() => [{
 /* Error Message - không dùng alert */
 .error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-warning);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
     font-size: var(--font-size-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .error-message i {
@@ -883,33 +892,35 @@ const orderStatusChartSeries = computed(() => [{
 /* Filter Card - Chuẩn hóa theo base.css */
 .filter-card {
     margin-bottom: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
 }
 
 .filter-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .filter-card :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control),
 .filter-card :global(.form-select) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control:focus),
@@ -917,11 +928,12 @@ const orderStatusChartSeries = computed(() => [{
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .filter-card :global(.input-group-text) {
     height: 40px;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-border);
     color: var(--color-text-muted);
     padding: var(--spacing-2) var(--spacing-3);
@@ -932,27 +944,41 @@ const orderStatusChartSeries = computed(() => [{
     line-height: 1;
 }
 
+.filter-card :global(.input-group .btn-outline-secondary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.filter-card :global(.input-group .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
 .filter-card :global(.form-check-label) {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.btn-primary) {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    color: var(--color-text-inverse);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.btn-primary:hover:not(:disabled)) {
-    filter: brightness(1.05);
+    background: var(--color-primary-dark);
 }
 
 .filter-card :global(.btn-primary:disabled) {
@@ -967,9 +993,9 @@ const orderStatusChartSeries = computed(() => [{
 
 /* Prompt Templates - Chuẩn hóa */
 .prompt-templates {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
     max-height: 500px;
     overflow-y: auto;
@@ -977,13 +1003,14 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .prompt-templates__header h6 {
-    color: var(--color-text);
-    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-2);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .prompt-templates__header h6 i {
@@ -1002,9 +1029,9 @@ const orderStatusChartSeries = computed(() => [{
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-base);
     text-align: left;
@@ -1012,16 +1039,15 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .prompt-template-item:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
-    box-shadow: var(--shadow-base);
 }
 
 .prompt-template-item__icon {
     width: 40px;
     height: 40px;
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
     display: flex;
     align-items: center;
@@ -1037,17 +1063,19 @@ const orderStatusChartSeries = computed(() => [{
 
 .prompt-template-item__content strong {
     display: block;
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .prompt-template-item__content small {
     display: block;
     color: var(--color-text-muted);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .prompt-template-item__arrow {
@@ -1066,28 +1094,28 @@ const orderStatusChartSeries = computed(() => [{
 .insight-card,
 .metrics-card,
 .admin-analytics-page :global(.card) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
     margin-bottom: var(--spacing-4);
 }
 
 .admin-analytics-page :global(.card-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
-    border-radius: var(--radius-base) var(--radius-base) 0 0;
+    background: var(--color-card);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
 .admin-analytics-page :global(.card-header h5) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 .admin-analytics-page :global(.card-header h5 i) {
@@ -1095,22 +1123,41 @@ const orderStatusChartSeries = computed(() => [{
     line-height: 1;
 }
 
+.admin-analytics-page :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
 .admin-analytics-page :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .admin-analytics-page :global(.card-header .btn) {
-    padding: 6px 12px;
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.admin-analytics-page :global(.card-header .btn-outline-primary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.admin-analytics-page :global(.card-header .btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 /* AI Insight Content - Chuẩn hóa */
 .ai-insight-content {
     line-height: var(--line-height-base);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .ai-insight-content :deep(h1),
@@ -1118,8 +1165,9 @@ const orderStatusChartSeries = computed(() => [{
 .ai-insight-content :deep(h3) {
     margin-top: var(--spacing-4);
     margin-bottom: var(--spacing-2);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .ai-insight-content :deep(h1) {
@@ -1139,6 +1187,7 @@ const orderStatusChartSeries = computed(() => [{
     margin-bottom: var(--spacing-3);
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .ai-insight-content :deep(ul) {
@@ -1150,11 +1199,13 @@ const orderStatusChartSeries = computed(() => [{
 .ai-insight-content :deep(li) {
     margin-bottom: var(--spacing-2);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .ai-insight-content :deep(strong) {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 /* Metrics Summary - Chuẩn hóa theo base.css */
@@ -1169,59 +1220,56 @@ const orderStatusChartSeries = computed(() => [{
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
     transition: all var(--transition-base);
 }
 
 .metric-item:hover {
-    box-shadow: var(--shadow-hover);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .metric-item__icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    color: var(--color-primary);
-    background: var(--color-bg-muted);
 }
 
-/* Màu icon - không dùng gradient, dùng màu nhạt */
+/* Màu icon - dùng var(--color-soft-*) */
 .metric-item--primary .metric-item__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .metric-item--success .metric-item__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .metric-item--danger .metric-item__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
 }
 
 .metric-item--warning .metric-item__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
 }
 
 .metric-item--indigo .metric-item__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
     color: var(--color-info);
 }
 
 .metric-item--violet .metric-item__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
@@ -1235,39 +1283,56 @@ const orderStatusChartSeries = computed(() => [{
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .metric-value {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
-/* Tables - Chuẩn hóa theo base.css */
+/* Tables - Minimal Table Styling */
 .admin-analytics-page :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
 }
 
 .admin-analytics-page :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     vertical-align: middle;
+    font-family: var(--font-family-sans);
 }
 
 .admin-analytics-page :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+    font-family: var(--font-family-sans);
+}
+
+.admin-analytics-page :global(.table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 .admin-analytics-page :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
+}
+
+.admin-analytics-page :global(.table tbody strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 /* Responsive cho Admin Analytics Page */

@@ -43,11 +43,11 @@
                                     <div class="fw-semibold">{{ customer.fullName }}</div>
                                     <small class="text-muted">{{ customer.phone }}</small>
                                 </div>
-                                <div class="text-end">
-                                    <div class="badge bg-primary-subtle text-primary">
+                                    <div class="text-end">
+                                    <div class="badge" style="background: var(--color-soft-primary); border: 1px solid var(--color-primary); color: var(--color-primary);">
                                         {{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm
                                     </div>
-                                    <div class="small text-muted mt-1">{{ formatDate(customer.createdAt) }}</div>
+                                    <div class="small text-muted mt-1" style="font-family: var(--font-family-sans);">{{ formatDate(customer.createdAt) }}</div>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +86,7 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <div class="badge bg-warning-subtle text-warning fw-semibold">
+                                    <div class="badge fw-semibold" style="background: var(--color-soft-amber); border: 1px solid var(--color-warning); color: var(--color-warning);">
                                         {{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm
                                     </div>
                                 </div>
@@ -147,50 +147,50 @@ const getIconClass = (index) => {
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
     transition: all var(--transition-base);
     min-height: 120px;
     height: 100%;
 }
 
 .stat-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     font-size: 24px;
     color: var(--color-primary);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Màu icon - không dùng gradient, dùng màu nhạt */
 .stat-icon--purple {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .stat-icon--green {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .stat-icon--yellow {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
 }
 
 .stat-icon--blue {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
     color: var(--color-info);
 }
 
@@ -204,33 +204,37 @@ const getIconClass = (index) => {
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .stat-value {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 /* Rank Badge - Chuẩn hóa */
 .rank-badge {
     width: 32px;
     height: 32px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 /* List Group - Chuẩn hóa */
 .customer-overview-tab :global(.list-group-item) {
     border-color: var(--color-border);
     padding: var(--spacing-4) 0;
+    background: transparent;
 }
 
 .customer-overview-tab :global(.list-group-item:first-child) {
@@ -244,21 +248,25 @@ const getIconClass = (index) => {
 /* Card - Chuẩn hóa */
 .customer-overview-tab :global(.card) {
     margin-bottom: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 .customer-overview-tab :global(.card-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card-muted);
 }
 
 .customer-overview-tab :global(.card-header h5) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     display: flex;
     align-items: center;
     gap: 6px;
+    font-family: var(--font-family-sans);
 }
 
 .customer-overview-tab :global(.card-header h5 i) {
@@ -268,14 +276,16 @@ const getIconClass = (index) => {
 
 .customer-overview-tab :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 /* Badge - Chuẩn hóa */
 .customer-overview-tab :global(.badge) {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 @media (max-width: 768px) {

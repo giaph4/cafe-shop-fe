@@ -367,45 +367,64 @@ defineExpose({show, hide, setTab})
 <style scoped>
 /* Modal - Chuẩn hóa theo base.css */
 .product-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-modal);
+    background: var(--color-card);
 }
 
 .product-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-modal :global(.modal-title) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .product-modal :global(.modal-body) {
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-modal :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-modal :global(.modal-footer .btn) {
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
-.product-modal :global(.modal-footer .btn:hover:not(:disabled)) {
-    filter: brightness(1.05);
+.product-modal :global(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.product-modal :global(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.product-modal :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.product-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .product-modal :global(.modal-footer .btn:disabled) {
@@ -413,24 +432,26 @@ defineExpose({show, hide, setTab})
     cursor: not-allowed;
 }
 
-/* Form Controls - Chuẩn hóa */
+/* Form Controls - Clean Input Style */
 .product-modal :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .product-modal :global(.form-control),
 .product-modal :global(.form-select) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .product-modal :global(.form-control:focus),
@@ -438,35 +459,42 @@ defineExpose({show, hide, setTab})
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .product-modal :global(textarea.form-control) {
     height: auto;
     min-height: 80px;
     resize: vertical;
+    font-family: var(--font-family-sans);
 }
 
-/* Tabs - Chuẩn hóa */
+/* Tabs - Flat Design */
 .modal-tabs {
     display: flex;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-4);
+    background: var(--color-card-muted);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
 }
 
 .tab-btn {
     flex: 1;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
-    color: var(--color-text);
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-4);
     transition: all var(--transition-base);
     font-size: var(--font-size-base);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .tab-btn i {
@@ -475,14 +503,13 @@ defineExpose({show, hide, setTab})
 }
 
 .tab-btn:hover:not(.active):not(:disabled) {
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
 }
 
 .tab-btn.active {
     background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 .tab-btn:disabled {
@@ -502,9 +529,9 @@ defineExpose({show, hide, setTab})
 
 /* Image Uploader - Chuẩn hóa */
 .image-uploader {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
@@ -516,8 +543,8 @@ defineExpose({show, hide, setTab})
     width: 100%;
     height: 200px;
     object-fit: cover;
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
 }
 
@@ -526,22 +553,23 @@ defineExpose({show, hide, setTab})
     align-items: center;
     justify-content: center;
     width: 100%;
-    gap: 6px;
-    border: 1px solid var(--color-primary);
-    color: var(--color-primary);
+    gap: var(--spacing-2);
+    border: 1px solid var(--color-border);
+    color: var(--color-heading);
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     cursor: pointer;
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .upload-btn:hover {
-    background: var(--color-primary);
-    color: #ffffff;
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .upload-btn i {
@@ -560,15 +588,16 @@ defineExpose({show, hide, setTab})
 /* Product Meta Info - Chuẩn hóa */
 .product-meta-info {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: var(--spacing-3);
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .product-meta-info i {
@@ -578,19 +607,20 @@ defineExpose({show, hide, setTab})
 
 .product-meta-badge {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .product-meta-badge--active {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
     border: 1px solid var(--color-success);
 }
 
 .product-meta-badge--inactive {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-text-muted);
     border: 1px solid var(--color-border);
 }
@@ -615,6 +645,54 @@ defineExpose({show, hide, setTab})
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Global Button Styles - Đồng bộ với các trang trước */
+.product-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.product-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.product-modal :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.product-modal :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.product-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.product-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.product-modal :global(.btn-sm) {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
 }
 
 /* Responsive */

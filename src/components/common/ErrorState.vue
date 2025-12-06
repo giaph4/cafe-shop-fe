@@ -6,7 +6,7 @@
         <h5 v-if="title" class="error-state__title">{{ title }}</h5>
         <p class="error-state__message">{{ message }}</p>
         <div v-if="showRetry && retryHandler" class="error-state__actions">
-            <button class="btn btn-primary" @click="handleRetry">
+            <button class="btn btn-primary error-state__retry-btn" @click="handleRetry">
                 <i class="bi bi-arrow-clockwise me-2"></i>
                 Thử lại
             </button>
@@ -104,7 +104,7 @@ const handleRetry = () => {
     margin: 0;
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
+    font-family: var(--font-family-sans);
 }
 
 .error-state__message {
@@ -113,10 +113,26 @@ const handleRetry = () => {
     font-size: var(--font-size-base);
     line-height: var(--line-height-relaxed);
     max-width: 500px;
+    font-family: var(--font-family-sans);
 }
 
 .error-state__actions {
     margin-top: var(--spacing-2);
+}
+
+.error-state__retry-btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.error-state__retry-btn:hover:not(:disabled) {
+    background: var(--color-primary-dark);
 }
 
 /* Variant styles */

@@ -7,7 +7,7 @@
             </button>
             <h2 class="pos-product-menu__title">Chọn sản phẩm</h2>
             <div class="pos-product-menu__search-hint">
-                <kbd>/</kbd> để tìm kiếm
+                <kbd>/</kbd> <span class="search-hint-text">để tìm kiếm</span>
             </div>
         </div>
 
@@ -40,7 +40,7 @@
         <div class="pos-product-menu__categories">
             <button
                 class="category-pill"
-                :class="!filters.categoryId ? 'category-pill--active' : ''"
+                :class="!filters.categoryId || filters.categoryId === '' ? 'category-pill--active' : ''"
                 @click="filters.categoryId = ''"
             >
                 Tất cả
@@ -49,7 +49,7 @@
                 v-for="category in categoriesList"
                 :key="category.id"
                 class="category-pill"
-                :class="filters.categoryId === category.id ? 'category-pill--active' : ''"
+                :class="String(filters.categoryId) === String(category.id) ? 'category-pill--active' : ''"
                 @click="filters.categoryId = category.id"
             >
                 {{ category.name }}
@@ -161,12 +161,24 @@ const { data: products, isLoading, isError, refetch } = useQuery({
         name: filters.value.name || undefined,
         categoryId: filters.value.categoryId || undefined
     }]),
-    queryFn: () => getProducts({
-        page: filters.value.page,
-        size: filters.value.size,
-        name: filters.value.name || undefined,
-        categoryId: filters.value.categoryId || undefined
-    }),
+    queryFn: () => {
+        const params = {
+            page: filters.value.page,
+            size: filters.value.size
+        }
+        
+        // Chỉ thêm name nếu có giá trị
+        if (filters.value.name && filters.value.name.trim()) {
+            params.name = filters.value.name.trim()
+        }
+        
+        // Chỉ thêm categoryId nếu có giá trị (không phải empty string)
+        if (filters.value.categoryId && filters.value.categoryId !== '') {
+            params.categoryId = filters.value.categoryId
+        }
+        
+        return getProducts(params)
+    },
 })
 
 const productList = computed(() => {
@@ -189,28 +201,12 @@ const categoriesList = computed(() => {
 })
 
 const filteredProducts = computed(() => {
+    // API đã lọc theo categoryId và name rồi
+    // Chỉ cần sort: available products first
     let result = [...productList.value]
 
-    if (filters.value.categoryId) {
-        const categoryId = filters.value.categoryId
-        result = result.filter(p => {
-            const pCategoryId = p.categoryId || p.category?.id
-            if (!pCategoryId) return false
-            return String(pCategoryId) === String(categoryId) || Number(pCategoryId) === Number(categoryId)
-        })
-    }
-
-    if (filters.value.name) {
-        const searchTerm = filters.value.name.toLowerCase().trim()
-        if (searchTerm) {
-            result = result.filter(p =>
-                p.name?.toLowerCase().includes(searchTerm) ||
-                p.description?.toLowerCase().includes(searchTerm)
-            )
-        }
-    }
-
-    return [...result].sort((a, b) => {
+    // Sort: available products first
+    return result.sort((a, b) => {
         if (a.available && !b.available) return -1
         if (!a.available && b.available) return 1
         return 0
@@ -280,13 +276,14 @@ onBeforeUnmount(() => {
     align-items: center;
     gap: 6px;
     transition: all var(--transition-base);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .btn-back:hover {
     color: var(--color-primary);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .btn-back i {
@@ -296,26 +293,46 @@ onBeforeUnmount(() => {
 
 .pos-product-menu__title {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin: 0;
     flex: 1;
     text-align: center;
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .pos-product-menu__search-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
     color: var(--color-text-muted);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.search-hint-text {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
 }
 
 kbd {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-1) var(--spacing-2);
-    font-size: var(--font-size-base);
-    font-family: monospace;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    font-family: 'Courier New', monospace;
+    color: var(--color-heading);
+    min-width: 24px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* Search - Chuẩn hóa */
@@ -328,13 +345,20 @@ kbd {
     font-size: var(--font-size-base);
     padding: var(--spacing-2) var(--spacing-3);
     height: 40px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.input-group-lg .form-control:focus {
+    box-shadow: none;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
 }
 
 .input-group-text {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-border);
-    border-radius: var(--radius-base) 0 0 var(--radius-base);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .input-group-text i {
@@ -355,26 +379,27 @@ kbd {
 
 .category-pill {
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-text);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     cursor: pointer;
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 .category-pill:hover:not(.category-pill--active) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
 
 .category-pill--active {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-primary);
 }
 
@@ -404,15 +429,15 @@ kbd {
     align-items: center;
     justify-content: center;
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    border-radius: var(--radius-base);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
     color: var(--color-text-muted);
     transition: all var(--transition-base);
     cursor: pointer;
 }
 
 .view-toggle-btn:hover:not(.view-toggle-btn--active) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
@@ -420,7 +445,7 @@ kbd {
 .view-toggle-btn--active {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 .view-toggle-btn i {
@@ -452,10 +477,9 @@ kbd {
 /* Product Card - Chuẩn hóa */
 .product-card {
     cursor: pointer;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
     transition: all var(--transition-base);
     overflow: hidden;
     display: flex;
@@ -463,8 +487,8 @@ kbd {
 }
 
 .product-card:hover {
-    box-shadow: var(--shadow-hover);
     border-color: var(--color-primary);
+    background: var(--color-card-muted);
 }
 
 .product-card:focus {
@@ -478,8 +502,8 @@ kbd {
 }
 
 .product-card--unavailable:hover {
-    box-shadow: var(--shadow-base);
     border-color: var(--color-border);
+    background: var(--color-card);
 }
 
 .product-card__image {
@@ -487,7 +511,7 @@ kbd {
     width: 100%;
     height: 180px;
     overflow: hidden;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .product-card__image img {
@@ -498,7 +522,7 @@ kbd {
 }
 
 .product-card:hover .product-card__image img {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
 /* Badge - Chuẩn hóa theo badge/pill hệ thống */
@@ -506,16 +530,17 @@ kbd {
     position: absolute;
     top: var(--spacing-2);
     right: var(--spacing-2);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     border: 1px solid var(--color-danger);
     color: var(--color-danger);
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     display: flex;
     align-items: center;
     gap: 6px;
+    font-family: var(--font-family-sans);
 }
 
 .product-card__badge i {
@@ -534,7 +559,7 @@ kbd {
 .product-card__title {
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin: 0;
     line-height: var(--line-height-base);
     display: -webkit-box;
@@ -542,12 +567,14 @@ kbd {
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    font-family: var(--font-family-sans);
 }
 
 .product-card__price {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-lg);
     color: var(--color-primary);
+    font-family: var(--font-family-sans);
 }
 
 .product-card__description {

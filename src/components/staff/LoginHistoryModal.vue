@@ -195,9 +195,182 @@ defineExpose({show, hide})
 
 <style scoped>
 .filter-bar {
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    border-radius: 14px;
-    padding: 1rem;
-    background: rgba(248, 249, 251, 0.6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-4);
+    background: var(--color-card-muted);
+}
+
+:deep(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:deep(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:deep(.modal-header .modal-title) {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xl);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+:deep(.modal-body .form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body .form-control),
+:deep(.modal-body .form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body .form-control:focus),
+:deep(.modal-body .form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+:deep(.modal-body .table) {
+    margin-bottom: 0;
+}
+
+:deep(.modal-body .table thead),
+:deep(.modal-body .table thead.table-light) {
+    background: var(--color-card-muted);
+}
+
+:deep(.modal-body .table thead th) {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    color: var(--color-heading);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body .table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3);
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body .table tbody tr:last-child td) {
+    border-bottom: none;
+}
+
+:deep(.modal-body .table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+:deep(.modal-body .badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body .badge.bg-success) {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+:deep(.modal-body .badge.bg-danger) {
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+}
+
+:deep(.modal-body .alert-warning) {
+    background: var(--color-soft-amber);
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-body .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+:deep(.modal-body .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+:deep(.modal-body .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+:deep(.modal-body .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+:deep(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:deep(.modal-footer .btn) {
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+:deep(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+:deep(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+:deep(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 </style>

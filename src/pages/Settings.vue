@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid settings-page">
+    <div class="page-container container-fluid settings-page" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="settings-header">
             <div class="settings-header__content">
                 <div class="settings-header__title-section">
@@ -61,19 +61,18 @@ const openSettingsModal = () => {
 }
 
 .settings-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
-    margin-bottom: var(--spacing-6);
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .settings-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -83,36 +82,57 @@ const openSettingsModal = () => {
 }
 
 .settings-header__title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .settings-header__subtitle {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .settings-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
 }
 
-.settings-content {
-    .card {
-        border-radius: var(--radius-xl);
-        border: 1px solid var(--color-border);
-        background: var(--color-card);
-        box-shadow: var(--shadow-sm);
-    }
+.settings-header__actions .btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.settings-header__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.settings-header__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+}
+
+.settings-content .card {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.settings-content .card-body {
+    padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 @media (max-width: 768px) {

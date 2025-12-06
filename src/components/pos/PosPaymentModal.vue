@@ -689,27 +689,27 @@ defineExpose({ show, hide })
 <style scoped>
 /* Modal - Chuẩn hóa theo base.css */
 .pos-payment-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     box-shadow: var(--shadow-modal);
 }
 
 .pos-payment-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .pos-payment-modal :global(.modal-body) {
     padding: var(--spacing-5);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .pos-payment-modal :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .payment-meta li {
@@ -739,7 +739,9 @@ defineExpose({ show, hide })
 
 .payment-totals .grand-total {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .status-pill {
@@ -747,40 +749,46 @@ defineExpose({ show, hide })
     align-items: center;
     gap: var(--spacing-1);
     padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-wide);
+    font-family: var(--font-family-sans);
 }
 
 .status-pill--pending {
-    background: rgba(250, 204, 21, 0.18);
-    color: #b45309;
+    background: var(--color-soft-amber);
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
 }
 
 .status-pill--paid {
-    background: rgba(34, 197, 94, 0.18);
-    color: #15803d;
+    background: var(--color-soft-emerald);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
 }
 
 .status-pill--cancelled {
-    background: rgba(239, 68, 68, 0.18);
-    color: #b91c1c;
+    background: var(--color-soft-rose);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
 }
 
 .status-pill--transferred {
-    background: rgba(129, 140, 248, 0.18);
-    color: #4338ca;
+    background: var(--color-soft-sky);
+    border: 1px solid var(--color-info);
+    color: var(--color-info);
 }
 
 .status-pill--default {
-    background: rgba(148, 163, 184, 0.18);
-    color: #475569;
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
 }
 
 .payment-items table {
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
@@ -820,7 +828,7 @@ defineExpose({ show, hide })
 }
 
 .payment-tip .input-group-text {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-success);
     color: var(--color-success);
 }
@@ -828,6 +836,13 @@ defineExpose({ show, hide })
 .payment-tip .form-control {
     flex: 1;
     min-width: 150px;
+    font-family: var(--font-family-sans);
+}
+
+.payment-tip .form-control:focus {
+    box-shadow: none;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
 }
 
 .payment-tip .btn {
@@ -839,112 +854,129 @@ defineExpose({ show, hide })
 /* Voucher Styles */
 /* Payment Notes */
 .payment-notes h6 {
-    color: var(--color-text);
-    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .payment-notes textarea {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-text);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .payment-notes textarea:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-    outline: none;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .payment-notes textarea:disabled {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     opacity: 0.6;
 }
 
 /* Payment Customer */
 .payment-customer h6 {
-    color: var(--color-text);
-    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .payment-customer .input-group-text {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-border);
     color: var(--color-primary);
 }
 
+.payment-customer .form-control {
+    font-family: var(--font-family-sans);
+}
+
 .payment-customer .form-control:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 /* Payment Voucher */
 .payment-voucher h6 {
-    color: var(--color-text);
-    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .voucher-input-icon {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-border);
     color: var(--color-text-muted);
     transition: all var(--transition-base);
 }
 
 .voucher-input-icon.voucher-applied {
-    background: rgba(34, 197, 94, 0.1);
+    background: var(--color-soft-emerald);
     border-color: var(--color-success);
     color: var(--color-success);
 }
 
 .voucher-input-applied {
     border-color: var(--color-success);
-    background: rgba(34, 197, 94, 0.05);
+    background: var(--color-soft-emerald);
+    font-family: var(--font-family-sans);
 }
 
 .voucher-input-applied:focus {
     border-color: var(--color-success);
-    box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25);
+    outline: 2px solid var(--color-success);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .voucher-success-message {
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #15803d;
+    border-radius: var(--radius-sm);
+    background: var(--color-soft-emerald);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
     font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .voucher-error-message {
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #b91c1c;
+    border-radius: var(--radius-sm);
+    background: var(--color-soft-rose);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
     font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .voucher-warning-message {
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
-    background: rgba(250, 204, 21, 0.1);
-    border: 1px solid rgba(250, 204, 21, 0.3);
-    color: #a16207;
+    border-radius: var(--radius-sm);
+    background: var(--color-soft-amber);
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
     font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 </style>

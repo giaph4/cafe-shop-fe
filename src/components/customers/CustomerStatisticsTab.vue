@@ -41,7 +41,7 @@
                             >
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-semibold">{{ item.range }}</span>
-                                    <span class="badge bg-primary">{{ item.count }} khách hàng</span>
+                                    <span class="badge" style="background: var(--color-primary); color: var(--color-text-inverse);">{{ item.count }} khách hàng</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
                                     <div
@@ -83,7 +83,7 @@
                                     <small class="text-muted">{{ item.year }}</small>
                                 </div>
                                 <div class="text-end">
-                                    <div class="fs-5 fw-bold text-primary">{{ item.count }}</div>
+                                    <div class="fs-5 fw-bold" style="color: var(--color-primary); font-family: var(--font-family-sans);">{{ item.count }}</div>
                                     <small class="text-muted">khách hàng</small>
                                 </div>
                             </div>
@@ -132,45 +132,45 @@ const getIconClass = (index) => {
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
     transition: all var(--transition-base);
     min-height: 120px;
     height: 100%;
 }
 
 .stat-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     font-size: 24px;
     color: var(--color-primary);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Màu icon - không dùng gradient, dùng màu nhạt */
 .stat-icon--purple {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .stat-icon--green {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .stat-icon--yellow {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
 }
 
@@ -184,33 +184,39 @@ const getIconClass = (index) => {
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .stat-value {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 /* Card và progress - Chuẩn hóa */
 .customer-statistics-tab :global(.card) {
     margin-bottom: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 .customer-statistics-tab :global(.card-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card-muted);
 }
 
 .customer-statistics-tab :global(.card-header h5) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     display: flex;
     align-items: center;
     gap: 6px;
+    font-family: var(--font-family-sans);
 }
 
 .customer-statistics-tab :global(.card-header h5 i) {
@@ -220,27 +226,29 @@ const getIconClass = (index) => {
 
 .customer-statistics-tab :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 /* Progress - Chuẩn hóa */
 .customer-statistics-tab :global(.progress) {
     height: 8px;
-    background: var(--color-bg-muted);
-    border-radius: var(--radius-base);
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
 .customer-statistics-tab :global(.progress-bar) {
     background: var(--color-primary);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
 }
 
 /* Badge - Chuẩn hóa */
 .customer-statistics-tab :global(.badge) {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .distribution-item:last-child {

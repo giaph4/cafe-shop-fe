@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="modal fade" ref="modalRef" tabindex="-1" aria-hidden="true">
+        <div class="modal fade shift-assignment-status-modal" ref="modalRef" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -9,10 +9,10 @@
                     </div>
                     <form @submit.prevent="handleSubmit">
                         <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Trạng thái hiện tại</label>
-                                <div class="form-control-plaintext">
-                                    <span class="badge" :class="getStatusBadgeClass(currentStatus)">
+                            <div class="mb-4">
+                                <label class="status-label">TRẠNG THÁI</label>
+                                <div class="status-display">
+                                    <span class="badge status-badge" :class="getStatusBadgeClass(currentStatus)">
                                         {{ getStatusLabel(currentStatus) }}
                                     </span>
                                 </div>
@@ -170,6 +170,167 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Modal styles đã được chuẩn hóa trong components.scss */
+:global(.shift-assignment-status-modal .modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:global(.shift-assignment-status-modal .modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:global(.shift-assignment-status-modal .modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
+}
+
+:global(.shift-assignment-status-modal .modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+:global(.shift-assignment-status-modal .form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+:global(.shift-assignment-status-modal .form-select),
+:global(.shift-assignment-status-modal .form-control) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+:global(.shift-assignment-status-modal .form-select:focus),
+:global(.shift-assignment-status-modal .form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+:global(.shift-assignment-status-modal .form-select.is-invalid) {
+    border-color: var(--color-danger);
+}
+
+:global(.shift-assignment-status-modal .invalid-feedback) {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.status-label {
+    display: block;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.status-display {
+    padding: var(--spacing-2) 0;
+    display: flex;
+    align-items: center;
+}
+
+:global(.shift-assignment-status-modal .badge.status-badge) {
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+    display: inline-block;
+    min-width: 120px;
+    text-align: center;
+}
+
+:global(.shift-assignment-status-modal .badge.bg-info) {
+    background: var(--color-soft-indigo);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+:global(.shift-assignment-status-modal .badge.bg-primary) {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border: 1px solid var(--color-primary);
+}
+
+:global(.shift-assignment-status-modal .badge.bg-warning) {
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+}
+
+:global(.shift-assignment-status-modal .badge.bg-success) {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+:global(.shift-assignment-status-modal .badge.bg-danger) {
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+}
+
+:global(.shift-assignment-status-modal .badge.bg-secondary) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
+}
+
+:global(.shift-assignment-status-modal .modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+:global(.shift-assignment-status-modal .modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+:global(.shift-assignment-status-modal .modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+:global(.shift-assignment-status-modal .modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+:global(.shift-assignment-status-modal .modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+:global(.shift-assignment-status-modal .modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
 </style>
+
 

@@ -2,8 +2,8 @@
     <div class="customer-list-tab">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <h5 class="mb-0">Danh sách khách hàng</h5>
-                <small class="text-muted">Tổng: {{ totalElements.toLocaleString('vi-VN') }} khách hàng</small>
+                <h5 class="mb-0" style="font-weight: var(--font-weight-semibold); color: var(--color-heading); font-family: var(--font-family-sans);">Danh sách khách hàng</h5>
+                <small class="text-muted" style="font-family: var(--font-family-sans);">Tổng: {{ totalElements.toLocaleString('vi-VN') }} khách hàng</small>
             </div>
             <div class="d-flex gap-2">
                 <button
@@ -219,26 +219,27 @@ const handleExport = () => {
     justify-content: center;
     gap: 6px;
     padding: 8px 12px;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-primary);
+    background: var(--color-card);
     color: var(--color-primary);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     text-decoration: none;
     transition: all var(--transition-base);
     cursor: pointer;
     min-width: auto;
+    font-family: var(--font-family-sans);
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: #ffffff;
-    border-color: var(--color-primary);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .action-button:active:not(:disabled) {
-    filter: brightness(0.95);
+    background: var(--color-primary-dark);
 }
 
 .action-button:disabled {
@@ -254,55 +255,102 @@ const handleExport = () => {
 
 .action-button--danger {
     border-color: var(--color-danger);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
     background: var(--color-danger);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-danger);
 }
 
 /* Table - Chuẩn hóa theo base.css */
 .customer-list-tab :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .customer-list-tab :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     padding: var(--spacing-3) var(--spacing-4);
+    font-family: var(--font-family-sans);
 }
 
 .customer-list-tab :global(.table tbody td) {
     font-size: var(--font-size-base);
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     vertical-align: middle;
+    font-family: var(--font-family-sans);
 }
 
 .customer-list-tab :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Badge - Chuẩn hóa */
 .customer-list-tab :global(.badge) {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .bg-soft-primary {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
+    border: 1px solid var(--color-primary);
     color: var(--color-primary);
     font-weight: var(--font-weight-medium);
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+/* Buttons - Chuẩn hóa theo màu teal tiêu chuẩn */
+.customer-list-tab :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.customer-list-tab :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.customer-list-tab :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.customer-list-tab :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
 }
 
 @media (max-width: 768px) {

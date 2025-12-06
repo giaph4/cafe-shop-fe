@@ -222,17 +222,18 @@ watch(
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 0.9rem;
-    padding: 0.62rem 1rem;
-    border-radius: 16px;
+    gap: var(--spacing-3);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     background: transparent;
     border: none;
-    color: var(--color-text);
-    font-weight: 500;
-    font-size: 0.94rem;
-    line-height: 1.4;
+    color: var(--color-heading);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     text-align: left;
-    transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
     cursor: pointer;
 }
 
@@ -246,15 +247,16 @@ watch(
 
 .neo-item__link:hover,
 .neo-item__link:focus-visible {
-    background: rgba(99, 102, 241, 0.12);
+    background: var(--color-card-muted);
     color: var(--color-primary);
-    box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.12);
+    border: 1px solid var(--color-border);
 }
 
 .neo-item__link.is-active {
-    background: rgba(99, 102, 241, 0.16);
+    background: var(--color-primary-soft);
     color: var(--color-primary);
-    box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.16), 0 12px 22px rgba(99, 102, 241, 0.18);
+    border: 1px solid var(--color-primary);
+    font-weight: var(--font-weight-semibold);
 }
 
 .neo-item.is-collapsed > .neo-item__link {
@@ -290,12 +292,14 @@ watch(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    background: rgba(99, 102, 241, 0.14);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+    background: var(--color-primary-soft);
     color: var(--color-primary);
+    border: 1px solid var(--color-primary);
 }
 
 .neo-item__caret {
@@ -311,17 +315,18 @@ watch(
 .neo-item__tooltip {
     position: absolute;
     top: 50%;
-    left: calc(100% + 6px);
+    left: calc(100% + var(--spacing-2));
     transform: translate(-4px, -50%) scale(0.94);
     transform-origin: left center;
-    padding: 0.32rem 0.6rem;
-    border-radius: 9px;
-    background: rgba(15, 23, 42, 0.9);
-    color: #f8fafc;
-    font-size: 0.72rem;
-    font-weight: 600;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    background: var(--color-heading);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
     white-space: nowrap;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.22);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.16s ease, transform 0.16s ease;
@@ -335,21 +340,23 @@ watch(
 }
 
 .neo-item__children {
-    margin: 0.2rem 0 0.35rem 1.05rem;
-    padding-left: 0.95rem;
-    border-left: 1.5px dashed rgba(148, 163, 184, 0.28);
+    margin: var(--spacing-1) 0 var(--spacing-2) var(--spacing-4);
+    padding-left: var(--spacing-3);
+    border-left: 1.5px dashed var(--color-border);
     display: flex;
     flex-direction: column;
-    gap: 0.12rem;
+    gap: var(--spacing-1);
 }
 
 .neo-item__children :deep(.neo-item__link) {
-    padding: 0.55rem 0.9rem;
-    border-radius: 12px;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
 }
 
 .neo-item__children :deep(.neo-item__link.is-active) {
-    background: rgba(99, 102, 241, 0.14);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
 }
 
 .neo-item__children :deep(.neo-item__icon) {

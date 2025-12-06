@@ -1,6 +1,6 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
+        <Teleport to="body">
+        <div class="modal fade shift-template-form-modal" ref="modal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -204,26 +204,124 @@ onBeforeUnmount(() => modalInstance?.dispose())
 </script>
 
 <style scoped>
+.shift-template-form-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-template-form-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-template-form-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-form-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.shift-template-form-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-template-form-modal :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-form-modal :global(.form-control),
+.shift-template-form-modal :global(.form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-form-modal :global(.form-control:focus),
+.shift-template-form-modal :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.shift-template-form-modal :global(.btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-template-form-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.shift-template-form-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.shift-template-form-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.shift-template-form-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
 .roles-input {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--spacing-2);
     min-height: 2.6rem;
     flex-wrap: wrap;
     cursor: text;
-    padding: 0.45rem 0.6rem;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    font-family: var(--font-family-sans);
+}
+
+.roles-input:focus-within {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
 }
 
 .role-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--spacing-1);
     background: var(--color-primary);
-    color: white;
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-3);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-1) var(--spacing-2);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 
 .btn-close-sm {
@@ -232,10 +330,18 @@ onBeforeUnmount(() => modalInstance?.dispose())
     opacity: 0.7;
 }
 
+.btn-close-sm:hover {
+    opacity: 1;
+}
+
 .role-entry {
     border: none;
     outline: none;
     flex: 1;
     min-width: 120px;
+    background: transparent;
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 </style>

@@ -162,96 +162,164 @@ const formatSource = (source) => {
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    background: linear-gradient(160deg, rgba(244, 246, 255, 0.92), rgba(233, 240, 255, 0.84));
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    padding: 1rem 1.2rem;
-    box-shadow: 0 16px 30px rgba(99, 102, 241, 0.12);
-    color: var(--color-text);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    gap: var(--spacing-3);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+    transition: all var(--transition-base);
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .stat-card__icon {
     width: 52px;
     height: 52px;
-    border-radius: 16px;
+    border-radius: var(--radius-sm);
     display: grid;
     place-items: center;
     font-size: 1.6rem;
-    color: var(--color-primary);
-    background: rgba(99, 102, 241, 0.12);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 18px rgba(99, 102, 241, 0.18);
     flex-shrink: 0;
+}
+
+.stat-card__icon.bg-primary-light {
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+}
+
+.stat-card__icon.bg-emerald-light {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+}
+
+.stat-card__icon.bg-sky-light {
+    background: var(--color-soft-indigo);
+    color: var(--color-primary);
+}
+
+.stat-card__icon.bg-amber-light {
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
 }
 
 .stat-card__meta {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: var(--spacing-1);
     flex: 1;
 }
 
 .stat-card__label {
-    font-size: 0.85rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .stat-card__value {
-    font-size: 1.35rem;
-    font-weight: 700;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .history-table-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
 }
 
-.bg-primary-light {
-    background: var(--color-soft-primary);
+.history-table-card :global(.card-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
-.bg-amber-light {
-    background: var(--color-soft-amber);
+.history-table-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
-.bg-sky-light {
-    background: var(--color-soft-sky);
+.history-table-card :global(.card-header .text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
-.bg-emerald-light {
-    background: var(--color-soft-emerald);
+.history-table-card :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .table {
     margin-bottom: 0;
 }
 
+.table thead,
+.table thead.table-light {
+    background: var(--color-card-muted);
+}
+
 .table thead th {
-    border-bottom: 2px solid rgba(148, 163, 184, 0.2);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--color-border);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
     color: var(--color-heading);
-    padding: 1rem;
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .table tbody td {
-    padding: 1rem;
+    padding: var(--spacing-3);
     vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .table tbody tr:hover {
-    background-color: rgba(99, 102, 241, 0.05);
+    background: var(--color-card-muted);
+}
+
+.table :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.table :global(.badge.bg-secondary-subtle) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
+}
+
+.table :global(strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.table :global(.text-warning) {
+    color: var(--color-warning);
+}
+
+.table :global(.text-success) {
+    color: var(--color-success);
 }
 </style>
 

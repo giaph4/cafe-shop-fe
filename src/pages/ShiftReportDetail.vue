@@ -1,5 +1,5 @@
 <template>
-    <div class="shift-report-detail-page container-fluid">
+    <div class="shift-report-detail-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="shift-report-detail-header">
             <div class="shift-report-detail-header__content">
                 <div class="shift-report-detail-header__title-section">
@@ -179,10 +179,9 @@ onMounted(async () => {
 
 /* Header */
 .shift-report-detail-header {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    box-shadow: var(--shadow-base);
+    border-radius: var(--radius-sm);
     margin-bottom: var(--spacing-4);
     padding: var(--spacing-4);
 }
@@ -201,18 +200,20 @@ onMounted(async () => {
 }
 
 .shift-report-detail-header__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .shift-report-detail-header__subtitle {
     margin: 0;
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
-    line-height: var(--line-height-relaxed);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .shift-report-detail-header__actions {
@@ -230,15 +231,16 @@ onMounted(async () => {
     justify-content: center;
     gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: transparent;
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     white-space: nowrap;
     text-decoration: none;
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .action-button i {
@@ -247,27 +249,27 @@ onMounted(async () => {
 }
 
 .action-button--secondary {
-    border-color: var(--color-secondary);
-    color: var(--color-secondary);
-    background: var(--color-bg);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
 }
 
 .action-button--secondary:hover {
-    background: var(--color-secondary-soft);
-    border-color: var(--color-secondary);
-    color: var(--color-secondary);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 /* Cards */
 .card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 /* Loading State */
@@ -331,10 +333,11 @@ onMounted(async () => {
 
 /* Info Section */
 .info-section__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .info-table {
@@ -345,20 +348,65 @@ onMounted(async () => {
     color: var(--color-text-muted);
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
-    padding: var(--spacing-2) var(--spacing-3);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
 }
 
 .info-table td {
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
-    padding: var(--spacing-2) var(--spacing-3);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
 }
 
 .info-table tr:last-child th,
 .info-table tr:last-child td {
     border-bottom: none;
+}
+
+.info-table :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.info-table :global(.badge.bg-success) {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+.info-table :global(.badge.bg-danger) {
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+}
+
+.info-table :global(.badge.bg-warning) {
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+}
+
+.info-table :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+}
+
+.info-table :global(.text-success) {
+    color: var(--color-success);
+}
+
+.info-table :global(.text-danger) {
+    color: var(--color-danger);
+}
+
+.info-table :global(.text-primary) {
+    color: var(--color-primary);
 }
 
 /* Notes Section */
@@ -370,12 +418,13 @@ onMounted(async () => {
 
 .notes-content {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
-    color: var(--color-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
-    line-height: var(--line-height-relaxed);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 /* Empty State */

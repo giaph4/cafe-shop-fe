@@ -48,7 +48,7 @@
                                     <div class="col-md-6">
                                         <div class="info-item">
                                             <span class="info-label">Điểm thưởng:</span>
-                                            <span class="info-value text-primary fw-bold">{{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm</span>
+                                            <span class="info-value fw-bold" style="color: var(--color-primary); font-family: var(--font-family-sans);">{{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm</span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -155,13 +155,13 @@
                                                     {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
                                                 </div>
                                                 <div class="mt-1">
-                                                    <span :class="getStatusBadgeClass(order.status)">
+                                                    <span :class="getStatusBadgeClass(order.status)" :style="getStatusBadgeStyle(order.status)">
                                                         {{ getStatusLabel(order.status) }}
                                                     </span>
                                                 </div>
                                             </div>
                                             <div class="text-end">
-                                                <div class="fw-semibold text-primary">{{ formatCurrency(order.totalAmount) }}</div>
+                                                <div class="fw-semibold" style="color: var(--color-primary); font-family: var(--font-family-sans);">{{ formatCurrency(order.totalAmount) }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -311,7 +311,37 @@ const getStatusLabel = (status) => {
 }
 
 const getStatusBadgeClass = (status) => {
-    return STATUS_METADATA[status]?.badgeClass || 'badge bg-secondary-subtle text-secondary'
+    return 'badge'
+}
+
+const getStatusBadgeStyle = (status) => {
+    const styles = {
+        PENDING: {
+            background: 'var(--color-soft-amber)',
+            border: '1px solid var(--color-warning)',
+            color: 'var(--color-warning)'
+        },
+        PAID: {
+            background: 'var(--color-soft-emerald)',
+            border: '1px solid var(--color-success)',
+            color: 'var(--color-success)'
+        },
+        CANCELLED: {
+            background: 'var(--color-soft-rose)',
+            border: '1px solid var(--color-danger)',
+            color: 'var(--color-danger)'
+        },
+        TRANSFERRED: {
+            background: 'var(--color-soft-sky)',
+            border: '1px solid var(--color-info)',
+            color: 'var(--color-info)'
+        }
+    }
+    return styles[status] || {
+        background: 'var(--color-card-muted)',
+        border: '1px solid var(--color-border)',
+        color: 'var(--color-text-muted)'
+    }
 }
 
 const handleEdit = () => {
@@ -358,16 +388,16 @@ defineExpose({ show, hide })
 <style scoped>
 /* Customer Detail Modal - Chuẩn hóa theo base.css */
 .customer-detail-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     box-shadow: var(--shadow-modal);
 }
 
 .customer-detail-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .modal-header__content {
@@ -376,10 +406,11 @@ defineExpose({ show, hide })
 }
 
 .customer-detail-modal :global(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .modal-subtitle {
@@ -387,11 +418,12 @@ defineExpose({ show, hide })
     font-size: var(--font-size-base);
     margin-bottom: 0;
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .customer-detail-modal :global(.modal-body) {
     padding: var(--spacing-5);
-    background: var(--color-bg);
+    background: var(--color-card);
     max-height: 70vh;
     overflow-y: auto;
 }
@@ -399,7 +431,7 @@ defineExpose({ show, hide })
 .customer-detail-modal :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     gap: var(--spacing-2);
     justify-content: flex-end;
 }
@@ -418,13 +450,14 @@ defineExpose({ show, hide })
 }
 
 .section-title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-lg);
     display: flex;
     align-items: center;
     gap: 6px;
     margin-bottom: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .section-title i {
@@ -442,11 +475,13 @@ defineExpose({ show, hide })
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .info-value {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
     font-weight: var(--font-weight-semibold);
 }
 
@@ -456,48 +491,48 @@ defineExpose({ show, hide })
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
     transition: all var(--transition-base);
 }
 
 .stat-box:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     font-size: 24px;
     color: var(--color-primary);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Màu icon - không dùng gradient, dùng màu nhạt */
 .stat-icon--purple {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .stat-icon--green {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .stat-icon--blue {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
     color: var(--color-info);
 }
 
 .stat-icon--yellow {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
 }
 
@@ -511,17 +546,20 @@ defineExpose({ show, hide })
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .stat-value {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .stat-value.small {
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 /* Orders List - Chuẩn hóa */
@@ -533,36 +571,38 @@ defineExpose({ show, hide })
 
 .order-item {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
     transition: all var(--transition-base);
 }
 
 .order-item:hover {
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
+    border-color: var(--color-primary);
 }
 
 /* Badge - Chuẩn hóa */
 .customer-detail-modal :global(.badge) {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 /* Error message - không dùng alert */
 .error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-warning);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
     font-size: var(--font-size-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .error-message i {
@@ -574,19 +614,20 @@ defineExpose({ show, hide })
 .customer-detail-modal :global(.btn-primary) {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     padding: 8px 16px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-family: var(--font-family-sans);
 }
 
 .customer-detail-modal :global(.btn-primary:hover:not(:disabled)) {
-    filter: brightness(1.05);
+    background: var(--color-primary-dark);
 }
 
 .customer-detail-modal :global(.btn-primary i) {
@@ -595,19 +636,20 @@ defineExpose({ show, hide })
 }
 
 .customer-detail-modal :global(.btn-outline-secondary) {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
     padding: 8px 16px;
-    color: var(--color-text);
-    background: transparent;
+    color: var(--color-primary);
+    background: var(--color-card);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .customer-detail-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
-    background: var(--color-bg-muted);
-    border-color: var(--color-border-strong);
-    color: var(--color-text);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 /* Responsive */

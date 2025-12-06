@@ -116,29 +116,140 @@ const handleFetch = () => {
 <style scoped>
 .filter-card,
 .report-card {
-    border-radius: 18px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    background: var(--color-card);
+}
+
+.filter-card :global(.card-body),
+.report-card :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.filter-card :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.filter-card :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.filter-card :global(.alert-danger) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-danger);
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-family: var(--font-family-sans);
+}
+
+.report-card :global(.card-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.report-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.report-card :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.report-card :global(.badge.bg-info) {
+    background: var(--color-soft-indigo);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.report-card :global(.badge.bg-success) {
+    background: var(--color-soft-emerald);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+.report-card :global(.badge.bg-warning) {
+    background: var(--color-soft-amber);
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+}
+
+.report-card :global(.badge.bg-secondary) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
 }
 
 .report-details {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem 1rem;
+    gap: var(--spacing-2) var(--spacing-3);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .report-details dt {
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    margin-bottom: 0.25rem;
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .report-details dd {
     margin: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.report-details :global(.text-success) {
+    color: var(--color-success);
+}
+
+.report-details :global(.text-danger) {
+    color: var(--color-danger);
 }
 </style>
 

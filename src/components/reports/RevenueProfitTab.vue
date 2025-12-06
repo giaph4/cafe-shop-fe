@@ -107,32 +107,56 @@
                 </div>
             </div>
 
-            <div class="card analytic-card">
+            <div class="card analytic-card hourly-sales-card">
                 <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-1">Phân tích theo khung giờ</h5>
-                        <p class="text-muted mb-0">Chọn dạng biểu đồ bạn muốn xem</p>
+                        <p class="text-muted mb-0">Phân tích doanh thu và số đơn theo từng giờ trong ngày</p>
                     </div>
-                    <div class="chart-controls">
-                        <select class="form-select form-select-sm" v-model="hourlyChartType">
-                            <option value="area">Area</option>
-                            <option value="line">Line</option>
-                            <option value="bar">Column</option>
-                        </select>
+                    <div class="hourly-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f0f9ff; border-color: #e0f2fe"></span>
+                            <span class="legend-label">Thấp</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #bfdbfe; border-color: #7dd3fc"></span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #60a5fa; border-color: #0ea5e9"></span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #3b82f6; border-color: #0284c7"></span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #1e40af; border-color: #0c4a6e"></span>
+                            <span class="legend-label">Cao</span>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div v-if="hourlySales?.length">
-                        <ApexChart :type="hourlyChartType" height="280" :series="hourlyChartSeries" :options="hourlyChartOptions" />
+                    <div v-if="fullHourlyData?.length" class="hourly-content">
+                        <!-- Chart Section -->
+                        <div class="hourly-chart-section">
+                            <ApexChart 
+                                type="line" 
+                                height="280" 
+                                :series="hourlyChartSeries"
+                                :options="hourlyChartOptions" 
+                            />
+                        </div>
+
+                        <!-- Heatmap Grid -->
                         <div class="hourly-grid">
-                            <div
-                                v-for="bucket in hourlyHighlights"
-                                :key="bucket.hour"
+                            <div 
+                                v-for="bucket in fullHourlyData" 
+                                :key="bucket.hour" 
                                 class="hourly-card"
+                                :class="getHeatmapClass(bucket)" 
+                                :style="getHeatmapStyle(bucket)"
                             >
                                 <span class="hourly-card__hour">{{ bucket.hour }}h</span>
-                                <strong>{{ formatCurrency(bucket.revenue) }}</strong>
-                                <span class="hourly-card__orders">{{ formatNumber(bucket.orderCount) }} đơn</span>
+                                <strong class="hourly-card__revenue">{{ formatCurrency(bucket.revenue) }}</strong>
+                                <span class="hourly-card__orders">{{ bucket.orderCount }} đơn</span>
                             </div>
                         </div>
                     </div>
@@ -360,13 +384,95 @@ const revenueChartType = ref('area')
 const profitChartType = ref('bar')
 const paymentChartType = ref('donut')
 const paymentMetric = ref('orders')
-const hourlyChartType = ref('area')
-
-const hourlyHighlights = computed(() => {
-    if (!props.hourlySales?.length) return []
-    const sorted = [...props.hourlySales].sort((a, b) => b.revenue - a.revenue)
-    return sorted.slice(0, 6)
+// Build full 24 hours data with missing hours filled with 0
+const fullHourlyData = computed(() => {
+    const hoursMap = new Map()
+    // Initialize all 24 hours with 0
+    for (let i = 0; i < 24; i++) {
+        hoursMap.set(i, {
+            hour: i,
+            revenue: 0,
+            orderCount: 0
+        })
+    }
+    // Fill with actual data
+    if (props.hourlySales?.length) {
+        props.hourlySales.forEach(item => {
+            const hour = Number(item.hour)
+            if (!isNaN(hour) && hour >= 0 && hour < 24) {
+                hoursMap.set(hour, {
+                    hour,
+                    revenue: item.revenue || item.totalRevenue || 0,
+                    orderCount: item.orderCount || 0
+                })
+            }
+        })
+    }
+    return Array.from(hoursMap.values())
 })
+
+// Calculate max values for heatmap intensity
+const maxRevenue = computed(() => {
+    return Math.max(...fullHourlyData.value.map(b => b.revenue), 1)
+})
+
+const maxOrders = computed(() => {
+    return Math.max(...fullHourlyData.value.map(b => b.orderCount), 1)
+})
+
+// Get heatmap intensity level (0-8) based on revenue
+const getHeatmapIntensity = (bucket) => {
+    if (maxRevenue.value === 0) return 0
+    const ratio = bucket.revenue / maxRevenue.value
+    if (ratio === 0) return 0
+    if (ratio < 0.1) return 1
+    if (ratio < 0.25) return 2
+    if (ratio < 0.4) return 3
+    if (ratio < 0.55) return 4
+    if (ratio < 0.7) return 5
+    if (ratio < 0.85) return 6
+    if (ratio < 0.95) return 7
+    return 8
+}
+
+// Get heatmap class based on intensity
+const getHeatmapClass = (bucket) => {
+    const intensity = getHeatmapIntensity(bucket)
+    return `heatmap-intensity-${intensity}`
+}
+
+// Get heatmap style with background color
+const getHeatmapStyle = (bucket) => {
+    const intensity = getHeatmapIntensity(bucket)
+    const colors = [
+        '#f8fafc', // 0 - very light gray
+        '#e2e8f0', // 1 - light gray
+        '#cbd5e1', // 2 - gray
+        '#94a3b8', // 3 - medium gray
+        '#60a5fa', // 4 - light blue
+        '#3b82f6', // 5 - blue
+        '#2563eb', // 6 - medium blue
+        '#1d4ed8', // 7 - dark blue
+        '#1e3a8a'  // 8 - very dark blue
+    ]
+    const borderColors = [
+        '#cbd5e1', // 0
+        '#94a3b8', // 1
+        '#64748b', // 2
+        '#475569', // 3
+        '#3b82f6', // 4
+        '#2563eb', // 5
+        '#1d4ed8', // 6
+        '#1e40af', // 7
+        '#1e3a8a'  // 8
+    ]
+    
+    return {
+        backgroundColor: colors[intensity],
+        borderColor: borderColors[intensity],
+        borderWidth: intensity >= 4 ? '2px' : '1px'
+    }
+}
 
 const computedRevenueOptions = computed(() => {
     const colorSource = Array.isArray(props.revenueOptions?.colors) && props.revenueOptions.colors.length
@@ -503,56 +609,218 @@ const paymentChartOptions = computed(() => {
     })
 })
 
-const buildFullHours = () => Array.from({ length: 24 }, (_, index) => index)
-
+// Chart series for hourly sales
 const hourlyChartSeries = computed(() => {
-    if (!props.hourlySales?.length) return []
-    const hours = buildFullHours()
-    const map = new Map(hours.map((hour) => [hour, 0]))
-    props.hourlySales.forEach((bucket) => {
-        const hour = Number(bucket.hour)
-        if (!Number.isNaN(hour) && map.has(hour)) {
-            map.set(hour, (map.get(hour) ?? 0) + (bucket.revenue ?? 0))
-        }
-    })
+    const revenues = fullHourlyData.value.map(b => b.revenue)
+    const orders = fullHourlyData.value.map(b => b.orderCount)
+    
     return [
         {
             name: 'Doanh thu',
-            data: hours.map((hour) => map.get(hour) ?? 0)
+            type: 'area',
+            data: revenues
+        },
+        {
+            name: 'Số đơn',
+            type: 'line',
+            data: orders
         }
     ]
 })
 
+// Chart options for hourly sales
 const hourlyChartOptions = computed(() => {
-    const base = createBaseOptions(hourlyChartType.value, ['#2563eb'])
-    const categories = buildFullHours().map((hour) => `${hour.toString().padStart(2, '0')}:00`)
-
-    return mergeOptions(base, {
-        xaxis: {
-            categories,
-            tickAmount: 12
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#2563eb'
+    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim() || '#10b981'
+    const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280'
+    const headingColor = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#1f2937'
+    
+    const hours = fullHourlyData.value.map(b => `${b.hour.toString().padStart(2, '0')}:00`)
+    
+    return {
+        chart: {
+            type: 'line',
+            toolbar: { show: false },
+            stacked: false,
+            zoom: { enabled: false },
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 800
+            }
         },
-        stroke: hourlyChartType.value === 'bar'
-            ? { curve: 'smooth', width: 0 }
-            : { curve: 'smooth', width: 3 },
-        plotOptions: hourlyChartType.value === 'bar'
-            ? {
-                bar: {
-                    columnWidth: '50%',
-                    borderRadius: 6,
-                    horizontal: false
+        stroke: {
+            curve: 'smooth',
+            width: [5, 4],
+            dashArray: [0, 10]
+        },
+        markers: {
+            size: [8, 7],
+            hover: {
+                size: 10
+            },
+            colors: [primaryColor, successColor],
+            strokeWidth: 2,
+            strokeColors: ['#ffffff', '#ffffff'],
+            fillOpacity: 1
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.5,
+                opacityTo: 0.2,
+                stops: [0, 50, 100],
+                colorStops: [
+                    {
+                        offset: 0,
+                        color: primaryColor,
+                        opacity: 0.5
+                    },
+                    {
+                        offset: 100,
+                        color: primaryColor,
+                        opacity: 0.2
+                    }
+                ]
+            }
+        },
+        colors: [primaryColor, successColor],
+        xaxis: {
+            categories: hours,
+            labels: {
+                style: {
+                    colors: headingColor,
+                    fontSize: '13px',
+                    fontFamily: 'var(--font-family-sans)',
+                    fontWeight: '500'
+                },
+                rotate: -45,
+                rotateAlways: false
+            },
+            tickAmount: 12,
+            axisBorder: {
+                show: true,
+                color: textMuted,
+                width: 2
+            },
+            axisTicks: {
+                show: true,
+                color: textMuted,
+                width: 2
+            }
+        },
+        yaxis: [
+            {
+                title: {
+                    text: 'Doanh thu (₫)',
+                    style: { 
+                        color: primaryColor,
+                        fontSize: '13px',
+                        fontFamily: 'var(--font-family-sans)',
+                        fontWeight: '600'
+                    }
+                },
+                labels: {
+                    formatter: (val) => formatCurrency(val),
+                    style: { 
+                        colors: textMuted,
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-family-sans)'
+                    }
+                },
+                axisBorder: {
+                    show: true,
+                    color: primaryColor
+                }
+            },
+            {
+                opposite: true,
+                title: {
+                    text: 'Số đơn',
+                    style: { 
+                        color: successColor,
+                        fontSize: '13px',
+                        fontFamily: 'var(--font-family-sans)',
+                        fontWeight: '600'
+                    }
+                },
+                labels: {
+                    style: { 
+                        colors: textMuted,
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-family-sans)'
+                    }
+                },
+                axisBorder: {
+                    show: true,
+                    color: successColor
                 }
             }
-            : base.plotOptions,
-        fill: hourlyChartType.value === 'bar'
-            ? { type: 'solid', opacity: 0.95 }
-            : base.fill,
+        ],
         tooltip: {
+            shared: true,
+            intersect: false,
+            theme: 'light',
+            style: {
+                fontSize: '13px',
+                fontFamily: 'var(--font-family-sans)'
+            },
             y: {
-                formatter: (value) => formatCurrency(value)
+                formatter: (val, { seriesIndex }) => {
+                    if (seriesIndex === 0) {
+                        return formatCurrency(val)
+                    }
+                    return `${val} đơn`
+                }
+            },
+            marker: {
+                show: true
+            }
+        },
+        legend: {
+            show: true,
+            position: 'top',
+            horizontalAlign: 'right',
+            fontSize: '13px',
+            fontFamily: 'var(--font-family-sans)',
+            markers: {
+                width: 12,
+                height: 12,
+                radius: 2
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        grid: {
+            borderColor: textMuted,
+            strokeDashArray: 3,
+            xaxis: {
+                lines: {
+                    show: true,
+                    strokeDashArray: 3
+                }
+            },
+            yaxis: {
+                lines: {
+                    show: true,
+                    strokeDashArray: 3
+                }
+            },
+            padding: {
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10
+            }
+        },
+        plotOptions: {
+            area: {
+                fillTo: 'origin'
             }
         }
-    })
+    }
 })
 
 const handleExportOrders = () => {
@@ -577,28 +845,89 @@ const handleExportOrders = () => {
 
 .chart-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+}
+
+.chart-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.chart-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.chart-card :global(.form-select) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.chart-card :global(.btn) {
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.btn-outline-primary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.chart-card :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .insight-list {
     list-style: none;
-    margin: 1.25rem 0 0;
+    margin: var(--spacing-4) 0 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 0.85rem;
+    gap: var(--spacing-3);
 }
 
 .insight-list li {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.85rem;
-    border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
+    gap: var(--spacing-1);
+    padding: var(--spacing-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
     background: var(--color-card-muted);
+}
+
+.insight-list li span {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.insight-list li strong {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .analytics-grid {
@@ -609,9 +938,41 @@ const handleExportOrders = () => {
 
 .analytic-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+}
+
+.analytic-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.analytic-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.analytic-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.analytic-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.analytic-card :global(.form-select) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.analytic-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .payment-list {
@@ -640,12 +1001,21 @@ const handleExportOrders = () => {
 }
 
 .payment-item__label {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .payment-item__orders {
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.payment-item__metrics strong {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .payment-item__metrics {
@@ -654,36 +1024,246 @@ const handleExportOrders = () => {
     gap: 0.6rem;
 }
 
-.hourly-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
+.hourly-sales-card {
+    margin-top: 0;
 }
 
-.hourly-card {
-    border-radius: 16px;
-    border: 1px solid var(--color-border);
+.hourly-legend {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
     background: var(--color-card-muted);
-    padding: 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+}
+
+.legend-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+    font-weight: var(--font-weight-medium);
+}
+
+.hourly-content {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--spacing-5);
+}
+
+.hourly-chart-section {
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.hourly-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--spacing-2);
+}
+
+/* Heatmap design */
+.hourly-card {
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-height: 80px;
+    justify-content: center;
+    border: 1px solid;
+}
+
+.hourly-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    opacity: 0.8;
+}
+
+.hourly-card:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1;
 }
 
 .hourly-card__hour {
-    font-weight: 600;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+    margin-bottom: var(--spacing-1);
+}
+
+.hourly-card__revenue {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+    line-height: 1.4;
+    margin-bottom: var(--spacing-1);
 }
 
 .hourly-card__orders {
-    font-size: 0.8rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Heatmap intensity classes */
+.hourly-card.heatmap-intensity-0,
+.hourly-card.heatmap-intensity-1 {
+    color: var(--color-heading);
+}
+
+.hourly-card.heatmap-intensity-0::before {
+    background: #cbd5e1;
+}
+
+.hourly-card.heatmap-intensity-1::before {
+    background: #94a3b8;
+}
+
+.hourly-card.heatmap-intensity-2,
+.hourly-card.heatmap-intensity-3 {
+    color: var(--color-heading);
+}
+
+.hourly-card.heatmap-intensity-2::before {
+    background: #64748b;
+}
+
+.hourly-card.heatmap-intensity-3::before {
+    background: #475569;
+}
+
+.hourly-card.heatmap-intensity-4,
+.hourly-card.heatmap-intensity-5 {
+    color: var(--color-heading);
+}
+
+.hourly-card.heatmap-intensity-4::before {
+    background: #3b82f6;
+}
+
+.hourly-card.heatmap-intensity-5::before {
+    background: #2563eb;
+}
+
+.hourly-card.heatmap-intensity-6,
+.hourly-card.heatmap-intensity-7,
+.hourly-card.heatmap-intensity-8 {
+    color: #ffffff;
+}
+
+.hourly-card.heatmap-intensity-6::before {
+    background: #1d4ed8;
+}
+
+.hourly-card.heatmap-intensity-7::before {
+    background: #1e40af;
+}
+
+.hourly-card.heatmap-intensity-8::before {
+    background: #1e3a8a;
+}
+
+.hourly-card.heatmap-intensity-6 .hourly-card__revenue,
+.hourly-card.heatmap-intensity-7 .hourly-card__revenue,
+.hourly-card.heatmap-intensity-8 .hourly-card__revenue {
+    color: #ffffff;
+    font-weight: var(--font-weight-bold);
+}
+
+.hourly-card.heatmap-intensity-6 .hourly-card__hour,
+.hourly-card.heatmap-intensity-7 .hourly-card__hour,
+.hourly-card.heatmap-intensity-8 .hourly-card__hour {
+    color: #ffffff;
+    font-weight: var(--font-weight-bold);
+}
+
+.hourly-card.heatmap-intensity-6 .hourly-card__orders,
+.hourly-card.heatmap-intensity-7 .hourly-card__orders,
+.hourly-card.heatmap-intensity-8 .hourly-card__orders {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: var(--font-weight-semibold);
 }
 
 .table-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+}
+
+.table-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.table-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Minimal Table Styling */
+.table-card :global(table) {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table-card :global(table thead th) {
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+    text-align: left;
+}
+
+.table-card :global(table tbody td) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 @media (max-width: 768px) {
@@ -695,6 +1275,29 @@ const handleExportOrders = () => {
 
     .payment-item__metrics {
         gap: 0.4rem;
+    }
+
+    .hourly-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: var(--spacing-2);
+    }
+
+    .hourly-card {
+        padding: var(--spacing-2);
+    }
+
+    .hourly-legend {
+        flex-wrap: wrap;
+        gap: var(--spacing-1);
+    }
+
+    .legend-item {
+        font-size: var(--font-size-xs);
+    }
+
+    .legend-color {
+        width: 16px;
+        height: 16px;
     }
 }
 </style>

@@ -84,15 +84,15 @@
                     </div>
                     <div class="modal-body">
                         <p class="mb-3">Bạn có chắc chắn muốn xóa bàn này không?</p>
-                        <div class="card bg-light">
+                        <div class="card" style="background: var(--color-card-muted); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
                             <div class="card-body">
                                 <div class="mb-2">
-                                    <strong class="text-muted d-block mb-1">Tên bàn:</strong>
-                                    <span>{{ deleteTarget?.name || '—' }}</span>
+                                    <strong class="d-block mb-1" style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Tên bàn:</strong>
+                                    <span style="font-family: var(--font-family-sans); color: var(--color-heading);">{{ deleteTarget?.name || '—' }}</span>
                                 </div>
                                 <div class="mb-0">
-                                    <strong class="text-muted d-block mb-1">Sức chứa:</strong>
-                                    <span>{{ deleteTarget?.capacity || '—' }} chỗ</span>
+                                    <strong class="d-block mb-1" style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Sức chứa:</strong>
+                                    <span style="font-family: var(--font-family-sans); color: var(--color-heading);">{{ deleteTarget?.capacity || '—' }} chỗ</span>
                                 </div>
                             </div>
                         </div>
@@ -121,7 +121,7 @@
         </div>
     </Teleport>
 
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <header class="tables-header">
             <div>
                 <h2>Quản lý bàn</h2>
@@ -252,7 +252,7 @@
                                                     :value="table.status"
                                                     @change="handleStatusChange(table, $event.target.value)"
                                                     :disabled="statusMutation.isPending.value"
-                                                    style="min-width: 150px;"
+                                                    style="min-width: 150px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card); color: var(--color-heading); font-family: var(--font-family-sans);"
                                                 >
                                                     <option v-for="status in TABLE_STATUS_OPTIONS" :key="status.value" :value="status.value">{{ status.label }}</option>
                                                 </select>
@@ -309,7 +309,8 @@
                         <label class="form-label">Cập nhật trạng thái</label>
                         <select class="form-select form-select-sm" :value="table.status"
                                 @change="handleStatusChange(table, $event.target.value)"
-                                :disabled="statusMutation.isPending.value">
+                                :disabled="statusMutation.isPending.value"
+                                style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card); color: var(--color-heading); font-family: var(--font-family-sans);">
                             <option v-for="status in TABLE_STATUS_OPTIONS" :key="status.value" :value="status.value">{{ status.label }}</option>
                         </select>
                     </footer>
@@ -620,25 +621,26 @@ const getStatusMetaRef = getStatusMeta
     justify-content: space-between;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
     margin-bottom: var(--spacing-4);
 }
 
 .tables-header h2 {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .tables-header p {
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 .tables-header__actions {
@@ -651,12 +653,32 @@ const getStatusMetaRef = getStatusMeta
 /* Layout Toggle - Chuẩn hóa */
 .layout-toggle .btn {
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-family: var(--font-family-sans);
+    transition: all var(--transition-base);
+}
+
+.layout-toggle .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.layout-toggle .btn-outline-primary {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.layout-toggle .btn-outline-primary:hover {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .layout-toggle .btn i {
@@ -668,19 +690,27 @@ const getStatusMetaRef = getStatusMeta
 /* Filter Card - Chuẩn hóa theo base.css */
 .filter-card {
     margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 .filter-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 /* Tabs Card - Chuẩn hóa */
 .tabs-card {
     margin-bottom: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 .tabs-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .filter-grid {
@@ -698,8 +728,9 @@ const getStatusMetaRef = getStatusMeta
 .filter-item .form-label {
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 /* Input Group - Chuẩn hóa height */
@@ -711,8 +742,8 @@ const getStatusMetaRef = getStatusMeta
     height: 40px;
     border: 1px solid var(--color-border);
     border-right: none;
-    border-radius: var(--radius-base) 0 0 var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    background: var(--color-card-muted);
     color: var(--color-text-muted);
     display: flex;
     align-items: center;
@@ -728,29 +759,39 @@ const getStatusMetaRef = getStatusMeta
 .filter-item :global(.input-group .form-control) {
     height: 40px;
     border-left: none;
-    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .filter-item :global(.input-group .form-control:focus) {
     border-left: none;
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 /* Form Select - Chuẩn hóa height */
 .filter-item :global(.form-select) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .filter-item :global(.form-select:focus) {
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .filter-actions {
@@ -761,38 +802,49 @@ const getStatusMetaRef = getStatusMeta
 .filter-actions :global(.btn) {
     height: 40px;
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 /* Table View - Chuẩn hóa theo base.css */
 .tables-page :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .tables-page :global(.table thead th) {
-    background: var(--color-bg-muted);
-    color: var(--color-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: var(--font-family-sans);
 }
 
 .tables-page :global(.table tbody td) {
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     vertical-align: middle;
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .tables-page :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Grid View - Chuẩn hóa */
@@ -803,10 +855,9 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .table-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
     padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
@@ -815,8 +866,8 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .table-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .table-card__header {
@@ -830,13 +881,15 @@ const getStatusMetaRef = getStatusMeta
 .table-card__header h3 {
     margin-bottom: var(--spacing-0);
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .table-card__header .caption {
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .table-card__body {
@@ -851,9 +904,10 @@ const getStatusMetaRef = getStatusMeta
     align-items: center;
     gap: 6px;
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .table-status-chip i {
@@ -866,7 +920,8 @@ const getStatusMetaRef = getStatusMeta
     align-items: baseline;
     gap: 6px;
     font-size: var(--font-size-lg);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .table-capacity i {
@@ -884,8 +939,9 @@ const getStatusMetaRef = getStatusMeta
 .table-card__footer .form-label {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .actions {
@@ -896,10 +952,10 @@ const getStatusMetaRef = getStatusMeta
 .btn-icon {
     width: 36px;
     height: 36px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
-    color: var(--color-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -909,7 +965,7 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .btn-icon:hover {
-    background: var(--color-bg);
+    background: var(--color-card);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
@@ -924,7 +980,7 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .btn-icon--danger:hover {
-    background: var(--color-bg);
+    background: var(--color-card);
     border-color: var(--color-danger);
     color: var(--color-danger);
 }
@@ -935,7 +991,8 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .status-success .table-status-chip {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
+    border: 1px solid var(--color-success);
     color: var(--color-success);
 }
 
@@ -944,7 +1001,8 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .status-warning .table-status-chip {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
+    border: 1px solid var(--color-warning);
     color: var(--color-warning);
 }
 
@@ -953,7 +1011,8 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .status-danger .table-status-chip {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
+    border: 1px solid var(--color-danger);
     color: var(--color-danger);
 }
 
@@ -962,7 +1021,8 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .status-info .table-status-chip {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
+    border: 1px solid var(--color-info);
     color: var(--color-info);
 }
 
@@ -971,64 +1031,69 @@ const getStatusMetaRef = getStatusMeta
 }
 
 .status-neutral .table-status-chip {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
+    border: 1px solid var(--color-border);
     color: var(--color-text-muted);
 }
 
 /* Modal - Chuẩn hóa theo base.css */
 .table-edit-modal :global(.modal-content),
 .table-delete-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-lg);
+    background: var(--color-card);
+    box-shadow: var(--shadow-modal);
 }
 
 .table-edit-modal :global(.modal-header),
 .table-delete-modal :global(.modal-header) {
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .table-edit-modal :global(.modal-header .modal-title),
 .table-delete-modal :global(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .table-edit-modal :global(.modal-header .text-muted.small),
 .table-delete-modal :global(.modal-header .text-muted.small) {
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .table-edit-modal :global(.modal-body),
 .table-delete-modal :global(.modal-body) {
     padding: var(--spacing-5);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 /* Form Controls trong Modal - Chuẩn hóa */
 .table-edit-modal :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .table-edit-modal :global(.form-control),
 .table-edit-modal :global(.form-select) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .table-edit-modal :global(.form-control:focus),
@@ -1036,22 +1101,62 @@ const getStatusMetaRef = getStatusMeta
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .table-delete-modal :global(.modal-body .card) {
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
 }
 
 .table-edit-modal :global(.modal-footer),
 .table-delete-modal :global(.modal-footer) {
     border-top: 1px solid var(--color-border);
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
     gap: var(--spacing-2);
     justify-content: flex-end;
+}
+
+.table-edit-modal :global(.btn-primary),
+.table-delete-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.table-edit-modal :global(.btn-primary:hover:not(:disabled)),
+.table-delete-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.table-edit-modal :global(.btn-outline-secondary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.table-edit-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.table-delete-modal :global(.btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.table-delete-modal :global(.btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark);
 }
 
 /* Action Buttons - Chuẩn hóa theo OrderListTab */
@@ -1068,25 +1173,26 @@ const getStatusMetaRef = getStatusMeta
     justify-content: center;
     gap: 6px;
     padding: 8px 12px;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-primary);
+    background: var(--color-card);
     color: var(--color-primary);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     cursor: pointer;
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: #ffffff;
-    border-color: var(--color-primary);
+    background: var(--color-soft-primary);
+    color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
 }
 
 .action-button:active:not(:disabled) {
-    filter: brightness(0.95);
+    background: var(--color-primary-dark);
 }
 
 .action-button:disabled {
@@ -1103,23 +1209,45 @@ const getStatusMetaRef = getStatusMeta
 .action-button--primary {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 .action-button--primary:hover:not(:disabled) {
-    filter: brightness(1.05);
+    background: var(--color-primary-dark);
 }
 
 .action-button--danger {
     border-color: var(--color-danger);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
     background: var(--color-danger);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-danger);
+}
+
+/* Form Select Small - Chuẩn hóa */
+:global(.form-select-sm) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+:global(.form-select-sm:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+/* Button Small - Chuẩn hóa */
+:global(.btn-sm) {
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
 }
 
 /* Responsive - Chuẩn hóa */

@@ -1,17 +1,17 @@
 <template>
     <div class="dashboard" data-aos="fade-up">
         <section class="dashboard__header">
-            <div class="filter-card card">
-                <div class="card-body">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-auto">
-                            <label class="form-label">Khoảng thời gian</label>
-                            <div class="btn-group">
+            <div class="filter-card">
+                <div class="filter-card__body">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="filter-label">Khoảng thời gian</label>
+                            <div class="preset-buttons">
                                 <button
                                     v-for="preset in presets"
                                     :key="preset.value"
-                                    class="btn btn-outline-primary"
-                                    :class="{ active: rangePreset === preset.value }"
+                                    class="preset-btn"
+                                    :class="{ 'is-active': rangePreset === preset.value }"
                                     @click="handlePresetClick(preset.value)"
                                 >
                                     {{ preset.label }}
@@ -19,18 +19,28 @@
                             </div>
                         </div>
 
-                        <div class="col-md-auto">
-                            <label class="form-label">Từ ngày</label>
-                            <input type="date" class="form-control" v-model="filters.startDate" @change="fetchData"/>
+                        <div class="filter-group">
+                            <label class="filter-label">Từ ngày</label>
+                            <input 
+                                type="date" 
+                                class="filter-input" 
+                                v-model="filters.startDate" 
+                                @change="fetchData"
+                            />
                         </div>
 
-                        <div class="col-md-auto">
-                            <label class="form-label">Đến ngày</label>
-                            <input type="date" class="form-control" v-model="filters.endDate" @change="fetchData"/>
+                        <div class="filter-group">
+                            <label class="filter-label">Đến ngày</label>
+                            <input 
+                                type="date" 
+                                class="filter-input" 
+                                v-model="filters.endDate" 
+                                @change="fetchData"
+                            />
                         </div>
 
-                        <div class="col-md-auto">
-                            <button class="btn btn-primary" @click="fetchData">
+                        <div class="filter-group">
+                            <button class="filter-btn" @click="fetchData">
                                 <i class="bi bi-arrow-clockwise me-2"></i>
                                 Cập nhật
                             </button>
@@ -268,32 +278,44 @@ const fetchData = async () => {
     }, 'Không thể tải dữ liệu báo cáo. Vui lòng thử lại.')
 }
 
-const buildRevenueOptions = (categories) => ({
-    chart: { type: 'area', toolbar: { show: false } },
-    xaxis: {
-        categories,
-        labels: { style: { colors: '#64748b', fontSize: '12px' } }
-    },
-    yaxis: {
-        labels: { formatter: (val) => formatCurrency(val), style: { colors: '#64748b' } }
-    },
-    dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 3 },
-    colors: ['#4f46e5'],
-    fill: {
-        type: 'solid',
-        opacity: 0.15,
+const buildRevenueOptions = (categories) => {
+    // Sử dụng CSS variables thông qua computed style
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#2C3E50'
+    const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280'
+    
+    return {
+        chart: { type: 'area', toolbar: { show: false } },
+        xaxis: {
+            categories,
+            labels: { style: { colors: textMuted, fontSize: '12px' } }
+        },
+        yaxis: {
+            labels: { formatter: (val) => formatCurrency(val), style: { colors: textMuted } }
+        },
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 3 },
+        colors: [primaryColor],
+        fill: {
+            type: 'solid',
+            opacity: 0.15,
+        }
     }
-})
+}
 
-const buildProfitOptions = () => ({
-    chart: {type: 'bar', toolbar: {show: false}},
-    plotOptions: {bar: {columnWidth: '45%', borderRadius: 10}},
-    dataLabels: {enabled: false},
-    xaxis: {categories: ['Kỳ hiện tại']},
-    yaxis: {labels: {formatter: (val) => formatCurrency(val)}},
-    colors: ['#4f46e5', '#22c55e']
-})
+const buildProfitOptions = () => {
+    // Sử dụng CSS variables thông qua computed style
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#2C3E50'
+    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim() || '#27ae60'
+    
+    return {
+        chart: {type: 'bar', toolbar: {show: false}},
+        plotOptions: {bar: {columnWidth: '45%', borderRadius: 6}},
+        dataLabels: {enabled: false},
+        xaxis: {categories: ['Kỳ hiện tại']},
+        yaxis: {labels: {formatter: (val) => formatCurrency(val)}},
+        colors: [primaryColor, successColor]
+    }
+}
 
 onMounted(() => {
     fetchData()
@@ -311,14 +333,123 @@ onBeforeUnmount(() => {
 .dashboard {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-4);
+    gap: var(--spacing-6);
+    padding: var(--spacing-4);
+    background: var(--color-body-bg);
 }
 
 .dashboard__header {
     margin-bottom: var(--spacing-4);
 }
 
-/* Tabs - Chuẩn theo base.css, tối giản, không gradient mạnh */
+.filter-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-4);
+}
+
+.filter-card__body {
+    width: 100%;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    min-width: 0;
+}
+
+.filter-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+    margin-bottom: 0;
+}
+
+.preset-buttons {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+}
+
+.preset-btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.preset-btn:hover:not(.is-active) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.preset-btn.is-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    font-weight: var(--font-weight-semibold);
+}
+
+.filter-input {
+    padding: var(--spacing-2) var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+    min-width: 160px;
+    transition: all 0.2s ease;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.filter-btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+}
+
+/* Tabs - Chuẩn theo base.css, flat design, không gradient */
 .dashboard__tabs {
     margin-bottom: var(--spacing-4);
 }
@@ -326,9 +457,9 @@ onBeforeUnmount(() => {
 .dashboard__tabs .tabs {
     display: flex;
     gap: var(--spacing-2);
-    background: var(--color-bg-muted);
+    background: var(--color-card);
     padding: var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     overflow-x: auto;
 }
@@ -336,16 +467,17 @@ onBeforeUnmount(() => {
 .tab {
     border: none;
     background: transparent;
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    padding: var(--spacing-3) var(--spacing-5);
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
     color: var(--color-text-muted);
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: background-color var(--transition-base), color var(--transition-base);
     white-space: nowrap;
 }
 
@@ -355,13 +487,14 @@ onBeforeUnmount(() => {
 }
 
 .tab:hover:not(.active) {
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
 }
 
 .tab.active {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
+    font-weight: var(--font-weight-semibold);
 }
 
 .dashboard__content {
@@ -379,6 +512,11 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 992px) {
+    .dashboard {
+        padding: var(--spacing-3);
+        gap: var(--spacing-4);
+    }
+
     .dashboard__header {
         margin-bottom: var(--spacing-3);
     }
@@ -387,8 +525,31 @@ onBeforeUnmount(() => {
         margin-bottom: var(--spacing-3);
     }
 
-    .btn-group {
-        flex-wrap: wrap;
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .preset-buttons {
+        width: 100%;
+    }
+
+    .preset-btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .filter-input {
+        width: 100%;
+    }
+
+    .filter-btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 </style>

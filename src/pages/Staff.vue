@@ -1,5 +1,5 @@
 <template>
-    <div class="staff-page container-fluid" data-aos="fade-up">
+    <div class="staff-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="staff-header">
             <div class="staff-header__content">
                 <div class="staff-header__title-section">
@@ -670,7 +670,7 @@ const STATUS_OPTIONS = [
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
-const viewMode = ref('grid')
+const viewMode = ref('table')
 const filters = reactive({
     search: '',
     status: '',
@@ -1594,19 +1594,13 @@ const hideUserActivityLogModal = () => {
     padding-bottom: var(--component-padding-lg);
 }
 
-/* Header - Chuẩn hóa theo base.css, giữ nguyên nội dung */
+/* Header - Chuẩn hóa theo base.css */
 .staff-header {
-    padding: var(--spacing-5);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: var(--spacing-6);
-    transition: box-shadow var(--transition-base);
-}
-
-.staff-header:hover {
-    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-4);
 }
 
 .staff-header__content {
@@ -1632,14 +1626,49 @@ const hideUserActivityLogModal = () => {
 
 .staff-header__actions .btn {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-5);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
+}
+
+.staff-header__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.staff-header__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+}
+
+.staff-header__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.staff-header__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.staff-header__actions .btn-outline-success {
+    border-color: var(--color-border);
+    color: var(--color-success);
+    background: transparent;
+}
+
+.staff-header__actions .btn-outline-success:hover:not(:disabled) {
+    background: var(--color-soft-emerald);
+    border-color: var(--color-success);
+    color: var(--color-success);
 }
 
 .staff-header__actions .btn i {
@@ -1653,29 +1682,31 @@ const hideUserActivityLogModal = () => {
 }
 
 .page-title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: var(--spacing-2);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
+    font-family: var(--font-family-sans);
 }
 
 .page-subtitle {
     margin-bottom: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-sans);
 }
 
-/* View mode tabs - Chuẩn hóa theo base.css, tối giản, không gradient */
+/* View mode tabs - Flat Design */
 .staff-view-tabs {
     display: inline-flex;
     gap: var(--spacing-2);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     padding: var(--spacing-2);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     overflow-x: auto;
 }
@@ -1683,8 +1714,8 @@ const hideUserActivityLogModal = () => {
 .staff-view-tab {
     border: none;
     background: transparent;
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
@@ -1694,6 +1725,7 @@ const hideUserActivityLogModal = () => {
     cursor: pointer;
     transition: all var(--transition-base);
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 .staff-view-tab i {
@@ -1702,23 +1734,21 @@ const hideUserActivityLogModal = () => {
 }
 
 .staff-view-tab:hover:not(.active) {
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
 }
 
 .staff-view-tab.active {
     background: var(--color-primary);
     color: var(--color-text-inverse);
-    box-shadow: var(--shadow-xs);
 }
 
-/* KPI Cards - Chuẩn hóa theo base.css, màu nhạt, không gradient */
+/* KPI Cards - Flat Design */
 .kpi-card {
     background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-5);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-4);
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
@@ -1728,14 +1758,14 @@ const hideUserActivityLogModal = () => {
 }
 
 .kpi-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .kpi-card__icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1744,7 +1774,7 @@ const hideUserActivityLogModal = () => {
     transition: all var(--transition-base);
 }
 
-/* Màu icon - không dùng gradient, dùng màu nhạt, đồng bộ với card */
+/* Màu icon - dùng var(--color-soft-*) */
 .kpi-card--people .kpi-card__icon {
     background: var(--color-soft-primary);
     color: var(--color-primary);
@@ -1757,7 +1787,7 @@ const hideUserActivityLogModal = () => {
 
 .kpi-card--role .kpi-card__icon {
     background: var(--color-soft-indigo);
-    color: var(--color-secondary);
+    color: var(--color-primary);
 }
 
 .kpi-card--recent .kpi-card__icon {
@@ -1771,31 +1801,27 @@ const hideUserActivityLogModal = () => {
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
-/* Filter Card - Chuẩn hóa theo base.css */
+/* Filter Card - Chuẩn hóa */
 .filter-card {
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
-    transition: box-shadow var(--transition-base);
-}
-
-.filter-card:hover {
-    box-shadow: var(--shadow-md);
 }
 
 .filter-card :global(.card-body) {
@@ -1804,55 +1830,58 @@ const hideUserActivityLogModal = () => {
 
 .filter-card :global(.card-body h5) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: var(--spacing-4);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-label) {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-heading);
     margin-bottom: var(--spacing-2);
     line-height: var(--line-height-normal);
     display: block;
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control),
 .filter-card :global(.form-select) {
-    height: 44px;
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--color-input-border);
-    background: var(--color-input-bg);
-    padding: var(--spacing-3) var(--spacing-4);
+    height: 40px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
     line-height: var(--line-height-normal);
     transition: all var(--transition-base);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control:focus),
 .filter-card :global(.form-select:focus) {
-    border-color: var(--color-input-focus);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    background: var(--color-card);
-    outline: none;
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .filter-card :global(.form-control:hover:not(:focus)),
 .filter-card :global(.form-select:hover:not(:focus)) {
-    border-color: var(--color-border-strong);
+    border-color: var(--color-border);
 }
 
 .filter-card :global(.input-group-text) {
     background: var(--color-card-muted);
-    border: 1.5px solid var(--color-input-border);
+    border: 1px solid var(--color-border);
     border-right: none;
     color: var(--color-text-muted);
-    padding: 0.7rem 1rem;
+    padding: var(--spacing-2) var(--spacing-3);
     border-radius: var(--radius-sm) 0 0 var(--radius-sm);
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
 }
 
 .filter-card :global(.input-group .form-control) {
@@ -1862,14 +1891,39 @@ const hideUserActivityLogModal = () => {
 
 .filter-card :global(.btn) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-5);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.filter-card :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.filter-card :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.filter-card :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .filter-card :global(.btn i) {
@@ -1879,15 +1933,9 @@ const hideUserActivityLogModal = () => {
 
 /* Bulk Actions Bar - Chuẩn hóa */
 .staff-page :global(.card.border-primary) {
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-primary);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
-    transition: box-shadow var(--transition-base);
-}
-
-.staff-page :global(.card.border-primary:hover) {
-    box-shadow: var(--shadow-md);
 }
 
 .staff-page :global(.card.border-primary .card-body) {
@@ -1896,14 +1944,69 @@ const hideUserActivityLogModal = () => {
 
 .staff-page :global(.card.border-primary .btn) {
     font-size: var(--font-size-sm);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
+}
+
+.staff-page :global(.card.border-primary .btn-success) {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: var(--color-text-inverse);
+}
+
+.staff-page :global(.card.border-primary .btn-success:hover:not(:disabled)) {
+    background: var(--color-success-dark, #1e7e4e);
+}
+
+.staff-page :global(.card.border-primary .btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+}
+
+.staff-page :global(.card.border-primary .btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark, #a0281d);
+}
+
+.staff-page :global(.card.border-primary .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.staff-page :global(.card.border-primary .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.staff-page :global(.card.border-primary .btn-outline-info) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.staff-page :global(.card.border-primary .btn-outline-info:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.staff-page :global(.card.border-primary .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.staff-page :global(.card.border-primary .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .staff-page :global(.card.border-primary .btn i) {
@@ -1913,15 +2016,9 @@ const hideUserActivityLogModal = () => {
 
 /* Data Card - Chuẩn hóa */
 .data-card {
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
-    transition: box-shadow var(--transition-base);
-}
-
-.data-card:hover {
-    box-shadow: var(--shadow-md);
 }
 
 .data-card :global(.card-body) {
@@ -1934,59 +2031,54 @@ const hideUserActivityLogModal = () => {
     background: var(--color-card);
 }
 
-/* Table - Chuẩn hóa theo base.css */
+/* Table - Minimal Table Styling */
 .staff-page :global(.table) {
     margin-bottom: 0;
     border-collapse: separate;
     border-spacing: 0;
     background: var(--color-card);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-soft);
-    color: var(--color-text);
+    color: var(--color-heading);
     width: 100%;
 }
 
-.staff-page :global(.table thead) {
-    background: var(--color-table-header);
-    color: var(--color-heading);
+.staff-page :global(.table thead),
+.staff-page :global(.table thead.table-light) {
+    background: var(--color-card-muted);
 }
 
 .staff-page :global(.table thead th) {
     font-weight: var(--font-weight-semibold);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-5);
+    font-size: var(--font-size-base);
+    color: var(--color-heading);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
     vertical-align: middle;
-    border-color: var(--color-border);
+    font-family: var(--font-family-sans);
 }
 
 .staff-page :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-4) var(--spacing-5);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
-    border-color: var(--color-border);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
 }
 
-.staff-page :global(.table tbody tr) {
-    transition: background-color var(--component-transition);
+.staff-page :global(.table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 .staff-page :global(.table tbody tr:hover) {
-    background: var(--color-table-hover);
+    background: var(--color-card-muted);
 }
 
 .staff-page :global(.table .form-check-input) {
     width: 1.25rem;
     height: 1.25rem;
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--color-input-border);
-    background: var(--color-input-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
     cursor: pointer;
     transition: all var(--transition-base);
     margin-top: 0.15rem;
@@ -1998,7 +2090,9 @@ const hideUserActivityLogModal = () => {
 }
 
 .staff-page :global(.table .form-check-input:focus) {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .staff-page :global(.table .btn-link) {
@@ -2009,10 +2103,11 @@ const hideUserActivityLogModal = () => {
     text-decoration: none;
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .staff-page :global(.table .btn-link:hover) {
-    color: var(--color-primary);
+    color: var(--color-primary-dark);
     text-decoration: underline;
 }
 
@@ -2035,7 +2130,7 @@ const hideUserActivityLogModal = () => {
     border: 2px solid var(--color-border);
 }
 
-/* Action Buttons - Chuẩn hóa theo base.css */
+/* Action Buttons - Flat Design */
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -2049,8 +2144,8 @@ const hideUserActivityLogModal = () => {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
     color: var(--color-primary);
@@ -2060,19 +2155,17 @@ const hideUserActivityLogModal = () => {
     transition: all var(--transition-base);
     white-space: nowrap;
     cursor: pointer;
+    font-family: var(--font-family-sans);
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    color: var(--color-primary);
 }
 
 .action-button:active:not(:disabled) {
-    transform: translateY(0);
-    filter: brightness(0.95);
+    background: var(--color-card-muted);
 }
 
 .action-button:disabled {
@@ -2087,54 +2180,52 @@ const hideUserActivityLogModal = () => {
 }
 
 .action-button--primary {
-    border-color: var(--color-primary);
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
 }
 
 .action-button--primary:hover:not(:disabled) {
-    filter: brightness(1.05);
-    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .action-button--info {
-    border-color: var(--color-info);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
     background: var(--color-card);
-    color: var(--color-info);
 }
 
 .action-button--info:hover:not(:disabled) {
-    background: var(--color-info);
-    color: var(--color-text-inverse);
-    border-color: var(--color-info);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .action-button--warning {
-    border-color: var(--color-warning);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
     background: var(--color-card);
-    color: var(--color-warning);
 }
 
 .action-button--warning:hover:not(:disabled) {
-    background: var(--color-warning);
-    color: var(--color-text-inverse);
-    border-color: var(--color-warning);
-    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.2);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
-/* Badge - Chuẩn hóa theo base.css */
+/* Badge - Flat Design */
 .staff-page :global(.badge) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-xs);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
     line-height: var(--line-height-normal);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
+    font-family: var(--font-family-sans);
 }
 
 .staff-role-badge {
@@ -2143,50 +2234,51 @@ const hideUserActivityLogModal = () => {
     justify-content: center;
     min-width: 58px;
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-xs);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border: 1px solid var(--color-border);
-    background: var(--color-badge-soft-bg);
-    color: var(--color-badge-soft-text);
-    text-transform: none;
-    letter-spacing: normal;
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
-/* Trạng thái nhân viên - badge mềm, đồng bộ toàn hệ thống */
+/* Trạng thái nhân viên - Flat Design */
 .status-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    letter-spacing: var(--letter-spacing-wide);
-    text-transform: uppercase;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .status-badge--active {
     background: var(--color-soft-emerald);
     color: var(--color-success);
+    border: 1px solid var(--color-success);
 }
 
 .status-badge--inactive {
-    background: var(--color-soft-neutral);
+    background: var(--color-soft-rose);
     color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
 }
 
 .status-badge--neutral {
-    background: var(--color-badge-soft-bg);
-    color: var(--color-badge-soft-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
 }
 
 /* Avatar Upload Box - Chuẩn hóa */
 .avatar-upload-box {
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: inline-flex;
     flex-direction: column;
     gap: var(--spacing-3);
@@ -2195,9 +2287,9 @@ const hideUserActivityLogModal = () => {
 .avatar-preview-wrapper {
     width: 156px;
     height: 156px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2222,14 +2314,51 @@ const hideUserActivityLogModal = () => {
 
 .avatar-upload-box .btn {
     font-size: var(--font-size-base);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.avatar-upload-box .btn-outline-primary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.avatar-upload-box .btn-outline-primary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.avatar-upload-box .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.avatar-upload-box .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.avatar-upload-box .btn-outline-danger {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+}
+
+.avatar-upload-box .btn-outline-danger:hover:not(:disabled) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
 .avatar-upload-box .btn i {
@@ -2240,11 +2369,11 @@ const hideUserActivityLogModal = () => {
 /* Role Box - Chuẩn hóa */
 .role-box {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-3) var(--spacing-4);
     max-height: 220px;
     overflow-y: auto;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     transition: border-color var(--transition-base);
 }
 
@@ -2258,19 +2387,20 @@ const hideUserActivityLogModal = () => {
 
 .role-box :global(.form-check-label) {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     cursor: pointer;
     margin-left: var(--spacing-2);
     line-height: var(--line-height-normal);
     font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-sans);
 }
 
 .role-box :global(.form-check-input) {
     width: 1.25rem;
     height: 1.25rem;
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--color-input-border);
-    background: var(--color-input-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
     cursor: pointer;
     margin-top: 0.15rem;
     transition: all var(--transition-base);
@@ -2282,21 +2412,24 @@ const hideUserActivityLogModal = () => {
 }
 
 .role-box :global(.form-check-input:focus) {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
-/* Error Message - Thay thế alert, không dùng alert */
+/* Error Message - Flat Design */
 .error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    background: rgba(245, 158, 11, 0.1);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-warning);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-normal);
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .error-message i {
@@ -2306,12 +2439,11 @@ const hideUserActivityLogModal = () => {
     margin-top: 2px;
 }
 
-/* Modal - Chuẩn hóa theo base.css */
+/* Modal - Chuẩn hóa */
 .staff-page :global(.modal-content) {
-    border-radius: var(--component-radius-lg);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -2330,12 +2462,13 @@ const hideUserActivityLogModal = () => {
 }
 
 .staff-page :global(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-xl);
     color: var(--color-heading);
     margin: 0 0 var(--spacing-1) 0;
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
+    font-family: var(--font-family-sans);
 }
 
 .staff-page :global(.modal-header .text-muted) {
@@ -2345,33 +2478,7 @@ const hideUserActivityLogModal = () => {
     line-height: var(--line-height-normal);
 }
 
-.staff-page :global(.modal-header .btn-close) {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--component-radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
-    opacity: 0.7;
-    transition: all var(--component-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    cursor: pointer;
-}
-
-.staff-page :global(.modal-header .btn-close:hover),
-.staff-page :global(.modal-header .btn-close:focus) {
-    opacity: 1;
-    background: var(--color-danger-soft, rgba(239, 68, 68, 0.1));
-    border-color: var(--color-danger);
-    color: var(--color-danger);
-    transform: scale(1.05);
-}
-
-.staff-page :global(.modal-header .btn-close:active) {
-    transform: scale(0.95);
-}
+/* Sử dụng style chung từ base.css cho btn-close */
 
 .staff-page :global(.modal-body) {
     padding: var(--spacing-6);
@@ -2398,28 +2505,29 @@ const hideUserActivityLogModal = () => {
 
 .staff-page :global(.modal-body .form-control),
 .staff-page :global(.modal-body .form-select) {
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--color-input-border);
-    background: var(--color-input-bg);
-    color: var(--color-text);
-    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
     line-height: var(--line-height-normal);
     transition: all var(--transition-base);
     width: 100%;
+    font-family: var(--font-family-sans);
 }
 
 .staff-page :global(.modal-body .form-control:focus),
 .staff-page :global(.modal-body .form-select:focus) {
-    border-color: var(--color-input-focus);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    background: var(--color-card);
-    outline: none;
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .staff-page :global(.modal-body .form-control:hover:not(:focus)),
 .staff-page :global(.modal-body .form-select:hover:not(:focus)) {
-    border-color: var(--color-border-strong);
+    border-color: var(--color-border);
 }
 
 .staff-page :global(.modal-body .form-control.is-invalid),
@@ -2463,14 +2571,37 @@ const hideUserActivityLogModal = () => {
 
 .staff-page :global(.modal-footer .btn) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-5);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
+}
+
+.staff-page :global(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.staff-page :global(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.staff-page :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.staff-page :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .staff-page :global(.modal-footer .btn i) {

@@ -228,16 +228,16 @@ defineExpose({ show, hide })
 }
 
 .customer-form-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     box-shadow: var(--shadow-modal);
 }
 
 .customer-form-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -250,10 +250,11 @@ defineExpose({ show, hide })
 }
 
 .customer-form-modal :global(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .modal-subtitle {
@@ -261,17 +262,18 @@ defineExpose({ show, hide })
     font-size: var(--font-size-base);
     margin-bottom: 0;
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .customer-form-modal :global(.modal-body) {
     padding: var(--spacing-5);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .customer-form-modal :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     gap: var(--spacing-2);
     justify-content: flex-end;
 }
@@ -299,50 +301,55 @@ defineExpose({ show, hide })
 .customer-form-modal :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .customer-form-modal :global(.form-control) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .customer-form-modal :global(.form-control:focus) {
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .customer-form-modal :global(.form-control:disabled) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     opacity: 0.6;
     cursor: not-allowed;
 }
 
 .customer-form-modal :global(.form-text) {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 /* Error message - không dùng alert */
 .error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-danger);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
     font-size: var(--font-size-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .error-message i {
@@ -354,9 +361,9 @@ defineExpose({ show, hide })
 .customer-meta {
     margin-top: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--spacing-3);
@@ -372,28 +379,31 @@ defineExpose({ show, hide })
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .customer-meta__value {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 /* Buttons - Chuẩn hóa */
 .customer-form-modal :global(.btn-primary) {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     padding: 8px 16px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .customer-form-modal :global(.btn-primary:hover:not(:disabled)) {
-    filter: brightness(1.05);
+    background: var(--color-primary-dark);
 }
 
 .customer-form-modal :global(.btn-primary:disabled) {
@@ -402,19 +412,20 @@ defineExpose({ show, hide })
 }
 
 .customer-form-modal :global(.btn-outline-secondary) {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
     padding: 8px 16px;
-    color: var(--color-text);
-    background: transparent;
+    color: var(--color-primary);
+    background: var(--color-card);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .customer-form-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
-    background: var(--color-bg-muted);
-    border-color: var(--color-border-strong);
-    color: var(--color-text);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 /* Responsive */

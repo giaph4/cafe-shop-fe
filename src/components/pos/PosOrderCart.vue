@@ -1780,8 +1780,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     display: flex;
     flex-direction: column;
     gap: var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
     padding: var(--spacing-4);
 }
@@ -1810,9 +1810,10 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .pos-cart__title {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__order-code {
@@ -1836,21 +1837,21 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     align-items: center;
     padding: var(--spacing-3) var(--spacing-4);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     transition: all var(--transition-base);
 }
 
 .pos-cart__item:hover {
-    background: var(--color-bg-muted);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card-muted);
 }
 
 .pos-cart__item-info h6 {
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__item-actions {
@@ -1865,9 +1866,9 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     align-items: center;
     gap: 0;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: 0;
-    background: var(--color-bg);
+    background: var(--color-card);
     overflow: hidden;
 }
 
@@ -1886,13 +1887,13 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .quantity-btn:hover:not(:disabled) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-primary);
 }
 
 .quantity-btn:active:not(:disabled) {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 .quantity-btn:disabled {
@@ -1922,12 +1923,14 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     outline: 2px solid var(--color-primary);
     outline-offset: -2px;
     border-radius: 0;
+    box-shadow: none;
 }
 
 .pos-cart__item-total {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 /* Summary - Chuẩn hóa */
@@ -1936,8 +1939,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     flex-direction: column;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
 }
 
@@ -1951,9 +1954,10 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .pos-cart__summary-row--total {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-top: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__summary-divider {
@@ -1979,8 +1983,9 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .pos-cart__customer-title {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__customer-clear {
@@ -1991,20 +1996,21 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     font-size: var(--font-size-base);
     cursor: pointer;
     transition: all var(--transition-base);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__customer-clear:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-danger);
 }
 
 .pos-cart__customer-results {
     max-height: 220px;
     overflow-y: auto;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     list-style: none;
     padding: 0;
     margin: var(--spacing-2) 0 0 0;
@@ -2022,7 +2028,7 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .pos-cart__customer-item:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .pos-cart__customer-item--empty {
@@ -2038,9 +2044,10 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .pos-cart__customer-item-name {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__customer-item-phone {
@@ -2061,8 +2068,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     align-items: center;
     gap: var(--spacing-3);
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-soft-primary);
     border: 1px solid var(--color-primary);
     color: var(--color-primary);
 }
@@ -2079,8 +2086,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-soft-emerald);
     border: 1px solid var(--color-success);
     color: var(--color-success);
     margin-bottom: var(--spacing-2);
@@ -2094,13 +2101,14 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .pos-cart__voucher-error {
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #b91c1c;
+    border-radius: var(--radius-sm);
+    background: var(--color-soft-rose);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
     font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__voucher-hint {
@@ -2111,7 +2119,7 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .voucher-input-icon {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-border);
     color: var(--color-text-muted);
     transition: all var(--transition-base);
@@ -2120,8 +2128,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 /* Notes Section */
 .pos-cart__notes {
     padding: var(--spacing-3);
-    background: var(--color-bg);
-    border-radius: var(--radius-base);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     margin-bottom: var(--spacing-3);
 }
@@ -2134,29 +2142,32 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     margin: 0;
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__notes-input {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-text);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     resize: vertical;
+    font-family: var(--font-family-sans);
 }
 
 .pos-cart__notes-input:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-    outline: none;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .pos-cart__notes-input:disabled {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -2180,9 +2191,10 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     align-items: center;
     gap: 6px;
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .status-pill i {
@@ -2191,38 +2203,38 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .status-pill--pending {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-amber);
     border: 1px solid var(--color-warning);
     color: var(--color-warning);
 }
 
 .status-pill--paid {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     border: 1px solid var(--color-success);
     color: var(--color-success);
 }
 
 .status-pill--cancelled {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     border: 1px solid var(--color-danger);
     color: var(--color-danger);
 }
 
 .status-pill--transferred {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
     border: 1px solid var(--color-info);
     color: var(--color-info);
 }
 
 .status-pill--takeaway {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     border: 1px solid var(--color-primary);
     color: var(--color-primary);
 }
 
 .status-pill--draft,
 .status-pill--default {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
     color: var(--color-text-muted);
 }
@@ -2269,8 +2281,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     width: 50%;
     max-width: 600px;
     height: 100vh;
-    background: var(--color-bg);
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    background: var(--color-card);
+    box-shadow: var(--shadow-modal);
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
@@ -2286,7 +2298,7 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .order-cart-drawer__header {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2300,10 +2312,11 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .order-cart-drawer__title {
     margin: 0;
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     display: flex;
     align-items: center;
+    font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__total-badge {
@@ -2331,16 +2344,16 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .order-cart-drawer__voucher-progress-bar {
     width: 100%;
     height: 8px;
-    background: var(--color-bg-muted);
-    border-radius: var(--radius-base);
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     margin-bottom: var(--spacing-1);
 }
 
 .order-cart-drawer__voucher-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--color-success), var(--color-primary));
-    border-radius: var(--radius-base);
+    background: var(--color-primary);
+    border-radius: var(--radius-sm);
     transition: width 0.3s ease;
 }
 
@@ -2350,7 +2363,7 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .order-cart-drawer__close-btn {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2);
     width: 36px;
     height: 36px;
@@ -2392,24 +2405,24 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     grid-template-columns: 60px 1fr auto auto;
     gap: var(--spacing-3);
     padding: var(--spacing-3);
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     align-items: center;
     transition: all var(--transition-base);
 }
 
 .order-cart-drawer__item:hover {
-    box-shadow: var(--shadow-base);
     border-color: var(--color-primary);
+    background: var(--color-card-muted);
 }
 
 .order-cart-drawer__item-image {
     width: 60px;
     height: 60px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2440,10 +2453,11 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     margin: 0 0 var(--spacing-1) 0;
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__item-price {
@@ -2470,16 +2484,17 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .order-cart-drawer__item-total {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     text-align: right;
     min-width: 100px;
+    font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__footer {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -2501,9 +2516,11 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .order-cart-drawer__summary-row--total {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     padding-top: var(--spacing-2);
     border-top: 1px solid var(--color-border);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__summary-divider {

@@ -257,16 +257,16 @@ defineExpose({ show, hide })
 }
 
 .order-update-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     box-shadow: var(--shadow-modal);
 }
 
 .order-update-modal :global(.modal-header) {
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -280,10 +280,11 @@ defineExpose({ show, hide })
 
 .order-update-modal :global(.modal-header .modal-title) {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-1);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .modal-subtitle {
@@ -291,12 +292,14 @@ defineExpose({ show, hide })
     font-size: var(--font-size-base);
     margin-bottom: 0;
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .order-update-modal :global(.modal-body) {
     padding: var(--spacing-5);
     max-height: calc(100vh - 200px);
     overflow-y: auto;
+    background: var(--color-card);
 }
 
 .order-update-form {
@@ -313,21 +316,23 @@ defineExpose({ show, hide })
 
 .order-update-modal :global(.form-label) {
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 .order-update-modal :global(.form-control),
 .order-update-modal :global(.form-select) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: 8px 12px;
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .order-update-modal :global(.form-control:focus),
@@ -335,11 +340,12 @@ defineExpose({ show, hide })
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
     border-color: var(--color-primary);
+    box-shadow: none;
 }
 
 .order-update-modal :global(.form-control:disabled),
 .order-update-modal :global(.form-select:disabled) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -350,28 +356,30 @@ defineExpose({ show, hide })
 }
 
 .order-update-modal :global(.form-text) {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 /* Error message - không dùng alert, dùng div đơn giản */
 .order-update-modal :global(.alert-danger) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-danger);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
     padding: var(--spacing-3) var(--spacing-4);
     font-size: var(--font-size-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .order-update-modal :global(.modal-footer) {
     border-top: 1px solid var(--color-border);
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-2);
@@ -380,16 +388,17 @@ defineExpose({ show, hide })
 .order-update-modal :global(.btn-primary) {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     padding: 8px 16px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .order-update-modal :global(.btn-primary:hover:not(:disabled)) {
-    filter: brightness(1.05);
+    background: var(--color-primary-dark);
 }
 
 .order-update-modal :global(.btn-primary:disabled) {
@@ -399,17 +408,19 @@ defineExpose({ show, hide })
 
 .order-update-modal :global(.btn-outline-secondary) {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: 8px 16px;
-    color: var(--color-text);
+    color: var(--color-heading);
     background: transparent;
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .order-update-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
-    background: var(--color-bg-muted);
-    border-color: var(--color-border-strong);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .order-update-modal :global(.btn-outline-secondary:disabled) {

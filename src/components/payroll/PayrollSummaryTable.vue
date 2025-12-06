@@ -96,9 +96,82 @@ const formatMinutes = (minutes) => {
 
 <style scoped lang="scss">
 .summary-table {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
+}
+
+.summary-table :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.summary-table :global(h6) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.summary-table :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.summary-table :global(.table) {
+    margin-bottom: 0;
+}
+
+.summary-table :global(.table thead),
+.summary-table :global(.table thead.table-light) {
+    background: var(--color-card-muted);
+}
+
+.summary-table :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.summary-table :global(.table tbody td),
+.summary-table :global(.table tbody th) {
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.summary-table :global(.table tbody tr:last-child td),
+.summary-table :global(.table tbody tr:last-child th) {
+    border-bottom: none;
+}
+
+.summary-table :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.summary-table :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.summary-table :global(.text-success) {
+    color: var(--color-success);
+}
+
+.summary-table :global(.text-danger) {
+    color: var(--color-danger);
+}
+
+.summary-table :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 </style>

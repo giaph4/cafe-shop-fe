@@ -1,6 +1,6 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
+        <Teleport to="body">
+        <div class="modal fade shift-instance-detail-modal" ref="modal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -199,7 +199,7 @@
                                             </tr>
                                             <tr v-if="expandedAssignmentId === assignment.id">
                                                 <td colspan="6">
-                                                <div class="assignment-detail border rounded-3 p-3 bg-light-subtle">
+                                                <div class="assignment-detail">
                                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                                         <h6 class="mb-0">Chi tiết phân công: {{ assignment.fullName || assignment.username }}</h6>
                                                         <span class="text-muted small">Cập nhật lúc: {{ formatDateTime(assignment.updatedAt) }}</span>
@@ -1051,29 +1051,528 @@ onBeforeUnmount(() => modalInstance?.dispose())
 </script>
 
 <style scoped>
-.instance-summary {
-    padding: 1rem 1.25rem;
+.shift-instance-detail-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    border-radius: 14px;
+    background: var(--color-card);
+}
+
+.shift-instance-detail-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-instance-detail-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-detail-modal :global(.modal-header .text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-detail-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.shift-instance-detail-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.instance-summary {
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     background: var(--color-card-muted);
+    margin-bottom: var(--spacing-4);
+}
+
+.instance-summary :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.instance-summary :global(.badge.bg-primary-subtle) {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.instance-summary :global(.badge.bg-info-subtle) {
+    background: var(--color-info-soft, #d1ecf1);
+    color: var(--color-info-dark, #0c5460);
+    border: 1px solid var(--color-info, #0dcaf0);
+}
+
+.instance-summary :global(.badge.bg-light) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
+}
+
+.instance-summary :global(p) {
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+    margin: 0;
 }
 
 .assignment-detail {
-    border: 1px dashed var(--color-border);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-muted);
+    padding: var(--spacing-3);
+}
+
+.assignment-form :global(.card),
+.assignment-table :global(.card) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.assignment-form :global(.card-body),
+.assignment-table :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.assignment-form :global(h6) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-form :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-form :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-form :global(.form-control),
+.assignment-form :global(.form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-form :global(.form-control:focus),
+.assignment-form :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.assignment-form :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    padding: var(--spacing-2) var(--spacing-4);
+}
+
+.assignment-form :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.assignment-form :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    padding: var(--spacing-1) var(--spacing-3);
+}
+
+.assignment-form :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.assignment-table :global(.table) {
+    margin-bottom: 0;
+}
+
+.assignment-table :global(.table thead),
+.assignment-table :global(.table thead.table-light) {
     background: var(--color-card-muted);
 }
 
-.assignment-form .card-body {
+.assignment-table :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     background: var(--color-card-muted);
-    border-radius: 16px;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
-.assignment-table .card-body {
-    border-radius: 16px;
+.assignment-table :global(.table tbody td),
+.assignment-table :global(.table tbody th) {
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
 }
 
-.badge {
-    font-weight: 600;
+.assignment-table :global(.table tbody tr:last-child td),
+.assignment-table :global(.table tbody tr:last-child th) {
+    border-bottom: none;
+}
+
+.assignment-table :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.assignment-table :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-table :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-table :global(.text-success) {
+    color: var(--color-success);
+}
+
+.assignment-table :global(.text-danger) {
+    color: var(--color-danger);
+}
+
+.assignment-table :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-table :global(.badge.bg-success) {
+    background: var(--color-success-soft, #d1e7dd);
+    color: var(--color-success-dark, #0f5132);
+    border: 1px solid var(--color-success, #198754);
+}
+
+.assignment-table :global(.badge.bg-info) {
+    background: var(--color-info-soft, #d1ecf1);
+    color: var(--color-info-dark, #0c5460);
+    border: 1px solid var(--color-info, #0dcaf0);
+}
+
+.assignment-table :global(.badge.bg-danger) {
+    background: var(--color-soft-rose);
+    color: var(--color-danger-dark, #a0281d);
+    border: 1px solid var(--color-danger);
+}
+
+.assignment-table :global(.badge.bg-secondary) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
+}
+
+.assignment-table :global(.btn-sm) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-table :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.assignment-table :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.assignment-table :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.assignment-table :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.assignment-table :global(.btn-outline-info) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.assignment-table :global(.btn-outline-info:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.assignment-table :global(.btn-outline-danger) {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+}
+
+.assignment-table :global(.btn-outline-danger:hover:not(:disabled)) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.assignment-detail :global(h6) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.nav-pills) {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+}
+
+.assignment-detail :global(.nav-link) {
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.nav-link:hover) {
+    color: var(--color-primary);
+    background: var(--color-card-muted);
+    border-bottom-color: var(--color-primary);
+}
+
+.assignment-detail :global(.nav-link.active) {
+    color: var(--color-primary);
+    background: var(--color-card-muted);
+    border-bottom-color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.assignment-detail :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.form-control),
+.assignment-detail :global(.form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.form-control:focus),
+.assignment-detail :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.assignment-detail :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    padding: var(--spacing-2) var(--spacing-4);
+}
+
+.assignment-detail :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.assignment-detail :global(.btn-outline-success) {
+    border-color: var(--color-border);
+    color: var(--color-success);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    padding: var(--spacing-2) var(--spacing-4);
+}
+
+.assignment-detail :global(.btn-outline-success:hover:not(:disabled)) {
+    background: var(--color-soft-green);
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+
+.assignment-detail :global(.btn-outline-danger) {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    padding: var(--spacing-2) var(--spacing-4);
+}
+
+.assignment-detail :global(.btn-outline-danger:hover:not(:disabled)) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.assignment-detail :global(.btn-outline-warning) {
+    border-color: var(--color-border);
+    color: var(--color-warning-dark, #856404);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.btn-outline-warning:hover:not(:disabled)) {
+    background: var(--color-warning-soft, #fff3cd);
+    border-color: var(--color-warning, #ffc107);
+    color: var(--color-warning-dark, #856404);
+}
+
+.assignment-detail :global(.table) {
+    margin-bottom: 0;
+}
+
+.assignment-detail :global(.table thead),
+.assignment-detail :global(.table thead.table-light) {
+    background: var(--color-card-muted);
+}
+
+.assignment-detail :global(.table thead th) {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.table tbody td),
+.assignment-detail :global(.table tbody th) {
+    padding: var(--spacing-2);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.table tbody tr:last-child td),
+.assignment-detail :global(.table tbody tr:last-child th) {
+    border-bottom: none;
+}
+
+.assignment-detail :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.assignment-detail :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.assignment-detail :global(.badge.bg-success) {
+    background: var(--color-success-soft, #d1e7dd);
+    color: var(--color-success-dark, #0f5132);
+    border: 1px solid var(--color-success, #198754);
+}
+
+.assignment-detail :global(.badge.bg-secondary) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
+}
+
+.assignment-detail :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-detail-modal :global(.modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-instance-detail-modal :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.shift-instance-detail-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .session-card .list-group-item {

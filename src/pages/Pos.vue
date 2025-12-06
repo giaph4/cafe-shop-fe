@@ -315,6 +315,7 @@ watch(() => tableStore.tables, (tables) => {
     flex-direction: column;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
+    background: var(--color-body-bg);
 }
 
 .pos-header {
@@ -323,10 +324,9 @@ watch(() => tableStore.tables, (tables) => {
     justify-content: space-between;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
 }
 
 .pos-header__content {
@@ -335,11 +335,12 @@ watch(() => tableStore.tables, (tables) => {
 }
 
 .pos-header__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin: 0 0 var(--spacing-1) 0;
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .pos-header__subtitle {
@@ -347,6 +348,7 @@ watch(() => tableStore.tables, (tables) => {
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .pos-header__actions {
@@ -367,10 +369,9 @@ watch(() => tableStore.tables, (tables) => {
 .pos-panel {
     display: flex;
     flex-direction: column;
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
     overflow: hidden;
 }
 
@@ -408,15 +409,17 @@ watch(() => tableStore.tables, (tables) => {
 
 .pos-table-map-title {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin: 0 0 var(--spacing-1) 0;
+    font-family: var(--font-family-sans);
 }
 
 .pos-table-map-subtitle {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .pos-table-map-actions {
@@ -428,10 +431,11 @@ watch(() => tableStore.tables, (tables) => {
 .pos-table-map-badge {
     padding: 0.375rem 0.75rem;
     border-radius: var(--radius-full);
-    background: var(--color-primary-soft);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 
 .pos-order-section {
@@ -446,20 +450,22 @@ watch(() => tableStore.tables, (tables) => {
     align-items: flex-start;
     gap: var(--spacing-4);
     padding-bottom: var(--spacing-4);
-    border-bottom: 1px solid var(--color-border-soft);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .pos-order-section__title {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin: 0 0 var(--spacing-1) 0;
+    font-family: var(--font-family-sans);
 }
 
 .pos-order-section__subtitle {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .pos-order-section__badge {
@@ -485,22 +491,20 @@ watch(() => tableStore.tables, (tables) => {
 
 .pos-order-list__item {
     padding: var(--spacing-4);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
     background: var(--color-card);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
 }
 
 .pos-order-list__item:hover {
     background: var(--color-card-muted);
-    transform: translateX(2px);
     border-color: var(--color-primary);
-    box-shadow: var(--shadow-soft);
 }
 
 .pos-order-list__item--active {
-    background: var(--color-primary-soft);
+    background: var(--color-soft-primary);
     border-color: var(--color-primary);
 }
 
@@ -515,6 +519,7 @@ watch(() => tableStore.tables, (tables) => {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .pos-order-list__meta {
@@ -527,10 +532,11 @@ watch(() => tableStore.tables, (tables) => {
 }
 
 .pos-order-list__amount {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .fade-enter-active,

@@ -129,33 +129,107 @@ const handlePageChange = (page) => emit('page-change', page)
 }
 
 .shift-templates-tab > div:first-child :global(h5) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.shift-templates-tab > div:first-child :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.shift-templates-tab > div:first-child :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-templates-tab > div:first-child :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
 }
 
 .table-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .table-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.table-card :global(.table) {
+    margin-bottom: 0;
+}
+
+.table-card :global(.table thead),
+.table-card :global(.table thead.table-light) {
+    background: var(--color-card-muted);
 }
 
 .table-card :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .table-card :global(.table tbody td) {
     vertical-align: middle;
+    padding: var(--spacing-3);
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody tr:last-child td) {
+    border-bottom: none;
+}
+
+.table-card :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.badge) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.badge.bg-primary-subtle) {
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.table-card :global(.card-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 .action-buttons {
@@ -170,11 +244,36 @@ const handlePageChange = (page) => emit('page-change', page)
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.action-buttons :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.action-buttons :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.action-buttons :global(.btn-outline-danger) {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+}
+
+.action-buttons :global(.btn-outline-danger:hover:not(:disabled)) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
 .action-buttons :global(.btn i) {

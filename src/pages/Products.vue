@@ -1,5 +1,5 @@
 <template>
-    <div class="products-page container-fluid" data-aos="fade-up">
+    <div class="products-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="products-header">
             <div class="products-header__content">
                 <div class="products-header__title-section">
@@ -604,13 +604,20 @@ const fetchProducts = async () => {
     const requestedPage = zeroBasedPage.value
 
     await execute(async () => {
-        const response = await productService.getProducts({
-            name: filters.name,
-            categoryId: filters.categoryId,
-            available: filters.available,
+        // Chỉ gửi categoryId nếu có giá trị (không phải null hoặc undefined)
+        const params = {
+            name: filters.name || undefined,
+            available: filters.available !== null ? filters.available : undefined,
             page: requestedPage,
             size: pageSize.value
-        })
+        }
+        
+        // Chỉ thêm categoryId nếu có giá trị
+        if (filters.categoryId !== null && filters.categoryId !== undefined) {
+            params.categoryId = filters.categoryId
+        }
+        
+        const response = await productService.getProducts(params)
         const list = response.content || []
         products.value = list
 
@@ -658,6 +665,9 @@ const handleSearchInput = () => {
 watch(
     () => [filters.categoryId, filters.available],
     () => {
+        // Reset về trang đầu khi filter thay đổi
+        setPageFromZero(0)
+        rememberCurrent()
         fetchProducts()
     }
 )
@@ -810,33 +820,35 @@ watch(
 /* Filter Card - Chuẩn hóa theo base.css */
 .filter-card {
     margin-bottom: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
 }
 
 .filter-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .filter-card :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control),
 .filter-card :global(.form-select) {
     height: 40px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control:focus),
@@ -844,11 +856,12 @@ watch(
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .filter-card :global(.input-group-text) {
     height: 40px;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-border);
     color: var(--color-text-muted);
     padding: var(--spacing-2) var(--spacing-3);
@@ -860,20 +873,24 @@ watch(
 }
 
 .filter-card :global(.btn-outline-secondary) {
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.btn-outline-secondary:hover:not(:disabled)) {
-    background: var(--color-bg-muted);
-    border-color: var(--color-border-strong);
-    color: var(--color-text);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .filter-card :global(.btn-outline-secondary i) {
@@ -884,39 +901,74 @@ watch(
 .layout-toggle .btn {
     min-width: 120px;
     font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
 }
 
-/* Table - Chuẩn hóa theo base.css */
+.layout-toggle .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.layout-toggle .btn-outline-primary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.layout-toggle .btn-outline-primary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+/* Table - Minimal Table Styling */
 .products-page :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
 }
 
 .products-page :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     vertical-align: middle;
+    font-family: var(--font-family-sans);
 }
 
 .products-page :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+    font-family: var(--font-family-sans);
+}
+
+.products-page :global(.table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 .products-page :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
+}
+
+.products-page :global(.table .fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .product-thumb {
     width: 56px;
     height: 56px;
     object-fit: cover;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
 }
 
@@ -924,27 +976,28 @@ watch(
 .status-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-1);
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .status-pill--active {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
     border: 1px solid var(--color-success);
 }
 
 .status-pill--inactive {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
     border: 1px solid var(--color-danger);
 }
 
-/* Action Buttons - Chuẩn hóa theo base.css */
+/* Action Buttons - Flat Design */
 .action-grid {
     display: flex;
     flex-wrap: wrap;
@@ -956,27 +1009,28 @@ watch(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-primary);
+    background: var(--color-card);
     color: var(--color-primary);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     white-space: nowrap;
     cursor: pointer;
+    font-family: var(--font-family-sans);
 }
 
 .action-button:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: #ffffff;
-    border-color: var(--color-primary);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .action-button:active:not(:disabled) {
-    filter: brightness(0.95);
+    background: var(--color-card-muted);
 }
 
 .action-button:disabled {
@@ -986,75 +1040,76 @@ watch(
 }
 
 .action-button i {
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1;
 }
 
 .action-button--info {
-    border-color: var(--color-primary);
-    background: var(--color-bg);
-    color: var(--color-primary);
+    border-color: var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
 }
 
 .action-button--info:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: #ffffff;
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .action-button--danger {
-    border-color: var(--color-danger);
-    background: var(--color-bg);
+    border-color: var(--color-border);
+    background: var(--color-card);
     color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
-    background: var(--color-danger);
-    color: #ffffff;
+    background: var(--color-soft-rose);
     border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
-/* Status Toggle Button - Chuẩn hóa */
+/* Status Toggle Button - Flat Design */
 .status-toggle-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-width: 1px;
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .status-toggle-btn i {
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1;
 }
 
 .status-toggle-btn--active {
-    border-color: var(--color-warning);
+    border-color: var(--color-border);
     color: var(--color-warning);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .status-toggle-btn--active:hover:not(:disabled) {
-    background: var(--color-warning);
-    color: #ffffff;
+    background: var(--color-soft-amber);
     border-color: var(--color-warning);
+    color: var(--color-warning);
 }
 
 .status-toggle-btn--inactive {
-    border-color: var(--color-success);
+    border-color: var(--color-border);
     color: var(--color-success);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .status-toggle-btn--inactive:hover:not(:disabled) {
-    background: var(--color-success);
-    color: #ffffff;
+    background: var(--color-soft-emerald);
     border-color: var(--color-success);
+    color: var(--color-success);
 }
 
 .status-toggle-btn:disabled {
@@ -1064,6 +1119,7 @@ watch(
 
 .status-toggle-btn__label {
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 /* Product Grid Layout - Chuẩn hóa */
@@ -1075,9 +1131,8 @@ watch(
 
 .product-card {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1086,7 +1141,8 @@ watch(
 }
 
 .product-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .product-card__media {
@@ -1116,9 +1172,10 @@ watch(
 
 .product-card__title {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .product-card__meta {
@@ -1126,8 +1183,9 @@ watch(
     flex-wrap: wrap;
     gap: var(--spacing-3);
     color: var(--color-text-muted);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .product-card__meta i {
@@ -1142,6 +1200,12 @@ watch(
     font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.product-card__price .label {
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
 }
 
 .product-card__actions {
@@ -1159,11 +1223,10 @@ watch(
 /* Header - Chuẩn hóa theo base.css */
 .products-header {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
-    margin-bottom: var(--spacing-5);
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .products-header__content {
@@ -1180,11 +1243,12 @@ watch(
 }
 
 .products-header__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .products-header__subtitle {
@@ -1193,6 +1257,7 @@ watch(
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-sans);
 }
 
 .products-header__actions {
@@ -1204,18 +1269,25 @@ watch(
 }
 
 .products-header__actions .btn {
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
-.products-header__actions .btn:hover:not(:disabled) {
-    filter: brightness(1.05);
+.products-header__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.products-header__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
 }
 
 .products-header__actions .btn:disabled {
@@ -1237,13 +1309,13 @@ watch(
     min-width: 120px;
 }
 
-/* Tabs - Chuẩn hóa theo base.css */
+/* Tabs - Flat Design */
 .products-tabs {
     display: flex;
     gap: var(--spacing-2);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     padding: var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     overflow-x: auto;
 }
@@ -1252,16 +1324,17 @@ watch(
     border: none;
     background: transparent;
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
     cursor: pointer;
     transition: all var(--transition-base);
     white-space: nowrap;
+    font-family: var(--font-family-sans);
 }
 
 .products-tab i {
@@ -1270,26 +1343,25 @@ watch(
 }
 
 .products-tab:hover:not(.active) {
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
 }
 
 .products-tab.active {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
-/* KPI Cards - Chuẩn hóa theo base.css */
+/* KPI Cards - Flat Design */
 .products-summary {
     margin-bottom: var(--spacing-4);
 }
 
 .kpi-card {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
-    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
@@ -1299,40 +1371,39 @@ watch(
 }
 
 .kpi-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .kpi-card__icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    color: var(--color-primary);
-    background: var(--color-bg-muted);
 }
 
-/* Màu icon - không dùng gradient, dùng màu nhạt */
+/* Màu icon - dùng var(--color-soft-*) */
 .kpi-card--total .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .kpi-card--active .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .kpi-card--inactive .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
 }
 
 .kpi-card--categories .kpi-card__icon {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-sky);
     color: var(--color-info);
 }
 
@@ -1346,33 +1417,41 @@ watch(
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .kpi-card__value {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 /* Cards - Chuẩn hóa */
 .products-page :global(.card) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
 }
 
 .products-page :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.products-page :global(.tabs-card) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 /* Delete Info Card - Chuẩn hóa */
 .delete-info-card {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
@@ -1391,21 +1470,23 @@ watch(
     color: var(--color-text-muted);
     flex-shrink: 0;
     min-width: 120px;
+    font-family: var(--font-family-sans);
 }
 
 .delete-info-value {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     text-align: right;
     word-break: break-word;
+    font-family: var(--font-family-sans);
 }
 
 /* Confirm Card - Chuẩn hóa */
 .confirm-card {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
@@ -1424,27 +1505,28 @@ watch(
     color: var(--color-text-muted);
     flex-shrink: 0;
     min-width: 120px;
+    font-family: var(--font-family-sans);
 }
 
 .confirm-value {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     text-align: right;
     word-break: break-word;
+    font-family: var(--font-family-sans);
 }
 
 /* Modal - Chuẩn hóa */
 .products-page :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-modal);
+    background: var(--color-card);
 }
 
 .products-page :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .products-page :global(.modal-header__content) {
@@ -1453,43 +1535,149 @@ watch(
 
 .products-page :global(.modal-title) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 .products-page :global(.modal-subtitle) {
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
     margin-top: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .products-page :global(.modal-body) {
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
+}
+
+.products-page :global(.modal-body p) {
+    font-family: var(--font-family-sans);
+}
+
+.products-page :global(.modal-body strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .products-page :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .products-page :global(.modal-footer .btn) {
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
-.products-page :global(.modal-footer .btn:hover:not(:disabled)) {
-    filter: brightness(1.05);
+.products-page :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.products-page :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.products-page :global(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.products-page :global(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.products-page :global(.modal-footer .btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+}
+
+.products-page :global(.modal-footer .btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark);
 }
 
 .products-page :global(.modal-footer .btn:disabled) {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* Global Button Styles - Đồng bộ với các trang trước */
+.products-page :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.products-page :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.products-page :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.products-page :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.products-page :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.products-page :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.products-page :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.products-page :global(.btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.products-page :global(.btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark);
+}
+
+.products-page :global(.btn-sm) {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
 }
 
 /* Responsive */

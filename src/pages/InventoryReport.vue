@@ -1,5 +1,5 @@
 <template>
-    <div class="inventory-report-page container-fluid" data-aos="fade-up">
+    <div class="inventory-report-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="inventory-report-header">
             <div class="inventory-report-header__content">
                 <div class="inventory-report-header__title-section">
@@ -319,11 +319,10 @@ const statusLabel = (status) => {
 /* Header - Chuẩn hóa theo base.css */
 .inventory-report-header {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
-    margin-bottom: var(--spacing-5);
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .inventory-report-header__content {
@@ -340,11 +339,12 @@ const statusLabel = (status) => {
 }
 
 .inventory-report-header__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .inventory-report-header__subtitle {
@@ -352,6 +352,7 @@ const statusLabel = (status) => {
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .inventory-report-header__actions {
@@ -374,13 +375,46 @@ const statusLabel = (status) => {
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
     white-space: nowrap;
+    font-family: var(--font-family-sans);
+}
+
+.inventory-report-header__actions .form-check-input {
+    border-color: var(--color-border);
+}
+
+.inventory-report-header__actions .form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .inventory-report-header__actions .btn {
     font-size: var(--font-size-base);
-    padding: 8px 12px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.inventory-report-header__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.inventory-report-header__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+}
+
+.inventory-report-header__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.inventory-report-header__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .inventory-report-header__actions .btn i {
@@ -388,48 +422,49 @@ const statusLabel = (status) => {
     line-height: 1;
 }
 
-/* Stat Cards (KPI) - Chuẩn hóa theo base.css */
+/* Stat Cards (KPI) - Flat Design */
 .stat-card {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
     height: 100%;
     min-height: 120px;
     transition: all var(--transition-base);
 }
 
 .stat-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    background: var(--color-bg-muted);
-    color: var(--color-primary);
 }
 
-/* Màu icon - không dùng gradient, dùng màu nhạt */
+/* Màu icon - dùng var(--color-soft-*) */
 .stat-card.variant-primary .stat-icon {
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .stat-card.variant-warning .stat-icon {
+    background: var(--color-soft-amber);
     color: var(--color-warning);
 }
 
 .stat-card.variant-success .stat-icon {
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
@@ -438,42 +473,48 @@ const statusLabel = (status) => {
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .stat-value {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 /* Filter Card - Chuẩn hóa */
 .filter-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .filter-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .filter-card :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control),
 .filter-card :global(.form-select) {
     height: 40px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    background: var(--color-card);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .filter-card :global(.form-control:focus),
@@ -481,20 +522,21 @@ const statusLabel = (status) => {
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .search-group :global(.input-group-text) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
     border-right: none;
     color: var(--color-text-muted);
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base) 0 0 var(--radius-base);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .search-group :global(.form-control) {
     border-left: none;
-    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 /* Analytics cards / charts */
@@ -506,92 +548,185 @@ const statusLabel = (status) => {
 }
 
 .chart-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .chart-card :global(.card-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .chart-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .chart-card :global(.card-title) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-lg);
+    font-family: var(--font-family-sans);
 }
 
-/* Table card - Chuẩn hóa */
+.chart-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+/* Table card - Minimal Table Styling */
 .table-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .table-card :global(.card-body) {
     padding: 0;
+    background: var(--color-card);
 }
 
 .table-card :global(.card-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .table-card :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table-card :global(.table thead),
+.table-card :global(.table thead.table-light) {
+    background: var(--color-card-muted);
 }
 
 .table-card :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    font-family: var(--font-family-sans);
 }
 
 .table-card :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 .table-card :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
-/* Status badge */
+.table-card :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+/* Status badge - Flat Design */
 .status-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border: 1px solid transparent;
+    font-family: var(--font-family-sans);
 }
 
 .status-success {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
     border-color: var(--color-success);
 }
 
 .status-danger {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
     border-color: var(--color-danger);
+}
+
+/* Global Button Styles - Đồng bộ với các trang trước */
+.inventory-report-page :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.inventory-report-page :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.inventory-report-page :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.inventory-report-page :global(.btn-primary i) {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.inventory-report-page :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.inventory-report-page :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.inventory-report-page :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.inventory-report-page :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.inventory-report-page :global(.btn-sm) {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
 }
 
 @media (max-width: 992px) {

@@ -115,12 +115,11 @@ const handleNavigate = (payload) => {
     position: absolute;
     min-width: clamp(220px, 24vw, 280px);
     max-width: clamp(260px, 32vw, 320px);
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    background: var(--color-elevated, rgba(255, 255, 255, 0.96));
-    box-shadow: 0 28px 48px rgba(15, 23, 42, 0.18);
-    padding: 1rem 1.05rem;
-    backdrop-filter: blur(14px);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: var(--spacing-4);
     z-index: 999;
     animation: flyout-fade-in 0.16s ease;
 }
@@ -138,27 +137,30 @@ const handleNavigate = (payload) => {
     justify-content: center;
     width: 44px;
     height: 44px;
-    border-radius: 14px;
-    background: rgba(99, 102, 241, 0.12);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary-soft);
     color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     font-size: 1.2rem;
 }
 
 .neo-flyout__meta {
     display: flex;
     flex-direction: column;
-    gap: 0.18rem;
+    gap: var(--spacing-1);
 }
 
 .neo-flyout__meta strong {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
     color: var(--color-heading);
 }
 
 .neo-flyout__meta small {
-    font-size: 0.78rem;
-    color: var(--color-text-subtle);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+    color: var(--color-text-muted);
 }
 
 .neo-flyout__content {
@@ -177,7 +179,7 @@ const handleNavigate = (payload) => {
 }
 
 .neo-flyout__list :deep(.neo-item__link) {
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
 }
 
 @keyframes flyout-fade-in {

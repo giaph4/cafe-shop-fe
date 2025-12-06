@@ -15,7 +15,7 @@
         <div v-if="loading" class="state-block">
             <div class="spinner-border text-primary" role="status"></div>
         </div>
-        <div v-else-if="error" class="alert alert-warning d-flex align-items-center gap-2">
+        <div v-else-if="error" class="alert alert-warning recipe-error-alert d-flex align-items-center gap-2">
             <i class="bi bi-exclamation-triangle"></i>
             <span>{{ error }}</span>
         </div>
@@ -357,17 +357,39 @@ const removeIngredient = async (item) => {
 
 .recipe-header h5 {
     margin-bottom: var(--spacing-1);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
     color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .recipe-header p {
     margin-bottom: 0;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-header .btn {
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-header .btn-outline-primary {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.recipe-header .btn-outline-primary:hover:not(:disabled) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .state-block {
@@ -378,21 +400,174 @@ const removeIngredient = async (item) => {
 }
 
 .recipe-table .table {
+    margin-bottom: 0;
+}
+
+.recipe-table :global(.table thead) {
+    background: var(--color-card-muted);
+}
+
+.recipe-table :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-table :global(.table tbody td),
+.recipe-table :global(.table tbody th) {
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-table :global(.table tbody tr:last-child td),
+.recipe-table :global(.table tbody tr:last-child th) {
+    border-bottom: none;
+}
+
+.recipe-table :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.recipe-table :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-table :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-table :global(.form-control) {
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-table :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.recipe-table :global(.btn-sm) {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-table :global(.btn-outline-primary) {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+}
+
+.recipe-table :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.recipe-table :global(.btn-outline-danger) {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+}
+
+.recipe-table :global(.btn-outline-danger:hover:not(:disabled)) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.recipe-error-alert {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-warning-soft, #fff3cd);
+    color: var(--color-warning-dark, #856404);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .add-section {
     border-top: 1px solid var(--color-border);
-    padding-top: var(--spacing-5);
+    padding-top: var(--spacing-4);
 }
 
 .add-section h6 {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-lg);
     color: var(--color-heading);
     margin-bottom: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.add-section :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.add-section :global(.form-select),
+.add-section :global(.form-control) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.add-section :global(.form-select:focus),
+.add-section :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.add-section :global(.input-group-text) {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.add-section :global(.input-group .form-control) {
+    border-right: none;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.add-section :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.add-section :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
 }
 
 @media (max-width: 768px) {

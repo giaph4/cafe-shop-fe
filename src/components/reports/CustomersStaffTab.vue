@@ -529,52 +529,98 @@ const staffChartOptions = computed(() => {
 
 .chart-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+}
+
+.chart-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.chart-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.chart-card :global(.form-select) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    gap: var(--spacing-4);
 }
 
 .summary-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.1rem 1.35rem;
-    box-shadow: var(--shadow-soft);
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    transition: all var(--transition-base);
+}
+
+.summary-card:hover {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .summary-card__icon {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-sm);
     display: grid;
     place-items: center;
-    font-size: 1.6rem;
-    color: #fff;
+    font-size: 24px;
 }
 
 .summary-card__meta {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: var(--spacing-1);
 }
 
 .summary-card__meta span {
-    font-size: 0.85rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.summary-card__meta strong {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .summary-card__meta small {
-    font-size: 0.78rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .grid {
@@ -585,31 +631,79 @@ const staffChartOptions = computed(() => {
 
 .table-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
 }
 
-.table {
+.table-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.table-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Minimal Table Styling */
+.table-card :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table-card :global(.table thead th) {
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+    text-align: left;
+}
+
+.table-card :global(.table tbody td) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody tr:last-child td) {
+    border-bottom: none;
+}
+
+.table-card :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
 }
 
 .role-chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     background: var(--color-badge-soft-bg);
     color: var(--color-badge-soft-text);
+    font-family: var(--font-family-sans);
 }
 
-.bg-emerald-light { background: linear-gradient(135deg, #10b981, #34d399); }
-.bg-sky-light { background: linear-gradient(135deg, #0ea5e9, #38bdf8); }
-.bg-indigo-light { background: linear-gradient(135deg, #4338ca, #6366f1); }
-.bg-amber-light { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.bg-emerald-light { background: var(--color-soft-emerald); color: var(--color-success); }
+.bg-sky-light { background: var(--color-soft-sky); color: var(--color-info); }
+.bg-indigo-light { background: var(--color-soft-primary); color: var(--color-primary); }
+.bg-amber-light { background: var(--color-soft-amber); color: var(--color-warning); }
 
 @media (max-width: 768px) {
     .grid {

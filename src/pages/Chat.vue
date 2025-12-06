@@ -58,7 +58,7 @@
                         </div>
                         <div class="chat-window__header-actions">
                             <button
-                                class="btn btn-sm btn-link text-muted"
+                                class="btn btn-sm btn-link text-muted p-0"
                                 @click="showDetails = !showDetails"
                                 :title="'Chi tiết hội thoại'"
                             >
@@ -69,7 +69,7 @@
 
                     <div class="chat-window__messages" ref="messagesContainerRef" @scroll="handleMessagesScroll">
                         <div v-if="loadingMessages && messages.length === 0" class="chat-window__loading">
-                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                            <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
                         </div>
                         <div v-else-if="messages.length === 0" class="chat-window__empty">
                             <p class="text-muted">Chưa có tin nhắn nào</p>
@@ -782,14 +782,14 @@ const handleUpdateRole = async (memberId, newRole) => {
     height: calc(100vh - 80px);
     padding: var(--spacing-4);
     gap: var(--spacing-4);
+    background: var(--color-body-bg);
 }
 
 /* Header - Chuẩn hóa */
 .chat-page__header {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    box-shadow: var(--shadow-base);
+    border-radius: var(--radius-sm);
     margin-bottom: 0;
     padding: var(--spacing-4);
 }
@@ -808,11 +808,12 @@ const handleUpdateRole = async (memberId, newRole) => {
 }
 
 .chat-page__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .chat-page__subtitle {
@@ -821,6 +822,7 @@ const handleUpdateRole = async (memberId, newRole) => {
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-sans);
 }
 
 /* Container - Chuẩn hóa */
@@ -828,11 +830,10 @@ const handleUpdateRole = async (memberId, newRole) => {
     display: flex;
     flex: 1;
     min-height: 0;
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    box-shadow: var(--shadow-base);
 }
 
 .chat-main {
@@ -876,7 +877,7 @@ const handleUpdateRole = async (memberId, newRole) => {
     justify-content: space-between;
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .chat-window__header-info {
@@ -912,16 +913,17 @@ const handleUpdateRole = async (memberId, newRole) => {
 
 .chat-window__name {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 .chat-window__messages {
     flex: 1;
     overflow-y: auto;
     padding: var(--spacing-3) 0;
-    background: var(--color-bg-muted);
+    background: var(--color-body-bg);
 }
 
 .chat-window__loading,
@@ -939,7 +941,7 @@ const handleUpdateRole = async (memberId, newRole) => {
 .chat-details {
     width: 300px;
     border-left: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     display: flex;
     flex-direction: column;
 }
@@ -950,14 +952,15 @@ const handleUpdateRole = async (memberId, newRole) => {
     justify-content: space-between;
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .chat-details__header h6 {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 .chat-details__content {
@@ -980,8 +983,9 @@ const handleUpdateRole = async (memberId, newRole) => {
 .chat-details__section-title {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 .chat-details__members {
@@ -1000,7 +1004,7 @@ const handleUpdateRole = async (memberId, newRole) => {
 }
 
 .chat-details__member:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .chat-details__member-avatar {
@@ -1008,7 +1012,7 @@ const handleUpdateRole = async (memberId, newRole) => {
     height: 40px;
     border-radius: 50%;
     overflow: hidden;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
@@ -1035,9 +1039,10 @@ const handleUpdateRole = async (memberId, newRole) => {
 
 .chat-details__member-name {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .chat-details__member-role {
@@ -1054,34 +1059,35 @@ const handleUpdateRole = async (memberId, newRole) => {
 
 /* Modal - Chuẩn hóa */
 .chat-page :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     box-shadow: var(--shadow-modal);
 }
 
 .chat-page :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .chat-page :global(.modal-body) {
     padding: var(--spacing-5);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .chat-page :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     gap: var(--spacing-2);
 }
 
 .chat-page :global(.modal-title) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .chat-page :global(.member-selection) {
@@ -1089,18 +1095,18 @@ const handleUpdateRole = async (memberId, newRole) => {
     overflow-y: auto;
     padding: var(--spacing-2);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-muted);
 }
 
 .chat-page :global(.form-check) {
     padding: var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     transition: background-color var(--transition-base);
 }
 
 .chat-page :global(.form-check:hover) {
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 /* Responsive */

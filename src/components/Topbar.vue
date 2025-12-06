@@ -333,15 +333,17 @@ watch(
 }
 
 .neo-nav__icon--primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-primary-contrast, #fff);
-    border-color: transparent;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
 }
 
 .neo-nav__icon--primary:hover,
 .neo-nav__icon--primary:focus-visible {
-    color: var(--color-primary-contrast, #fff);
-    transform: translateY(-1px) scale(1.02);
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: var(--color-text-inverse);
+    transform: translateY(-1px);
 }
 
 .neo-nav__icon-indicator {
@@ -371,8 +373,9 @@ watch(
 
 .neo-nav__brand-title {
     font-size: clamp(1.05rem, 1.4vw, 1.25rem);
-    font-weight: 700;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-family: var(--font-family-sans);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -382,27 +385,28 @@ watch(
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-3);
     width: clamp(220px, 40vw, 420px);
-    padding: 0.55rem 0.95rem;
-    border-radius: 18px;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card-muted);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: border-color 0.18s ease, outline 0.18s ease;
 }
 
 .neo-nav__search:focus-within {
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.18);
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
 }
 
 .neo-nav__search-input {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: 0.95rem;
-    color: var(--color-text);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+    color: var(--color-heading);
     outline: none;
 }
 
@@ -468,15 +472,14 @@ watch(
     top: calc(100% + 12px);
     right: 0;
     min-width: 220px;
-    padding: 0.55rem;
-    border-radius: 16px;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: var(--color-elevated);
-    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.18);
-    backdrop-filter: blur(18px);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-1);
     animation: dropdown-fade 0.18s ease;
     z-index: 140;
 }
@@ -484,14 +487,15 @@ watch(
 .neo-nav__profile-item {
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    padding: 0.55rem 0.65rem;
-    border-radius: 12px;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
     border: none;
     background: transparent;
-    font-size: 0.92rem;
-    font-weight: 500;
-    color: var(--color-text);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    color: var(--color-heading);
     transition: background-color 0.18s ease, color 0.18s ease;
     cursor: pointer;
 }
@@ -502,18 +506,18 @@ watch(
 
 .neo-nav__profile-item:hover,
 .neo-nav__profile-item:focus-visible {
-    background: rgba(99, 102, 241, 0.14);
+    background: var(--color-card-muted);
     color: var(--color-primary);
 }
 
 .neo-nav__profile-item--danger {
-    color: #dc2626;
+    color: var(--color-danger);
 }
 
 .neo-nav__profile-item--danger:hover,
 .neo-nav__profile-item--danger:focus-visible {
-    background: rgba(220, 38, 38, 0.12);
-    color: #b91c1c;
+    background: var(--color-soft-rose);
+    color: var(--color-danger);
 }
 
 .neo-nav__profile-divider {

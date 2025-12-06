@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up">
+    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="orders-header">
             <div class="orders-header__content">
                 <div class="orders-header__title-section">
@@ -38,8 +38,19 @@
 
         <div class="card filter-card mb-4" v-if="activeTab === 'list' || activeTab === 'statistics'">
             <div class="card-body">
+                <!-- Basic Filters -->
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-4">
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <label class="form-label">Tìm kiếm ID</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            v-model="filters.orderId" 
+                            placeholder="Nhập ID đơn hàng"
+                            @input="handleFilterChange"
+                        />
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
                         <label class="form-label">Trạng thái</label>
                         <select class="form-select" v-model="filters.status" @change="handleStatusChange">
                             <option value="">Tất cả trạng thái</option>
@@ -48,18 +59,83 @@
                             </option>
                         </select>
                     </div>
-                    <div class="col-lg-3 col-md-4">
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <label class="form-label">Loại đơn</label>
+                        <select class="form-select" v-model="filters.orderType" @change="handleFilterChange">
+                            <option value="">Tất cả</option>
+                            <option value="DINE_IN">Tại bàn</option>
+                            <option value="TAKEAWAY">Mang về</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <label class="form-label">Nhân viên</label>
+                        <select class="form-select" v-model="filters.staffId" @change="handleFilterChange">
+                            <option value="">Tất cả nhân viên</option>
+                            <option v-for="staff in staffList" :key="staff.id" :value="staff.id">
+                                {{ staff.fullName || staff.username }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
                         <label class="form-label">Từ ngày</label>
                         <input type="date" class="form-control" v-model="filters.startDate" @change="handleDateChange('startDate')" />
                     </div>
-                    <div class="col-lg-3 col-md-4">
+                    <div class="col-lg-2 col-md-4 col-sm-6">
                         <label class="form-label">Đến ngày</label>
                         <input type="date" class="form-control" v-model="filters.endDate" @change="handleDateChange('endDate')" />
                     </div>
-                    <div class="col-lg-3 col-md-4">
-                        <button class="btn btn-outline-secondary w-100" type="button" @click="resetFilters" :disabled="loading">
-                            <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
-                        </button>
+                </div>
+
+                <!-- Advanced Filters (Collapsible) -->
+                <div class="mt-3">
+                    <button 
+                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2" 
+                        type="button"
+                        @click="showAdvancedFilters = !showAdvancedFilters"
+                    >
+                        <i :class="showAdvancedFilters ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"></i>
+                        <span class="fw-medium">Bộ lọc nâng cao</span>
+                    </button>
+                    
+                    <div v-show="showAdvancedFilters" class="mt-3 pt-3 border-top">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label">Giá từ (₫)</label>
+                                <input 
+                                    type="number" 
+                                    class="form-control" 
+                                    v-model.number="filters.minAmount" 
+                                    placeholder="0"
+                                    min="0"
+                                    @input="handleFilterChange"
+                                />
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label">Giá đến (₫)</label>
+                                <input 
+                                    type="number" 
+                                    class="form-control" 
+                                    v-model.number="filters.maxAmount" 
+                                    placeholder="Không giới hạn"
+                                    min="0"
+                                    @input="handleFilterChange"
+                                />
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label">Khách hàng</label>
+                                <select class="form-select" v-model="filters.customerId" @change="handleFilterChange">
+                                    <option value="">Tất cả khách hàng</option>
+                                    <option v-for="customer in customerList" :key="customer.id" :value="customer.id">
+                                        {{ customer.name || customer.phone || `Khách hàng #${customer.id}` }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <button class="btn btn-outline-secondary w-100" type="button" @click="resetFilters" :disabled="loading">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -191,13 +267,15 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, computed, onBeforeUnmount } from 'vue'
+import { reactive, ref, watch, computed, onBeforeUnmount, onMounted } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
 import * as orderService from '@/api/orderService'
 import { exportOrdersToExcel } from '@/api/reportService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
+import * as userService from '@/api/userService'
+import * as customerService from '@/api/customerService'
 import OrderDetailModal from '@/components/orders/OrderDetailModal.vue'
 import OrderUpdateModal from '@/components/orders/OrderUpdateModal.vue'
 import OrderOverviewTab from '@/components/orders/OrderOverviewTab.vue'
@@ -226,7 +304,7 @@ const { isAdmin, isManager } = storeToRefs(authStore)
 const canExport = computed(() => isAdmin.value || isManager.value)
 const canCancel = computed(() => isAdmin.value || isManager.value)
 
-const activeTab = ref('overview')
+const activeTab = ref('list')
 const tabs = [
     { key: 'overview', label: 'Tổng quan', icon: 'bi bi-speedometer2' },
     { key: 'list', label: 'Danh sách', icon: 'bi bi-list-ul' },
@@ -251,10 +329,20 @@ const cancelModalRef = ref(null)
 let cancelModalInstance = null
 
 const filters = reactive({
+    orderId: '',
     status: '',
+    orderType: '',
+    staffId: '',
+    customerId: '',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    minAmount: null,
+    maxAmount: null
 })
+
+const showAdvancedFilters = ref(false)
+const staffList = ref([])
+const customerList = ref([])
 
 const {
     currentPage,
@@ -330,7 +418,10 @@ const fetchAllOrders = async () => {
             page++
         }
 
-        allOrders.value = allData
+        // Apply client-side filters
+        let filteredData = applyClientSideFilters(allData)
+        
+        allOrders.value = filteredData
         
         // Hiển thị warning nếu đã dùng fallback
         if (usedFallback) {
@@ -378,12 +469,19 @@ const fetchOrders = async () => {
             response = await orderService.getOrders(page, size)
         }
 
-        orders.value = response?.content ?? []
+        let filteredOrders = response?.content ?? []
 
+        // Apply client-side filters
+        filteredOrders = applyClientSideFilters(filteredOrders)
+
+        orders.value = filteredOrders
+
+        // Update pagination - adjust totalElements based on filtered results
+        const totalFiltered = filteredOrders.length
         const { adjusted } = updateFromResponse({
             page: response?.number ?? 0,
             totalPages: response?.totalPages ?? 0,
-            totalElements: response?.totalElements ?? 0
+            totalElements: totalFiltered > 0 ? totalFiltered : (response?.totalElements ?? 0)
         })
     } catch (err) {
         // Error handling đã được xử lý trong service layer
@@ -403,6 +501,63 @@ const fetchOrders = async () => {
     } finally {
         loading.value = false
     }
+}
+
+// Apply client-side filters
+const applyClientSideFilters = (orderList) => {
+    let result = [...orderList]
+
+    // Filter by order ID
+    if (filters.orderId && filters.orderId.trim()) {
+        const orderIdStr = String(filters.orderId).trim()
+        result = result.filter(order => 
+            String(order.id).includes(orderIdStr)
+        )
+    }
+
+    // Filter by order type
+    if (filters.orderType) {
+        result = result.filter(order => {
+            // Check if order has tableId (DINE_IN) or not (TAKEAWAY)
+            if (filters.orderType === 'DINE_IN') {
+                return order.tableId != null && order.tableId !== undefined
+            } else if (filters.orderType === 'TAKEAWAY') {
+                return order.tableId == null || order.tableId === undefined
+            }
+            return true
+        })
+    }
+
+    // Filter by staff
+    if (filters.staffId) {
+        result = result.filter(order => 
+            order.staffId == filters.staffId || order.staff?.id == filters.staffId
+        )
+    }
+
+    // Filter by customer
+    if (filters.customerId) {
+        result = result.filter(order => 
+            order.customerId == filters.customerId || order.customer?.id == filters.customerId
+        )
+    }
+
+    // Filter by amount range
+    if (filters.minAmount != null && filters.minAmount > 0) {
+        result = result.filter(order => {
+            const total = order.totalAmount || order.total || 0
+            return total >= filters.minAmount
+        })
+    }
+
+    if (filters.maxAmount != null && filters.maxAmount > 0) {
+        result = result.filter(order => {
+            const total = order.totalAmount || order.total || 0
+            return total <= filters.maxAmount
+        })
+    }
+
+    return result
 }
 
 const openModal = (orderId) => {
@@ -463,14 +618,54 @@ const handleDateChange = (field) => {
 }
 
 const resetFilters = () => {
+    filters.orderId = ''
     filters.status = ''
+    filters.orderType = ''
+    filters.staffId = ''
+    filters.customerId = ''
     filters.startDate = ''
     filters.endDate = ''
+    filters.minAmount = null
+    filters.maxAmount = null
     rememberCurrent()
     if (zeroBasedPage.value !== 0) {
         setPageFromZero(0)
     } else {
         fetchData()
+    }
+}
+
+const handleFilterChange = () => {
+    rememberCurrent()
+    if (zeroBasedPage.value !== 0) {
+        setPageFromZero(0)
+    } else {
+        fetchData()
+    }
+}
+
+// Fetch staff list
+const fetchStaffList = async () => {
+    try {
+        const response = await userService.getUsers({ page: 0, size: 100, sort: 'fullName,asc' })
+        const users = response?.content || response?.items || []
+        staffList.value = users.filter(u => 
+            u.roles?.some(r => r.name === 'ROLE_STAFF' || r === 'ROLE_STAFF')
+        )
+    } catch (err) {
+        console.error('Failed to fetch staff list:', err)
+        staffList.value = []
+    }
+}
+
+// Fetch customer list
+const fetchCustomerList = async () => {
+    try {
+        const response = await customerService.getCustomers({ page: 0, size: 100 })
+        customerList.value = response?.content || []
+    } catch (err) {
+        console.error('Failed to fetch customer list:', err)
+        customerList.value = []
     }
 }
 
@@ -565,6 +760,12 @@ watch(autoRefresh, (enabled) => {
     }
 })
 
+// Fetch staff and customer lists on mount
+onMounted(() => {
+    fetchStaffList()
+    fetchCustomerList()
+})
+
 onBeforeUnmount(() => {
     if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval)
@@ -576,10 +777,9 @@ onBeforeUnmount(() => {
 /* Header - Chuẩn hóa theo base.css */
 .orders-header {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
+    background: var(--color-card);
     margin-bottom: var(--spacing-5);
 }
 
@@ -596,11 +796,12 @@ onBeforeUnmount(() => {
 }
 
 .orders-header__title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-1);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 .orders-header__subtitle {
@@ -609,6 +810,7 @@ onBeforeUnmount(() => {
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-sans);
 }
 
 .orders-header__actions {
@@ -637,9 +839,9 @@ onBeforeUnmount(() => {
 .orders-tabs {
     display: flex;
     gap: var(--spacing-2);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     padding: var(--spacing-2);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     overflow-x: auto;
 }
@@ -648,7 +850,7 @@ onBeforeUnmount(() => {
     border: none;
     background: transparent;
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -657,6 +859,7 @@ onBeforeUnmount(() => {
     color: var(--color-text-muted);
     cursor: pointer;
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
 .orders-tab i {
@@ -665,21 +868,21 @@ onBeforeUnmount(() => {
 }
 
 .orders-tab:hover:not(.active) {
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
 }
 
 .orders-tab.active {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 /* Delete info card trong modal */
 .delete-info-card {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
@@ -698,13 +901,68 @@ onBeforeUnmount(() => {
     color: var(--color-text-muted);
     flex-shrink: 0;
     min-width: 120px;
+    font-family: var(--font-family-sans);
 }
 
 .delete-info-value {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     text-align: right;
     word-break: break-word;
+    font-family: var(--font-family-sans);
+}
+
+/* Filter Card - Chuẩn hóa */
+.filter-card {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.filter-card .form-label {
+    font-family: var(--font-family-sans);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-medium);
+}
+
+.filter-card .form-control,
+.filter-card .form-select {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card .form-control:focus,
+.filter-card .form-select:focus {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.filter-card .btn-link {
+    color: var(--color-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    transition: all var(--transition-base);
+}
+
+.filter-card .btn-link:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+.filter-card .btn-link i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Tabs Card - Chuẩn hóa */
+.tabs-card {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 @media (max-width: 768px) {

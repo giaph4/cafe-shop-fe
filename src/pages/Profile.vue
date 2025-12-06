@@ -1,5 +1,5 @@
 <template>
-    <div class="profile-page" data-aos="fade-up">
+    <div class="profile-page page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <header class="profile-header">
             <div class="profile-header__title">
                 <h2>Hồ sơ cá nhân</h2>
@@ -675,35 +675,41 @@ const translateStatus = (status) => {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-radius: 22px;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .profile-header__title h2 {
-    font-weight: 700;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .profile-header__title p {
-    margin: 0.35rem 0 0;
+    margin: var(--spacing-1) 0 0;
     color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .profile-header__meta {
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-2);
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
 }
 
 .profile-header__meta .bullet {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     background: var(--color-text-muted);
 }
@@ -715,23 +721,21 @@ const translateStatus = (status) => {
 }
 
 .profile-card {
-    border-radius: 20px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(170deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
-    padding: 1.75rem;
+    background: var(--color-card);
+    padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    transition: border-color var(--transition-all), box-shadow var(--transition-all);
+    gap: var(--spacing-4);
 }
 
 .profile-card__header {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    padding-bottom: 1.5rem;
+    gap: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-4);
 }
 
 
@@ -745,14 +749,13 @@ const translateStatus = (status) => {
 .profile-avatar__mask {
     width: 104px;
     height: 104px;
-    border-radius: 24px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    border: 2px solid rgba(148, 163, 184, 0.35);
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+    border: 2px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(148, 163, 184, 0.12);
+    background: var(--color-card-muted);
 }
 
 .profile-avatar__mask img {
@@ -762,20 +765,66 @@ const translateStatus = (status) => {
 }
 
 .profile-avatar__placeholder {
-    font-weight: 700;
-    font-size: 2rem;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-2xl);
     color: var(--color-primary);
+    font-family: var(--font-family-sans);
 }
 
 .profile-avatar__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-1);
+}
+
+.profile-avatar__actions .btn-sm {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.profile-avatar__actions .btn-outline-primary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.profile-avatar__actions .btn-outline-primary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.profile-avatar__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.profile-avatar__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.profile-avatar__actions .btn-outline-danger {
+    border-color: var(--color-border);
+    color: var(--color-danger);
+    background: transparent;
+}
+
+.profile-avatar__actions .btn-outline-danger:hover:not(:disabled) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
 .profile-avatar__hint {
-    font-size: 0.78rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .profile-summary {
@@ -794,51 +843,165 @@ const translateStatus = (status) => {
 }
 
 .profile-summary__top h3 {
-    font-weight: 700;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    font-family: var(--font-family-sans);
 }
 
 .profile-summary__username {
-    margin: 0.2rem 0 0;
+    margin: var(--spacing-1) 0 0;
     color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .profile-summary__roles {
     display: inline-flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--spacing-1);
+}
+
+.profile-summary__roles .badge {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
 }
 
 .profile-status {
-    padding: 0.5rem 0.9rem;
-    border-radius: 999px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    font-size: 0.75rem;
-    background: rgba(99, 102, 241, 0.12);
-    color: var(--color-primary);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    background: var(--color-success-soft, #d1e7dd);
+    color: var(--color-success-dark, #0f5132);
+    border: 2px solid var(--color-success, #198754);
+    min-width: 120px;
+    text-align: center;
+    display: inline-block;
+    font-family: var(--font-family-sans);
 }
 
 .profile-status[data-status="INACTIVE"] {
-    background: rgba(239, 68, 68, 0.12);
-    color: #dc2626;
+    background: var(--color-soft-rose);
+    color: var(--color-danger-dark, #a0281d);
+    border-color: var(--color-danger);
 }
 
 .profile-form .form-label {
-    font-weight: 600;
+    font-weight: var(--font-weight-medium);
     color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.profile-form .form-control,
+.profile-form .form-select {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.profile-form .form-control:focus,
+.profile-form .form-select:focus {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.profile-form .form-control.is-invalid,
+.profile-form .form-select.is-invalid {
+    border-color: var(--color-danger);
+}
+
+.profile-form .invalid-feedback {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.profile-form .form-check-input {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.profile-form .form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.profile-form .form-check-input:focus {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.profile-form .form-check-label {
+    font-family: var(--font-family-sans);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+}
+
+.profile-form .text-muted {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
 }
 
 .profile-form__actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-4);
+}
+
+.profile-form__actions .btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.profile-form__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.profile-form__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+}
+
+.profile-form__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.profile-form__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .role-selection {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-3) var(--spacing-4);
     background: var(--color-card-muted);
     max-height: 220px;
@@ -850,6 +1013,21 @@ const translateStatus = (status) => {
 
 .role-selection.is-invalid {
     border-color: var(--color-danger);
+}
+
+.profile-card__header h4 {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.profile-card__header p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 @media (max-width: 992px) {

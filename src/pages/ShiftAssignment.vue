@@ -1,5 +1,5 @@
 <template>
-    <div class="shift-assignment-page container-fluid">
+    <div class="shift-assignment-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="shift-assignment-header">
             <div class="shift-assignment-header__content">
                 <div class="shift-assignment-header__title-section">
@@ -96,7 +96,7 @@
 
             <!-- Delete Assignment Confirmation Modal -->
             <div 
-                class="modal fade" 
+                class="modal fade shift-assignment-delete-modal" 
                 id="deleteAssignmentModal" 
                 tabindex="-1" 
                 ref="deleteAssignmentModalElement" 
@@ -383,6 +383,11 @@ const fetchData = () => {
     }
 }
 
+const handleError = (err, defaultMessage) => {
+    const message = err.response?.data?.message || err.message || defaultMessage
+    toast.error(message)
+}
+
 watch(activeTab, (newTab) => {
     if (newTab === 'list') {
         fetchShiftOptions()
@@ -416,23 +421,22 @@ onMounted(() => {
 .shift-assignment-page {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     padding-bottom: var(--spacing-12);
 }
 
 .shift-assignment-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
+    background: var(--color-card);
 }
 
 .shift-assignment-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -442,64 +446,188 @@ onMounted(() => {
 }
 
 .shift-assignment-header__title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .shift-assignment-header__subtitle {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .shift-assignment-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
 }
 
+.shift-assignment-header__actions .btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-assignment-header__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.shift-assignment-header__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+}
+
+.shift-assignment-header__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.shift-assignment-header__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
 .tabs-card {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-card);
+}
+
+.tabs-card :global(.card-body) {
+    padding: var(--spacing-4);
     background: var(--color-card);
 }
 
 .reports-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
 }
 
 .reports-tabs .nav-link {
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-5);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    background: var(--color-card-muted);
+    background: transparent;
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
-.reports-tabs .nav-link:hover {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+.reports-tabs .nav-link:hover:not(.active) {
+    background: var(--color-card-muted);
+    border-color: var(--color-border);
+    color: var(--color-heading);
 }
 
 .reports-tabs .nav-link.active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: var(--color-white);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
+}
+
+.shift-assignment-delete-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-assignment-delete-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-assignment-delete-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
+}
+
+.shift-assignment-delete-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.shift-assignment-delete-modal :global(.modal-body p) {
+    font-family: var(--font-family-sans);
+    color: var(--color-heading);
+}
+
+.shift-assignment-delete-modal :global(.modal-body .card) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+}
+
+.shift-assignment-delete-modal :global(.modal-body .card-body) {
+    padding: var(--spacing-3);
+    background: var(--color-card-muted);
+}
+
+.shift-assignment-delete-modal :global(.modal-body strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.shift-assignment-delete-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-assignment-delete-modal :global(.modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-assignment-delete-modal :global(.modal-footer .btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+}
+
+.shift-assignment-delete-modal :global(.modal-footer .btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark, #a0281d);
+}
+
+.shift-assignment-delete-modal :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.shift-assignment-delete-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 @media (max-width: 768px) {
     .shift-assignment-header {
-        padding: var(--spacing-4);
+        padding: var(--spacing-3);
     }
 
     .shift-assignment-header__content {
@@ -510,10 +638,10 @@ onMounted(() => {
     .shift-assignment-header__actions {
         width: 100%;
         justify-content: stretch;
+    }
 
-        .btn {
-            flex: 1;
-        }
+    .shift-assignment-header__actions .btn {
+        flex: 1;
     }
 }
 </style>

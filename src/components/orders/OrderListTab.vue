@@ -1,9 +1,9 @@
 <template>
     <div class="order-list-tab">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <h5 class="mb-0">Danh sách đơn hàng</h5>
-                <small class="text-muted">Tổng: {{ totalElements.toLocaleString('vi-VN') }} đơn hàng</small>
+                <h5 class="mb-0" style="font-weight: var(--font-weight-semibold); color: var(--color-heading); font-family: var(--font-family-sans);">Danh sách đơn hàng</h5>
+                <small class="text-muted" style="font-family: var(--font-family-sans);">Tổng: {{ totalElements.toLocaleString('vi-VN') }} đơn hàng</small>
             </div>
             <div class="d-flex gap-2">
                 <button
@@ -53,7 +53,7 @@
                             <td class="d-none d-md-table-cell">{{ order.customerName || 'Khách lẻ' }}</td>
                             <td class="text-end fw-semibold">{{ formatCurrency(order.totalAmount) }}</td>
                             <td>
-                                <span :class="getStatusBadgeClass(order.status)">
+                                <span :class="getStatusBadgeClass(order.status)" :style="getStatusBadgeStyle(order.status)">
                                     {{ getStatusLabel(order.status) }}
                                 </span>
                             </td>
@@ -159,10 +159,10 @@ const props = defineProps({
 const emit = defineEmits(['view-detail', 'cancel', 'page-change', 'export'])
 
 const STATUS_METADATA = {
-    PENDING: { label: 'Đang chờ', badgeClass: 'badge bg-warning-subtle text-warning' },
-    PAID: { label: 'Đã thanh toán', badgeClass: 'badge bg-success-subtle text-success' },
-    CANCELLED: { label: 'Đã hủy', badgeClass: 'badge bg-danger-subtle text-danger' },
-    TRANSFERRED: { label: 'Đã chuyển ca', badgeClass: 'badge bg-info-subtle text-info' }
+    PENDING: { label: 'Đang chờ', badgeClass: 'badge' },
+    PAID: { label: 'Đã thanh toán', badgeClass: 'badge' },
+    CANCELLED: { label: 'Đã hủy', badgeClass: 'badge' },
+    TRANSFERRED: { label: 'Đã chuyển ca', badgeClass: 'badge' }
 }
 
 const getStatusLabel = (status) => {
@@ -170,7 +170,37 @@ const getStatusLabel = (status) => {
 }
 
 const getStatusBadgeClass = (status) => {
-    return STATUS_METADATA[status]?.badgeClass || 'badge bg-secondary-subtle text-secondary'
+    return STATUS_METADATA[status]?.badgeClass || 'badge'
+}
+
+const getStatusBadgeStyle = (status) => {
+    const styles = {
+        PENDING: {
+            background: 'var(--color-soft-amber)',
+            border: '1px solid var(--color-warning)',
+            color: 'var(--color-warning)'
+        },
+        PAID: {
+            background: 'var(--color-soft-emerald)',
+            border: '1px solid var(--color-success)',
+            color: 'var(--color-success)'
+        },
+        CANCELLED: {
+            background: 'var(--color-soft-rose)',
+            border: '1px solid var(--color-danger)',
+            color: 'var(--color-danger)'
+        },
+        TRANSFERRED: {
+            background: 'var(--color-soft-sky)',
+            border: '1px solid var(--color-info)',
+            color: 'var(--color-info)'
+        }
+    }
+    return styles[status] || {
+        background: 'var(--color-card-muted)',
+        border: '1px solid var(--color-border)',
+        color: 'var(--color-text-muted)'
+    }
 }
 
 const handleExport = () => {
@@ -197,25 +227,26 @@ const handleExport = () => {
     justify-content: center;
     gap: 6px;
     padding: 8px 12px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-primary);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     cursor: pointer;
     min-width: auto;
+    font-family: var(--font-family-sans);
 }
 
 .action-button:hover:not(:disabled) {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-primary);
 }
 
 .action-button:active:not(:disabled) {
-    filter: brightness(0.95);
+    background: var(--color-primary-dark);
 }
 
 .action-button:disabled {
@@ -232,56 +263,67 @@ const handleExport = () => {
 .action-button--primary {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 .action-button--primary:hover:not(:disabled) {
-    filter: brightness(1.05);
+    background: var(--color-primary-dark);
 }
 
 .action-button--danger {
     border-color: var(--color-danger);
-    background: var(--color-bg);
+    background: var(--color-card);
     color: var(--color-danger);
 }
 
 .action-button--danger:hover:not(:disabled) {
     background: var(--color-danger);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     border-color: var(--color-danger);
 }
 
 /* Table - Chuẩn hóa theo base.css */
 .order-list-tab :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .order-list-tab :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     padding: var(--spacing-3) var(--spacing-4);
+    font-family: var(--font-family-sans);
 }
 
 .order-list-tab :global(.table tbody td) {
     font-size: var(--font-size-base);
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     vertical-align: middle;
+    font-family: var(--font-family-sans);
 }
 
 .order-list-tab :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 /* Badge - Chuẩn hóa */
 .order-list-tab :global(.badge) {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 @media (max-width: 768px) {

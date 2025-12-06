@@ -1,7 +1,7 @@
 <template>
     <!-- Expense Modal -->
     <Teleport to="body">
-        <div class="modal fade" id="expenseModal" tabindex="-1" ref="modalElement" aria-labelledby="expenseModalLabel"
+        <div class="modal fade expense-form-modal" id="expenseModal" tabindex="-1" ref="modalElement" aria-labelledby="expenseModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -106,7 +106,7 @@
 
     <!-- Delete Confirmation Modal -->
     <Teleport to="body">
-        <div class="modal fade" id="deleteExpenseModal" tabindex="-1" ref="deleteModalElement" aria-labelledby="deleteExpenseModalLabel"
+        <div class="modal fade expense-delete-modal" id="deleteExpenseModal" tabindex="-1" ref="deleteModalElement" aria-labelledby="deleteExpenseModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -148,7 +148,7 @@
         </div>
     </Teleport>
 
-    <div class="page-container container-fluid expenses-page">
+    <div class="page-container container-fluid expenses-page" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="expenses-header">
             <div class="expenses-header__content">
                 <div class="expenses-header__title-section">
@@ -159,7 +159,7 @@
                     <button 
                         class="btn btn-outline-secondary" 
                         type="button" 
-                        @click="queryClient.invalidateQueries(['expenses'])" 
+                        @click="refetch()" 
                         :disabled="isLoading"
                     >
                         <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
@@ -204,9 +204,9 @@
 
         <div class="card table-card">
             <div class="card-body">
-                <LoadingState v-if="isLoading" />
-                <ErrorState v-else-if="isError" :message="error?.message || 'Không thể tải dữ liệu'" @retry="queryClient.invalidateQueries(['expenses'])" />
-                <template v-else-if="pageData && pageData.content">
+                <LoadingState v-if="isLoading || isFetching" />
+                <ErrorState v-else-if="isError" :message="error?.response?.data?.message || error?.message || 'Không thể tải dữ liệu chi phí'" @retry="refetch()" />
+                <template v-else-if="pageData">
                     <div v-if="filteredExpenses.length === 0" class="table-empty">
                         <EmptyState
                             title="Không tìm thấy chi phí"
@@ -275,7 +275,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { Teleport } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
@@ -362,19 +362,38 @@ const expensesQueryKey = computed(() => [
     endDate.value
 ])
 
-const { data: pageData, isLoading, isError, error } = useQuery({
+const { data: pageData, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: expensesQueryKey,
     queryFn: async () => {
-        const response = await getExpenses({
-            page: zeroBasedPage.value,
-            size: pageSize.value,
-            startDate: startDate.value || null,
-            endDate: endDate.value || null
-        })
-        return response
+        try {
+            const filters = {
+                page: zeroBasedPage.value,
+                size: pageSize.value
+            }
+            
+            // Only add date filters if they have values
+            if (startDate.value) {
+                filters.startDate = startDate.value
+            }
+            if (endDate.value) {
+                filters.endDate = endDate.value
+            }
+            
+            const response = await getExpenses(filters)
+            return response
+        } catch (err) {
+            throw err
+        }
     },
     keepPreviousData: true,
-    onSuccess: (response) => {
+    enabled: true,
+    retry: 1,
+    staleTime: 30000 // Cache for 30 seconds
+})
+
+// Watch for data changes to update pagination
+watch(() => pageData.value, (response) => {
+    if (response) {
         const { adjusted } = updateFromResponse({
             page: response.number,
             totalPages: response.totalPages,
@@ -384,7 +403,7 @@ const { data: pageData, isLoading, isError, error } = useQuery({
             toast.info('Trang hiện tại đã được điều chỉnh theo dữ liệu mới.', { autoClose: 2500 })
         }
     }
-})
+}, { immediate: true })
 
 const createMutation = useMutation({
     mutationFn: createExpense,
@@ -520,19 +539,18 @@ const confirmDelete = () => {
 }
 
 .expenses-header {
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-md);
-    margin-bottom: var(--spacing-6);
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .expenses-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     flex-wrap: wrap;
 }
 
@@ -542,44 +560,367 @@ const confirmDelete = () => {
 }
 
 .expenses-header__title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    letter-spacing: var(--letter-spacing-tight);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .expenses-header__subtitle {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-family: var(--font-family-sans);
 }
 
 .expenses-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     align-items: center;
     justify-content: flex-end;
+}
+
+.expenses-header__actions .btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.expenses-header__actions .btn-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.expenses-header__actions .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+}
+
+.expenses-header__actions .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.expenses-header__actions .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.filter-card,
+.table-card {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.filter-card :global(.card-body),
+.table-card :global(.card-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.filter-card :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.filter-card :global(.input-group-text) {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.input-group .form-control) {
+    border-left: none;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.filter-card :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.filter-card :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.table-card :global(.table) {
+    margin-bottom: 0;
+}
+
+.table-card :global(.table thead),
+.table-card :global(.table thead.table-light) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody td),
+.table-card :global(.table tbody th) {
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody tr:last-child td),
+.table-card :global(.table tbody tr:last-child th) {
+    border-bottom: none;
+}
+
+.table-card :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.fw-bold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.text-danger) {
+    color: var(--color-danger);
+}
+
+.table-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-2);
+    gap: var(--spacing-1);
     justify-content: flex-end;
     align-items: center;
+}
+
+.action-buttons .btn-sm {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.action-buttons .btn-outline-primary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.action-buttons .btn-outline-primary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.action-buttons .btn-outline-danger {
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+    background: var(--color-card);
+}
+
+.action-buttons .btn-outline-danger:hover:not(:disabled) {
+    background: var(--color-soft-rose);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.table-card :global(.card-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
 }
 
 .table-empty {
     padding: var(--spacing-8) var(--spacing-4);
 }
 
+.expense-form-modal :global(.modal-content),
+.expense-delete-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.expense-form-modal :global(.modal-header),
+.expense-delete-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.expense-form-modal :global(.modal-title),
+.expense-delete-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
+}
+
+.expense-form-modal :global(.modal-body),
+.expense-delete-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.expense-form-modal :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.expense-form-modal :global(.form-control) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.expense-form-modal :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.expense-form-modal :global(.form-control.is-invalid) {
+    border-color: var(--color-danger);
+}
+
+.expense-form-modal :global(.invalid-feedback) {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+}
+
+.expense-form-modal :global(.modal-footer),
+.expense-delete-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.expense-form-modal :global(.modal-footer .btn),
+.expense-delete-modal :global(.modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.expense-form-modal :global(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.expense-form-modal :global(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.expense-form-modal :global(.modal-footer .btn-outline-secondary),
+.expense-delete-modal :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.expense-form-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)),
+.expense-delete-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.expense-delete-modal :global(.modal-body p) {
+    font-family: var(--font-family-sans);
+    color: var(--color-heading);
+}
+
+.expense-delete-modal :global(.modal-body .card) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+}
+
+.expense-delete-modal :global(.modal-body .card-body) {
+    padding: var(--spacing-3);
+    background: var(--color-card-muted);
+}
+
+.expense-delete-modal :global(.modal-body strong) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.expense-delete-modal :global(.modal-footer .btn-danger) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+}
+
+.expense-delete-modal :global(.modal-footer .btn-danger:hover:not(:disabled)) {
+    background: var(--color-danger-dark, #a0281d);
+}
+
 @media (max-width: 768px) {
     .expenses-header {
-        padding: var(--spacing-4);
+        padding: var(--spacing-3);
     }
 
     .expenses-header__content {
@@ -590,19 +931,19 @@ const confirmDelete = () => {
     .expenses-header__actions {
         width: 100%;
         justify-content: stretch;
+    }
 
-        .btn {
-            flex: 1;
-        }
+    .expenses-header__actions .btn {
+        flex: 1;
     }
 
     .action-buttons {
         flex-direction: column;
         width: 100%;
+    }
 
-        .btn {
-            width: 100%;
-        }
+    .action-buttons .btn {
+        width: 100%;
     }
 }
 </style>

@@ -303,11 +303,11 @@ defineExpose({show, hide})
 <style scoped>
 .role-box {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-3) var(--spacing-4);
     max-height: 220px;
     overflow-y: auto;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     transition: border-color var(--transition-base);
 }
 
@@ -317,19 +317,20 @@ defineExpose({show, hide})
 
 .role-box :global(.form-check-label) {
     font-size: var(--font-size-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     cursor: pointer;
     margin-left: var(--spacing-2);
     line-height: var(--line-height-normal);
     font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-sans);
 }
 
 .role-box :global(.form-check-input) {
     width: 1.25rem;
     height: 1.25rem;
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--color-input-border);
-    background: var(--color-input-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
     cursor: pointer;
     margin-top: 0.15rem;
     transition: all var(--transition-base);
@@ -341,14 +342,15 @@ defineExpose({show, hide})
 }
 
 .role-box :global(.form-check-input:focus) {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 :deep(.modal-content) {
-    border-radius: var(--component-radius-lg);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -367,12 +369,13 @@ defineExpose({show, hide})
 }
 
 :deep(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-xl);
     color: var(--color-heading);
     margin: 0 0 var(--spacing-1) 0;
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
+    font-family: var(--font-family-sans);
 }
 
 :deep(.modal-header .text-muted) {
@@ -382,33 +385,7 @@ defineExpose({show, hide})
     line-height: var(--line-height-normal);
 }
 
-:deep(.modal-header .btn-close) {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--component-radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
-    opacity: 0.7;
-    transition: all var(--component-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    cursor: pointer;
-}
-
-:deep(.modal-header .btn-close:hover),
-:deep(.modal-header .btn-close:focus) {
-    opacity: 1;
-    background: var(--color-danger-soft, rgba(239, 68, 68, 0.1));
-    border-color: var(--color-danger);
-    color: var(--color-danger);
-    transform: scale(1.05);
-}
-
-:deep(.modal-header .btn-close:active) {
-    transform: scale(0.95);
-}
+/* Sử dụng style chung từ base.css */
 
 :deep(.modal-body) {
     padding: var(--spacing-6);
@@ -431,28 +408,29 @@ defineExpose({show, hide})
 
 :deep(.modal-body .form-control),
 :deep(.modal-body .form-select) {
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--color-input-border);
-    background: var(--color-input-bg);
-    color: var(--color-text);
-    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
     line-height: var(--line-height-normal);
     transition: all var(--transition-base);
     width: 100%;
+    font-family: var(--font-family-sans);
 }
 
 :deep(.modal-body .form-control:focus),
 :deep(.modal-body .form-select:focus) {
-    border-color: var(--color-input-focus);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    background: var(--color-card);
-    outline: none;
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 :deep(.modal-body .form-control:hover:not(:focus)),
 :deep(.modal-body .form-select:hover:not(:focus)) {
-    border-color: var(--color-border-strong);
+    border-color: var(--color-border);
 }
 
 :deep(.modal-body .form-control.is-invalid),
@@ -462,7 +440,9 @@ defineExpose({show, hide})
 
 :deep(.modal-body .form-control.is-invalid:focus),
 :deep(.modal-body .form-select.is-invalid:focus) {
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    outline: 2px solid var(--color-danger);
+    outline-offset: 0;
+    box-shadow: none;
 }
 
 :deep(.modal-body .invalid-feedback) {
@@ -492,14 +472,37 @@ defineExpose({show, hide})
 
 :deep(.modal-footer .btn) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-5);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-footer .btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+:deep(.modal-footer .btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+:deep(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+:deep(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 :deep(.modal-footer .btn i) {

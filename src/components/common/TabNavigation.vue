@@ -70,41 +70,43 @@ const handleTabClick = (tabKey) => {
 .tab-navigation .nav {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-3);
-    border-bottom: 2px solid var(--color-border-soft);
-    padding-bottom: var(--spacing-2);
+    gap: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0;
 }
 
 .tab-navigation .nav-link {
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-5);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
-    background: var(--color-card-muted);
-    transition: all var(--transition-fast);
+    background: transparent;
+    transition: all var(--transition-base);
     border: none;
+    border-bottom: 2px solid transparent;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .tab-navigation .nav-link:hover:not(:disabled) {
     color: var(--color-primary);
-    background: var(--color-primary-soft);
-    transform: translateY(-1px);
+    background: var(--color-card-muted);
+    border-bottom-color: var(--color-primary);
 }
 
 .tab-navigation .nav-link.active {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-    color: var(--color-primary-contrast);
-    box-shadow: var(--shadow-md);
+    background: var(--color-card-muted);
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
 }
 
 .tab-navigation .nav-link.active:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
+    background: var(--color-card-muted);
 }
 
 .tab-navigation .nav-link:disabled {
@@ -113,16 +115,20 @@ const handleTabClick = (tabKey) => {
 }
 
 .tab-navigation .badge {
-    background: rgba(255, 255, 255, 0.2);
-    color: inherit;
+    background: var(--color-card-muted);
+    color: var(--color-heading);
     font-size: var(--font-size-xs);
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
 }
 
 .tab-navigation .nav-link.active .badge {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 /* Responsive */

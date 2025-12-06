@@ -93,7 +93,7 @@
         </div>
 
         <div class="chat-sidebar__loading" v-if="loading">
-            <div class="spinner-border spinner-border-sm text-primary"></div>
+            <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
             <span class="ms-2">Đang tải...</span>
         </div>
 
@@ -104,7 +104,7 @@
 
         <div class="chat-sidebar__pagination" v-if="hasMore">
             <button class="btn btn-sm btn-outline-primary w-100" @click="$emit('load-more')" :disabled="loadingMore">
-                <span v-if="loadingMore" class="spinner-border spinner-border-sm me-2"></span>
+                <span v-if="loadingMore" class="spinner-border spinner-border-sm me-2" style="color: var(--color-primary);"></span>
                 Tải thêm
             </button>
         </div>
@@ -205,7 +205,7 @@ const handleSearch = () => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--color-bg);
+    background: var(--color-card);
     border-right: 1px solid var(--color-border);
     width: 320px;
     flex-shrink: 0;
@@ -218,22 +218,24 @@ const handleSearch = () => {
     justify-content: space-between;
     padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .chat-sidebar__title {
     margin: 0;
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-lg);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .chat-sidebar__header .btn {
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     gap: 6px;
+    font-family: var(--font-family-sans);
 }
 
 .chat-sidebar__header .btn i {
@@ -245,14 +247,14 @@ const handleSearch = () => {
 .chat-sidebar__search {
     padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .chat-sidebar__search .input-group-text {
     border-right: none;
     border-color: var(--color-border);
-    background: var(--color-bg);
-    border-radius: var(--radius-base) 0 0 var(--radius-base);
+    background: var(--color-card);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .chat-sidebar__search .input-group-text i {
@@ -264,17 +266,19 @@ const handleSearch = () => {
 .chat-sidebar__search .form-control {
     border-left: none;
     border-color: var(--color-border);
-    background: var(--color-bg);
-    border-radius: 0 var(--radius-base) var(--radius-base) 0;
+    background: var(--color-card);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     height: 40px;
     font-size: var(--font-size-base);
     padding: var(--spacing-2) var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .chat-sidebar__search .form-control:focus {
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 /* List - Chuẩn hóa */
@@ -296,16 +300,16 @@ const handleSearch = () => {
 }
 
 .conversation-item:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .conversation-item--active {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-left: 3px solid var(--color-primary);
 }
 
 .conversation-item--pinned {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .conversation-item--pinned::before {
@@ -322,10 +326,10 @@ const handleSearch = () => {
 .conversation-item__avatar {
     width: 48px;
     height: 48px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     flex-shrink: 0;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
@@ -361,10 +365,11 @@ const handleSearch = () => {
     margin: 0;
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: var(--font-family-sans);
 }
 
 .conversation-item__time {
@@ -398,11 +403,12 @@ const handleSearch = () => {
 
 .conversation-item__badges .badge {
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
+    font-family: var(--font-family-sans);
 }
 
 .conversation-item__actions {
@@ -420,12 +426,12 @@ const handleSearch = () => {
 
 .conversation-item__actions .btn {
     padding: var(--spacing-1);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
 }
 
 .conversation-item__actions .btn:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     color: var(--color-primary);
 }
 
@@ -455,16 +461,17 @@ const handleSearch = () => {
 .chat-sidebar__pagination {
     padding: var(--spacing-3);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .chat-sidebar__pagination .btn {
     width: 100%;
     padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     gap: 6px;
+    font-family: var(--font-family-sans);
 }
 
 .chat-sidebar__pagination .btn i {

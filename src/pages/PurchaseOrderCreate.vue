@@ -1,5 +1,5 @@
 <template>
-    <div class="purchase-order-create-page" data-aos="fade-up">
+    <div class="purchase-order-create-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="page-header d-flex align-items-center">
             <router-link to="/purchase-orders" class="btn btn-icon me-2">
                 <i class="bi bi-arrow-left"></i>
@@ -228,11 +228,10 @@ const handleSubmit = (values) => {
 /* Header - Chuẩn hóa theo base.css */
 .page-header {
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-base);
-    margin-bottom: var(--spacing-5);
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .page-header .btn-icon {
@@ -242,15 +241,15 @@ const handleSubmit = (values) => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
     transition: all var(--transition-base);
 }
 
 .page-header .btn-icon:hover {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
@@ -261,78 +260,104 @@ const handleSubmit = (values) => {
 }
 
 .page-title {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
 }
 
 /* Cards - Chuẩn hóa theo base.css */
 .purchase-order-create-page :global(.card) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    background: var(--color-card);
     margin-bottom: var(--spacing-4);
 }
 
 .purchase-order-create-page :global(.card-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .purchase-order-create-page :global(.card-title) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
-/* Table - Chuẩn hóa theo base.css */
+/* Table - Minimal Table Styling */
 .purchase-order-create-page :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.purchase-order-create-page :global(.table thead),
+.purchase-order-create-page :global(.table thead.table-light) {
+    background: var(--color-card-muted);
 }
 
 .purchase-order-create-page :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+    font-family: var(--font-family-sans);
+}
+
+.purchase-order-create-page :global(.table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 .purchase-order-create-page :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .purchase-order-create-page :global(.table tbody .text-muted) {
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.fw-bold) {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
-/* Form Controls - Chuẩn hóa */
+/* Form Controls - Clean Input Style */
 .purchase-order-create-page :global(.form-label) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.purchase-order-create-page :global(.form-label.fw-bold) {
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.form-label .text-danger) {
@@ -342,13 +367,14 @@ const handleSubmit = (values) => {
 .purchase-order-create-page :global(.form-control),
 .purchase-order-create-page :global(.form-select) {
     height: 40px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-card);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.form-control:focus),
@@ -356,6 +382,7 @@ const handleSubmit = (values) => {
     border-color: var(--color-primary);
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .purchase-order-create-page :global(.form-control.is-invalid),
@@ -369,27 +396,30 @@ const handleSubmit = (values) => {
 }
 
 .purchase-order-create-page :global(.invalid-feedback) {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-danger);
     margin-top: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.text-danger) {
     color: var(--color-danger);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
-/* Buttons - Chuẩn hóa theo base.css */
+/* Buttons - Flat Design */
 .purchase-order-create-page :global(.btn) {
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.btn i) {
@@ -400,15 +430,11 @@ const handleSubmit = (values) => {
 .purchase-order-create-page :global(.btn-primary) {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-text-inverse);
 }
 
 .purchase-order-create-page :global(.btn-primary:hover:not(:disabled)) {
-    filter: brightness(1.05);
-}
-
-.purchase-order-create-page :global(.btn-primary:active:not(:disabled)) {
-    filter: brightness(0.95);
+    background: var(--color-primary-dark);
 }
 
 .purchase-order-create-page :global(.btn-primary:disabled) {
@@ -417,46 +443,39 @@ const handleSubmit = (values) => {
 }
 
 .purchase-order-create-page :global(.btn-outline-primary) {
-    border-color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     color: var(--color-primary);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .purchase-order-create-page :global(.btn-outline-primary:hover:not(:disabled)) {
-    background: var(--color-primary);
-    color: #ffffff;
-    border-color: var(--color-primary);
-}
-
-.purchase-order-create-page :global(.btn-outline-primary:active:not(:disabled)) {
-    filter: brightness(0.95);
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .purchase-order-create-page :global(.btn-outline-danger) {
-    border-color: var(--color-danger);
+    border-color: var(--color-border);
     color: var(--color-danger);
-    background: var(--color-bg);
+    background: transparent;
 }
 
 .purchase-order-create-page :global(.btn-outline-danger:hover:not(:disabled)) {
-    background: var(--color-danger);
-    color: #ffffff;
+    background: var(--color-soft-rose);
     border-color: var(--color-danger);
-}
-
-.purchase-order-create-page :global(.btn-outline-danger:active:not(:disabled)) {
-    filter: brightness(0.95);
+    color: var(--color-danger);
 }
 
 .purchase-order-create-page :global(.btn-sm) {
-    padding: 6px 12px;
-    font-size: var(--font-size-base);
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-sm);
 }
 
 .purchase-order-create-page :global(.btn-lg) {
-    padding: 12px 24px;
+    padding: var(--spacing-3) var(--spacing-5);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(.btn-lg i) {
@@ -471,20 +490,18 @@ const handleSubmit = (values) => {
 }
 
 /* Total Amount Display */
-.purchase-order-create-page :global(.text-danger) {
-    color: var(--color-danger);
-}
-
 .purchase-order-create-page :global(h4.fw-bold) {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-danger);
+    font-family: var(--font-family-sans);
 }
 
 .purchase-order-create-page :global(h5) {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 /* Responsive */

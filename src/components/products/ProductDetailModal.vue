@@ -259,58 +259,120 @@ defineExpose({show, hide})
 <style scoped>
 /* Modal - Chuẩn hóa theo base.css */
 .product-detail-modal :global(.modal-content) {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-modal);
+    background: var(--color-card);
 }
 
 .product-detail-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-detail-modal :global(.modal-title) {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.product-detail-modal :global(.modal-header .text-muted) {
+    font-family: var(--font-family-sans);
 }
 
 .product-detail-modal :global(.modal-body) {
     padding: var(--spacing-4);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-detail-modal :global(.modal-footer) {
     padding: var(--spacing-4);
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .product-detail-modal :global(.modal-footer .btn) {
-    padding: 8px 16px;
-    border-radius: var(--radius-base);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
 }
 
-.product-detail-modal :global(.modal-footer .btn:hover:not(:disabled)) {
-    filter: brightness(1.05);
+.product-detail-modal :global(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.product-detail-modal :global(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+/* Global Button Styles - Đồng bộ với các trang trước */
+.product-detail-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.product-detail-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.product-detail-modal :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.product-detail-modal :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.product-detail-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.product-detail-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.product-detail-modal :global(.btn-sm) {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
 }
 
 /* Error Message - không dùng alert */
 .error-message {
     padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-danger);
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
     font-size: var(--font-size-base);
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .error-message i {
@@ -326,6 +388,14 @@ defineExpose({show, hide})
     text-align: center;
 }
 
+.detail-state .spinner-border {
+    color: var(--color-primary);
+}
+
+.detail-state .text-muted {
+    font-family: var(--font-family-sans);
+}
+
 .detail-grid {
     display: grid;
     grid-template-columns: minmax(240px, 320px) 1fr;
@@ -339,10 +409,9 @@ defineExpose({show, hide})
 }
 
 .image-frame {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
 }
 
 .image-frame img {
@@ -354,12 +423,13 @@ defineExpose({show, hide})
 .status-block {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     width: fit-content;
+    font-family: var(--font-family-sans);
 }
 
 .status-block i {
@@ -368,13 +438,13 @@ defineExpose({show, hide})
 }
 
 .status-block--active {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
     border: 1px solid var(--color-success);
 }
 
 .status-block--inactive {
-    background: var(--color-bg-muted);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
     border: 1px solid var(--color-danger);
 }
@@ -383,23 +453,25 @@ defineExpose({show, hide})
     display: grid;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px dashed var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .meta-list dt {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .meta-list dd {
     margin: 0;
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
 }
 
 .detail-content {
@@ -409,11 +481,16 @@ defineExpose({show, hide})
 }
 
 .detail-header h3 {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     margin-bottom: var(--spacing-2);
     font-size: var(--font-size-xl);
     line-height: var(--line-height-tight);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.detail-header .text-muted {
+    font-family: var(--font-family-sans);
 }
 
 .info-cards {
@@ -423,32 +500,42 @@ defineExpose({show, hide})
 }
 
 .info-card {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-2);
-    box-shadow: var(--shadow-base);
     transition: all var(--transition-base);
 }
 
 .info-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .info-card .label {
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .info-card .value {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
+    font-family: var(--font-family-sans);
+}
+
+.info-card .value.text-primary {
+    color: var(--color-primary);
+}
+
+.info-card .value.text-success {
+    color: var(--color-success);
 }
 
 .recipe-section {
@@ -458,17 +545,31 @@ defineExpose({show, hide})
 
 .recipe-section h5 {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     margin-bottom: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .recipe-section .btn {
-    padding: 6px 12px;
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
+    font-family: var(--font-family-sans);
+}
+
+.recipe-section .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.recipe-section .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .recipe-section .btn i {
@@ -476,45 +577,58 @@ defineExpose({show, hide})
     line-height: 1;
 }
 
-/* Table - Chuẩn hóa */
+/* Table - Minimal Table Styling */
 .product-detail-modal :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
 }
 
 .product-detail-modal :global(.table thead th) {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    background: var(--color-bg-muted);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .product-detail-modal :global(.table tbody td) {
     font-size: var(--font-size-base);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+}
+
+.product-detail-modal :global(.table tbody tr:last-child td) {
+    border-bottom: none;
 }
 
 .product-detail-modal :global(.table tbody tr:hover) {
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .empty-recipe {
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-6);
     text-align: center;
     color: var(--color-text-muted);
     display: grid;
     gap: var(--spacing-3);
     justify-items: center;
-    background: var(--color-bg-muted);
+    background: var(--color-card-muted);
 }
 
 .empty-recipe i {
     font-size: 48px;
     color: var(--color-primary);
+}
+
+.empty-recipe p {
+    font-family: var(--font-family-sans);
 }
 
 @media (max-width: 992px) {

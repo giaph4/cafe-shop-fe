@@ -30,8 +30,8 @@ const props = defineProps({
     justify-content: center;
     gap: var(--spacing-3);
     text-align: center;
-    padding: var(--spacing-10) var(--spacing-6);
-    border-radius: var(--radius-lg);
+    padding: var(--spacing-8) var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px dashed var(--color-border);
     background: var(--color-card-muted);
 }
@@ -39,7 +39,7 @@ const props = defineProps({
 .empty-state__icon {
     width: 64px;
     height: 64px;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     background: var(--color-primary-soft);
     display: grid;
     place-items: center;
@@ -54,14 +54,16 @@ const props = defineProps({
     font-size: var(--font-size-lg);
     color: var(--color-heading);
     margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .empty-state__text p {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     line-height: var(--line-height-relaxed);
     max-width: 400px;
+    font-family: var(--font-family-sans);
 }
 
 .empty-state__action {

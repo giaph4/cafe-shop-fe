@@ -90,6 +90,7 @@ const spinnerClass = computed(() => {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
 }
 
 /* Size variants */

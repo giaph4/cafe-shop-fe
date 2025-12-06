@@ -221,51 +221,53 @@ const handleViewDetail = (shift) => emit('view-detail', shift)
 </script>
 
 <style scoped>
-/* KPI Cards */
+/* KPI Cards - Flat Design */
 .kpi-card {
-    background: var(--color-bg);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
-    box-shadow: var(--shadow-base);
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
-    transition: box-shadow var(--transition-base);
+    gap: var(--spacing-4);
+    transition: all var(--transition-base);
     min-height: 120px;
     height: 100%;
 }
 
 .kpi-card:hover {
-    box-shadow: var(--shadow-hover);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .kpi-card__icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    background: var(--color-bg-muted);
-    color: var(--color-primary);
 }
 
 .kpi-card--shifts .kpi-card__icon {
+    background: var(--color-soft-primary);
     color: var(--color-primary);
 }
 
 .kpi-card--completed .kpi-card__icon {
+    background: var(--color-soft-emerald);
     color: var(--color-success);
 }
 
 .kpi-card--planned .kpi-card__icon {
-    color: var(--color-info);
+    background: var(--color-soft-indigo);
+    color: var(--color-primary);
 }
 
 .kpi-card--cancelled .kpi-card__icon {
+    background: var(--color-soft-rose);
     color: var(--color-danger);
 }
 
@@ -275,19 +277,21 @@ const handleViewDetail = (shift) => emit('view-detail', shift)
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-2);
     line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
 }
 
 .kpi-card__value {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     line-height: var(--line-height-tight);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .kpi-card__detail {
@@ -295,25 +299,55 @@ const handleViewDetail = (shift) => emit('view-detail', shift)
     color: var(--color-text-muted);
     margin-top: var(--spacing-1);
     line-height: var(--line-height-relaxed);
+    font-family: var(--font-family-sans);
 }
 
 /* Calendar Card */
 .calendar-card {
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-base);
-    background: var(--color-bg);
+    background: var(--color-card);
 }
 
 .calendar-card :global(.card-body) {
     padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 .calendar-card :global(.card-title) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.calendar-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.calendar-nav .btn {
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.calendar-nav .btn-outline-secondary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.calendar-nav .btn-outline-secondary:hover:not(:disabled) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
+
+.calendar-nav .fw-semibold {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
 }
 
 .calendar-grid {
@@ -328,37 +362,39 @@ const handleViewDetail = (shift) => emit('view-detail', shift)
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
     padding: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .calendar-day {
     position: relative;
-    border: 1px solid transparent;
-    background: var(--color-bg-muted);
-    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-2);
     text-align: left;
     transition: all var(--transition-base);
-    color: var(--color-text);
+    color: var(--color-heading);
     cursor: pointer;
+    font-family: var(--font-family-sans);
 }
 
 .calendar-day:hover {
-    background: var(--color-primary-soft);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
 }
 
 .calendar-day.is-outside {
     opacity: 0.4;
+    background: var(--color-card-muted);
 }
 
 .calendar-day.is-selected {
     border-color: var(--color-primary);
-    background: var(--color-primary-soft);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-soft-primary);
 }
 
 .calendar-day.is-today .day-number {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
 }
 
@@ -374,37 +410,70 @@ const handleViewDetail = (shift) => emit('view-detail', shift)
 
 .selected-day {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     padding: var(--spacing-4);
-    background: var(--color-bg-muted);
+    background: var(--color-card);
 }
 
 .selected-day :global(h6) {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-3);
+    font-family: var(--font-family-sans);
 }
 
 .selected-day__empty {
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-base);
-    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-muted);
     padding: var(--spacing-3);
     text-align: center;
     color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 .selected-day :global(.list-group-item) {
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-sm);
     margin-bottom: var(--spacing-2);
-    background: var(--color-bg);
+    background: var(--color-card);
     padding: var(--spacing-3);
+    transition: all var(--transition-base);
+}
+
+.selected-day :global(.list-group-item:hover) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .selected-day :global(.list-group-item:last-child) {
     margin-bottom: 0;
+}
+
+.selected-day :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.selected-day :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+}
+
+.selected-day :global(.btn-outline-primary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.selected-day :global(.btn-outline-primary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 
 /* Responsive */

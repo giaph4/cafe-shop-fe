@@ -242,6 +242,7 @@ const mergeOptions = (base, overrides = {}) => {
         stroke: { ...base.stroke, ...overrides.stroke },
         dataLabels: { ...base.dataLabels, ...overrides.dataLabels },
         grid: { ...base.grid, ...overrides.grid },
+        labels: overrides.labels !== undefined ? overrides.labels : base.labels,
         xaxis: {
             ...base.xaxis,
             ...(overrides.xaxis || {}),
@@ -381,12 +382,14 @@ const categorySeries = computed(() => {
 
 const categoryOptions = computed(() => {
     const data = props.categorySales ?? []
-    const categories = data.map((item, index) => item.categoryName || `Danh mục #${index + 1}`)
+    const labels = data.map((item, index) => item.categoryName || `Danh mục #${index + 1}`)
     const isBar = categoryChartType.value === 'bar'
+    const isCircular = ['pie', 'donut', 'radialBar'].includes(resolvedCategoryChartType.value)
     const base = createBaseOptions(resolvedCategoryChartType.value, VIBRANT_PALETTE)
 
     return mergeOptions(base, {
-        xaxis: { categories },
+        labels: isCircular ? labels : undefined,
+        xaxis: isBar ? { categories: labels } : base.xaxis,
         dataLabels: {
             enabled: !isBar,
             formatter: (val) => `${Number(val).toFixed(1)}%`
@@ -551,48 +554,137 @@ const onTableSort = (value) => {
 
 .card-inline {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+}
+
+.card-inline :global(.card-body) {
+    background: var(--color-card);
+    padding: var(--spacing-4);
+}
+
+.card-inline :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.card-inline :global(.form-select) {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+}
+
+.card-inline :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.card-inline :global(.text-muted) {
+    font-family: var(--font-family-sans);
 }
 
 .chart-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
+    gap: var(--spacing-4);
 }
 
 .alternating-grid {
-    margin-top: 1.5rem;
+    margin-top: var(--spacing-4);
 }
 
 .chart-card, .table-card {
     border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
 }
 
-.table-card .table {
+.chart-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.chart-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.chart-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+.table-card :global(.card-header) {
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4);
+}
+
+.table-card :global(.card-header h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.card-header .text-muted) {
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.card-body) {
+    padding: var(--spacing-4);
+}
+
+/* Minimal Table Styling */
+.table-card :global(.table) {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
 }
 
-.table-card tbody tr:last-child td {
+.table-card :global(.table thead th) {
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+    text-align: left;
+}
+
+.table-card :global(.table tbody td) {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    font-family: var(--font-family-sans);
+}
+
+.table-card :global(.table tbody tr:last-child td) {
     border-bottom: none;
 }
 
+.table-card :global(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+.table-card :global(.fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+}
+
 .insight-card__value {
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
 }
 
-:global([data-bs-theme='dark']) .sales-analysis .filters {
-    background: rgba(15, 23, 42, 0.8);
-}
-
-:global([data-bs-theme='dark']) .sales-analysis .chart-card,
-:global([data-bs-theme='dark']) .sales-analysis .table-card {
-    border-color: rgba(99, 102, 241, 0.32);
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.88));
-}
+/* Dark theme styles removed - using CSS variables for theme compatibility */
 </style>

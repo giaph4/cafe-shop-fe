@@ -78,6 +78,7 @@
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
     margin: 0;
     animation: pulse 1.5s ease-in-out infinite;
 }

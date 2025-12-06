@@ -180,38 +180,36 @@ const statusLabel = (status) => {
 
 <style scoped lang="scss">
 .detail-modal {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
 }
 
 .detail-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
 .info-card {
-    border: 1px solid var(--color-border-soft);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-4) var(--spacing-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-3) var(--spacing-4);
     background: var(--color-card);
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
 }
 
 .info-card:hover {
-    box-shadow: var(--shadow-soft);
     background: var(--color-card-muted);
+    border-color: var(--color-primary);
 }
 
 .info-card .label {
-    text-transform: uppercase;
-    font-size: var(--font-size-xs);
-    letter-spacing: var(--letter-spacing-wide);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
 }
 
 .info-card .value {
@@ -219,89 +217,168 @@ const statusLabel = (status) => {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     margin-bottom: 0;
+    font-family: var(--font-family-sans);
+}
+
+.info-card .value.text-primary {
+    color: var(--color-primary) !important;
 }
 
 .section-title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     margin-bottom: var(--spacing-3);
     color: var(--color-heading);
     font-size: var(--font-size-lg);
+    font-family: var(--font-family-sans);
 }
 
 .table-wrapper {
-    border: 1px solid var(--color-border-soft);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-4);
     background: var(--color-card);
-    box-shadow: var(--shadow-soft);
 }
 
 .status-badge {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-1);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-weight-medium);
     font-size: var(--font-size-sm);
+    border: 1px solid transparent;
+    font-family: var(--font-family-sans);
 }
 
 .status-success {
-    background: var(--color-success-soft);
+    background: var(--color-soft-emerald);
     color: var(--color-success);
+    border-color: var(--color-success);
 }
 
 .status-danger {
-    background: var(--color-danger-soft);
+    background: var(--color-soft-rose);
     color: var(--color-danger);
+    border-color: var(--color-danger);
 }
 
 .status-warning {
-    background: var(--color-warning-soft);
+    background: var(--color-soft-amber);
     color: var(--color-warning);
+    border-color: var(--color-warning);
 }
 
-.table tbody tr:last-child td {
+:deep(.table) {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+:deep(.table thead),
+:deep(.table thead.table-light) {
+    background: var(--color-card-muted);
+}
+
+:deep(.table thead th) {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    background: var(--color-card-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    font-family: var(--font-family-sans);
+}
+
+:deep(.table tbody td) {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+    font-family: var(--font-family-sans);
+}
+
+:deep(.table tbody tr:last-child td) {
     border-bottom: none;
 }
 
-.table td,
-.table th {
-    vertical-align: middle;
+:deep(.table tbody tr:hover) {
+    background: var(--color-card-muted);
+}
+
+:deep(.table .fw-semibold) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.table .text-muted) {
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
 }
 
 :deep(.modal-content) {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
-    box-shadow: var(--shadow-2xl);
 }
 
 :deep(.modal-header) {
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-6);
+    padding: var(--spacing-4);
     background: var(--color-card);
 }
 
 :deep(.modal-header .modal-title) {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-lg);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 :deep(.modal-header .modal-subtitle) {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
+    margin-top: var(--spacing-1);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
 }
 
 :deep(.modal-body) {
-    padding: var(--spacing-6);
+    padding: var(--spacing-4);
+    background: var(--color-card);
 }
 
 :deep(.modal-footer) {
     border-top: 1px solid var(--color-border);
-    padding: var(--spacing-4) var(--spacing-6);
+    padding: var(--spacing-4);
     background: var(--color-card);
+}
+
+:deep(.modal-footer .btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+:deep(.modal-footer .btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+:deep(.modal-footer .btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
 }
 </style>

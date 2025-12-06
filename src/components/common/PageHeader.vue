@@ -30,34 +30,36 @@ defineProps({
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-radius: 20px;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, var(--color-card), var(--color-card-accent));
-    box-shadow: var(--shadow-soft);
-    margin-bottom: 1.5rem;
+    background: var(--color-card);
+    margin-bottom: var(--spacing-4);
 }
 
 .page-header__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--spacing-4);
     width: 100%;
+    flex-wrap: wrap;
 }
 
 .page-header__title {
-    font-weight: 700;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    margin-bottom: 0.25rem;
-    font-size: 1.5rem;
+    margin-bottom: var(--spacing-1);
+    font-size: var(--font-size-xl);
+    font-family: var(--font-family-sans);
 }
 
 .page-header__subtitle {
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
     margin: 0;
+    font-family: var(--font-family-sans);
 }
 
 .page-header__actions {

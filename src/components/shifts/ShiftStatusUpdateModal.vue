@@ -1,6 +1,6 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modalRef" tabindex="-1" aria-hidden="true">
+        <Teleport to="body">
+        <div class="modal fade shift-status-update-modal" ref="modalRef" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -172,6 +172,162 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Modal styles đã được chuẩn hóa trong components.scss */
+.shift-status-update-modal :global(.modal-content) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-status-update-modal :global(.modal-header) {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-status-update-modal :global(.modal-title) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-xl);
+    font-family: var(--font-family-sans);
+}
+
+.shift-status-update-modal :global(.modal-body) {
+    padding: var(--spacing-4);
+    background: var(--color-card);
+}
+
+.shift-status-update-modal :global(.modal-footer) {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+}
+
+.shift-status-update-modal :global(.form-label) {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-sans);
+}
+
+.shift-status-update-modal :global(.form-control-plaintext) {
+    padding: var(--spacing-2) 0;
+}
+
+.shift-status-update-modal :global(.badge) {
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+    min-width: 120px;
+    text-align: center;
+    border: 2px solid;
+}
+
+.shift-status-update-modal :global(.badge.bg-info) {
+    background: var(--color-info-soft, #d1ecf1);
+    color: var(--color-info-dark, #0c5460);
+    border-color: var(--color-info, #0dcaf0);
+}
+
+.shift-status-update-modal :global(.badge.bg-secondary) {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border-color: var(--color-border);
+}
+
+.shift-status-update-modal :global(.badge.bg-primary) {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.shift-status-update-modal :global(.badge.bg-success) {
+    background: var(--color-success-soft, #d1e7dd);
+    color: var(--color-success-dark, #0f5132);
+    border-color: var(--color-success, #198754);
+}
+
+.shift-status-update-modal :global(.badge.bg-danger) {
+    background: var(--color-soft-rose);
+    color: var(--color-danger-dark, #a0281d);
+    border-color: var(--color-danger);
+}
+
+.shift-status-update-modal :global(.form-select) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.shift-status-update-modal :global(.form-select:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.shift-status-update-modal :global(.form-select.is-invalid) {
+    border-color: var(--color-danger);
+}
+
+.shift-status-update-modal :global(.invalid-feedback) {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+    margin-top: var(--spacing-1);
+}
+
+.shift-status-update-modal :global(.form-control) {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-heading);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+}
+
+.shift-status-update-modal :global(.form-control:focus) {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.shift-status-update-modal :global(.btn) {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+}
+
+.shift-status-update-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.shift-status-update-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.shift-status-update-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.shift-status-update-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-soft-primary);
+    border-color: var(--color-primary-dark);
+    color: var(--color-primary-dark);
+}
 </style>
 

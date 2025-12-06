@@ -83,18 +83,31 @@ const formatRole = (roleName) => {
 
 <style scoped>
 .staff-card {
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
     background: var(--color-card);
-    color: var(--color-text);
+    color: var(--color-heading);
     transition: all var(--transition-base);
     height: 100%;
 }
 
 .staff-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+}
+
+.staff-card :global(h5) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-1);
+    font-family: var(--font-family-sans);
+}
+
+.staff-card :global(.text-muted) {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
 }
 
 .avatar-wrapper {
@@ -124,41 +137,44 @@ const formatRole = (roleName) => {
 }
 
 .badge.bg-soft {
-    background: var(--color-badge-soft-bg);
-    color: var(--color-badge-soft-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
     border: 1px solid var(--color-border);
     padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-xs);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
-/* Trạng thái nhân viên trên card */
+/* Trạng thái nhân viên trên card - Flat Design */
 .status-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    letter-spacing: var(--letter-spacing-wide);
-    text-transform: uppercase;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
 }
 
 .status-badge--active {
     background: var(--color-soft-emerald);
     color: var(--color-success);
+    border: 1px solid var(--color-success);
 }
 
 .status-badge--inactive {
-    background: var(--color-soft-neutral);
+    background: var(--color-soft-rose);
     color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
 }
 
 .status-badge--neutral {
-    background: var(--color-badge-soft-bg);
-    color: var(--color-badge-soft-text);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
 }
 
 .card-footer {
@@ -169,14 +185,15 @@ const formatRole = (roleName) => {
 
 .card-footer .btn {
     font-size: var(--font-size-sm);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
     transition: all var(--transition-base);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
+    font-family: var(--font-family-sans);
 }
 
 .card-footer .btn i {
@@ -185,41 +202,28 @@ const formatRole = (roleName) => {
 }
 
 .card-footer .btn-outline-primary {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-card);
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
 }
 
 .card-footer .btn-outline-primary:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-}
-
-.card-footer .btn-outline-primary:active:not(:disabled) {
-    transform: translateY(0);
+    color: var(--color-primary);
 }
 
 .card-footer .btn-outline-secondary,
 .card-footer .btn-outline-dark {
     border-color: var(--color-border);
-    color: var(--color-text);
-    background: var(--color-card);
+    color: var(--color-heading);
+    background: transparent;
 }
 
 .card-footer .btn-outline-secondary:hover:not(:disabled),
 .card-footer .btn-outline-dark:hover:not(:disabled) {
-    background: var(--color-bg-muted);
-    color: var(--color-primary);
+    background: var(--color-card-muted);
     border-color: var(--color-primary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-}
-
-.card-footer .btn-outline-secondary:active:not(:disabled),
-.card-footer .btn-outline-dark:active:not(:disabled) {
-    transform: translateY(0);
+    color: var(--color-primary);
 }
 </style>

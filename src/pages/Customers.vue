@@ -211,6 +211,7 @@ import {
     updateCustomer
 } from '@/api/customerService'
 import { formatNumber } from '@/utils/formatters'
+import logger from '@/utils/logger'
 
 const router = useRouter()
 const route = useRoute()
@@ -683,9 +684,17 @@ const handleDeleteConfirm = async () => {
             } else {
                 fetchCustomers(true)
             }
-        }, 'Không thể xóa khách hàng. Vui lòng kiểm tra và thử lại.', {
-            showToast: false // Đã có toast riêng
+        }, {
+            showToast: false, // Đã có toast riêng
+            onError: (err) => {
+                const message = err?.response?.data?.message || 'Không thể xóa khách hàng. Vui lòng kiểm tra và thử lại.'
+                toast.error(message)
+            }
         })
+    } catch (err) {
+        // Error đã được handle trong onError callback
+        // Chỉ cần log nếu cần
+        logger.error('Error deleting customer:', err)
     } finally {
         deleting.value = false
     }

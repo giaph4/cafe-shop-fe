@@ -156,7 +156,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['view-detail', 'cancel', 'page-change', 'export'])
+const emit = defineEmits(['view-detail', 'update', 'cancel', 'page-change', 'export'])
 
 const STATUS_METADATA = {
     PENDING: { label: 'Đang chờ', badgeClass: 'badge' },

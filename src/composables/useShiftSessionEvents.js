@@ -1,6 +1,6 @@
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import { getAccessToken } from '@/utils/tokenStorage'
 import logger from '@/utils/logger'
 
@@ -163,6 +163,11 @@ export const useShiftSessionEvents = (handleEvent) => {
             connect()
         }
     }
+
+    // MEMORY LEAK FIX: Tự động cleanup khi component unmount
+    onBeforeUnmount(() => {
+        cleanupClient()
+    })
 
     return {
         client,

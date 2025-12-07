@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import logger from '@/utils/logger'
 
 /**
  * Composable cho infinite scroll - tự động load thêm khi scroll đến cuối
@@ -70,7 +71,7 @@ export function useInfiniteScroll(loadMore, options = {}) {
             hasMore.value = !isLast && newItems.length === currentPageSize
         } catch (err) {
             error.value = err
-            console.error('Error loading more items:', err)
+            logger.error('Error loading more items:', err)
         } finally {
             loading.value = false
         }

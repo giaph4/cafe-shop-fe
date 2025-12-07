@@ -25,7 +25,17 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <ApexChart :type="revenueChartType" height="320" :series="revenueSeries" :options="computedRevenueOptions" />
+                    <ApexChart 
+                        v-if="isValidSeries(normalizedRevenueSeries) && computedRevenueOptions"
+                        :type="revenueChartType" 
+                        height="320" 
+                        :series="normalizedRevenueSeries" 
+                        :options="computedRevenueOptions" 
+                    />
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-graph-up"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                 </div>
             </div>
 
@@ -44,7 +54,17 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <ApexChart :type="resolvedProfitChartType" height="320" :series="profitSeries" :options="computedProfitOptions" />
+                    <ApexChart 
+                        v-if="isValidSeries(normalizedProfitSeries) && computedProfitOptions"
+                        :type="resolvedProfitChartType" 
+                        height="320" 
+                        :series="normalizedProfitSeries" 
+                        :options="computedProfitOptions" 
+                    />
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-bar-chart"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                     <ul class="insight-list">
                         <li>
                             <span>Tổng doanh thu</span>
@@ -87,7 +107,17 @@
                     </div>
                 </div>
                 <div class="card-body" v-if="paymentStats?.length">
-                    <ApexChart :type="resolvedPaymentChartType" height="280" :series="paymentChartSeries" :options="paymentChartOptions" />
+                    <ApexChart 
+                        v-if="isValidSeries(paymentChartSeries) && paymentChartOptions"
+                        :type="resolvedPaymentChartType" 
+                        height="280" 
+                        :series="paymentChartSeries" 
+                        :options="paymentChartOptions" 
+                    />
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-pie-chart"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                     <div class="payment-list">
                         <div v-for="item in paymentStats" :key="item.paymentMethod" class="payment-item">
                             <div class="payment-item__meta">
@@ -138,11 +168,16 @@
                         <!-- Chart Section -->
                         <div class="hourly-chart-section">
                             <ApexChart 
+                                v-if="isValidSeries(hourlyChartSeries) && hourlyChartOptions"
                                 type="line" 
                                 height="280" 
                                 :series="hourlyChartSeries"
                                 :options="hourlyChartOptions" 
                             />
+                            <div v-else class="text-center text-muted py-4">
+                                <i class="bi bi-clock-history"></i>
+                                <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                            </div>
                         </div>
 
                         <!-- Heatmap Grid -->
@@ -207,10 +242,26 @@ import VueApexCharts from 'vue3-apexcharts'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 import { useThemePreference } from '@/composables/useThemePreference'
 
+// Helper function to validate series data
+const isValidSeries = (series) => {
+    if (!series || !Array.isArray(series) || series.length === 0) return false
+    const firstItem = series[0]
+    if (!firstItem && firstItem !== 0) return false
+    // Check if it's object format with data array (for bar/line/area charts)
+    if (firstItem && typeof firstItem === 'object' && firstItem.data !== undefined) {
+        return Array.isArray(firstItem.data) && firstItem.data.length > 0
+    }
+    // Check if it's array of numbers (for pie/donut charts)
+    if (typeof firstItem === 'number') {
+        return true
+    }
+    return false
+}
+
 const props = defineProps({
-    revenueSeries: { type: Array, default: () => [] },
+    revenueSeries: { type: Array, default: () => [{ name: 'Doanh thu', data: [] }] },
     revenueOptions: { type: Object, default: () => ({}) },
-    profitSeries: { type: Array, default: () => [] },
+    profitSeries: { type: Array, default: () => [{ name: 'Doanh thu', data: [] }, { name: 'Lợi nhuận', data: [] }] },
     profitOptions: { type: Object, default: () => ({}) },
     profit: { type: Object, default: null },
     categorySales: { type: Array, default: () => [] },
@@ -384,6 +435,33 @@ const revenueChartType = ref('area')
 const profitChartType = ref('bar')
 const paymentChartType = ref('donut')
 const paymentMetric = ref('orders')
+
+// Normalize series props to ensure they're always valid arrays
+const normalizedRevenueSeries = computed(() => {
+    const series = Array.isArray(props.revenueSeries) ? props.revenueSeries : []
+    if (series.length === 0) {
+        return [{ name: 'Doanh thu', data: [] }]
+    }
+    return series.map(s => ({
+        name: s?.name || 'Doanh thu',
+        data: Array.isArray(s?.data) ? s.data.map(v => Number(v) || 0) : []
+    }))
+})
+
+const normalizedProfitSeries = computed(() => {
+    const series = Array.isArray(props.profitSeries) ? props.profitSeries : []
+    if (series.length === 0) {
+        return [
+            { name: 'Doanh thu', data: [] },
+            { name: 'Lợi nhuận', data: [] }
+        ]
+    }
+    return series.map(s => ({
+        name: s?.name || 'Doanh thu',
+        data: Array.isArray(s?.data) ? s.data.map(v => Number(v) || 0) : []
+    }))
+})
+
 // Build full 24 hours data with missing hours filled with 0
 const fullHourlyData = computed(() => {
     const hoursMap = new Map()
@@ -396,14 +474,15 @@ const fullHourlyData = computed(() => {
         })
     }
     // Fill with actual data
-    if (props.hourlySales?.length) {
-        props.hourlySales.forEach(item => {
-            const hour = Number(item.hour)
+    const sales = Array.isArray(props.hourlySales) ? props.hourlySales : []
+    if (sales.length > 0) {
+        sales.forEach(item => {
+            const hour = Number(item?.hour)
             if (!isNaN(hour) && hour >= 0 && hour < 24) {
                 hoursMap.set(hour, {
                     hour,
-                    revenue: item.revenue || item.totalRevenue || 0,
-                    orderCount: item.orderCount || 0
+                    revenue: Number(item?.revenue) || Number(item?.totalRevenue) || 0,
+                    orderCount: Number(item?.orderCount) || 0
                 })
             }
         })
@@ -534,7 +613,10 @@ const computedProfitOptions = computed(() => {
 
     return mergeOptions(base, {
         chart: { type: resolvedProfitChartType.value },
-        xaxis: { categories },
+        xaxis: {
+            ...base.xaxis,
+            categories: Array.isArray(categories) ? categories : []
+        },
         dataLabels: { enabled: false },
         stroke: resolvedProfitChartType.value === 'radar'
             ? { width: 2.5 }
@@ -570,16 +652,26 @@ const paymentItems = computed(() => props.paymentStats ?? [])
 const resolvedPaymentChartType = computed(() => paymentChartType.value === 'bar' ? 'bar' : paymentChartType.value)
 
 const paymentChartSeries = computed(() => {
-    if (!paymentItems.value.length) return []
-    if (paymentChartType.value === 'bar') {
-        return [
-            {
-                name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
-                data: paymentItems.value.map((item) => paymentMetric.value === 'orders' ? item.orderCount : item.totalAmount)
-            }
-        ]
+    const items = Array.isArray(paymentItems.value) ? paymentItems.value : []
+    if (items.length === 0) {
+        // Return empty array for pie/donut, empty object array for bar
+        if (paymentChartType.value === 'pie' || paymentChartType.value === 'donut') {
+            return []
+        }
+        return [{ name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu', data: [] }]
     }
-    return paymentItems.value.map((item) => paymentMetric.value === 'orders' ? item.orderCount : item.totalAmount)
+    const data = items.map((item) => paymentMetric.value === 'orders' ? (Number(item?.orderCount) || 0) : (Number(item?.totalAmount) || 0))
+    // For pie/donut charts, ApexCharts requires array of numbers directly
+    if (paymentChartType.value === 'pie' || paymentChartType.value === 'donut') {
+        return data
+    }
+    // For bar charts, return object format
+    return [
+        {
+            name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
+            data: data
+        }
+    ]
 })
 
 const paymentChartOptions = computed(() => {
@@ -611,8 +703,15 @@ const paymentChartOptions = computed(() => {
 
 // Chart series for hourly sales
 const hourlyChartSeries = computed(() => {
-    const revenues = fullHourlyData.value.map(b => b.revenue)
-    const orders = fullHourlyData.value.map(b => b.orderCount)
+    const data = Array.isArray(fullHourlyData.value) ? fullHourlyData.value : []
+    if (data.length === 0) {
+        return [
+            { name: 'Doanh thu', type: 'area', data: [] },
+            { name: 'Số đơn', type: 'line', data: [] }
+        ]
+    }
+    const revenues = data.map(b => Number(b?.revenue) || 0)
+    const orders = data.map(b => Number(b?.orderCount) || 0)
     
     return [
         {

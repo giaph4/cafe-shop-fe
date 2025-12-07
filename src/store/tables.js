@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, shallowReactive } from 'vue'
 import { getTables, getTableById, updateTableStatus } from '@/api/tableService'
-import { useTableEvents } from '@/composables/useTableEvents'
+import { useTableEvents } from '@/composables/useWebSocketEvents'
 import logger from '@/utils/logger'
 
 /**

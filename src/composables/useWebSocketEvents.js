@@ -1,8 +1,17 @@
+/**
+ * === SECTION: UNIFIED WEBSOCKET EVENTS COMPOSABLE ===
+ * Composable chung cho WebSocket connections với STOMP
+ * PERFORMANCE FIX: Gộp useTableEvents và useDashboardEvents để giảm code duplication
+ * MEMORY LEAK FIX: Đảm bảo cleanup đúng cách khi component unmount
+ */
+
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import { getAccessToken } from '@/utils/tokenStorage'
 import logger from '@/utils/logger'
+
+// === SECTION: UTILITY FUNCTIONS ===
 
 if (typeof window !== 'undefined' && typeof window.global === 'undefined') {
     window.global = window
@@ -23,6 +32,8 @@ const appendTokenParam = (baseUrl, token) => {
     }
 }
 
+// === SECTION: WEBSOCKET CONFIGURATION ===
+
 const apiBase = normalizeUrl(import.meta.env.VITE_API_BASE_URL)
 const configuredShiftWs = normalizeUrl(import.meta.env.VITE_SHIFT_WS_ENDPOINT)
 const configuredChatWs = normalizeUrl(import.meta.env.VITE_CHAT_WS_ENDPOINT)
@@ -31,14 +42,27 @@ const WS_ENDPOINT = rawWsEndpoint.startsWith('http') || rawWsEndpoint.startsWith
     ? rawWsEndpoint
     : `${window.location.origin}${rawWsEndpoint.startsWith('/') ? '' : '/'}${rawWsEndpoint}`
 
-const DESTINATION = '/topic/dashboard/updates'
+// === SECTION: MAIN COMPOSABLE ===
 
 /**
- * Composable để kết nối WebSocket và nhận real-time updates cho Dashboard
+ * Composable để kết nối WebSocket và nhận real-time updates
  * @param {Function} handleEvent - Callback function để xử lý events từ WebSocket
+ * @param {Object} options - Options
+ * @param {string} options.destination - STOMP destination topic (required)
+ * @param {string} options.context - Context name for logging (default: 'WebSocket')
  * @returns {Object} Object chứa client, connected, connecting, lastError, connect, disconnect, ensureConnected
  */
-export const useDashboardEvents = (handleEvent) => {
+export const useWebSocketEvents = (handleEvent, options = {}) => {
+    const {
+        destination,
+        context = 'WebSocket'
+    } = options
+
+    if (!destination) {
+        logger.error(`[${context}] Destination is required`)
+        throw new Error('WebSocket destination is required')
+    }
+
     const client = ref(null)
     const connected = ref(false)
     const connecting = ref(false)
@@ -47,12 +71,14 @@ export const useDashboardEvents = (handleEvent) => {
     const reconnectAttempts = ref(0)
     let subscription = null
 
+    // === SECTION: CLEANUP FUNCTIONS ===
+
     const clearSubscription = () => {
         if (subscription) {
             try {
                 subscription.unsubscribe()
             } catch (error) {
-                logger.warn('Failed to unsubscribe from dashboard events', error)
+                logger.warn(`[${context}] Failed to unsubscribe`, error)
             }
             subscription = null
         }
@@ -64,7 +90,7 @@ export const useDashboardEvents = (handleEvent) => {
             try {
                 await client.value.deactivate()
             } catch (error) {
-                logger.warn('Failed to deactivate dashboard STOMP client', error)
+                logger.warn(`[${context}] Failed to deactivate STOMP client`, error)
             }
             client.value = null
         }
@@ -72,9 +98,12 @@ export const useDashboardEvents = (handleEvent) => {
         connecting.value = false
     }
 
+    // === SECTION: CLIENT BUILDING ===
+
     const buildClient = () => {
         const token = getAccessToken()
         if (!token) {
+            logger.warn(`[${context}] No access token available`)
             cleanupClient()
             return null
         }
@@ -104,8 +133,8 @@ export const useDashboardEvents = (handleEvent) => {
             reconnectAttempts.value = 0
             clearSubscription()
             
-            // Subscribe to dashboard updates topic
-            subscription = instance.subscribe(DESTINATION, (message) => {
+            // Subscribe to destination topic
+            subscription = instance.subscribe(destination, (message) => {
                 try {
                     const payload = JSON.parse(message.body)
                     lastEvent.value = payload
@@ -113,19 +142,19 @@ export const useDashboardEvents = (handleEvent) => {
                         handleEvent(payload)
                     }
                 } catch (error) {
-                    logger.warn('Failed to parse dashboard event payload', error)
+                    logger.warn(`[${context}] Failed to parse event payload`, error)
                 }
             })
         }
 
         instance.onStompError = (frame) => {
             lastError.value = frame
-            logger.warn('STOMP error received for dashboard events', frame)
+            logger.warn(`[${context}] STOMP error received`, frame)
         }
 
         instance.onWebSocketError = (event) => {
             lastError.value = event
-            logger.warn('WebSocket error for dashboard events', event)
+            logger.warn(`[${context}] WebSocket error`, event)
         }
 
         instance.onWebSocketClose = (event) => {
@@ -142,6 +171,8 @@ export const useDashboardEvents = (handleEvent) => {
 
         return instance
     }
+
+    // === SECTION: CONNECTION MANAGEMENT ===
 
     const connect = () => {
         if (connecting.value) {
@@ -171,6 +202,12 @@ export const useDashboardEvents = (handleEvent) => {
         }
     }
 
+    // === SECTION: CLEANUP ON UNMOUNT ===
+
+    onBeforeUnmount(() => {
+        cleanupClient()
+    })
+
     return {
         client,
         connected,
@@ -182,5 +219,31 @@ export const useDashboardEvents = (handleEvent) => {
         disconnect,
         ensureConnected
     }
+}
+
+// === SECTION: CONVENIENCE EXPORTS ===
+
+/**
+ * Composable cho Table status updates
+ * @param {Function} handleEvent - Event handler
+ * @returns {Object} WebSocket composable result
+ */
+export const useTableEvents = (handleEvent) => {
+    return useWebSocketEvents(handleEvent, {
+        destination: '/topic/tables/status-updates',
+        context: 'TableEvents'
+    })
+}
+
+/**
+ * Composable cho Dashboard updates
+ * @param {Function} handleEvent - Event handler
+ * @returns {Object} WebSocket composable result
+ */
+export const useDashboardEvents = (handleEvent) => {
+    return useWebSocketEvents(handleEvent, {
+        destination: '/topic/dashboard/updates',
+        context: 'DashboardEvents'
+    })
 }
 

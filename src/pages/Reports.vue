@@ -564,12 +564,15 @@ const fetchReports = async () => {
         const safeRevenue = revenueData ?? { values: [], labels: [], summary: { total: 0, average: 0, max: 0 } }
         dashboardStats.value = dashboardData ?? null
         revenueEntries.value = safeRevenue.entries ?? []
-        revenueSeries.value = [{ name: 'Doanh thu', data: safeRevenue.values ?? [] }]
-        revenueOptions.value = buildRevenueOptions(safeRevenue.labels ?? [])
+        const revenueValues = Array.isArray(safeRevenue.values) ? safeRevenue.values.map(v => Number(v) || 0) : []
+        revenueSeries.value = [{ name: 'Doanh thu', data: revenueValues }]
+        revenueOptions.value = buildRevenueOptions(Array.isArray(safeRevenue.labels) ? safeRevenue.labels : [])
         revenueSummary.value = safeRevenue.summary ?? { total: 0, average: 0, max: 0 }
+        const profitRevenue = Number(profitData?.totalRevenue) || 0
+        const profitTotal = Number(profitData?.totalProfit) || 0
         profitSeries.value = [
-            { name: 'Doanh thu', data: [profitData?.totalRevenue ?? 0] },
-            { name: 'Lợi nhuận', data: [profitData?.totalProfit ?? 0] }
+            { name: 'Doanh thu', data: [profitRevenue] },
+            { name: 'Lợi nhuận', data: [profitTotal] }
         ]
         profitOptions.value = buildProfitOptions()
         paymentStats.value = paymentData?.items ?? []

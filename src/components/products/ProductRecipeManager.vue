@@ -169,7 +169,7 @@ const fetchRecipe = async () => {
         recipe.value = Array.isArray(data) ? data : data?.data || []
         syncDrafts()
     } catch (err) {
-        console.error(err)
+        logger.error('Failed to load product recipe:', err)
         error.value = err.response?.data?.message || 'Không thể tải công thức sản phẩm.'
         recipe.value = []
         syncDrafts()

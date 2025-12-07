@@ -1,5 +1,5 @@
 import api from './axios'
-import { buildApiError } from './utils/errorHandler'
+import { buildApiError } from '@/utils/errorHandler'
 import { cleanParams } from './utils'
 import logger from '@/utils/logger'
 
@@ -65,7 +65,7 @@ export const addItemToOrder = async ({ orderId, itemData }) => {
     
     // Log payload để debug (chỉ trong development)
     if (import.meta.env.DEV) {
-        console.log('[OrderService] Adding item to order:', {
+        logger.log('[OrderService] Adding item to order:', {
             orderId,
             payload,
             payloadString: JSON.stringify(payload),
@@ -97,9 +97,9 @@ export const addItemToOrder = async ({ orderId, itemData }) => {
             fullResponse: error.response
         }
         
-        console.error('[OrderService] Failed to add item:', errorDetails)
-        console.error('[OrderService] Full error:', error)
-        console.error('[OrderService] Error response data:', errorResponse)
+        logger.error('[OrderService] Failed to add item:', errorDetails)
+        logger.error('[OrderService] Full error:', error)
+        logger.error('[OrderService] Error response data:', errorResponse)
         
         // Tạo error message thân thiện hơn
         let userFriendlyMessage = 'Không thể thêm món vào đơn hàng'

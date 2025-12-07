@@ -61,6 +61,7 @@
 import { ref, onMounted } from 'vue'
 import { useMotion } from '@vueuse/motion'
 import { useIntersectionObserver } from '@vueuse/core'
+import logger from '@/utils/logger'
 
 const projectRefs = ref([])
 const visualRef = ref(null)
@@ -88,7 +89,7 @@ const projects = [
 
 const viewArchitecture = (project) => {
     // TODO: Open modal with system architecture diagram
-    console.log('View architecture for:', project.title)
+    logger.log('View architecture for:', project.title)
 }
 
 onMounted(() => {

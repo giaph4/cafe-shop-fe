@@ -133,6 +133,7 @@ import PosOrderCart from '@/components/pos/PosOrderCart.vue'
 import { getPendingOrderByTable, getOrdersByStatus } from '@/api/orderService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import EmptyState from '@/components/common/EmptyState.vue'
+import logger from '@/utils/logger'
 
 const tableStore = useTableStore()
 
@@ -279,7 +280,7 @@ const handleRefreshTakeawayOrders = async () => {
         await queryClient.invalidateQueries({ queryKey: ['pendingTakeawayOrders'] })
         await refetchTakeawayOrders()
     } catch (error) {
-        console.error('Failed to refresh takeaway orders:', error)
+        logger.error('Failed to refresh takeaway orders:', error)
     }
 }
 

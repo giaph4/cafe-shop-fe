@@ -1,38 +1,25 @@
 import api from './axios'
-import { buildApiError } from './utils/errorHandler'
+import { buildApiError } from '@/utils/errorHandler'
 import { cleanParams } from './utils'
+import { createFileFormData, getMultipartHeaders } from './helpers'
 
 const BASE_URL = '/api/v1/files'
 
-const getFormData = (fieldName, files) => {
-    const formData = new FormData()
-    if (Array.isArray(files)) {
-        files.forEach((file) => {
-            formData.append(fieldName, file)
-        })
-        return formData
-    }
-
-    formData.append(fieldName, files)
-    return formData
-}
-
 const postMultipart = async (url, formData) => {
     const {data} = await api.post(url, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
+        headers: getMultipartHeaders()
     })
-
     return data
 }
 
 export const uploadFile = async (file) => {
-    return postMultipart(`${BASE_URL}/upload`, getFormData('file', file))
+    const formData = createFileFormData(file, 'file')
+    return postMultipart(`${BASE_URL}/upload`, formData)
 }
 
 export const uploadMultipleFiles = async (files) => {
-    return postMultipart(`${BASE_URL}/upload-multiple`, getFormData('files', files))
+    const formData = createFileFormData(files, 'files')
+    return postMultipart(`${BASE_URL}/upload-multiple`, formData)
 }
 
 export const getFile = async (fileName) => {

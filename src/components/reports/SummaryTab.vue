@@ -60,12 +60,20 @@
                 </div>
                 <div class="card-body">
                     <ApexChart
-                        v-if="chartsReady"
+                        v-if="chartsReady && isValidSeries(revenueSeries) && computedRevenueOptions"
                         :type="revenueChartType"
                         height="320"
                         :series="revenueSeries"
                         :options="computedRevenueOptions"
                     />
+                    <div v-else-if="!chartsReady" class="text-center text-muted py-4">
+                        <i class="bi bi-hourglass-split"></i>
+                        <p class="mb-0 mt-2">Đang tải dữ liệu...</p>
+                    </div>
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-graph-up"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                 </div>
             </div>
             <div class="card chart-card">
@@ -89,11 +97,16 @@
                 <div class="card-body">
                     <template v-if="paymentItems.length">
                         <ApexChart
+                            v-if="isValidSeries(paymentChartSeries) && paymentChartOptions"
                             :type="resolvedPaymentChartType"
                             height="320"
                             :series="paymentChartSeries"
                             :options="paymentChartOptions"
                         />
+                        <div v-else class="text-center text-muted py-4">
+                            <i class="bi bi-pie-chart"></i>
+                            <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                        </div>
                     </template>
                     <p v-else class="text-muted mb-0">Chưa có dữ liệu thanh toán trong khoảng thời gian đã chọn.</p>
                 </div>
@@ -212,7 +225,7 @@
                 </div>
                 <div class="card-body">
                     <ApexChart
-                        v-if="topProductItems.length"
+                        v-if="topProductItems.length && isValidSeries(productChartSeries) && productChartOptions"
                         :type="resolvedProductChartType"
                         height="320"
                         :series="productChartSeries"
@@ -242,7 +255,7 @@
                 </div>
                 <div class="card-body">
                     <ApexChart
-                        v-if="topCustomerItems.length"
+                        v-if="topCustomerItems.length && isValidSeries(customerChartSeries) && customerChartOptions"
                         :type="resolvedCustomerChartType"
                         height="320"
                         :series="customerChartSeries"
@@ -260,6 +273,22 @@ import { computed, nextTick, onMounted, ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 import { useThemePreference } from '@/composables/useThemePreference'
+
+// Helper function to validate series data
+const isValidSeries = (series) => {
+    if (!series || !Array.isArray(series) || series.length === 0) return false
+    const firstItem = series[0]
+    if (!firstItem && firstItem !== 0) return false
+    // Check if it's object format with data array (for bar/line/area charts)
+    if (firstItem && typeof firstItem === 'object' && firstItem.data !== undefined) {
+        return Array.isArray(firstItem.data) && firstItem.data.length > 0
+    }
+    // Check if it's array of numbers (for pie/donut charts)
+    if (typeof firstItem === 'number') {
+        return true
+    }
+    return false
+}
 
 const props = defineProps({
     stats: { type: Object, default: null },
@@ -591,30 +620,48 @@ const computedRevenueOptions = computed(() => {
 const resolvedPaymentChartType = computed(() => paymentChartType.value === 'bar' ? 'bar' : paymentChartType.value)
 
 const paymentChartSeries = computed(() => {
-    if (!paymentItems.value.length) return []
-    if (paymentChartType.value === 'bar') {
-        return [
-            {
-                name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
-                data: paymentItems.value.map((item) => paymentMetric.value === 'orders' ? item.orderCount : item.totalAmount)
-            }
-        ]
+    const items = Array.isArray(paymentItems.value) ? paymentItems.value : []
+    if (items.length === 0) {
+        // Return empty array for pie/donut, empty object array for bar
+        if (paymentChartType.value === 'pie' || paymentChartType.value === 'donut') {
+            return []
+        }
+        return [{ name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu', data: [] }]
     }
-    return paymentItems.value.map((item) => paymentMetric.value === 'orders' ? item.orderCount : item.totalAmount)
+    const data = items.map((item) => paymentMetric.value === 'orders' ? (Number(item?.orderCount) || 0) : (Number(item?.totalAmount) || 0))
+    // For pie/donut charts, ApexCharts requires array of numbers directly
+    if (paymentChartType.value === 'pie' || paymentChartType.value === 'donut') {
+        return data
+    }
+    // For bar charts, return object format
+    return [
+        {
+            name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
+            data: data
+        }
+    ]
 })
 
 const paymentChartOptions = computed(() => {
-    const labels = paymentItems.value.map((item, index) => item.label ?? `PTTT #${index + 1}`)
+    const items = Array.isArray(paymentItems.value) ? paymentItems.value : []
+    const labels = items.length > 0 
+        ? items.map((item, index) => item?.label ?? `PTTT #${index + 1}`)
+        : []
     const base = createBaseOptions(resolvedPaymentChartType.value, VIBRANT_PALETTE)
     const isBar = resolvedPaymentChartType.value === 'bar'
 
     return mergeOptions(base, {
-        labels,
+        labels: labels.length > 0 ? labels : undefined,
         dataLabels: {
             enabled: !isBar,
             formatter: (val) => `${Number(val).toFixed(1)}%`
         },
-        xaxis: isBar ? { categories: labels } : base.xaxis,
+        xaxis: isBar 
+            ? { 
+                ...base.xaxis,
+                categories: labels.length > 0 ? labels : []
+            } 
+            : base.xaxis,
         plotOptions: {
             bar: {
                 borderRadius: 8,
@@ -641,13 +688,24 @@ const topProductItems = computed(() => {
 const resolvedProductChartType = computed(() => productChartType.value === 'horizontalBar' ? 'bar' : productChartType.value)
 
 const productChartSeries = computed(() => {
-    if (!topProductItems.value.length) return []
-    const values = topProductItems.value.map((item) => productMetric.value === 'revenue'
-        ? item.totalRevenueGenerated
-        : item.totalQuantitySold)
+    if (!topProductItems.value.length) {
+        // Return empty array for pie, empty object array for bar
+        if (productChartType.value === 'pie') {
+            return []
+        }
+        return [{ name: productMetric.value === 'revenue' ? 'Doanh thu' : 'Số lượng', data: [] }]
+    }
+    const values = topProductItems.value.map((item) => {
+        const val = productMetric.value === 'revenue'
+            ? (Number(item?.totalRevenueGenerated) || 0)
+            : (Number(item?.totalQuantitySold) || 0)
+        return val
+    })
+    // For pie charts, ApexCharts requires array of numbers directly
     if (productChartType.value === 'pie') {
         return values
     }
+    // For bar charts, return object format
     return [
         {
             name: productMetric.value === 'revenue' ? 'Doanh thu' : 'Số lượng',
@@ -657,13 +715,21 @@ const productChartSeries = computed(() => {
 })
 
 const productChartOptions = computed(() => {
-    const labels = topProductItems.value.map((item, index) => item.productName || `SP #${index + 1}`)
+    const items = Array.isArray(topProductItems.value) ? topProductItems.value : []
+    const labels = items.length > 0 
+        ? items.map((item, index) => item?.productName || `SP #${index + 1}`)
+        : []
     const base = createBaseOptions(resolvedProductChartType.value, VIBRANT_PALETTE)
 
     return mergeOptions(base, {
-        labels,
+        labels: labels.length > 0 ? labels : undefined,
         dataLabels: { enabled: productChartType.value === 'pie' },
-        xaxis: resolvedProductChartType.value === 'bar' ? { categories: labels } : base.xaxis,
+        xaxis: resolvedProductChartType.value === 'bar' 
+            ? { 
+                ...base.xaxis,
+                categories: labels.length > 0 ? labels : []
+            } 
+            : base.xaxis,
         plotOptions: {
             bar: {
                 borderRadius: 8,
@@ -688,11 +754,19 @@ const topCustomerItems = computed(() => {
 const resolvedCustomerChartType = computed(() => customerChartType.value === 'horizontalBar' ? 'bar' : customerChartType.value)
 
 const customerChartSeries = computed(() => {
-    if (!topCustomerItems.value.length) return []
-    const values = topCustomerItems.value.map((item) => item.totalSpent ?? 0)
+    if (!topCustomerItems.value.length) {
+        // Return empty array for pie, empty object array for bar
+        if (customerChartType.value === 'pie') {
+            return []
+        }
+        return [{ name: 'Chi tiêu', data: [] }]
+    }
+    const values = topCustomerItems.value.map((item) => Number(item?.totalSpent) || 0)
+    // For pie charts, ApexCharts requires array of numbers directly
     if (customerChartType.value === 'pie') {
         return values
     }
+    // For bar charts, return object format
     return [
         {
             name: 'Chi tiêu',
@@ -702,12 +776,20 @@ const customerChartSeries = computed(() => {
 })
 
 const customerChartOptions = computed(() => {
-    const labels = topCustomerItems.value.map((item, index) => item.customerName ?? `Khách #${item.customerId ?? index + 1}`)
+    const items = Array.isArray(topCustomerItems.value) ? topCustomerItems.value : []
+    const labels = items.length > 0 
+        ? items.map((item, index) => item?.customerName ?? `Khách #${item?.customerId ?? index + 1}`)
+        : []
     const base = createBaseOptions(resolvedCustomerChartType.value, VIBRANT_PALETTE)
 
     return mergeOptions(base, {
-        labels,
-        xaxis: resolvedCustomerChartType.value === 'bar' ? { categories: labels } : base.xaxis,
+        labels: labels.length > 0 ? labels : undefined,
+        xaxis: resolvedCustomerChartType.value === 'bar' 
+            ? { 
+                ...base.xaxis,
+                categories: labels.length > 0 ? labels : []
+            } 
+            : base.xaxis,
         plotOptions: {
             bar: {
                 borderRadius: 8,

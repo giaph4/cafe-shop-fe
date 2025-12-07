@@ -70,14 +70,14 @@
                             </td>
                             <td>
                                 <div class="fw-semibold" :class="adjustment.type === 'BONUS' ? 'text-success' : 'text-danger'">
-                                    {{ adjustment.type === 'BONUS' ? '+' : '-' }}{{ formatCurrency(adjustment.amount) }}
+                                    {{ adjustment.type === 'BONUS' ? '+' : '-' }}{{ formatCurrency(adjustment.amount || 0) }}
                                 </div>
                             </td>
                             <td>
                                 <div>{{ adjustment.reason || '—' }}</div>
                             </td>
                             <td>
-                                <div>{{ formatDateTime(adjustment.effectiveAt || adjustment.createdAt) }}</div>
+                                <div>{{ formatDateTime(adjustment.effectiveAt || adjustment.createdAt || null) }}</div>
                             </td>
                             <td>
                                 <span class="badge" :class="adjustment.revoked ? 'bg-secondary' : 'bg-success'">
@@ -137,6 +137,7 @@ const emit = defineEmits([
 ])
 
 const translateType = (type) => {
+    if (!type || typeof type !== 'string') return type || '—'
     const map = {
         BONUS: 'Thưởng',
         PENALTY: 'Phạt'
@@ -145,6 +146,7 @@ const translateType = (type) => {
 }
 
 const typeClass = (type) => {
+    if (!type || typeof type !== 'string') return 'bg-secondary'
     return type === 'BONUS' ? 'bg-success' : 'bg-danger'
 }
 

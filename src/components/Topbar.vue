@@ -193,8 +193,10 @@ const toggleCalculator = () => {
     calculatorOpen.value = !calculatorOpen.value
 }
 
+import logger from '@/utils/logger'
+
 const handleCalculatorCompleted = (data) => {
-    console.log('Calculator completed:', data)
+    logger.log('Calculator completed:', data)
     // Có thể emit event hoặc gọi API ở đây
     // emit('calculator:completed', data)
 }

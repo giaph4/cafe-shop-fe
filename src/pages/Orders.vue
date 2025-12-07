@@ -281,10 +281,13 @@ import OrderUpdateModal from '@/components/orders/OrderUpdateModal.vue'
 import OrderOverviewTab from '@/components/orders/OrderOverviewTab.vue'
 import OrderListTab from '@/components/orders/OrderListTab.vue'
 import OrderStatisticsTab from '@/components/orders/OrderStatisticsTab.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 import { PaginationMode, usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/store/auth'
 import { useAsyncOperation } from '@/composables/useAsyncOperation'
 import { handleApiError } from '@/composables/useErrorHandler'
+import logger from '@/utils/logger'
 
 const STATUS_METADATA = Object.freeze({
     PENDING: { value: 'PENDING', label: 'Đang chờ', badgeClass: 'status-pill--pending' },
@@ -653,7 +656,7 @@ const fetchStaffList = async () => {
             u.roles?.some(r => r.name === 'ROLE_STAFF' || r === 'ROLE_STAFF')
         )
     } catch (err) {
-        console.error('Failed to fetch staff list:', err)
+        logger.error('Failed to fetch staff list:', err)
         staffList.value = []
     }
 }
@@ -664,7 +667,7 @@ const fetchCustomerList = async () => {
         const response = await customerService.getCustomers({ page: 0, size: 100 })
         customerList.value = response?.content || []
     } catch (err) {
-        console.error('Failed to fetch customer list:', err)
+        logger.error('Failed to fetch customer list:', err)
         customerList.value = []
     }
 }

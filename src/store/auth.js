@@ -365,10 +365,20 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    // MEMORY LEAK FIX: Store cleanup function để có thể remove listener
+    let unauthorizedListener = null
     if (typeof window !== 'undefined') {
+        unauthorizedListener = handleUnauthorized
         window.addEventListener('auth:unauthorized', handleUnauthorized)
     }
 
+    // Cleanup function để remove event listener
+    const cleanup = () => {
+        if (typeof window !== 'undefined' && unauthorizedListener) {
+            window.removeEventListener('auth:unauthorized', unauthorizedListener)
+            unauthorizedListener = null
+        }
+    }
 
     return {
         token,
@@ -383,6 +393,7 @@ export const useAuthStore = defineStore('auth', () => {
         checkAuth,
         refreshAccessToken,
         updateUserFromProfile,
-        handleUnauthorized
+        handleUnauthorized,
+        cleanup
     }
 })

@@ -336,6 +336,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import logger from '@/utils/logger'
 import {
     add, subtract, multiply, divide, power, sqrt, log, ln,
     sin, cos, tan, factorial, percent, toggleSign,
@@ -731,7 +732,7 @@ const calculateQuickPay = () => {
         )
         quickPayResult.value = result
     } catch (error) {
-        console.error('Quick pay calculation error:', error)
+        logger.error('Quick pay calculation error:', error)
         quickPayResult.value = null
     }
 }
@@ -793,7 +794,7 @@ const calculateCurrency = () => {
         currencyResult.value = convertCurrency(currency.value.fromAmount, rate)
         currency.value.toAmount = currencyResult.value
     } catch (error) {
-        console.error('Currency calculation error:', error)
+        logger.error('Currency calculation error:', error)
         currencyResult.value = null
         currency.value.toAmount = 0
     }
@@ -845,7 +846,7 @@ const handleCopyTotal = async () => {
             await navigator.clipboard.writeText(quickPayResult.value.total.toString())
             // Có thể thêm toast notification ở đây
         } catch (error) {
-            console.error('Failed to copy:', error)
+            logger.error('Failed to copy:', error)
         }
     }
 }

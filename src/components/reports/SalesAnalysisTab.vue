@@ -55,7 +55,18 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <ApexChart :type="resolvedProductChartType" height="340" :series="chartSeries" :options="chartOptions" />
+                    <ApexChart 
+                        v-if="productChartReady && safeProductSeries && safeProductOptions"
+                        :key="`product-${productChartKey}`"
+                        :type="resolvedProductChartType" 
+                        height="340" 
+                        :series="safeProductSeries" 
+                        :options="safeProductOptions" 
+                    />
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-graph-up"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                 </div>
             </div>
 
@@ -65,7 +76,18 @@
                     <p class="text-muted mb-0">Phân loại theo nhóm sản phẩm</p>
                 </div>
                 <div class="card-body">
-                    <ApexChart :type="resolvedCategoryChartType" height="320" :series="categorySeries" :options="categoryOptions" />
+                    <ApexChart 
+                        v-if="categoryChartReady && safeCategorySeries && safeCategoryOptions"
+                        :key="`category-${categoryChartKey}`"
+                        :type="resolvedCategoryChartType" 
+                        height="320" 
+                        :series="safeCategorySeries" 
+                        :options="safeCategoryOptions" 
+                    />
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-pie-chart"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -103,7 +125,17 @@
                     <p class="text-muted mb-0">So sánh top sản phẩm với phần còn lại</p>
                 </div>
                 <div class="card-body">
-                    <ApexChart type="bar" height="320" :series="stackedSeries" :options="stackedOptions" />
+                    <ApexChart 
+                        v-if="stackedChartReady && safeStackedSeries && safeStackedOptions"
+                        type="bar" 
+                        height="320" 
+                        :series="safeStackedSeries" 
+                        :options="safeStackedOptions" 
+                    />
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-bar-chart"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                 </div>
             </div>
             <div class="card chart-card">
@@ -112,7 +144,17 @@
                     <p class="text-muted mb-0">Phủ đủ 24 giờ trong giai đoạn</p>
                 </div>
                 <div class="card-body">
-                    <ApexChart type="area" height="320" :series="hourlySeries" :options="hourlyOptions" />
+                    <ApexChart 
+                        v-if="hourlyChartReady && safeHourlySeries && safeHourlyOptions"
+                        type="area" 
+                        height="320" 
+                        :series="safeHourlySeries" 
+                        :options="safeHourlyOptions" 
+                    />
+                    <div v-else class="text-center text-muted py-4">
+                        <i class="bi bi-clock-history"></i>
+                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,7 +162,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 import { useThemePreference } from '@/composables/useThemePreference'
@@ -140,29 +182,176 @@ const props = defineProps({
 const emit = defineEmits(['update:sortBy', 'update:topLimit', 'update:tableSort', 'update:productChartType', 'update:categoryChartType'])
 
 const ApexChart = VueApexCharts
-
 const { isDark } = useThemePreference()
 
-const baseLabelStyle = computed(() => ({ colors: isDark.value ? '#cbd5f5' : '#64748b', fontSize: '12px' }))
+// Chart ready flags - separate for each chart to prevent conflicts
+const productChartReady = ref(false)
+const categoryChartReady = ref(false)
+const stackedChartReady = ref(false)
+const hourlyChartReady = ref(false)
+
+// Chart keys for force re-render
+const productChartKey = ref(0)
+const categoryChartKey = ref(0)
+
+// Safe data refs - store validated, frozen data
+const safeProductSeries = ref(null)
+const safeProductOptions = ref(null)
+const safeCategorySeries = ref(null)
+const safeCategoryOptions = ref(null)
+const safeStackedSeries = ref(null)
+const safeStackedOptions = ref(null)
+const safeHourlySeries = ref(null)
+const safeHourlyOptions = ref(null)
+
 const VIBRANT_PALETTE = Object.freeze([
-    '#2563eb',
-    '#f97316',
-    '#22c55e',
-    '#facc15',
-    '#ec4899',
-    '#9333ea',
-    '#0ea5e9',
-    '#ef4444',
-    '#14b8a6',
-    '#8b5cf6'
+    '#2563eb', '#f97316', '#22c55e', '#facc15', '#ec4899',
+    '#9333ea', '#0ea5e9', '#ef4444', '#14b8a6', '#8b5cf6'
 ])
 
+// Deep clone utility
+const deepClone = (obj) => {
+    if (obj === null || typeof obj !== 'object') return obj
+    if (obj instanceof Date) return new Date(obj.getTime())
+    if (Array.isArray(obj)) return obj.map(item => deepClone(item))
+    const cloned = {}
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            cloned[key] = deepClone(obj[key])
+        }
+    }
+    return cloned
+}
+
+// Validate series structure
+const validateSeries = (series, chartType) => {
+    if (!series) return false
+    if (!Array.isArray(series)) return false
+    if (series.length === 0) return false
+    
+    const first = series[0]
+    if (first === undefined || first === null) return false
+    
+    // For pie/donut - array of numbers
+    if (chartType === 'pie' || chartType === 'donut') {
+        return series.every(v => {
+            const num = Number(v)
+            return typeof num === 'number' && Number.isFinite(num) && !isNaN(num) && num >= 0
+        }) && series.some(v => Number(v) > 0)
+    }
+    
+    // For bar/line/area/radar - array of objects with data
+    if (typeof first === 'object') {
+        return series.every(item => {
+            if (!item || typeof item !== 'object') return false
+            if (!('data' in item)) return false
+            if (!Array.isArray(item.data)) return false
+            if (item.data.length === 0) return false
+            return item.data.every(v => {
+                const num = Number(v)
+                return typeof num === 'number' && Number.isFinite(num) && !isNaN(num) && num >= 0
+            })
+        })
+    }
+    
+    return false
+}
+
+// Create safe series - always returns valid structure
+const createSafeSeries = (rawSeries, chartType) => {
+    try {
+        if (!rawSeries) {
+            if (chartType === 'pie' || chartType === 'donut') return [0]
+            return [{ name: 'Doanh thu', data: [0] }]
+        }
+        
+        if (!Array.isArray(rawSeries)) {
+            if (chartType === 'pie' || chartType === 'donut') return [0]
+            return [{ name: 'Doanh thu', data: [0] }]
+        }
+        
+        if (rawSeries.length === 0) {
+            if (chartType === 'pie' || chartType === 'donut') return [0]
+            return [{ name: 'Doanh thu', data: [0] }]
+        }
+        
+        // For pie/donut
+        if (chartType === 'pie' || chartType === 'donut') {
+            const numbers = rawSeries
+                .map(v => {
+                    const num = Number(v)
+                    return Number.isFinite(num) && !isNaN(num) && num >= 0 ? num : 0
+                })
+                .filter(v => v > 0)
+            return numbers.length > 0 ? numbers : [0]
+        }
+        
+        // For bar/line/area/radar
+        const objects = rawSeries.map(item => {
+            if (!item || typeof item !== 'object') {
+                return { name: 'Doanh thu', data: [0] }
+            }
+            
+            const data = Array.isArray(item.data) ? item.data : []
+            const validData = data
+                .map(v => {
+                    const num = Number(v)
+                    return Number.isFinite(num) && !isNaN(num) && num >= 0 ? num : 0
+                })
+            
+            return {
+                name: String(item.name || 'Doanh thu'),
+                data: validData.length > 0 ? validData : [0]
+            }
+        })
+        
+        return objects.length > 0 ? objects : [{ name: 'Doanh thu', data: [0] }]
+    } catch (error) {
+        console.error('Error creating safe series:', error)
+        if (chartType === 'pie' || chartType === 'donut') return [0]
+        return [{ name: 'Doanh thu', data: [0] }]
+    }
+}
+
+// Create safe options - always returns valid structure
+const createSafeOptions = (rawOptions, chartType) => {
+    try {
+        if (!rawOptions || typeof rawOptions !== 'object') {
+            return createBaseOptions(chartType)
+        }
+        
+        const options = deepClone(rawOptions)
+        
+        // Ensure chart.type exists
+        if (!options.chart) options.chart = {}
+        options.chart.type = chartType
+        
+        // Handle xaxis based on chart type
+        if (chartType === 'pie' || chartType === 'donut') {
+            // Remove xaxis completely for pie/donut
+            delete options.xaxis
+        } else {
+            // For bar/line/area/radar, ensure xaxis.categories is array
+            if (!options.xaxis) options.xaxis = {}
+            if (!Array.isArray(options.xaxis.categories)) {
+                options.xaxis.categories = []
+            }
+        }
+        
+        return options
+    } catch (error) {
+        console.error('Error creating safe options:', error)
+        return createBaseOptions(chartType)
+    }
+}
+
+// Base options factory
 const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
     const isBar = type === 'bar'
     const isCircular = ['pie', 'donut', 'radialBar'].includes(type)
     const dark = isDark.value
-    const labelStyle = baseLabelStyle.value
-    return {
+    
+    const base = {
         chart: {
             type,
             toolbar: { show: true },
@@ -178,116 +367,67 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
             borderColor: dark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.35)',
             padding: { top: 8, bottom: 8, left: 12, right: 12 }
         },
-        xaxis: {
+        colors,
+        legend: { 
+            position: 'bottom', 
+            labels: { colors: dark ? '#cbd5f5' : '#475569' } 
+        },
+        tooltip: {
+            theme: dark ? 'dark' : 'light',
+            y: { formatter: (value) => value ?? 0 }
+        }
+    }
+    
+    // Only add xaxis for non-circular charts
+    if (!isCircular) {
+        base.xaxis = {
             categories: [],
             labels: {
-                style: { ...labelStyle }
+                colors: dark ? '#cbd5f5' : '#64748b',
+                fontSize: '12px',
+                rotate: 0
             },
             axisBorder: {
                 color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
             },
             axisTicks: {
                 color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
-            },
-            crosshairs: {
-                stroke: {
-                    color: dark ? 'rgba(148, 163, 184, 0.24)' : 'rgba(148, 163, 184, 0.35)',
-                    dashArray: 4
+            }
+        }
+    }
+    
+    base.yaxis = {
+        labels: {
+            colors: dark ? '#cbd5f5' : '#64748b',
+            fontSize: '12px',
+            formatter: (value) => value ?? 0
+        }
+    }
+    
+    base.fill = isBar
+        ? { type: 'solid', opacity: dark ? 0.85 : 0.95 }
+        : isCircular
+            ? { type: 'solid', opacity: 1, colors }
+            : {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: dark ? 0.45 : 0.55,
+                    opacityTo: dark ? 0.08 : 0.15,
+                    stops: [0, 90, 100]
                 }
             }
-        },
-        yaxis: {
-            labels: {
-                style: { ...labelStyle },
-                formatter: (value) => value ?? 0
-            }
-        },
-        fill: isBar
-            ? { type: 'solid', opacity: dark ? 0.85 : 0.95 }
-            : isCircular
-                ? { type: 'solid', opacity: 1, colors }
-                : {
-                    type: 'gradient',
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: dark ? 0.45 : 0.55,
-                        opacityTo: dark ? 0.08 : 0.15,
-                        stops: [0, 90, 100]
-                    }
-                },
-        colors,
-        legend: { position: 'bottom', labels: { colors: dark ? '#cbd5f5' : '#475569' } },
-        tooltip: {
-            theme: dark ? 'dark' : 'light',
-            y: {
-                formatter: (value) => value ?? 0
-            }
-        },
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '55%',
-                borderRadius: 6,
-                distributed: false
-            }
+    
+    base.plotOptions = {
+        bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            borderRadius: 6,
+            distributed: false
         }
     }
-}
-
-const mergeOptions = (base, overrides = {}) => {
-    const merged = {
-        ...base,
-        ...overrides,
-        chart: { ...base.chart, ...overrides.chart },
-        stroke: { ...base.stroke, ...overrides.stroke },
-        dataLabels: { ...base.dataLabels, ...overrides.dataLabels },
-        grid: { ...base.grid, ...overrides.grid },
-        labels: overrides.labels !== undefined ? overrides.labels : base.labels,
-        xaxis: {
-            ...base.xaxis,
-            ...(overrides.xaxis || {}),
-            labels: {
-                ...base.xaxis.labels,
-                ...overrides.xaxis?.labels
-            }
-        },
-        yaxis: {
-            ...base.yaxis,
-            ...(overrides.yaxis || {}),
-            labels: {
-                ...base.yaxis.labels,
-                ...overrides.yaxis?.labels
-            }
-        },
-        fill: {
-            ...base.fill,
-            ...overrides.fill,
-            gradient: {
-                ...(base.fill?.gradient || {}),
-                ...(overrides.fill?.gradient || {})
-            }
-        },
-        tooltip: {
-            ...base.tooltip,
-            ...overrides.tooltip,
-            theme: overrides.tooltip?.theme ?? base.tooltip?.theme,
-            y: {
-                ...(base.tooltip?.y || {}),
-                ...(overrides.tooltip?.y || {})
-            }
-        },
-        legend: { ...base.legend, ...overrides.legend },
-        plotOptions: {
-            ...(base.plotOptions || {}),
-            ...(overrides.plotOptions || {}),
-            bar: {
-                ...(base.plotOptions?.bar || {}),
-                ...(overrides.plotOptions?.bar || {})
-            }
-        }
-    }
-
-    return merged
+    
+    return base
 }
 
 const topOptions = [5, 10, 15, 20, 'all']
@@ -315,214 +455,474 @@ const resolvedProductChartType = computed(() => {
 
 const resolvedCategoryChartType = computed(() => categoryChartType.value)
 
-const chartOptions = computed(() => {
-    const applied = appliedTopBestSellers.value
-    const categories = applied.map((item, index) => item.productName || `Sản phẩm #${index + 1}`)
-    const isRevenue = props.sortBy === 'revenue'
-    const base = createBaseOptions(resolvedProductChartType.value, isRevenue ? ['#1d4ed8'] : ['#16a34a'])
-    const formatter = (value) => (isRevenue ? formatCurrency(value) : formatNumber(value))
-
-    return mergeOptions(base, {
-        xaxis: {
-            categories,
-            labels: {
-                rotate: -35
-            }
-        },
-        yaxis: {
-            labels: {
-                formatter
-            }
-        },
-        tooltip: {
-            y: {
-                formatter
-            }
-        },
-        plotOptions: {
-            bar: {
-                horizontal: productChartType.value === 'horizontalBar'
-            }
-        },
-        stroke: resolvedProductChartType.value === 'radar'
-            ? { width: 2 }
-            : undefined
-    })
-})
-
-const chartSeries = computed(() => {
-    const data = appliedTopBestSellers.value
-    if (props.sortBy === 'revenue') {
-        return [
-            {
-                name: 'Doanh thu',
-                data: data.map((item) => item.totalRevenueGenerated)
-            }
-        ]
-    }
-    return [
-        {
-            name: 'Số lượng',
-            data: data.map((item) => item.totalQuantitySold)
-        }
-    ]
-})
-
-const categorySeries = computed(() => {
-    if (categoryChartType.value === 'bar') {
-        return [
-            {
-                name: 'Doanh thu',
-                data: props.categorySales.map((item) => item.totalRevenue)
-            }
-        ]
-    }
-    return props.categorySales.map((item) => item.totalRevenue)
-})
-
-const categoryOptions = computed(() => {
-    const data = props.categorySales ?? []
-    const labels = data.map((item, index) => item.categoryName || `Danh mục #${index + 1}`)
-    const isBar = categoryChartType.value === 'bar'
-    const isCircular = ['pie', 'donut', 'radialBar'].includes(resolvedCategoryChartType.value)
-    const base = createBaseOptions(resolvedCategoryChartType.value, VIBRANT_PALETTE)
-
-    return mergeOptions(base, {
-        labels: isCircular ? labels : undefined,
-        xaxis: isBar ? { categories: labels } : base.xaxis,
-        dataLabels: {
-            enabled: !isBar,
-            formatter: (val) => `${Number(val).toFixed(1)}%`
-        },
-        plotOptions: {
-            bar: {
-                columnWidth: '55%',
-                borderRadius: 6,
-                horizontal: false
-            }
-        },
-        stroke: resolvedCategoryChartType.value === 'radar'
-            ? { width: 2 }
-            : undefined,
-        tooltip: {
-            y: {
-                formatter: (value) => formatCurrency(value)
-            }
-        }
-    })
-})
-
+// Applied top best sellers
 const appliedTopBestSellers = computed(() => {
-    if (props.topLimit === 'all') return props.bestSellers
-    const numericLimit = Number(props.topLimit)
-    if (Number.isNaN(numericLimit) || numericLimit <= 0) return props.bestSellers
-    return props.bestSellers.slice(0, numericLimit)
+    try {
+        const sellers = Array.isArray(props.bestSellers) ? props.bestSellers : []
+        if (props.topLimit === 'all') return sellers
+        const limit = Number(props.topLimit)
+        if (Number.isNaN(limit) || limit <= 0) return sellers
+        return sellers.slice(0, limit)
+    } catch {
+        return []
+    }
 })
 
-const sortedTableItems = computed(() => {
-    const data = [...props.bestSellers]
-    const [key, direction] = tableSort.value.split('-')
-    return data.sort((a, b) => {
-        switch (key) {
-            case 'revenue':
-                return direction === 'asc'
-                    ? a.totalRevenueGenerated - b.totalRevenueGenerated
-                    : b.totalRevenueGenerated - a.totalRevenueGenerated
-            case 'name':
-                return direction === 'asc'
-                    ? a.productName.localeCompare(b.productName)
-                    : b.productName.localeCompare(a.productName)
-            case 'quantity':
-            default:
-                return direction === 'asc'
-                    ? a.totalQuantitySold - b.totalQuantitySold
-                    : b.totalQuantitySold - a.totalQuantitySold
+// Product chart series
+const productChartSeries = computed(() => {
+    try {
+        const data = appliedTopBestSellers.value
+        if (!Array.isArray(data) || data.length === 0) {
+            return [{ name: 'Doanh thu', data: [0] }]
         }
-    })
+        
+        const isRevenue = props.sortBy === 'revenue'
+        const values = data.map(item => {
+            const val = isRevenue 
+                ? Number(item?.totalRevenueGenerated) 
+                : Number(item?.totalQuantitySold)
+            return Number.isFinite(val) && !isNaN(val) && val >= 0 ? val : 0
+        })
+        
+        return [{
+            name: isRevenue ? 'Doanh thu' : 'Số lượng',
+            data: values.length > 0 ? values : [0]
+        }]
+    } catch {
+        return [{ name: 'Doanh thu', data: [0] }]
+    }
 })
 
-const stackedSeries = computed(() => {
-    const topRevenue = appliedTopBestSellers.value.reduce((sum, item) => sum + item.totalRevenueGenerated, 0)
-    const totalRevenue = props.productSummary?.totalRevenueGenerated ?? topRevenue
-    const remainder = Math.max(totalRevenue - topRevenue, 0)
-    return [
-        {
-            name: 'Top sản phẩm',
-            data: [topRevenue]
-        },
-        {
-            name: 'Phần còn lại',
-            data: [remainder]
+// Product chart options
+const productChartOptions = computed(() => {
+    try {
+        const applied = appliedTopBestSellers.value
+        const categories = applied.length > 0
+            ? applied.map((item, idx) => String(item?.productName || `SP #${idx + 1}`))
+            : []
+        
+        const isRevenue = props.sortBy === 'revenue'
+        const base = createBaseOptions(resolvedProductChartType.value, isRevenue ? ['#1d4ed8'] : ['#16a34a'])
+        const formatter = (val) => {
+            const num = Number(val)
+            return Number.isFinite(num) && !isNaN(num)
+                ? (isRevenue ? formatCurrency(num) : formatNumber(num))
+                : (isRevenue ? formatCurrency(0) : formatNumber(0))
         }
-    ]
-})
-
-const stackedOptions = computed(() => {
-    const base = createBaseOptions('bar', ['#2563eb', '#f97316'])
-
-    return mergeOptions(base, {
-        chart: { stacked: true, toolbar: { show: false } },
-        plotOptions: {
-            bar: {
-                columnWidth: '45%',
-                borderRadius: 6,
-                horizontal: false
+        
+        const isRadar = resolvedProductChartType.value === 'radar'
+        
+        const options = {
+            ...base,
+            yaxis: {
+                ...base.yaxis,
+                labels: {
+                    ...base.yaxis.labels,
+                    formatter
+                }
+            },
+            tooltip: {
+                ...base.tooltip,
+                y: { formatter }
+            },
+            plotOptions: {
+                ...base.plotOptions,
+                bar: {
+                    ...base.plotOptions.bar,
+                    horizontal: productChartType.value === 'horizontalBar'
+                }
             }
-        },
-        xaxis: { categories: ['Giai đoạn'] },
-        yaxis: {
-            labels: {
-                formatter: (val) => formatCurrency(val)
-            }
-        },
-        tooltip: {
-            y: {
-                formatter: (val) => formatCurrency(val)
+        }
+        
+        // Handle xaxis
+        if (isRadar) {
+            delete options.xaxis
+        } else {
+            options.xaxis = {
+                ...base.xaxis,
+                categories: Array.isArray(categories) ? categories : [],
+                labels: {
+                    ...base.xaxis.labels,
+                    rotate: -35
+                }
             }
         }
-    })
+        
+        return options
+    } catch {
+        return createBaseOptions(resolvedProductChartType.value)
+    }
 })
 
-const buildFullHours = () => Array.from({ length: 24 }, (_, index) => index)
-
-const hourlySeries = computed(() => {
-    const hours = buildFullHours()
-    const mapped = new Map(hours.map((hour) => [hour, 0]))
-    props.hourlySales.forEach((item) => {
-        const hour = Number(item.hour)
-        if (!Number.isNaN(hour) && mapped.has(hour)) {
-            mapped.set(hour, (mapped.get(hour) ?? 0) + (item.totalRevenue ?? item.revenue ?? 0))
+// Category chart series
+const categoryChartSeries = computed(() => {
+    try {
+        const sales = Array.isArray(props.categorySales) ? props.categorySales : []
+        if (sales.length === 0) {
+            if (categoryChartType.value === 'bar') {
+                return [{ name: 'Doanh thu', data: [0] }]
+            }
+            return [0]
         }
-    })
-    return [
-        {
+        
+        const data = sales
+            .map(item => {
+                const val = Number(item?.totalRevenue)
+                return Number.isFinite(val) && !isNaN(val) && val > 0 ? val : 0
+            })
+            .filter(v => v > 0)
+        
+        if (categoryChartType.value === 'pie' || categoryChartType.value === 'donut') {
+            return data.length > 0 ? data : [0]
+        }
+        
+        return [{
             name: 'Doanh thu',
-            data: hours.map((hour) => mapped.get(hour) ?? 0)
+            data: data.length > 0 ? data : [0]
+        }]
+    } catch {
+        if (categoryChartType.value === 'bar') {
+            return [{ name: 'Doanh thu', data: [0] }]
         }
-    ]
+        return [0]
+    }
 })
 
-const hourlyOptions = computed(() => {
-    const base = createBaseOptions('area', ['#2563eb'])
-
-    return mergeOptions(base, {
-        xaxis: {
-            categories: buildFullHours().map((hour) => `${hour.toString().padStart(2, '0')}:00`),
-            tickAmount: 12
-        },
-        yaxis: {
-            labels: {
-                formatter: (value) => formatCurrency(value)
-            }
-        },
-        tooltip: {
-            y: {
-                formatter: (value) => formatCurrency(value)
+// Category chart options
+const categoryChartOptions = computed(() => {
+    try {
+        const data = Array.isArray(props.categorySales) ? props.categorySales : []
+        const labels = data.length > 0
+            ? data.map((item, idx) => String(item?.categoryName || `DM #${idx + 1}`))
+            : []
+        
+        const isBar = categoryChartType.value === 'bar'
+        const isCircular = ['pie', 'donut'].includes(resolvedCategoryChartType.value)
+        const base = createBaseOptions(resolvedCategoryChartType.value, VIBRANT_PALETTE)
+        
+        const options = {
+            ...base,
+            dataLabels: {
+                ...base.dataLabels,
+                enabled: !isBar,
+                formatter: (val) => {
+                    const num = Number(val)
+                    return Number.isFinite(num) && !isNaN(num) ? `${num.toFixed(1)}%` : '0%'
+                }
+            },
+            tooltip: {
+                ...base.tooltip,
+                y: {
+                    formatter: (val) => {
+                        const num = Number(val)
+                        return Number.isFinite(num) && !isNaN(num) ? formatCurrency(num) : formatCurrency(0)
+                    }
+                }
             }
         }
-    })
+        
+        if (isCircular) {
+            options.labels = labels.length > 0 ? labels : ['Không có dữ liệu']
+            delete options.xaxis
+        } else {
+            options.xaxis = {
+                ...base.xaxis,
+                categories: labels.length > 0 ? labels : ['Không có dữ liệu']
+            }
+        }
+        
+        return options
+    } catch {
+        return createBaseOptions(resolvedCategoryChartType.value, VIBRANT_PALETTE)
+    }
 })
 
+// Stacked series
+const stackedChartSeries = computed(() => {
+    try {
+        const sellers = appliedTopBestSellers.value
+        const topRevenue = sellers.reduce((sum, item) => {
+            const val = Number(item?.totalRevenueGenerated)
+            return sum + (Number.isFinite(val) && !isNaN(val) && val >= 0 ? val : 0)
+        }, 0)
+        
+        const totalRevenue = Number(props.productSummary?.totalRevenueGenerated)
+        const finalTotal = Number.isFinite(totalRevenue) && !isNaN(totalRevenue) && totalRevenue >= 0 
+            ? totalRevenue 
+            : topRevenue
+        const remainder = Math.max(finalTotal - topRevenue, 0)
+        
+        return [
+            { name: 'Top sản phẩm', data: [topRevenue >= 0 ? topRevenue : 0] },
+            { name: 'Phần còn lại', data: [remainder >= 0 ? remainder : 0] }
+        ]
+    } catch {
+        return [
+            { name: 'Top sản phẩm', data: [0] },
+            { name: 'Phần còn lại', data: [0] }
+        ]
+    }
+})
+
+// Stacked options
+const stackedChartOptions = computed(() => {
+    try {
+        const base = createBaseOptions('bar', ['#2563eb', '#f97316'])
+        return {
+            ...base,
+            chart: { ...base.chart, stacked: true, toolbar: { show: false } },
+            xaxis: {
+                ...base.xaxis,
+                categories: ['Giai đoạn']
+            },
+            yaxis: {
+                ...base.yaxis,
+                labels: {
+                    ...base.yaxis.labels,
+                    formatter: (val) => {
+                        const num = Number(val)
+                        return Number.isFinite(num) && !isNaN(num) ? formatCurrency(num) : formatCurrency(0)
+                    }
+                }
+            },
+            tooltip: {
+                ...base.tooltip,
+                y: {
+                    formatter: (val) => {
+                        const num = Number(val)
+                        return Number.isFinite(num) && !isNaN(num) ? formatCurrency(num) : formatCurrency(0)
+                    }
+                }
+            },
+            plotOptions: {
+                ...base.plotOptions,
+                bar: {
+                    ...base.plotOptions.bar,
+                    columnWidth: '45%'
+                }
+            }
+        }
+    } catch {
+        return createBaseOptions('bar', ['#2563eb', '#f97316'])
+    }
+})
+
+// Hourly series
+const hourlyChartSeries = computed(() => {
+    try {
+        const hours = Array.from({ length: 24 }, (_, i) => i)
+        const mapped = new Map(hours.map(h => [h, 0]))
+        
+        const sales = Array.isArray(props.hourlySales) ? props.hourlySales : []
+        sales.forEach(item => {
+            const hour = Number(item?.hour)
+            if (Number.isFinite(hour) && !isNaN(hour) && hour >= 0 && hour < 24) {
+                const revenue = Number(item?.totalRevenue) || Number(item?.revenue) || 0
+                const current = mapped.get(hour) || 0
+                const revNum = Number.isFinite(revenue) && !isNaN(revenue) && revenue >= 0 ? revenue : 0
+                mapped.set(hour, current + revNum)
+            }
+        })
+        
+        const data = hours.map(h => {
+            const val = mapped.get(h) || 0
+            return Number.isFinite(val) && !isNaN(val) && val >= 0 ? val : 0
+        })
+        
+        return [{
+            name: 'Doanh thu',
+            data: Array.isArray(data) && data.length === 24 ? data : Array.from({ length: 24 }, () => 0)
+        }]
+    } catch {
+        return [{
+            name: 'Doanh thu',
+            data: Array.from({ length: 24 }, () => 0)
+        }]
+    }
+})
+
+// Hourly options
+const hourlyChartOptions = computed(() => {
+    try {
+        const base = createBaseOptions('area', ['#2563eb'])
+        const hours = Array.from({ length: 24 }, (_, i) => i)
+        const categories = hours.map(h => `${String(h).padStart(2, '0')}:00`)
+        
+        return {
+            ...base,
+            xaxis: {
+                ...base.xaxis,
+                categories: Array.isArray(categories) ? categories : [],
+                tickAmount: 12
+            },
+            yaxis: {
+                ...base.yaxis,
+                labels: {
+                    ...base.yaxis.labels,
+                    formatter: (val) => {
+                        const num = Number(val)
+                        return Number.isFinite(num) && !isNaN(num) ? formatCurrency(num) : formatCurrency(0)
+                    }
+                }
+            },
+            tooltip: {
+                ...base.tooltip,
+                y: {
+                    formatter: (val) => {
+                        const num = Number(val)
+                        return Number.isFinite(num) && !isNaN(num) ? formatCurrency(num) : formatCurrency(0)
+                    }
+                }
+            }
+        }
+    } catch {
+        return createBaseOptions('area', ['#2563eb'])
+    }
+})
+
+// Update safe data when computed values change
+const updateProductChart = async () => {
+    productChartReady.value = false
+    productChartKey.value++
+    
+    await nextTick()
+    
+    const series = createSafeSeries(productChartSeries.value, resolvedProductChartType.value)
+    const options = createSafeOptions(productChartOptions.value, resolvedProductChartType.value)
+    
+    if (validateSeries(series, resolvedProductChartType.value)) {
+        safeProductSeries.value = deepClone(series)
+        safeProductOptions.value = deepClone(options)
+        
+        await nextTick()
+        productChartReady.value = true
+    } else {
+        safeProductSeries.value = null
+        safeProductOptions.value = null
+    }
+}
+
+const updateCategoryChart = async () => {
+    categoryChartReady.value = false
+    categoryChartKey.value++
+    
+    await nextTick()
+    
+    const series = createSafeSeries(categoryChartSeries.value, resolvedCategoryChartType.value)
+    const options = createSafeOptions(categoryChartOptions.value, resolvedCategoryChartType.value)
+    
+    if (validateSeries(series, resolvedCategoryChartType.value)) {
+        safeCategorySeries.value = deepClone(series)
+        safeCategoryOptions.value = deepClone(options)
+        
+        await nextTick()
+        categoryChartReady.value = true
+    } else {
+        safeCategorySeries.value = null
+        safeCategoryOptions.value = null
+    }
+}
+
+const updateStackedChart = async () => {
+    stackedChartReady.value = false
+    
+    await nextTick()
+    
+    const series = createSafeSeries(stackedChartSeries.value, 'bar')
+    const options = createSafeOptions(stackedChartOptions.value, 'bar')
+    
+    if (validateSeries(series, 'bar')) {
+        safeStackedSeries.value = deepClone(series)
+        safeStackedOptions.value = deepClone(options)
+        
+        await nextTick()
+        stackedChartReady.value = true
+    } else {
+        safeStackedSeries.value = null
+        safeStackedOptions.value = null
+    }
+}
+
+const updateHourlyChart = async () => {
+    hourlyChartReady.value = false
+    
+    await nextTick()
+    
+    const series = createSafeSeries(hourlyChartSeries.value, 'area')
+    const options = createSafeOptions(hourlyChartOptions.value, 'area')
+    
+    if (validateSeries(series, 'area')) {
+        safeHourlySeries.value = deepClone(series)
+        safeHourlyOptions.value = deepClone(options)
+        
+        await nextTick()
+        hourlyChartReady.value = true
+    } else {
+        safeHourlySeries.value = null
+        safeHourlyOptions.value = null
+    }
+}
+
+// Watch for changes and update charts
+watch(() => [productChartSeries.value, productChartOptions.value, resolvedProductChartType.value], 
+    () => updateProductChart(),
+    { deep: true }
+)
+
+watch(() => [categoryChartSeries.value, categoryChartOptions.value, resolvedCategoryChartType.value],
+    () => updateCategoryChart(),
+    { deep: true }
+)
+
+watch(() => [stackedChartSeries.value, stackedChartOptions.value],
+    () => updateStackedChart(),
+    { deep: true }
+)
+
+watch(() => [hourlyChartSeries.value, hourlyChartOptions.value],
+    () => updateHourlyChart(),
+    { deep: true }
+)
+
+// Initial load
+onMounted(async () => {
+    await nextTick()
+    await Promise.all([
+        updateProductChart(),
+        updateCategoryChart(),
+        updateStackedChart(),
+        updateHourlyChart()
+    ])
+})
+
+// Table sorting
+const sortedTableItems = computed(() => {
+    try {
+        const data = [...(props.bestSellers ?? [])]
+        const [key, direction] = tableSort.value.split('-')
+        return data.sort((a, b) => {
+            switch (key) {
+                case 'revenue':
+                    return direction === 'asc'
+                        ? (a?.totalRevenueGenerated ?? 0) - (b?.totalRevenueGenerated ?? 0)
+                        : (b?.totalRevenueGenerated ?? 0) - (a?.totalRevenueGenerated ?? 0)
+                case 'name':
+                    return direction === 'asc'
+                        ? (a?.productName ?? '').localeCompare(b?.productName ?? '')
+                        : (b?.productName ?? '').localeCompare(a?.productName ?? '')
+                case 'quantity':
+                default:
+                    return direction === 'asc'
+                        ? (a?.totalQuantitySold ?? 0) - (b?.totalQuantitySold ?? 0)
+                        : (b?.totalQuantitySold ?? 0) - (a?.totalQuantitySold ?? 0)
+            }
+        })
+    } catch {
+        return []
+    }
+})
+
+// Event handlers
 const onSortChange = (value) => {
     emit('update:sortBy', value)
 }
@@ -643,7 +1043,6 @@ const onTableSort = (value) => {
     padding: var(--spacing-4);
 }
 
-/* Minimal Table Styling */
 .table-card :global(.table) {
     margin-bottom: 0;
     border-collapse: separate;
@@ -685,6 +1084,4 @@ const onTableSort = (value) => {
     font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-sans);
 }
-
-/* Dark theme styles removed - using CSS variables for theme compatibility */
 </style>

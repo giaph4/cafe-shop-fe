@@ -1,5 +1,6 @@
 import api from './axios'
 import { cleanParams } from './utils'
+import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/v1/shifts/reports'
 
@@ -55,8 +56,6 @@ export const normalizeShiftReport = (payload) => {
         meta: payload.meta ?? null
     }
 }
-
-import { buildApiError } from './utils/errorHandler'
 
 export const getShiftReport = async (sessionId, { refresh = false } = {}) => {
     try {

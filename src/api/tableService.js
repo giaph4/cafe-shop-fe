@@ -1,5 +1,5 @@
 import api from './axios'
-import { buildApiError } from './utils/errorHandler'
+import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/v1/tables'
 

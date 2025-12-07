@@ -62,6 +62,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import logger from '@/utils/logger'
 
 const currentTime = ref('')
 const currentDate = ref('')
@@ -83,12 +84,12 @@ const updateDateTime = () => {
 
 const handleHelp = () => {
     // Placeholder for help action
-    console.log('Help clicked')
+    logger.log('Help clicked')
 }
 
 const handleFeedback = () => {
     // Placeholder for feedback action
-    console.log('Feedback clicked')
+    logger.log('Feedback clicked')
 }
 
 let timeInterval = null

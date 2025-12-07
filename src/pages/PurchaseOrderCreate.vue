@@ -61,7 +61,7 @@
                                                 </td>
 
                                                 <td class="text-end fw-bold">
-                                                    {{ formatMoney(calculateRowTotal(field.value)) }}
+                                                    {{ formatCurrency(calculateRowTotal(field.value)) }}
                                                 </td>
 
                                                 <td class="text-end">
@@ -128,7 +128,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Tổng cộng:</h5>
                                 <h4 class="mb-0 fw-bold text-danger">
-                                    {{ formatMoney(calculateTotalAmount(values.items)) }}
+                                    {{ formatCurrency(calculateTotalAmount(values.items)) }}
                                 </h4>
                             </div>
 
@@ -158,7 +158,7 @@ import { toast } from 'vue3-toastify'
 import { createPurchaseOrder } from '@/api/purchaseOrderService'
 import { getSuppliers } from '@/api/supplierService'
 import { getAllIngredients } from '@/api/ingredientService'
-import { formatMoney } from '@/utils/formatMoney.js'
+import { formatCurrency } from '@/utils/formatters'
 
 const router = useRouter()
 const queryClient = useQueryClient()

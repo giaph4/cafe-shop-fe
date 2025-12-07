@@ -1,5 +1,6 @@
 import api from '@/api/axios'
 import { cleanParams } from '@/api/utils'
+import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/v1/shifts/sessions'
 
@@ -50,8 +51,6 @@ export const normalizeShiftSession = (payload) => {
 export const normalizeShiftSessionList = (items) => Array.isArray(items)
     ? items.map(normalizeShiftSession).filter(Boolean)
     : []
-
-import { buildApiError } from './utils/errorHandler'
 
 export const listShiftSessions = async (filters = {}) => {
     try {

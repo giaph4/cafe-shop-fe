@@ -1,83 +1,61 @@
 /**
- * Composable for standardized error handling
- * Chuẩn hóa xử lý lỗi trong toàn bộ ứng dụng
+ * === SECTION: ERROR HANDLER COMPOSABLE ===
+ * Vue composable wrapper cho error handling utilities
+ * PERFORMANCE FIX: Sử dụng unified error handler từ utils
  */
 
-import { toast } from 'vue3-toastify'
-import logger from '@/utils/logger'
+import { 
+    handleError as handleErrorUtil,
+    handleApiError as handleApiErrorUtil,
+    extractErrorMessage,
+    getErrorMessage
+} from '@/utils/errorHandler'
 
 /**
- * Extract error message from error object
- * @param {Error|AxiosError} error - Error object
- * @returns {string} - Error message
- */
-export function extractErrorMessage(error) {
-    if (!error) return 'Đã xảy ra lỗi không xác định.'
-    
-    // Axios error
-    if (error.response) {
-        const data = error.response.data
-        if (data?.message) return data.message
-        if (data?.error) return data.error
-        if (typeof data === 'string') return data
-    }
-    
-    // Standard error
-    if (error.message) return error.message
-    
-    return 'Đã xảy ra lỗi không xác định.'
-}
-
-/**
- * Handle API error with standardized pattern
- * @param {Error|AxiosError} error - Error object
+ * Composable for error handling trong Vue components
  * @param {Object} options - Options
- * @param {string} options.context - Context of the error (for logging)
- * @param {boolean} options.showToast - Show toast notification (default: true)
- * @param {string} options.fallbackMessage - Fallback message if error extraction fails
- * @returns {string} - Error message
+ * @param {string} options.context - Context for error handling
+ * @param {boolean} options.showToast - Show toast on error (default: true)
+ * @returns {Object} Error handling utilities
  */
-export function handleApiError(error, options = {}) {
+export function useErrorHandler(options = {}) {
     const {
-        context = 'API',
-        showToast = true,
-        fallbackMessage = 'Đã xảy ra lỗi. Vui lòng thử lại.'
+        context = 'Component',
+        showToast = true
     } = options
 
-    const message = extractErrorMessage(error) || fallbackMessage
-
-    // Log error in development
-    if (import.meta.env.DEV) {
-        logger.error(`[${context}]`, error)
-    }
-
-    // Show toast notification
-    if (showToast) {
-        toast.error(message, {
-            autoClose: 3000
+    /**
+     * Handle error với context và options đã cấu hình
+     * @param {Error|AxiosError} error - Error object
+     * @param {string} [overrideContext] - Override context cho lần gọi này
+     * @returns {string} Error message
+     */
+    const handleError = (error, overrideContext) => {
+        return handleErrorUtil(error, {
+            context: overrideContext || context,
+            showToast
         })
     }
 
-    return message
-}
-
-/**
- * Composable for error handling
- * @param {Object} options - Options
- * @returns {Object} - Error handling utilities
- */
-export function useErrorHandler(options = {}) {
-    const handleError = (error, context) => {
-        return handleApiError(error, {
-            ...options,
-            context: context || options.context
+    /**
+     * Handle API error
+     * @param {Error|AxiosError} error - Error object
+     * @returns {string} Error message
+     */
+    const handleApiError = (error) => {
+        return handleApiErrorUtil(error, {
+            context,
+            showToast
         })
     }
 
     return {
         handleError,
+        handleApiError,
         extractErrorMessage,
-        handleApiError
+        getErrorMessage
     }
 }
 
+// Re-export utilities để dùng trực tiếp nếu cần
+export { extractErrorMessage, getErrorMessage, handleApiError } from '@/utils/errorHandler'

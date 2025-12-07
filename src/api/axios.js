@@ -112,14 +112,15 @@ api.interceptors.response.use(
             return retryRequest(originalRequest, error)
         }
 
-        // Nếu không phải lỗi 401 hoặc đã retry rồi, xử lý bình thường
+        // Xử lý các status codes khác (không phải 401 hoặc đã retry 401 rồi)
         if (status !== 401 || originalRequest._retry) {
             // Retry cho 5xx errors (server errors)
             if (status >= 500 && status < 600 && !originalRequest._skipRetry) {
                 return retryRequest(originalRequest, error)
             }
 
-            if (status === 401) {
+            // Xử lý 401 khi đã retry rồi (refresh token thất bại)
+            if (status === 401 && originalRequest._retry) {
                 clearTokens()
                 clearUser()
                 if (typeof window !== 'undefined') {
@@ -136,11 +137,13 @@ api.interceptors.response.use(
                 failedQueue.push({ resolve, reject, originalRequest })
             })
                 .then((token) => {
-                    // Retry request với token mới
-                    originalRequest.headers.Authorization = `Bearer ${token}`
-                    // Đảm bảo request này không bị đánh dấu _retry để tránh loop
-                    delete originalRequest._retry
-                    return api(originalRequest)
+            // Retry request với token mới
+            originalRequest.headers.Authorization = `Bearer ${token}`
+            // Đảm bảo request này không bị đánh dấu _retry để tránh infinite loop
+            delete originalRequest._retry
+            // Reset retry count để có thể retry lại nếu cần
+            delete originalRequest._retryCount
+            return api(originalRequest)
                 })
                 .catch((err) => {
                     return Promise.reject(err)
@@ -210,8 +213,10 @@ api.interceptors.response.use(
             processQueue(null, newAccessToken)
 
             // Retry request ban đầu với token mới
-            // Đảm bảo request này không bị đánh dấu _retry để tránh loop
+            // Đảm bảo request này không bị đánh dấu _retry để tránh infinite loop
             delete originalRequest._retry
+            // Reset retry count để có thể retry lại nếu cần
+            delete originalRequest._retryCount
             return api(originalRequest)
         } catch (refreshError) {
             // Refresh token thất bại, logout

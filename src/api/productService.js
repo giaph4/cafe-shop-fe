@@ -1,6 +1,7 @@
 import api from './axios'
 import { cleanParams } from './utils'
-import { buildApiError } from './utils/errorHandler'
+import { buildApiError } from '@/utils/errorHandler'
+import { createFormData, createFileFormData, getMultipartHeaders } from './helpers'
 
 const BASE_URL = '/api/v1/products'
 
@@ -16,14 +17,9 @@ export const createProduct = async (productData) => {
  * 4.2 Tạo sản phẩm với ảnh (Multipart)
  */
 export const createProductWithImage = async (productData, image) => {
-    const formData = new FormData()
-    formData.append('product', new Blob([JSON.stringify(productData)], {type: 'application/json'}))
-    if (image) {
-        formData.append('image', image)
-    }
-
+    const formData = createFormData(productData, 'product', image, 'image')
     const {data} = await api.post(BASE_URL, formData, {
-        headers: {'Content-Type': 'multipart/form-data'},
+        headers: getMultipartHeaders(),
     })
     return data
 }
@@ -57,14 +53,9 @@ export const updateProduct = async (id, productData) => {
  * 4.6 Cập nhật sản phẩm với ảnh (Multipart)
  */
 export const updateProductWithImage = async (id, productData, image) => {
-    const formData = new FormData()
-    formData.append('product', new Blob([JSON.stringify(productData)], {type: 'application/json'}))
-    if (image) {
-        formData.append('image', image)
-    }
-
+    const formData = createFormData(productData, 'product', image, 'image')
     const {data} = await api.put(`${BASE_URL}/${id}`, formData, {
-        headers: {'Content-Type': 'multipart/form-data'},
+        headers: getMultipartHeaders(),
     })
     return data
 }
@@ -73,10 +64,9 @@ export const updateProductWithImage = async (id, productData, image) => {
  * 4.7 Upload ảnh cho sản phẩm
  */
 export const uploadProductImage = async ({id, image}) => {
-    const formData = new FormData()
-    formData.append('image', image)
+    const formData = createFileFormData(image, 'image')
     const {data} = await api.post(`${BASE_URL}/${id}/image`, formData, {
-        headers: {'Content-Type': 'multipart/form-data'},
+        headers: getMultipartHeaders(),
     })
     return data
 }

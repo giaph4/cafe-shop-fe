@@ -1,5 +1,5 @@
 import api from './axios'
-import { buildApiError } from './utils/errorHandler'
+import { buildApiError } from '@/utils/errorHandler'
 
 /**
  * 1.1 Đăng ký tài khoản mới

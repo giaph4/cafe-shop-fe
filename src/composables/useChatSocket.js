@@ -1,6 +1,6 @@
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import { getAccessToken } from '@/utils/tokenStorage'
 import { useChatStore } from '@/store/chat'
 import { useAuthStore } from '@/store/auth'
@@ -231,6 +231,11 @@ export const useChatSocket = () => {
         Array.from(conversationSubscriptions.keys()).forEach(unsubscribeConversation)
         connected.value = false
     }
+
+    // MEMORY LEAK FIX: Tự động cleanup khi component unmount
+    onBeforeUnmount(() => {
+        cleanup()
+    })
 
     return {
         client,

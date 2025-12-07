@@ -4,7 +4,7 @@
  */
 
 import api from './axios'
-import { buildApiError } from './utils/errorHandler'
+import { buildApiError } from '@/utils/errorHandler'
 import { cleanParams } from './utils'
 
 /**

@@ -594,6 +594,7 @@ import * as orderService from '@/api/orderService.js'
 import { searchCustomers } from '@/api/customerService.js'
 import { formatCurrency } from '@/utils/formatters.js'
 import { toast } from 'vue3-toastify'
+import logger from '@/utils/logger'
 import PosPaymentModal from './PosPaymentModal.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
@@ -1018,7 +1019,7 @@ const saveOrder = async () => {
                     return
                 }
                 // Nếu là lỗi khác, tiếp tục thử cập nhật
-                console.warn('Could not verify order status, proceeding with update:', error)
+                logger.warn('Could not verify order status, proceeding with update:', error)
             }
             const originalItems = originalOrderSnapshot.value?.items ?? []
             const currentItems = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
@@ -1041,7 +1042,7 @@ const saveOrder = async () => {
                     const quantity = Math.max(1, Math.floor(toNumberSafe(item.quantity, 1)))
                     
                     if (!Number.isFinite(productId) || productId <= 0) {
-                        console.warn('Invalid productId:', item.productId)
+                        logger.warn('Invalid productId:', item.productId)
                         continue
                     }
                     
@@ -1113,7 +1114,7 @@ const saveOrder = async () => {
                     try {
                         lastResponse = await orderService.removeItemFromOrder({ orderId, orderDetailId: detailId })
                     } catch (error) {
-                        console.error('Failed to remove item:', error)
+                        logger.error('Failed to remove item:', error)
                         hasError = true
                         toast.error(`Không thể xóa món: ${error.response?.data?.message || error.message}`)
                     }
@@ -1137,7 +1138,7 @@ const saveOrder = async () => {
                             updateData
                         })
                     } catch (error) {
-                        console.error('Failed to update item:', error)
+                        logger.error('Failed to update item:', error)
                         hasError = true
                         toast.error(`Không thể cập nhật món: ${error.response?.data?.message || error.message}`)
                     }
@@ -1155,7 +1156,7 @@ const saveOrder = async () => {
                         
                         // Log addition để debug
                         if (import.meta.env.DEV) {
-                            console.log('[PosOrderCart] Processing addition:', {
+                            logger.log('[PosOrderCart] Processing addition:', {
                                 addition,
                                 productIdType: typeof addition.productId,
                                 quantityType: typeof addition.quantity,
@@ -1237,7 +1238,7 @@ const saveOrder = async () => {
                                     const delay = Math.min(300 * Math.pow(2, retries - 1), 1000) // Exponential backoff: 300ms, 600ms, max 1000ms
                                     
                                     if (import.meta.env.DEV) {
-                                        console.log(`[PosOrderCart] Retrying addItemToOrder (attempt ${retries}/${maxRetries}) after ${delay}ms delay`)
+                                        logger.log(`[PosOrderCart] Retrying addItemToOrder (attempt ${retries}/${maxRetries}) after ${delay}ms delay`)
                                     }
                                     
                                     // Refresh order trước khi retry để đảm bảo state đồng bộ
@@ -1245,7 +1246,7 @@ const saveOrder = async () => {
                                         const refreshedOrder = await orderService.getOrderById(orderId)
                                         updateLocalOrderFromServer(refreshedOrder, { syncBaseline: true })
                                     } catch (refreshError) {
-                                        console.error('[PosOrderCart] Failed to refresh order before retry:', refreshError)
+                                        logger.error('[PosOrderCart] Failed to refresh order before retry:', refreshError)
                                     }
                                     
                                     await new Promise(resolve => setTimeout(resolve, delay))
@@ -1260,7 +1261,7 @@ const saveOrder = async () => {
                         const errorResponse = error.response?.data || error.originalError?.response?.data
                         const errorStatus = error.response?.status || error.status || error.originalError?.response?.status
                         
-                        console.error('[PosOrderCart] Failed to add item:', {
+                        logger.error('[PosOrderCart] Failed to add item:', {
                             error,
                             errorMessage: error.message,
                             errorResponse,
@@ -1302,9 +1303,9 @@ const saveOrder = async () => {
                             try {
                                 const refreshedOrder = await orderService.getOrderById(orderId)
                                 updateLocalOrderFromServer(refreshedOrder, { syncBaseline: true })
-                                console.log('[PosOrderCart] Order refreshed after error')
+                                logger.log('[PosOrderCart] Order refreshed after error')
                             } catch (refreshError) {
-                                console.error('[PosOrderCart] Failed to refresh order:', refreshError)
+                                logger.error('[PosOrderCart] Failed to refresh order:', refreshError)
                             }
                         }
                     }
@@ -1329,14 +1330,14 @@ const saveOrder = async () => {
                         updateLocalOrderFromServer(refreshedOrder, { syncBaseline: true })
                         toast.success('Đơn hàng đã được cập nhật.')
                     } catch (error) {
-                        console.error('Failed to refresh order:', error)
+                        logger.error('Failed to refresh order:', error)
                         toast.warning('Đơn hàng đã được cập nhật nhưng không thể tải lại dữ liệu.')
                     }
                 }
 
                 emitOrderUpdated('update', localOrder.value)
             } catch (error) {
-                console.error('Unexpected error during save:', error)
+                logger.error('Unexpected error during save:', error)
                 toast.error('Lưu đơn hàng thất bại. Vui lòng thử lại.')
                 // Không throw error để không làm crash app
             } finally {
@@ -1355,7 +1356,7 @@ const saveOrder = async () => {
             emitOrderUpdated('create', localOrder.value)
         }
     } catch (error) {
-        console.error('Unexpected error during save:', error)
+        logger.error('Unexpected error during save:', error)
         toast.error('Lưu đơn hàng thất bại. Vui lòng thử lại.')
         // Không throw error để không làm crash app
     } finally {
@@ -1493,7 +1494,7 @@ const handleClearAll = async () => {
         emitOrderUpdated('clear-all', localOrder.value)
     } catch (error) {
         toast.error('Không thể xóa tất cả sản phẩm')
-        console.error('Failed to clear all items:', error)
+        logger.error('Failed to clear all items:', error)
     } finally {
         loadingAction.value = null
     }

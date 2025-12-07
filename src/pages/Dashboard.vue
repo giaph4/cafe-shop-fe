@@ -130,7 +130,7 @@ import {
     getTotalImportedIngredientCost
 } from '@/api/reportService'
 import { formatCurrency } from '@/utils/formatters'
-import { useDashboardEvents } from '@/composables/useDashboardEvents'
+import { useDashboardEvents } from '@/composables/useWebSocketEvents'
 import { useAsyncOperation } from '@/composables/useAsyncOperation'
 import { useDateRangeFilter } from '@/composables/useDateRangeFilter'
 

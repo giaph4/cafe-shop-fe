@@ -1,6 +1,6 @@
 import api from './axios'
 import { cleanParams } from './utils'
-import { buildApiError } from './utils/errorHandler'
+import { buildApiError } from '@/utils/errorHandler'
 
 export const getLoginHistory = async (params = {}) => {
     const query = cleanParams(params)

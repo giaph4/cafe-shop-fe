@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid file-management-page">
+    <div class="page-container container-fluid file-management-page" data-aos="fade-up">
         <div class="file-management-header">
             <div class="file-management-header__content">
                 <div class="file-management-header__title-section">

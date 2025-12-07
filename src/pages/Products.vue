@@ -84,6 +84,13 @@
 
         <div class="card filter-card mb-4">
             <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Bộ lọc</h5>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" @click="toggleAdvancedFilters">
+                        <i class="bi" :class="showAdvancedFilters ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                        {{ showAdvancedFilters ? 'Ẩn' : 'Hiện' }} bộ lọc nâng cao
+                    </button>
+                </div>
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-6">
                         <label class="form-label">Tìm theo tên</label>
@@ -116,7 +123,57 @@
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Sắp xếp</label>
+                        <select class="form-select" v-model="sortState">
+                            <option value="">Mặc định</option>
+                            <option value="name-asc">Tên A → Z</option>
+                            <option value="name-desc">Tên Z → A</option>
+                            <option value="price-asc">Giá tăng dần</option>
+                            <option value="price-desc">Giá giảm dần</option>
+                            <option value="bestseller">Bán chạy nhất</option>
+                        </select>
+                    </div>
+                </div>
+                <div v-if="showAdvancedFilters" class="row g-3 align-items-end mt-3 pt-3 border-top">
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">Giá từ (₫)</label>
+                        <input
+                            v-model.number="filters.priceMin"
+                            type="number"
+                            class="form-control"
+                            placeholder="0"
+                            min="0"
+                            step="1000"
+                        />
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">Giá đến (₫)</label>
+                        <input
+                            v-model.number="filters.priceMax"
+                            type="number"
+                            class="form-control"
+                            placeholder="Không giới hạn"
+                            min="0"
+                            step="1000"
+                        />
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">Bán chạy</label>
+                        <select class="form-select" v-model="filters.bestseller">
+                            <option :value="null">Tất cả</option>
+                            <option :value="true">Chỉ sản phẩm bán chạy</option>
+                            <option :value="false">Không phải bán chạy</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
                         <button class="btn btn-outline-secondary w-100" type="button" @click="resetFilters">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>Thiết lập lại
+                        </button>
+                    </div>
+                </div>
+                <div v-else class="row g-3 align-items-end mt-3">
+                    <div class="col-12 text-end">
+                        <button class="btn btn-outline-secondary" type="button" @click="resetFilters">
                             <i class="bi bi-arrow-counterclockwise me-2"></i>Thiết lập lại
                         </button>
                     </div>
@@ -126,24 +183,22 @@
 
         <div class="card tabs-card">
             <div class="card-body">
-                <div class="products-tabs mb-4">
+                <div class="btn-group layout-toggle mb-4" role="group" aria-label="Chọn bố cục hiển thị">
                     <button
                         type="button"
-                        class="products-tab"
-                        :class="{ active: isTableLayout }"
+                        class="btn btn-sm"
+                        :class="isTableLayout ? 'btn-primary' : 'btn-outline-primary'"
                         @click="setLayout('table')"
                     >
-                        <i class="bi bi-table"></i>
-                        <span>Bảng</span>
+                        <i class="bi bi-table me-2"></i>Bảng
                     </button>
                     <button
                         type="button"
-                        class="products-tab"
-                        :class="{ active: !isTableLayout }"
+                        class="btn btn-sm"
+                        :class="!isTableLayout ? 'btn-primary' : 'btn-outline-primary'"
                         @click="setLayout('grid')"
                     >
-                        <i class="bi bi-grid-3x3-gap"></i>
-                        <span>Thẻ</span>
+                        <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
                     </button>
                 </div>
 
@@ -494,6 +549,7 @@ import {toast} from 'vue3-toastify'
 import {storeToRefs} from 'pinia'
 import * as productService from '@/api/productService'
 import * as categoryService from '@/api/categoryService'
+import * as reportService from '@/api/reportService'
 import {formatCurrency} from '@/utils/formatters'
 import {Modal} from 'bootstrap'
 import Pagination from '@/components/common/Pagination.vue'
@@ -518,7 +574,8 @@ const canDelete = computed(() => isAdmin.value || isManager.value) // Only Admin
 
 const {loading, error, execute} = useAsyncOperation({context: 'Products'})
 
-const products = ref([])
+const allProducts = ref([]) // Tất cả products từ API
+const filteredProducts = ref([]) // Products sau khi filter/sort
 const categories = ref([])
 const selectedProduct = ref(null)
 const detailProduct = ref(null)
@@ -542,6 +599,10 @@ const toggleTarget = ref(null)
 const toggleModalRef = ref(null)
 let toggleModalInstance = null
 
+// Bestseller data
+const bestsellerProductIds = ref(new Set())
+const bestsellerData = ref({}) // Map productId -> sales data
+
 const debounce = (fn, delay = 300) => {
     let timeoutId
     return (...args) => {
@@ -557,8 +618,18 @@ const debounce = (fn, delay = 300) => {
 const filters = reactive({
     name: '',
     categoryId: null,
-    available: null
+    available: null,
+    priceMin: null,
+    priceMax: null,
+    bestseller: null
 })
+
+const sortState = ref('')
+const showAdvancedFilters = ref(false)
+
+const toggleAdvancedFilters = () => {
+    showAdvancedFilters.value = !showAdvancedFilters.value
+}
 
 const isTableLayout = computed(() => layoutMode.value === 'table')
 
@@ -600,48 +671,172 @@ const isToggling = (id) => Boolean(togglingAvailability[id])
 
 let suppressWatcherFetch = false
 
-const fetchProducts = async () => {
-    const requestedPage = zeroBasedPage.value
+// Fetch bestseller data
+const fetchBestsellerData = async () => {
+    try {
+        const endDate = new Date()
+        const startDate = new Date()
+        startDate.setDate(startDate.getDate() - 30) // 30 ngày gần nhất
+        
+        const bestsellerResponse = await reportService.getBestSellers(
+            startDate.toISOString().split('T')[0],
+            endDate.toISOString().split('T')[0],
+            100, // Top 100
+            'quantity'
+        )
+        
+        const ids = new Set()
+        const dataMap = {}
+        
+        if (bestsellerResponse?.items) {
+            bestsellerResponse.items.forEach((item) => {
+                if (item.productId) {
+                    ids.add(item.productId)
+                    dataMap[item.productId] = {
+                        totalQuantitySold: item.totalQuantitySold || 0,
+                        totalRevenueGenerated: item.totalRevenueGenerated || 0,
+                        rank: item.rank || 0
+                    }
+                }
+            })
+        }
+        
+        bestsellerProductIds.value = ids
+        bestsellerData.value = dataMap
+    } catch (error) {
+        console.warn('Không thể tải dữ liệu bán chạy:', error)
+        // Không hiển thị lỗi, chỉ log
+    }
+}
 
+// Fetch tất cả products (với size lớn để có đủ dữ liệu filter)
+const fetchAllProducts = async () => {
     await execute(async () => {
-        // Chỉ gửi categoryId nếu có giá trị (không phải null hoặc undefined)
         const params = {
             name: filters.name || undefined,
             available: filters.available !== null ? filters.available : undefined,
-            page: requestedPage,
-            size: pageSize.value
+            page: 0,
+            size: 1000 // Lấy nhiều để có đủ dữ liệu filter
         }
         
-        // Chỉ thêm categoryId nếu có giá trị
         if (filters.categoryId !== null && filters.categoryId !== undefined) {
             params.categoryId = filters.categoryId
         }
         
         const response = await productService.getProducts(params)
         const list = response.content || []
-        products.value = list
-
-        // Cập nhật thống kê cho card KPI (dựa trên dữ liệu hiện có)
-        const activeCount = list.filter((p) => p.available).length
-        const inactiveCount = list.filter((p) => !p.available).length
-        const categorySet = new Set(list.map((p) => p.categoryName).filter(Boolean))
+        
+        // Nếu có nhiều trang, fetch thêm
+        if (response.totalPages > 1) {
+            const allPages = []
+            allPages.push(...list)
+            
+            for (let page = 1; page < response.totalPages && page < 10; page++) {
+                const pageParams = {...params, page}
+                const pageResponse = await productService.getProducts(pageParams)
+                if (pageResponse.content) {
+                    allPages.push(...pageResponse.content)
+                }
+            }
+            
+            allProducts.value = allPages
+        } else {
+            allProducts.value = list
+        }
+        
+        // Cập nhật thống kê
+        const activeCount = allProducts.value.filter((p) => p.available).length
+        const inactiveCount = allProducts.value.filter((p) => !p.available).length
+        const categorySet = new Set(allProducts.value.map((p) => p.categoryName).filter(Boolean))
         productStats.value = {
-            total: response.totalElements ?? list.length,
+            total: response.totalElements ?? allProducts.value.length,
             active: activeCount,
             inactive: inactiveCount,
             categories: categorySet.size
         }
-        suppressWatcherFetch = true
-        const {adjusted} = updateFromResponse({
-            page: response.number,
-            totalPages: response.totalPages,
-            totalElements: response.totalElements
-        })
-        suppressWatcherFetch = false
-        if (adjusted) {
-            restoreRemembered()
-        }
+        
+        // Áp dụng filter và sort
+        applyFiltersAndSort()
     }, 'Không thể tải danh sách sản phẩm.')
+}
+
+// Áp dụng filter và sort cho products
+const applyFiltersAndSort = () => {
+    // Nếu chưa có dữ liệu, không làm gì
+    if (!allProducts.value || allProducts.value.length === 0) {
+        filteredProducts.value = []
+        return
+    }
+    
+    let result = [...allProducts.value]
+    
+    // Filter theo giá
+    if (filters.priceMin !== null && filters.priceMin !== undefined && filters.priceMin > 0) {
+        result = result.filter((p) => (p.price || 0) >= filters.priceMin)
+    }
+    if (filters.priceMax !== null && filters.priceMax !== undefined && filters.priceMax > 0) {
+        result = result.filter((p) => (p.price || 0) <= filters.priceMax)
+    }
+    
+    // Filter theo bestseller
+    if (filters.bestseller !== null && filters.bestseller !== undefined) {
+        if (filters.bestseller === true) {
+            result = result.filter((p) => bestsellerProductIds.value.has(p.id))
+        } else if (filters.bestseller === false) {
+            result = result.filter((p) => !bestsellerProductIds.value.has(p.id))
+        }
+    }
+    
+    // Sort
+    if (sortState.value) {
+        const [field, order] = sortState.value.split('-')
+        const isAsc = order === 'asc'
+        
+        result.sort((a, b) => {
+            let comparison = 0
+            
+            if (field === 'name') {
+                comparison = (a.name || '').localeCompare(b.name || '', 'vi')
+            } else if (field === 'price') {
+                comparison = (a.price || 0) - (b.price || 0)
+            } else if (field === 'bestseller') {
+                const aIsBestseller = bestsellerProductIds.value.has(a.id)
+                const bIsBestseller = bestsellerProductIds.value.has(b.id)
+                if (aIsBestseller && !bIsBestseller) comparison = -1
+                else if (!aIsBestseller && bIsBestseller) comparison = 1
+                else {
+                    // Nếu cùng là bestseller hoặc không, sort theo số lượng bán
+                    const aSales = bestsellerData.value[a.id]?.totalQuantitySold || 0
+                    const bSales = bestsellerData.value[b.id]?.totalQuantitySold || 0
+                    comparison = bSales - aSales // Giảm dần
+                }
+            }
+            
+            return isAsc ? comparison : -comparison
+        })
+    }
+    
+    // Client-side pagination
+    const startIndex = zeroBasedPage.value * pageSize.value
+    const endIndex = startIndex + pageSize.value
+    filteredProducts.value = result.slice(startIndex, endIndex)
+    
+    // Cập nhật pagination
+    const totalPages = Math.ceil(result.length / pageSize.value) || 1
+    suppressWatcherFetch = true
+    updateFromResponse({
+        page: zeroBasedPage.value,
+        totalPages: totalPages,
+        totalElements: result.length
+    })
+    suppressWatcherFetch = false
+}
+
+// Computed để dùng trong template
+const products = computed(() => filteredProducts.value)
+
+const fetchProducts = async () => {
+    await fetchAllProducts()
 }
 
 const fetchCategories = async () => {
@@ -662,13 +857,23 @@ const handleSearchInput = () => {
     debouncedFetchProducts()
 }
 
+// Watch cho các filter cơ bản (cần fetch lại từ API)
 watch(
-    () => [filters.categoryId, filters.available],
+    () => [filters.name, filters.categoryId, filters.available],
     () => {
-        // Reset về trang đầu khi filter thay đổi
         setPageFromZero(0)
         rememberCurrent()
         fetchProducts()
+    }
+)
+
+// Watch cho các filter nâng cao và sort (chỉ cần apply lại, không cần fetch)
+watch(
+    () => [filters.priceMin, filters.priceMax, filters.bestseller, sortState.value],
+    () => {
+        setPageFromZero(0)
+        rememberCurrent()
+        applyFiltersAndSort()
     }
 )
 
@@ -708,11 +913,18 @@ const confirmDeleteProduct = async () => {
     if (!deleteTarget.value?.id) return
     deletingProduct.value = true
     try {
-    await execute(async () => {
+        await execute(async () => {
             await productService.deleteProduct(deleteTarget.value.id)
-        toast.success('Đã xóa sản phẩm thành công')
-        fetchProducts()
-    }, 'Không thể xóa sản phẩm. Vui lòng thử lại.')
+            toast.success('Đã xóa sản phẩm thành công')
+            // Xóa khỏi allProducts
+            const index = allProducts.value.findIndex((item) => item.id === deleteTarget.value.id)
+            if (index !== -1) {
+                allProducts.value.splice(index, 1)
+                applyFiltersAndSort()
+            } else {
+                fetchProducts()
+            }
+        }, 'Không thể xóa sản phẩm. Vui lòng thử lại.')
         deleteTarget.value = null
         closeDeleteModal()
     } finally {
@@ -749,9 +961,11 @@ const handleToggleAvailability = async (product) => {
             if (filters.available !== null && updated.available !== filters.available) {
                 fetchProducts()
             } else {
-                const index = products.value.findIndex((item) => item.id === updated.id)
+                // Cập nhật trong allProducts
+                const index = allProducts.value.findIndex((item) => item.id === updated.id)
                 if (index !== -1) {
-                    products.value.splice(index, 1, {...products.value[index], ...updated})
+                    allProducts.value.splice(index, 1, {...allProducts.value[index], ...updated})
+                    applyFiltersAndSort()
                 }
             }
         }, 'Không thể thay đổi trạng thái. Vui lòng thử lại.', {
@@ -775,23 +989,32 @@ const resetFilters = () => {
     filters.name = ''
     filters.categoryId = null
     filters.available = null
+    filters.priceMin = null
+    filters.priceMax = null
+    filters.bestseller = null
+    sortState.value = ''
+    setPageFromZero(0)
+    rememberCurrent()
     fetchProducts()
 }
 
+// Watch cho pagination (chỉ apply lại filter/sort)
 watch(
     () => [zeroBasedPage.value, pageSize.value],
     () => {
         if (suppressWatcherFetch) return
-        fetchProducts()
-    },
-    {immediate: true}
+        applyFiltersAndSort()
+    }
 )
 
 onBeforeRouteLeave(() => {
     rememberCurrent()
 })
 
+// Khởi tạo: fetch bestseller data và products
+fetchBestsellerData()
 fetchCategories()
+fetchProducts()
 
 // Khởi tạo modal xóa
 watch(
@@ -898,17 +1121,32 @@ watch(
     line-height: 1;
 }
 
+/* Layout Toggle - Exact match with image */
+.layout-toggle {
+    display: inline-flex;
+    gap: var(--spacing-3);
+    background: transparent;
+    padding: 0;
+    border: none;
+}
+
 .layout-toggle .btn {
-    min-width: 120px;
-    font-weight: var(--font-weight-medium);
-    border-radius: var(--radius-sm);
+    min-width: auto;
+    padding: 0.65rem 1.25rem;
+    font-weight: var(--font-weight-semibold);
+    border-radius: 9999px;
     font-family: var(--font-family-sans);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
 }
 
 .layout-toggle .btn-primary {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: var(--color-text-inverse);
+    color: #ffffff;
 }
 
 .layout-toggle .btn-outline-primary {
@@ -918,9 +1156,23 @@ watch(
 }
 
 .layout-toggle .btn-outline-primary:hover:not(:disabled) {
-    background: var(--color-soft-primary);
-    border-color: var(--color-primary-dark);
-    color: var(--color-primary-dark);
+    background: var(--color-card);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.layout-toggle .btn i {
+    font-size: 1rem;
+    line-height: 1;
+    color: inherit;
+}
+
+.layout-toggle .btn-primary i {
+    color: #ffffff;
+}
+
+.layout-toggle .btn-outline-primary i {
+    color: var(--color-primary);
 }
 
 /* Table - Minimal Table Styling */
@@ -1307,49 +1559,6 @@ watch(
 
 .products-header__actions .btn-group .btn {
     min-width: 120px;
-}
-
-/* Tabs - Flat Design */
-.products-tabs {
-    display: flex;
-    gap: var(--spacing-2);
-    background: var(--color-card-muted);
-    padding: var(--spacing-2);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    overflow-x: auto;
-}
-
-.products-tab {
-    border: none;
-    background: transparent;
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-sm);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    white-space: nowrap;
-    font-family: var(--font-family-sans);
-}
-
-.products-tab i {
-    font-size: 18px;
-    line-height: 1;
-}
-
-.products-tab:hover:not(.active) {
-    background: var(--color-card);
-    color: var(--color-heading);
-}
-
-.products-tab.active {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
 }
 
 /* KPI Cards - Flat Design */

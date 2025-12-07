@@ -1,5 +1,5 @@
 <template>
-    <div class="shift-report-detail-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="shift-report-detail-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="shift-report-detail-header">
             <div class="shift-report-detail-header__content">
                 <div class="shift-report-detail-header__title-section">

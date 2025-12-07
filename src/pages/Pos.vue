@@ -1,5 +1,5 @@
 <template>
-    <div class="pos-page">
+    <div class="pos-page" data-aos="fade-up">
         <header class="pos-header">
             <div class="pos-header__content">
                 <h2 class="pos-header__title">Điều phối POS</h2>

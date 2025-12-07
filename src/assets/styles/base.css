@@ -52,36 +52,36 @@
   --spacing-12: 3rem; /* 48px */
   --spacing-16: 4rem; /* 64px */
 
-  /* Border Radius - Refined Minimalism: 4-8px only */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 8px;
-  --radius-2xl: 8px;
+  /* Border Radius - Refined & Natural: 6-12px */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
   --radius-full: 9999px;
-  --radius-base: 6px;
+  --radius-base: 10px;
 
-  /* Shadows - Minimal or None */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-2xl: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-inner: none;
-  --shadow-base: none;
-  --shadow-hover: none;
-  --shadow-card: none;
-  --shadow-modal: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-soft: none;
+  /* Shadows - Subtle & Natural */
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.14);
+  --shadow-2xl: 0 12px 24px rgba(0, 0, 0, 0.16);
+  --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-modal: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.06);
 
-  /* Transitions - Fast and Subtle: 0.2-0.3s ease-out only */
-  --transition-fast: 0.2s ease-out;
-  --transition-base: 0.2s ease-out;
-  --transition-slow: 0.3s ease-out;
-  --transition-smooth: 0.3s ease-out;
-  --transition-all: 0.2s ease-out;
+  /* Transitions - Smooth and Natural */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-all: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Gradients - Removed (no gradients allowed) */
   --gradient-top: transparent;
@@ -94,15 +94,15 @@
   --component-padding: var(--spacing-6);
   --component-padding-sm: var(--spacing-4);
   --component-padding-lg: var(--spacing-8);
-  --component-gap: var(--spacing-4);
+  --component-gap: var(--spacing-5);
   --component-gap-sm: var(--spacing-3);
-  --component-gap-lg: var(--spacing-6);
+  --component-gap-lg: var(--spacing-8);
   --component-transition: var(--transition-base);
   --component-transition-fast: var(--transition-fast);
   --component-transition-slow: var(--transition-slow);
-  --component-shadow: none;
-  --component-shadow-hover: none;
-  --component-shadow-active: none;
+  --component-shadow: var(--shadow-card);
+  --component-shadow-hover: var(--shadow-hover);
+  --component-shadow-active: var(--shadow-md);
 }
 
 /* ============================================
@@ -150,32 +150,32 @@
   --color-soft-fuchsia: rgba(155, 89, 182, 0.12);
   --color-soft-orange: rgba(230, 126, 34, 0.12);
   --color-soft-neutral: #f0f2f1;
-  /* Background: Warm light grey */
-  --color-body-bg: #F5F7F6;
+  /* Background: Warm and natural */
+  --color-body-bg: #f7fafc;
   --color-surface: #ffffff;
-  --color-surface-muted: #f0f2f1;
+  --color-surface-muted: #edf2f7;
   --color-elevated: #ffffff;
   --color-card: #ffffff;
-  --color-card-muted: #f5f7f6;
+  --color-card-muted: #f7fafc;
   --color-backdrop: rgba(0, 0, 0, 0.25);
   --color-modal-bg: #ffffff;
   --color-dropdown-bg: #ffffff;
   --color-table-header: rgba(44, 120, 115, 0.06);
   --color-table-hover: rgba(44, 120, 115, 0.04);
   --color-input-bg: #ffffff;
-  --color-input-border: #D1D9D7;
+  --color-input-border: #cbd5e0;
   --color-input-focus: #2C7873;
-  --color-border: #D1D9D7;
-  --color-border-strong: #B8C4C1;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e0;
   --color-border-contrast: rgba(107, 114, 128, 0.5);
-  /* Typography: Dark grey, not pure black */
-  --color-text: #555555;
-  --color-text-muted: #6b7280;
-  --color-text-subtle: #9ca3af;
-  --color-text-inverse: #f9fafb;
-  --color-text-light: #9ca3af;
-  --color-heading: #333333;
-  --color-placeholder: rgba(107, 114, 128, 0.6);
+  /* Typography: Warm grey tones */
+  --color-text: #4a5568;
+  --color-text-muted: #718096;
+  --color-text-subtle: #a0aec0;
+  --color-text-inverse: #f7fafc;
+  --color-text-light: #a0aec0;
+  --color-heading: #2d3748;
+  --color-placeholder: rgba(113, 128, 150, 0.6);
   --color-glass: #ffffff;
   --color-scrollbar: rgba(156, 163, 175, 0.3);
   --color-scrollbar-hover: rgba(44, 120, 115, 0.4);
@@ -283,14 +283,14 @@
   --color-border: #E5E7EB;
   --color-border-strong: #D1D5DB;
   --color-border-contrast: rgba(107, 114, 128, 0.5);
-  /* Typography: Dark grey, not pure black */
-  --color-text: #555555;
-  --color-text-muted: #6b7280;
-  --color-text-subtle: #9ca3af;
-  --color-text-inverse: #f9fafb;
-  --color-text-light: #9ca3af;
-  --color-heading: #333333;
-  --color-placeholder: rgba(107, 114, 128, 0.6);
+  /* Typography: Warm grey tones */
+  --color-text: #4a5568;
+  --color-text-muted: #718096;
+  --color-text-subtle: #a0aec0;
+  --color-text-inverse: #f7fafc;
+  --color-text-light: #a0aec0;
+  --color-heading: #2d3748;
+  --color-placeholder: rgba(113, 128, 150, 0.6);
   --color-glass: #ffffff;
   --color-scrollbar: rgba(156, 163, 175, 0.3);
   --color-scrollbar-hover: rgba(44, 62, 80, 0.4);
@@ -519,28 +519,36 @@ h6 {
 
 h1 {
   font-size: var(--font-size-3xl);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 h2 {
   font-size: var(--font-size-2xl);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 h3 {
   font-size: var(--font-size-xl);
+  line-height: 1.3;
 }
 h4 {
   font-size: var(--font-size-lg);
+  line-height: 1.35;
 }
 h5 {
   font-size: var(--font-size-md);
+  line-height: 1.4;
 }
 h6 {
   font-size: var(--font-size-base);
+  line-height: 1.45;
 }
 
 p {
   font-size: var(--font-size-base);
   line-height: var(--line-height-relaxed);
   color: var(--color-text);
-  margin: 0 0 var(--spacing-4) 0;
+  margin: 0 0 var(--spacing-5) 0;
 }
 
 small {
@@ -562,7 +570,7 @@ label {
   border-radius: var(--radius-md);
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-base);
-  padding: var(--spacing-3) var(--spacing-5);
+  padding: var(--spacing-3) var(--spacing-6);
   transition: all var(--transition-base);
   line-height: var(--line-height-normal);
   display: inline-flex;
@@ -572,6 +580,7 @@ label {
   border: 1px solid transparent;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: var(--shadow-xs);
 }
 
 .btn:disabled,
@@ -597,7 +606,8 @@ label {
 .btn-primary:focus:not(:disabled) {
   background: var(--color-primary-dark);
   border-color: var(--color-primary-dark);
-  /* Only color change, no transform, no filter */
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -747,12 +757,13 @@ label {
       ============================================ */
 .card {
   background: var(--color-card);
-  border-radius: var(--radius-base);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
-  /* No shadow - flat design */
+  box-shadow: var(--shadow-card);
   padding: var(--spacing-6);
   transition: background-color var(--transition-base),
-    border-color var(--transition-base);
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
   position: relative;
   overflow: hidden;
 }
@@ -763,10 +774,10 @@ label {
 }
 
 .card:hover {
-  /* No transform, no shadow */
-  background-color: var(--color-card-muted);
+  background-color: var(--color-card);
   border-color: var(--color-border-strong);
-  /* Only subtle color change */
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
 }
 
 .card-header,
@@ -871,7 +882,7 @@ label {
 
 .form-control,
 .form-select {
-  border-radius: var(--radius-base);
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-input-border);
   background: var(--color-input-bg);
   color: var(--color-text);
@@ -879,14 +890,15 @@ label {
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   transition: border-color var(--transition-base),
-    background-color var(--transition-base);
+    background-color var(--transition-base),
+    box-shadow var(--transition-base);
   width: 100%;
 }
 
 .form-control:focus,
 .form-select:focus {
   border-color: var(--color-input-focus);
-  /* No shadow - only border color change */
+  box-shadow: 0 0 0 3px rgba(44, 120, 115, 0.1);
   background: var(--color-card);
   outline: none;
 }
@@ -1024,8 +1036,7 @@ textarea.form-control {
 .modal-content {
   border-radius: var(--component-radius-lg);
   border: 1px solid var(--color-border);
-  /* Minimal shadow only */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-modal);
   background: var(--color-card);
   overflow: hidden;
   display: flex;
@@ -1163,10 +1174,10 @@ textarea.form-control {
   border-collapse: separate;
   border-spacing: 0;
   background: var(--color-card);
-  border-radius: var(--radius-base);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--color-border);
-  /* No shadow - flat design */
+  box-shadow: var(--shadow-card);
   color: var(--color-text);
   width: 100%;
 }
@@ -1216,17 +1227,18 @@ textarea.form-control {
   padding: var(--component-padding);
   border-radius: var(--component-radius-lg);
   border: 1px solid var(--color-border);
-  /* No gradient, no shadow */
+  box-shadow: var(--shadow-card);
   background: var(--color-card);
   margin-bottom: var(--component-gap-lg);
   transition: background-color var(--component-transition),
-    border-color var(--component-transition);
+    border-color var(--component-transition),
+    box-shadow var(--component-transition);
 }
 
 .page-header:hover {
-  background-color: var(--color-card-muted);
+  background-color: var(--color-card);
   border-color: var(--color-border-strong);
-  /* Only subtle color change */
+  box-shadow: var(--shadow-hover);
 }
 
 .page-header > div:first-child {

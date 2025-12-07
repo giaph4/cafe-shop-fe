@@ -56,10 +56,60 @@
             </button>
         </div>
 
+        <!-- Advanced Filters -->
+        <div class="pos-product-menu__advanced-filters">
+            <div class="row g-2">
+                <div class="col-md-3 col-6">
+                    <label class="form-label small">Giá từ (₫)</label>
+                    <input
+                        v-model.number="filters.priceMin"
+                        type="number"
+                        class="form-control form-control-sm"
+                        placeholder="Từ"
+                        min="0"
+                        step="1000"
+                    />
+                </div>
+                <div class="col-md-3 col-6">
+                    <label class="form-label small">Giá đến (₫)</label>
+                    <input
+                        v-model.number="filters.priceMax"
+                        type="number"
+                        class="form-control form-control-sm"
+                        placeholder="Đến"
+                        min="0"
+                        step="1000"
+                    />
+                </div>
+                <div class="col-md-3 col-6">
+                    <label class="form-label small">Bán chạy</label>
+                    <select class="form-select form-select-sm" v-model="filters.bestseller">
+                        <option :value="null">Tất cả</option>
+                        <option :value="true">Chỉ bán chạy</option>
+                        <option :value="false">Không bán chạy</option>
+                    </select>
+                </div>
+                <div class="col-md-3 col-6">
+                    <label class="form-label small">Sắp xếp</label>
+                    <select class="form-select form-select-sm" v-model="sortState">
+                        <option value="">Mặc định</option>
+                        <option value="name-asc">Tên A-Z</option>
+                        <option value="name-desc">Tên Z-A</option>
+                        <option value="price-asc">Giá tăng dần</option>
+                        <option value="price-desc">Giá giảm dần</option>
+                        <option value="bestseller-desc">Bán chạy nhất</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <!-- Product List Header -->
         <div class="pos-product-menu__list-header">
             <span class="pos-product-menu__count">
-                Tìm thấy <strong>{{ filteredProducts.length }}</strong> sản phẩm
+                Tìm thấy <strong>{{ paginatedProducts.length }}</strong> sản phẩm
+                <span v-if="totalFiltered > paginatedProducts.length" class="text-muted">
+                    ({{ totalFiltered }} tổng cộng)
+                </span>
             </span>
             <div class="pos-product-menu__view-toggle">
                 <button
@@ -101,7 +151,7 @@
             </EmptyState>
             <div v-else class="pos-product-menu__products" :class="`view-${viewMode}`">
                 <div
-                    v-for="product in filteredProducts"
+                    v-for="product in paginatedProducts"
                     :key="product.id"
                     class="product-card"
                     :class="{ 'product-card--unavailable': !product.available }"
@@ -129,6 +179,43 @@
                 </div>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="pos-product-menu__pagination">
+            <nav aria-label="Phân trang sản phẩm">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    <li class="page-item" :class="{ disabled: currentPage === 0 }">
+                        <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage === 0">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                    </li>
+                    <li
+                        v-for="page in visiblePages"
+                        :key="page"
+                        class="page-item"
+                        :class="{ active: page === currentPage + 1 }"
+                    >
+                        <button
+                            v-if="page !== '...'"
+                            class="page-link"
+                            @click="goToPage(page - 1)"
+                        >
+                            {{ page }}
+                        </button>
+                        <span v-else class="page-link">{{ page }}</span>
+                    </li>
+                    <li class="page-item" :class="{ disabled: currentPage >= totalPages - 1 }">
+                        <button
+                            class="page-link"
+                            @click="goToPage(currentPage + 1)"
+                            :disabled="currentPage >= totalPages - 1"
+                        >
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 </template>
 
@@ -137,6 +224,7 @@ import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { getProducts } from '@/api/productService.js'
 import { getCategories } from '@/api/categoryService.js'
+import * as reportService from '@/api/reportService.js'
 import { formatCurrency } from '@/utils/formatters.js'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
@@ -150,9 +238,20 @@ const viewMode = ref('grid')
 const filters = ref({
     name: '',
     categoryId: '',
+    priceMin: null,
+    priceMax: null,
+    bestseller: null,
     page: 0,
-    size: 200,
+    size: 1000, // Lấy nhiều để filter client-side
 })
+
+const sortState = ref('')
+const currentPage = ref(0)
+const pageSize = ref(24) // 24 sản phẩm mỗi trang
+
+// Bestseller data
+const bestsellerProductIds = ref(new Set())
+const bestsellerData = ref({})
 
 const { data: products, isLoading, isError, refetch } = useQuery({
     queryKey: computed(() => ['products', 'pos', {
@@ -200,18 +299,149 @@ const categoriesList = computed(() => {
     return []
 })
 
-const filteredProducts = computed(() => {
-    // API đã lọc theo categoryId và name rồi
-    // Chỉ cần sort: available products first
-    let result = [...productList.value]
+// Fetch bestseller data
+const fetchBestsellerData = async () => {
+    try {
+        const endDate = new Date()
+        const startDate = new Date()
+        startDate.setDate(startDate.getDate() - 30)
+        
+        const bestsellerResponse = await reportService.getBestSellers(
+            startDate.toISOString().split('T')[0],
+            endDate.toISOString().split('T')[0],
+            100,
+            'quantity'
+        )
+        
+        const ids = new Set()
+        const dataMap = {}
+        
+        if (bestsellerResponse?.items) {
+            bestsellerResponse.items.forEach((item) => {
+                if (item.productId) {
+                    ids.add(item.productId)
+                    dataMap[item.productId] = {
+                        totalQuantitySold: item.totalQuantitySold || 0,
+                        totalRevenueGenerated: item.totalRevenueGenerated || 0,
+                        rank: item.rank || 0
+                    }
+                }
+            })
+        }
+        
+        bestsellerProductIds.value = ids
+        bestsellerData.value = dataMap
+    } catch (error) {
+        console.warn('Không thể tải dữ liệu bán chạy:', error)
+    }
+}
 
-    // Sort: available products first
-    return result.sort((a, b) => {
+const filteredProducts = computed(() => {
+    let result = [...productList.value]
+    
+    // Filter theo giá
+    if (filters.value.priceMin !== null && filters.value.priceMin !== undefined && filters.value.priceMin > 0) {
+        result = result.filter((p) => (p.price || 0) >= filters.value.priceMin)
+    }
+    if (filters.value.priceMax !== null && filters.value.priceMax !== undefined && filters.value.priceMax > 0) {
+        result = result.filter((p) => (p.price || 0) <= filters.value.priceMax)
+    }
+    
+    // Filter theo bestseller
+    if (filters.value.bestseller !== null && filters.value.bestseller !== undefined) {
+        if (filters.value.bestseller === true) {
+            result = result.filter((p) => bestsellerProductIds.value.has(p.id))
+        } else if (filters.value.bestseller === false) {
+            result = result.filter((p) => !bestsellerProductIds.value.has(p.id))
+        }
+    }
+    
+    // Sort: available products first, then by sortState
+    result.sort((a, b) => {
+        // Available first
         if (a.available && !b.available) return -1
         if (!a.available && b.available) return 1
+        
+        // Then by sortState
+        if (sortState.value) {
+            const [field, order] = sortState.value.split('-')
+            const isAsc = order === 'asc'
+            let comparison = 0
+            
+            if (field === 'name') {
+                comparison = (a.name || '').localeCompare(b.name || '', 'vi')
+            } else if (field === 'price') {
+                comparison = (a.price || 0) - (b.price || 0)
+            } else if (field === 'bestseller') {
+                const aIsBestseller = bestsellerProductIds.value.has(a.id)
+                const bIsBestseller = bestsellerProductIds.value.has(b.id)
+                if (aIsBestseller && !bIsBestseller) comparison = -1
+                else if (!aIsBestseller && bIsBestseller) comparison = 1
+                else {
+                    const aSales = bestsellerData.value[a.id]?.totalQuantitySold || 0
+                    const bSales = bestsellerData.value[b.id]?.totalQuantitySold || 0
+                    comparison = bSales - aSales
+                }
+            }
+            
+            return isAsc ? comparison : -comparison
+        }
+        
         return 0
     })
+    
+    return result
 })
+
+const totalFiltered = computed(() => filteredProducts.value.length)
+const totalPages = computed(() => Math.ceil(totalFiltered.value / pageSize.value))
+
+const paginatedProducts = computed(() => {
+    const start = currentPage.value * pageSize.value
+    const end = start + pageSize.value
+    return filteredProducts.value.slice(start, end)
+})
+
+const visiblePages = computed(() => {
+    const pages = []
+    const total = totalPages.value
+    const current = currentPage.value + 1
+    
+    if (total <= 7) {
+        for (let i = 1; i <= total; i++) {
+            pages.push(i)
+        }
+    } else {
+        if (current <= 3) {
+            for (let i = 1; i <= 4; i++) pages.push(i)
+            pages.push('...')
+            pages.push(total)
+        } else if (current >= total - 2) {
+            pages.push(1)
+            pages.push('...')
+            for (let i = total - 3; i <= total; i++) pages.push(i)
+        } else {
+            pages.push(1)
+            pages.push('...')
+            for (let i = current - 1; i <= current + 1; i++) pages.push(i)
+            pages.push('...')
+            pages.push(total)
+        }
+    }
+    
+    return pages
+})
+
+const goToPage = (page) => {
+    if (page >= 0 && page < totalPages.value) {
+        currentPage.value = page
+        // Scroll to top
+        const contentEl = document.querySelector('.pos-product-menu__content')
+        if (contentEl) {
+            contentEl.scrollTop = 0
+        }
+    }
+}
 
 const clearSearch = () => {
     filters.value.name = ''
@@ -236,9 +466,31 @@ const handleKeydown = (event) => {
     }
 }
 
+// Watch cho name và categoryId để fetch lại
+let nameWatchTimeout = null
+watch(
+    () => [filters.value.name, filters.value.categoryId],
+    () => {
+        if (nameWatchTimeout) clearTimeout(nameWatchTimeout)
+        nameWatchTimeout = setTimeout(() => {
+            filters.value.page = 0
+            currentPage.value = 0
+        }, 300)
+    }
+)
+
+// Watch cho price, bestseller, sort để reset pagination
+watch(
+    () => [filters.value.priceMin, filters.value.priceMax, filters.value.bestseller, sortState.value],
+    () => {
+        currentPage.value = 0
+    }
+)
+
 onMounted(() => {
     document.addEventListener('keydown', handleKeydown)
     searchInputRef.value?.focus()
+    fetchBestsellerData()
 })
 
 onBeforeUnmount(() => {
@@ -401,6 +653,30 @@ kbd {
     background: var(--color-primary);
     color: var(--color-text-inverse);
     border-color: var(--color-primary);
+}
+
+/* Advanced Filters */
+.pos-product-menu__advanced-filters {
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-3);
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.pos-product-menu__advanced-filters .form-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+}
+
+.pos-product-menu__advanced-filters .form-control,
+.pos-product-menu__advanced-filters .form-select {
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
 }
 
 /* List Header - Chuẩn hóa */
@@ -619,5 +895,42 @@ kbd {
     .pos-product-menu__products.view-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
+}
+
+/* Pagination */
+.pos-product-menu__pagination {
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.pos-product-menu__pagination .pagination {
+    margin: 0;
+}
+
+.pos-product-menu__pagination .page-link {
+    border-color: var(--color-border);
+    color: var(--color-text);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-base);
+}
+
+.pos-product-menu__pagination .page-link:hover:not(:disabled) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.pos-product-menu__pagination .page-item.active .page-link {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.pos-product-menu__pagination .page-item.disabled .page-link {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 </style>

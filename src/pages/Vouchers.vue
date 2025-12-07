@@ -1,492 +1,443 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modalElement" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">{{ isEditing ? 'Cập nhật voucher' : 'Thêm voucher mới' }}</h5>
-                            <p class="modal-subtitle">Điền đầy đủ thông tin voucher. Hệ thống sẽ kiểm tra tính hợp lệ trước khi lưu.</p>
+    <div data-aos="fade-up">
+        <Teleport to="body">
+            <div class="modal fade" ref="modalElement" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">{{ isEditing ? 'Cập nhật voucher' : 'Thêm voucher mới' }}</h5>
+                                <p class="modal-subtitle">Điền đầy đủ thông tin voucher. Hệ thống sẽ kiểm tra tính hợp
+                                    lệ trước khi lưu.</p>
+                            </div>
+                            <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                         </div>
-                        <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+
+                        <LoadingState v-if="formLoading" text="Đang tải dữ liệu voucher..." />
+
+                        <Form v-else :key="formKey" :validation-schema="voucherSchema" @submit="handleSubmit"
+                            v-slot="{ errors, isSubmitting }">
+                            <div class="modal-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Mã voucher <span
+                                                class="required-mark">*</span></label>
+                                        <Field name="code" type="text" class="form-control" v-model="formData.code"
+                                            :class="{ 'is-invalid': errors.code }" autocomplete="off" maxlength="50" />
+                                        <ErrorMessage name="code" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Loại voucher <span
+                                                class="required-mark">*</span></label>
+                                        <Field name="type" as="select" class="form-select" v-model="formData.type"
+                                            :class="{ 'is-invalid': errors.type }">
+                                            <option value="">Chọn loại</option>
+                                            <option v-for="type in VOUCHER_TYPES" :key="type.value" :value="type.value">
+                                                {{ type.label }}</option>
+                                        </Field>
+                                        <ErrorMessage name="type" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Mô tả <span class="required-mark">*</span></label>
+                                        <Field name="description" as="textarea" rows="2" class="form-control"
+                                            v-model="formData.description" :class="{ 'is-invalid': errors.description }"
+                                            maxlength="255" />
+                                        <ErrorMessage name="description" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Giá trị giảm <span
+                                                class="required-mark">*</span></label>
+                                        <div class="input-group">
+                                            <Field name="discountValue" type="number" step="0.01" min="0"
+                                                class="form-control" v-model.number="formData.discountValue"
+                                                :class="{ 'is-invalid': errors.discountValue }" />
+                                            <span class="input-group-text"
+                                                v-if="formData.type === 'PERCENTAGE'">%</span>
+                                            <span class="input-group-text" v-else>VND</span>
+                                        </div>
+                                        <ErrorMessage name="discountValue" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Đơn hàng tối thiểu</label>
+                                        <div class="input-group">
+                                            <Field name="minimumOrderAmount" type="number" step="0.01" min="0"
+                                                class="form-control" v-model.number="formData.minimumOrderAmount"
+                                                :class="{ 'is-invalid': errors.minimumOrderAmount }" />
+                                            <span class="input-group-text">VND</span>
+                                        </div>
+                                        <ErrorMessage name="minimumOrderAmount" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Giảm tối đa</label>
+                                        <div class="input-group">
+                                            <Field name="maximumDiscountAmount" type="number" step="0.01" min="0"
+                                                class="form-control" v-model.number="formData.maximumDiscountAmount"
+                                                :class="{ 'is-invalid': errors.maximumDiscountAmount }" />
+                                            <span class="input-group-text">VND</span>
+                                        </div>
+                                        <ErrorMessage name="maximumDiscountAmount" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Hiệu lực từ <span
+                                                class="required-mark">*</span></label>
+                                        <Field name="validFrom" type="datetime-local" class="form-control"
+                                            v-model="formData.validFrom" :class="{ 'is-invalid': errors.validFrom }" />
+                                        <ErrorMessage name="validFrom" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Hiệu lực đến <span
+                                                class="required-mark">*</span></label>
+                                        <Field name="validTo" type="datetime-local" class="form-control"
+                                            v-model="formData.validTo" :class="{ 'is-invalid': errors.validTo }" />
+                                        <ErrorMessage name="validTo" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Giới hạn lượt sử dụng <span
+                                                class="required-mark">*</span></label>
+                                        <Field name="usageLimit" type="number" min="1" step="1" class="form-control"
+                                            v-model.number="formData.usageLimit"
+                                            :class="{ 'is-invalid': errors.usageLimit }" />
+                                        <ErrorMessage name="usageLimit" class="invalid-feedback" />
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-center">
+                                        <div class="form-switch-wrapper">
+                                            <Field name="active" type="checkbox" class="form-check-input" role="switch"
+                                                v-model="formData.active" />
+                                            <label class="form-check-label">Kích hoạt ngay</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" @click="closeModal"
+                                    :disabled="isSubmitting">Hủy</button>
+                                <button type="submit" class="btn btn-primary"
+                                    :disabled="isSubmitting || voucherStore.saving">
+                                    <span v-if="isSubmitting || voucherStore.saving"
+                                        class="spinner-border spinner-border-sm me-2"></span>
+                                    {{ isEditing ? 'Lưu thay đổi' : 'Tạo mới' }}
+                                </button>
+                            </div>
+                        </Form>
                     </div>
+                </div>
+            </div>
 
-                    <LoadingState v-if="formLoading" text="Đang tải dữ liệu voucher..." />
-
-                    <Form
-                        v-else
-                        :key="formKey"
-                        :validation-schema="voucherSchema"
-                        @submit="handleSubmit"
-                        v-slot="{ errors, isSubmitting }"
-                    >
+            <div class="modal fade" ref="deleteModalElement" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">Xóa voucher</h5>
+                                <p class="modal-subtitle">Hành động này không thể hoàn tác.</p>
+                            </div>
+                            <button type="button" class="btn-close" @click="closeDeleteModal"
+                                :disabled="voucherStore.deleting" aria-label="Close"></button>
+                        </div>
                         <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Mã voucher <span class="required-mark">*</span></label>
-                                    <Field
-                                        name="code"
-                                        type="text"
-                                        class="form-control"
-                                        v-model="formData.code"
-                                        :class="{ 'is-invalid': errors.code }"
-                                        autocomplete="off"
-                                        maxlength="50"
-                                    />
-                                    <ErrorMessage name="code" class="invalid-feedback" />
+                            <p class="delete-confirm-text">Bạn có chắc chắn muốn xóa voucher này không?</p>
+                            <div class="delete-info-card">
+                                <div class="delete-info-item">
+                                    <strong class="delete-info-label">Mã voucher:</strong>
+                                    <span class="delete-info-value">{{ deleteTarget?.code || '—' }}</span>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Loại voucher <span class="required-mark">*</span></label>
-                                    <Field
-                                        name="type"
-                                        as="select"
-                                        class="form-select"
-                                        v-model="formData.type"
-                                        :class="{ 'is-invalid': errors.type }"
-                                    >
-                                        <option value="">Chọn loại</option>
-                                        <option v-for="type in VOUCHER_TYPES" :key="type.value" :value="type.value">{{ type.label }}</option>
-                                    </Field>
-                                    <ErrorMessage name="type" class="invalid-feedback" />
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Mô tả <span class="required-mark">*</span></label>
-                                    <Field
-                                        name="description"
-                                        as="textarea"
-                                        rows="2"
-                                        class="form-control"
-                                        v-model="formData.description"
-                                        :class="{ 'is-invalid': errors.description }"
-                                        maxlength="255"
-                                    />
-                                    <ErrorMessage name="description" class="invalid-feedback" />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Giá trị giảm <span class="required-mark">*</span></label>
-                                    <div class="input-group">
-                                        <Field
-                                            name="discountValue"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            class="form-control"
-                                            v-model.number="formData.discountValue"
-                                            :class="{ 'is-invalid': errors.discountValue }"
-                                        />
-                                        <span class="input-group-text" v-if="formData.type === 'PERCENTAGE'">%</span>
-                                        <span class="input-group-text" v-else>VND</span>
-                                    </div>
-                                    <ErrorMessage name="discountValue" class="invalid-feedback" />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Đơn hàng tối thiểu</label>
-                                    <div class="input-group">
-                                        <Field
-                                            name="minimumOrderAmount"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            class="form-control"
-                                            v-model.number="formData.minimumOrderAmount"
-                                            :class="{ 'is-invalid': errors.minimumOrderAmount }"
-                                        />
-                                        <span class="input-group-text">VND</span>
-                                    </div>
-                                    <ErrorMessage name="minimumOrderAmount" class="invalid-feedback" />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Giảm tối đa</label>
-                                    <div class="input-group">
-                                        <Field
-                                            name="maximumDiscountAmount"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            class="form-control"
-                                            v-model.number="formData.maximumDiscountAmount"
-                                            :class="{ 'is-invalid': errors.maximumDiscountAmount }"
-                                        />
-                                        <span class="input-group-text">VND</span>
-                                    </div>
-                                    <ErrorMessage name="maximumDiscountAmount" class="invalid-feedback" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Hiệu lực từ <span class="required-mark">*</span></label>
-                                    <Field
-                                        name="validFrom"
-                                        type="datetime-local"
-                                        class="form-control"
-                                        v-model="formData.validFrom"
-                                        :class="{ 'is-invalid': errors.validFrom }"
-                                    />
-                                    <ErrorMessage name="validFrom" class="invalid-feedback" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Hiệu lực đến <span class="required-mark">*</span></label>
-                                    <Field
-                                        name="validTo"
-                                        type="datetime-local"
-                                        class="form-control"
-                                        v-model="formData.validTo"
-                                        :class="{ 'is-invalid': errors.validTo }"
-                                    />
-                                    <ErrorMessage name="validTo" class="invalid-feedback" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Giới hạn lượt sử dụng <span class="required-mark">*</span></label>
-                                    <Field
-                                        name="usageLimit"
-                                        type="number"
-                                        min="1"
-                                        step="1"
-                                        class="form-control"
-                                        v-model.number="formData.usageLimit"
-                                        :class="{ 'is-invalid': errors.usageLimit }"
-                                    />
-                                    <ErrorMessage name="usageLimit" class="invalid-feedback" />
-                                </div>
-                                <div class="col-md-6 d-flex align-items-center">
-                                    <div class="form-switch-wrapper">
-                                        <Field
-                                            name="active"
-                                            type="checkbox"
-                                            class="form-check-input"
-                                            role="switch"
-                                            v-model="formData.active"
-                                        />
-                                        <label class="form-check-label">Kích hoạt ngay</label>
-                                    </div>
+                                <div class="delete-info-item">
+                                    <strong class="delete-info-label">Mô tả:</strong>
+                                    <span class="delete-info-value">{{ deleteTarget?.description || '—' }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="isSubmitting">Hủy</button>
-                            <button type="submit" class="btn btn-primary" :disabled="isSubmitting || voucherStore.saving">
-                                <span v-if="isSubmitting || voucherStore.saving" class="spinner-border spinner-border-sm me-2"></span>
-                                {{ isEditing ? 'Lưu thay đổi' : 'Tạo mới' }}
+                            <button type="button" class="btn btn-outline-secondary" @click="closeDeleteModal"
+                                :disabled="voucherStore.deleting">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="handleDeleteConfirm"
+                                :disabled="voucherStore.deleting">
+                                <span v-if="voucherStore.deleting" class="spinner-border spinner-border-sm me-2"></span>
+                                Xóa voucher
                             </button>
                         </div>
-                    </Form>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Teleport>
 
-        <div class="modal fade" ref="deleteModalElement" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">Xóa voucher</h5>
-                            <p class="modal-subtitle">Hành động này không thể hoàn tác.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="voucherStore.deleting" aria-label="Close"></button>
+        <section class="page-container container-fluid vouchers-page"
+            style="background: var(--color-body-bg); padding: var(--spacing-4);">
+            <div class="vouchers-header">
+                <div class="vouchers-header__content">
+                    <div class="vouchers-header__title-section">
+                        <h2 class="page-title">Quản lý voucher</h2>
+                        <p class="page-subtitle">Tạo và quản lý các mã giảm giá, khuyến mãi cho khách hàng.</p>
                     </div>
-                    <div class="modal-body">
-                        <p class="delete-confirm-text">Bạn có chắc chắn muốn xóa voucher này không?</p>
-                        <div class="delete-info-card">
-                            <div class="delete-info-item">
-                                <strong class="delete-info-label">Mã voucher:</strong>
-                                <span class="delete-info-value">{{ deleteTarget?.code || '—' }}</span>
-                            </div>
-                            <div class="delete-info-item">
-                                <strong class="delete-info-label">Mô tả:</strong>
-                                <span class="delete-info-value">{{ deleteTarget?.description || '—' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            @click="closeDeleteModal"
-                            :disabled="voucherStore.deleting"
-                        >
-                            Hủy
+                    <div class="vouchers-header__actions">
+                        <button class="btn btn-outline-secondary" type="button" @click="handleRefresh"
+                            :disabled="loading">
+                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-arrow-clockwise me-2"></i>
+                            Làm mới
                         </button>
-                        <button
-                            type="button"
-                            class="btn btn-danger"
-                            @click="handleDeleteConfirm"
-                            :disabled="voucherStore.deleting"
-                        >
-                            <span v-if="voucherStore.deleting" class="spinner-border spinner-border-sm me-2"></span>
-                            Xóa voucher
+                        <button class="btn btn-outline-primary" type="button" @click="exportCurrentPage"
+                            :disabled="!items.length">
+                            <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                            Xuất CSV
+                        </button>
+                        <button v-if="canManage" class="btn btn-primary" type="button" @click="openCreateModal"
+                            :disabled="voucherStore.saving || formLoading">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            Thêm voucher
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </Teleport>
 
-    <section class="page-container container-fluid vouchers-page" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="vouchers-header">
-            <div class="vouchers-header__content">
-                <div class="vouchers-header__title-section">
-                    <h2 class="page-title">Quản lý voucher</h2>
-                    <p class="page-subtitle">Tạo và quản lý các mã giảm giá, khuyến mãi cho khách hàng.</p>
+            <div class="summary-grid" v-if="summaryLoading">
+                <article class="summary-card summary-card--loading">
+                    <div class="summary-loading">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <p class="summary-loading-text">Đang tải thống kê voucher...</p>
+                    </div>
+                </article>
             </div>
-                <div class="vouchers-header__actions">
-                <button class="btn btn-outline-secondary" type="button" @click="handleRefresh" :disabled="loading">
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                </button>
-                <button class="btn btn-outline-primary" type="button" @click="exportCurrentPage" :disabled="!items.length">
-                        <i class="bi bi-file-earmark-arrow-down me-2"></i>
-                        Xuất CSV
-                </button>
-                <button v-if="canManage" class="btn btn-primary" type="button" @click="openCreateModal" :disabled="voucherStore.saving || formLoading">
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Thêm voucher
-                </button>
+            <div class="summary-grid" v-else>
+                <article class="summary-card summary-card--active">
+                    <div class="summary-icon summary-icon--active">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div>
+                        <p class="summary-label">Đang hoạt động</p>
+                        <p class="summary-value">{{ summary.activeCount }}</p>
+                    </div>
+                </article>
+                <article class="summary-card summary-card--inactive">
+                    <div class="summary-icon summary-icon--inactive">
+                        <i class="bi bi-pause-circle"></i>
+                    </div>
+                    <div>
+                        <p class="summary-label">Ngừng hoạt động</p>
+                        <p class="summary-value">{{ summary.inactiveCount }}</p>
+                    </div>
+                </article>
+                <article class="summary-card summary-card--expiring">
+                    <div class="summary-icon summary-icon--expiring">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div>
+                        <p class="summary-label">Sắp hết hạn (7 ngày)</p>
+                        <p class="summary-value">{{ summary.expiringSoonCount }}</p>
+                    </div>
+                </article>
+                <article class="summary-card summary-card--redeemed">
+                    <div class="summary-icon summary-icon--redeemed">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </div>
+                    <div>
+                        <p class="summary-label">Đã sử dụng</p>
+                        <p class="summary-value">{{ summary.redeemedCount }}</p>
+                    </div>
+                </article>
             </div>
-            </div>
-        </div>
 
-        <div class="summary-grid" v-if="summaryLoading">
-            <article class="summary-card summary-card--loading">
-                <div class="summary-loading">
-                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                    <p class="summary-loading-text">Đang tải thống kê voucher...</p>
+            <div v-if="errorMessage" class="error-banner">
+                <span class="error-banner__icon">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </span>
+                <div class="error-banner__content">
+                    <p class="error-banner__title">Không thể tải dữ liệu voucher</p>
+                    <p class="error-banner__message">{{ errorMessage }}</p>
                 </div>
-            </article>
-        </div>
-        <div class="summary-grid" v-else>
-            <article class="summary-card summary-card--active">
-                <div class="summary-icon summary-icon--active">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-                <div>
-                    <p class="summary-label">Đang hoạt động</p>
-                    <p class="summary-value">{{ summary.activeCount }}</p>
-                </div>
-            </article>
-            <article class="summary-card summary-card--inactive">
-                <div class="summary-icon summary-icon--inactive">
-                    <i class="bi bi-pause-circle"></i>
-                </div>
-                <div>
-                    <p class="summary-label">Ngừng hoạt động</p>
-                    <p class="summary-value">{{ summary.inactiveCount }}</p>
-                </div>
-            </article>
-            <article class="summary-card summary-card--expiring">
-                <div class="summary-icon summary-icon--expiring">
-                    <i class="bi bi-hourglass-split"></i>
-                </div>
-                <div>
-                    <p class="summary-label">Sắp hết hạn (7 ngày)</p>
-                    <p class="summary-value">{{ summary.expiringSoonCount }}</p>
-                </div>
-            </article>
-            <article class="summary-card summary-card--redeemed">
-                <div class="summary-icon summary-icon--redeemed">
-                    <i class="bi bi-ticket-perforated"></i>
-                </div>
-                <div>
-                    <p class="summary-label">Đã sử dụng</p>
-                    <p class="summary-value">{{ summary.redeemedCount }}</p>
-                </div>
-            </article>
-        </div>
-
-        <div v-if="errorMessage" class="error-banner">
-            <span class="error-banner__icon">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-            </span>
-            <div class="error-banner__content">
-                <p class="error-banner__title">Không thể tải dữ liệu voucher</p>
-                <p class="error-banner__message">{{ errorMessage }}</p>
             </div>
-        </div>
 
-        <div class="card filter-card">
-            <div class="card-body">
-            <div class="filter-grid">
-                <div class="filter-item">
-                    <label class="form-label">Tìm theo mã</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" v-model.trim="filterDraft.code" placeholder="Nhập mã voucher" />
+            <div class="card filter-card">
+                <div class="card-body">
+                    <div class="filter-grid">
+                        <div class="filter-item">
+                            <label class="form-label">Tìm theo mã</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" v-model.trim="filterDraft.code"
+                                    placeholder="Nhập mã voucher" />
+                            </div>
+                        </div>
+                        <div class="filter-item">
+                            <label class="form-label">Loại voucher</label>
+                            <select class="form-select" v-model="filterDraft.type">
+                                <option value="">Tất cả</option>
+                                <option v-for="type in VOUCHER_TYPES" :key="type.value" :value="type.value">{{
+                                    type.label }}</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" v-model="filterDraft.active">
+                                <option value="">Tất cả</option>
+                                <option value="true">Đang hoạt động</option>
+                                <option value="false">Ngừng hoạt động</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label class="form-label">Hiệu lực từ</label>
+                            <input type="datetime-local" class="form-control" v-model="filterDraft.validFrom" />
+                        </div>
+                        <div class="filter-item">
+                            <label class="form-label">Hiệu lực đến</label>
+                            <input type="datetime-local" class="form-control" v-model="filterDraft.validTo" />
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn btn-outline-secondary" type="button" @click="handleFilterReset"
+                                :disabled="loading">
+                                Đặt lại
+                            </button>
+                            <button class="btn btn-primary" type="button" @click="handleFilterApply"
+                                :disabled="loading">
+                                Áp dụng
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="filter-item">
-                    <label class="form-label">Loại voucher</label>
-                    <select class="form-select" v-model="filterDraft.type">
-                        <option value="">Tất cả</option>
-                        <option v-for="type in VOUCHER_TYPES" :key="type.value" :value="type.value">{{ type.label }}</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label class="form-label">Trạng thái</label>
-                    <select class="form-select" v-model="filterDraft.active">
-                        <option value="">Tất cả</option>
-                        <option value="true">Đang hoạt động</option>
-                        <option value="false">Ngừng hoạt động</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label class="form-label">Hiệu lực từ</label>
-                    <input type="datetime-local" class="form-control" v-model="filterDraft.validFrom" />
-                </div>
-                <div class="filter-item">
-                    <label class="form-label">Hiệu lực đến</label>
-                    <input type="datetime-local" class="form-control" v-model="filterDraft.validTo" />
-                </div>
-                <div class="filter-actions">
-                    <button class="btn btn-outline-secondary" type="button" @click="handleFilterReset" :disabled="loading">
-                        Đặt lại
-                    </button>
-                    <button class="btn btn-primary" type="button" @click="handleFilterApply" :disabled="loading">
-                        Áp dụng
-                    </button>
-                </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="table-card">
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th scope="col">Mã</th>
-                            <th scope="col">Mô tả</th>
-                            <th scope="col">Loại</th>
-                            <th scope="col">Giá trị</th>
-                            <th scope="col">Đơn tối thiểu</th>
-                            <th scope="col">Giảm tối đa</th>
-                            <th scope="col">Hiệu lực</th>
-                            <th scope="col">Sử dụng</th>
-                            <th scope="col">Trạng thái</th>
-                            <th scope="col">Cập nhật</th>
-                            <th scope="col" class="table-actions-header">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="loading">
-                            <td colspan="11" class="table-loading">
-                                <LoadingState text="Đang tải dữ liệu voucher..." />
-                            </td>
-                        </tr>
-                        <tr v-else-if="!items.length">
-                            <td colspan="11" class="table-empty">
-                                <EmptyState
-                                    title="Không có voucher"
-                                    message="Không có voucher nào phù hợp với bộ lọc hiện tại."
-                                >
-                                    <template #icon>
-                                        <i class="bi bi-ticket-perforated"></i>
-                                    </template>
-                                </EmptyState>
-                            </td>
-                        </tr>
-                        <tr v-for="voucher in items" :key="voucher.id">
-                            <td class="voucher-code">{{ voucher.code }}</td>
-                            <td>{{ voucher.description }}</td>
-                            <td>
-                                <span class="badge badge-type" :class="voucher.type === 'PERCENTAGE' ? 'badge-type--percentage' : 'badge-type--fixed'">
-                                    {{ voucher.type === 'PERCENTAGE' ? 'Giảm %' : 'Giảm cố định' }}
-                                </span>
-                            </td>
-                            <td>
-                                <span v-if="voucher.type === 'PERCENTAGE'">{{ formatNumber(voucher.discountValue) }}%</span>
-                                <span v-else>{{ formatCurrencySafe(voucher.discountValue) }}</span>
-                            </td>
-                            <td>{{ voucher.minimumOrderAmount ? formatCurrencySafe(voucher.minimumOrderAmount) : '—' }}</td>
-                            <td>{{ voucher.maximumDiscountAmount ? formatCurrencySafe(voucher.maximumDiscountAmount) : (voucher.type === 'PERCENTAGE' ? 'Không giới hạn' : '—') }}</td>
-                            <td>
-                                <div class="voucher-validity">
-                                    <div class="voucher-validity-item">
-                                        <span class="voucher-validity-label">Từ:</span>
-                                        <span class="voucher-validity-value">{{ formatDateTime(voucher.validFrom) }}</span>
-                                    </div>
-                                    <div class="voucher-validity-item">
-                                        <span class="voucher-validity-label">Đến:</span>
-                                        <span class="voucher-validity-value">{{ formatDateTime(voucher.validTo) }}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>{{ voucher.timesUsed }} / {{ voucher.usageLimit }}</td>
-                            <td>
-                                <span class="badge badge-status" :class="voucher.active ? 'badge-status--active' : 'badge-status--inactive'">
-                                    {{ voucher.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
-                                </span>
-                            </td>
-                            <td>{{ formatDateTime(voucher.updatedAt || voucher.createdAt) }}</td>
-                            <td class="table-actions-cell">
-                                <div class="action-buttons">
-                                    <button class="action-button action-button--primary" type="button" @click="openEditModal(voucher)" title="Chỉnh sửa">
-                                        <i class="bi bi-pencil"></i>
-                                        <span>Chỉnh sửa</span>
-                                    </button>
-                                    <button
-                                        class="action-button action-button--warning"
-                                        type="button"
-                                        @click="handleToggle(voucher)"
-                                        :disabled="voucherStore.toggling"
-                                        :title="voucher.active ? 'Tạm ngưng' : 'Kích hoạt'"
-                                    >
-                                        <i class="bi" :class="voucher.active ? 'bi-pause-circle' : 'bi-play-circle'"></i>
-                                        <span>{{ voucher.active ? 'Tạm ngưng' : 'Kích hoạt' }}</span>
-                                    </button>
-                                    <button
-                                        class="action-button action-button--danger"
-                                        type="button"
-                                        @click="handleDelete(voucher)"
-                                        :disabled="voucher.timesUsed > 0 || voucherStore.deleting"
-                                        title="Xóa"
-                                    >
-                                        <i class="bi bi-trash"></i>
-                                        <span>Xóa</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
 
-            <div class="table-footer" v-if="pagination.totalPages > 1">
-                <div>
-                    <label class="pagination-label">Hiển thị</label>
-                    <select class="pagination-select" :value="pagination.size" @change="handlePageSizeChange($event.target.value)">
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
-                    <span class="pagination-text">mục / trang</span>
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">Mã</th>
+                                <th scope="col">Mô tả</th>
+                                <th scope="col">Loại</th>
+                                <th scope="col">Giá trị</th>
+                                <th scope="col">Đơn tối thiểu</th>
+                                <th scope="col">Giảm tối đa</th>
+                                <th scope="col">Hiệu lực</th>
+                                <th scope="col">Sử dụng</th>
+                                <th scope="col">Trạng thái</th>
+                                <th scope="col">Cập nhật</th>
+                                <th scope="col" class="table-actions-header">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="loading">
+                                <td colspan="11" class="table-loading">
+                                    <LoadingState text="Đang tải dữ liệu voucher..." />
+                                </td>
+                            </tr>
+                            <tr v-else-if="!items.length">
+                                <td colspan="11" class="table-empty">
+                                    <EmptyState title="Không có voucher"
+                                        message="Không có voucher nào phù hợp với bộ lọc hiện tại.">
+                                        <template #icon>
+                                            <i class="bi bi-ticket-perforated"></i>
+                                        </template>
+                                    </EmptyState>
+                                </td>
+                            </tr>
+                            <tr v-for="voucher in items" :key="voucher.id">
+                                <td class="voucher-code">{{ voucher.code }}</td>
+                                <td>{{ voucher.description }}</td>
+                                <td>
+                                    <span class="badge badge-type"
+                                        :class="voucher.type === 'PERCENTAGE' ? 'badge-type--percentage' : 'badge-type--fixed'">
+                                        {{ voucher.type === 'PERCENTAGE' ? 'Giảm %' : 'Giảm cố định' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span v-if="voucher.type === 'PERCENTAGE'">{{ formatNumber(voucher.discountValue)
+                                        }}%</span>
+                                    <span v-else>{{ formatCurrencySafe(voucher.discountValue) }}</span>
+                                </td>
+                                <td>{{ voucher.minimumOrderAmount ? formatCurrencySafe(voucher.minimumOrderAmount) : '—'
+                                    }}</td>
+                                <td>{{ voucher.maximumDiscountAmount ? formatCurrencySafe(voucher.maximumDiscountAmount)
+                                    : (voucher.type ===
+                                    'PERCENTAGE' ? 'Không giới hạn' : '—') }}</td>
+                                <td>
+                                    <div class="voucher-validity">
+                                        <div class="voucher-validity-item">
+                                            <span class="voucher-validity-label">Từ:</span>
+                                            <span class="voucher-validity-value">{{ formatDateTime(voucher.validFrom)
+                                                }}</span>
+                                        </div>
+                                        <div class="voucher-validity-item">
+                                            <span class="voucher-validity-label">Đến:</span>
+                                            <span class="voucher-validity-value">{{ formatDateTime(voucher.validTo)
+                                                }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ voucher.timesUsed }} / {{ voucher.usageLimit }}</td>
+                                <td>
+                                    <span class="badge badge-status"
+                                        :class="voucher.active ? 'badge-status--active' : 'badge-status--inactive'">
+                                        {{ voucher.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
+                                    </span>
+                                </td>
+                                <td>{{ formatDateTime(voucher.updatedAt || voucher.createdAt) }}</td>
+                                <td class="table-actions-cell">
+                                    <div class="action-buttons">
+                                        <button class="action-button action-button--primary" type="button"
+                                            @click="openEditModal(voucher)" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                            <span>Chỉnh sửa</span>
+                                        </button>
+                                        <button class="action-button action-button--warning" type="button"
+                                            @click="handleToggle(voucher)" :disabled="voucherStore.toggling"
+                                            :title="voucher.active ? 'Tạm ngưng' : 'Kích hoạt'">
+                                            <i class="bi"
+                                                :class="voucher.active ? 'bi-pause-circle' : 'bi-play-circle'"></i>
+                                            <span>{{ voucher.active ? 'Tạm ngưng' : 'Kích hoạt' }}</span>
+                                        </button>
+                                        <button class="action-button action-button--danger" type="button"
+                                            @click="handleDelete(voucher)"
+                                            :disabled="voucher.timesUsed > 0 || voucherStore.deleting" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                            <span>Xóa</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <Pagination
-                    :current-page="pagination.page"
-                    :total-pages="pagination.totalPages"
-                    @page-change="handlePageChange"
-                />
+
+                <div class="table-footer" v-if="pagination.totalPages > 1">
+                    <div>
+                        <label class="pagination-label">Hiển thị</label>
+                        <select class="pagination-select" :value="pagination.size"
+                            @change="handlePageSizeChange($event.target.value)">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span class="pagination-text">mục / trang</span>
+                    </div>
+                    <Pagination :current-page="pagination.page" :total-pages="pagination.totalPages"
+                        @page-change="handlePageChange" />
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref, watch, nextTick} from 'vue'
-import {Form, Field, ErrorMessage} from 'vee-validate'
+import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick } from 'vue'
+import { Form, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
-import {Modal} from 'bootstrap'
-import {toast} from 'vue3-toastify'
-import {storeToRefs} from 'pinia'
-import {useVoucherStore} from '@/store/voucher'
-import {VOUCHER_TYPES} from '@/api/voucherService'
-import {formatCurrency, formatDateTime, formatNumber} from '@/utils/formatters'
+import { Modal } from 'bootstrap'
+import { toast } from 'vue3-toastify'
+import { storeToRefs } from 'pinia'
+import { useVoucherStore } from '@/store/voucher'
+import { VOUCHER_TYPES } from '@/api/voucherService'
+import { formatCurrency, formatDateTime, formatNumber } from '@/utils/formatters'
 import Pagination from '@/components/common/Pagination.vue'
-import {useAuthStore} from '@/store/auth'
+import { useAuthStore } from '@/store/auth'
 import LoadingState from '@/components/common/LoadingState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const voucherStore = useVoucherStore()
 const authStore = useAuthStore()
-const {items, pagination, loading, summary, summaryLoading, errorMessage} = storeToRefs(voucherStore)
-const {userRoles} = storeToRefs(authStore)
+const { items, pagination, loading, summary, summaryLoading, errorMessage } = storeToRefs(voucherStore)
+const { userRoles } = storeToRefs(authStore)
 
 // Chỉ ROLE_MANAGER và ROLE_ADMIN mới được phép thao tác tạo/sửa/xoá.
 const canManage = computed(() => userRoles.value.includes('ROLE_ADMIN') || userRoles.value.includes('ROLE_MANAGER'))
@@ -557,7 +508,7 @@ const syncFilterDraft = () => {
 
 watch(filters, () => {
     syncFilterDraft()
-}, {deep: true})
+}, { deep: true })
 
 const formatCurrencySafe = (value) => {
     const numeric = Number(value)
@@ -817,7 +768,7 @@ const exportCurrentPage = () => {
         .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
         .join('\n')
 
-    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'})
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -831,10 +782,10 @@ const exportCurrentPage = () => {
 
 onMounted(() => {
     if (modalElement.value) {
-        bsModal.value = new Modal(modalElement.value, {backdrop: 'static'})
+        bsModal.value = new Modal(modalElement.value, { backdrop: 'static' })
     }
     if (deleteModalElement.value) {
-        deleteModalInstance = new Modal(deleteModalElement.value, {backdrop: 'static'})
+        deleteModalInstance = new Modal(deleteModalElement.value, { backdrop: 'static' })
     }
     initialize()
 })

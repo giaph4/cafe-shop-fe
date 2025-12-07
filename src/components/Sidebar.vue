@@ -357,17 +357,17 @@ function searchItems(items, parents, targetPath) {
     border: none;
     border-right: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
     background: var(--color-elevated);
-    box-shadow: 0 0 0 rgba(15, 23, 42, 0);
+    box-shadow: 2px 0 8px rgba(15, 23, 42, 0.06);
     overflow: visible;
     transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.26s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s ease;
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 110;
 }
 
 .neo-sidebar.is-collapsed {
     width: 76px;
-    box-shadow: 0 0 0 rgba(15, 23, 42, 0);
+    box-shadow: 2px 0 8px rgba(15, 23, 42, 0.06);
 }
 
 .neo-sidebar.is-collapsed .neo-sidebar__header {
@@ -428,13 +428,14 @@ function searchItems(items, parents, targetPath) {
 .neo-sidebar__brand-icon {
     width: 46px;
     height: 46px;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     display: grid;
     place-items: center;
     font-size: 1.32rem;
     color: var(--color-text-inverse);
     background: var(--color-primary);
     border: 1px solid var(--color-primary);
+    box-shadow: 0 2px 8px rgba(44, 120, 115, 0.2);
 }
 
 .neo-sidebar__brand-text {
@@ -475,19 +476,21 @@ function searchItems(items, parents, targetPath) {
     height: 42px;
     display: grid;
     place-items: center;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-card-muted);
     color: var(--color-text-muted);
     font-size: 1.2rem;
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .neo-sidebar__collapse:hover,
 .neo-sidebar__collapse:focus-visible {
-    background: var(--color-card-muted);
+    background: rgba(44, 120, 115, 0.1);
     border-color: var(--color-primary);
     color: var(--color-primary);
+    box-shadow: 0 2px 6px rgba(44, 120, 115, 0.15);
+    transform: scale(1.05);
 }
 
 .neo-sidebar__expand-button {
@@ -500,14 +503,14 @@ function searchItems(items, parents, targetPath) {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
     border: 1px solid var(--color-border);
     border-left: none;
     background: var(--color-card);
     color: var(--color-heading);
     font-size: 20px;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-    transition: all var(--transition-base);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 109;
     cursor: pointer;
 }
@@ -517,8 +520,8 @@ function searchItems(items, parents, targetPath) {
     background: var(--color-primary);
     border-color: var(--color-primary);
     color: var(--color-text-inverse);
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-50%) translateX(2px);
+    box-shadow: 4px 0 16px rgba(44, 120, 115, 0.25);
+    transform: translateY(-50%) translateX(3px);
 }
 
 .neo-sidebar__expand-button i {
@@ -571,22 +574,24 @@ function searchItems(items, parents, targetPath) {
     align-items: center;
     gap: var(--spacing-3);
     justify-content: center;
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-card-muted);
     color: var(--color-primary);
     font-weight: var(--font-weight-medium);
     font-family: var(--font-family-sans);
     font-size: var(--font-size-base);
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .neo-sidebar__quick:hover,
 .neo-sidebar__quick:focus-visible {
-    background: var(--color-card-muted);
+    background: rgba(44, 120, 115, 0.1);
     border-color: var(--color-primary);
     color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(44, 120, 115, 0.15);
+    transform: translateY(-1px);
 }
 
 .neo-sidebar::-webkit-scrollbar {

@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="page-header card-shadow">
             <div>
                 <h2 class="page-title">Báo cáo ca làm việc</h2>

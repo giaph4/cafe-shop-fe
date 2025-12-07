@@ -284,16 +284,16 @@ watch(
     border: none;
     border-bottom: 1px solid var(--color-border-strong, rgba(148, 163, 184, 0.28));
     background: var(--color-elevated);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    backdrop-filter: blur(16px);
-    transition: box-shadow 0.24s ease, transform 0.24s ease, border-color 0.24s ease,
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.1);
+    backdrop-filter: blur(20px);
+    transition: box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     left 0.26s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 120;
 }
 
 .neo-nav--scrolled {
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
-    border-color: rgba(99, 102, 241, 0.24);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.14);
+    border-color: rgba(44, 120, 115, 0.2);
 }
 
 .neo-nav__section {
@@ -328,10 +328,11 @@ watch(
 
 .neo-nav__icon:hover,
 .neo-nav__icon:focus-visible {
-    background: rgba(99, 102, 241, 0.18);
-    border-color: rgba(99, 102, 241, 0.32);
+    background: rgba(44, 120, 115, 0.12);
+    border-color: rgba(44, 120, 115, 0.3);
     color: var(--color-primary);
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(44, 120, 115, 0.15);
 }
 
 .neo-nav__icon--primary {
@@ -445,9 +446,9 @@ watch(
 
 .neo-nav__profile-trigger:hover,
 .neo-nav__profile-trigger:focus-visible {
-    border-color: rgba(99, 102, 241, 0.32);
-    background: rgba(99, 102, 241, 0.12);
-    box-shadow: 0 12px 22px rgba(99, 102, 241, 0.18);
+    border-color: rgba(44, 120, 115, 0.3);
+    background: rgba(44, 120, 115, 0.1);
+    box-shadow: 0 4px 12px rgba(44, 120, 115, 0.15);
 }
 
 .neo-nav__profile-trigger img {

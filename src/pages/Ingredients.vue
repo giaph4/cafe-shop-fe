@@ -1,5 +1,6 @@
 <template>
     <!-- Ingredient Modal -->
+   <div data-aos="fade-up">
     <Teleport to="body">
         <div class="modal fade" id="ingredientModal" tabindex="-1" ref="modalElement" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -379,6 +380,7 @@
             </div>
         </div>
     </div>
+   </div>
 </template>
 
 <script setup>

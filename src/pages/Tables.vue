@@ -1,4 +1,5 @@
 <template>
+  <div data-aos="fade-up">
     <Teleport to="body">
         <div class="modal fade table-edit-modal" ref="modalElement" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -226,6 +227,7 @@
                             <table class="table align-middle table-hover">
                                 <thead>
                                     <tr>
+                                        <th>Chỗ</th>
                                         <th>Tên bàn</th>
                                         <th>ID</th>
                                         <th>Sức chứa</th>
@@ -235,6 +237,12 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="table in sortedTables" :key="table.id">
+                                        <td>
+                                            <div class="table-capacity-badge">
+                                                <i class="bi bi-people-fill"></i>
+                                                <strong>{{ table.capacity }}</strong>
+                                            </div>
+                                        </td>
                                         <td class="fw-semibold">{{ table.name }}</td>
                                         <td>
                                             <span class="text-muted small">#{{ table.id }}</span>
@@ -321,6 +329,7 @@
             </div>
         </div>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -650,40 +659,57 @@ const getStatusMetaRef = getStatusMeta
     flex-wrap: wrap;
 }
 
-/* Layout Toggle - Chuẩn hóa */
+/* Layout Toggle - Exact match with image */
+.layout-toggle {
+    display: inline-flex;
+    gap: var(--spacing-3);
+    background: transparent;
+    padding: 0;
+    border: none;
+}
+
 .layout-toggle .btn {
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
+    padding: 0.65rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.5rem;
     font-family: var(--font-family-sans);
-    transition: all var(--transition-base);
+    transition: all 0.2s ease;
 }
 
 .layout-toggle .btn-primary {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: var(--color-text-inverse);
+    color: #ffffff;
 }
 
 .layout-toggle .btn-outline-primary {
-    border-color: var(--color-border);
-    color: var(--color-heading);
-    background: transparent;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
 }
 
 .layout-toggle .btn-outline-primary:hover {
-    background: var(--color-card-muted);
+    background: var(--color-card);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
 
 .layout-toggle .btn i {
-    font-size: 18px;
+    font-size: 1rem;
     line-height: 1;
+    color: inherit;
+}
+
+.layout-toggle .btn-primary i {
+    color: #ffffff;
+}
+
+.layout-toggle .btn-outline-primary i {
+    color: var(--color-primary);
 }
 
 
@@ -1226,6 +1252,31 @@ const getStatusMetaRef = getStatusMeta
     background: var(--color-danger);
     color: var(--color-text-inverse);
     border-color: var(--color-danger);
+}
+
+/* Table Capacity Badge - Giống cột Ảnh trong Products */
+.table-capacity-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-md);
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    min-width: 60px;
+}
+
+.table-capacity-badge i {
+    font-size: 16px;
+    color: var(--color-primary);
+}
+
+.table-capacity-badge strong {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
 }
 
 /* Form Select Small - Chuẩn hóa */

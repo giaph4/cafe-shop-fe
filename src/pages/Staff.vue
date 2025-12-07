@@ -7,24 +7,22 @@
                     <p class="page-subtitle">Quản lý thông tin nhân viên, phân ca làm việc và theo dõi hiệu suất.</p>
                 </div>
                 <div class="staff-header__actions">
-                    <div class="staff-view-tabs" role="tablist" aria-label="Chế độ hiển thị">
+                    <div class="btn-group layout-toggle" role="group" aria-label="Chọn bố cục hiển thị">
                         <button
                             type="button"
-                            class="staff-view-tab"
-                            :class="{ active: viewMode === 'grid' }"
-                            @click="viewMode = 'grid'"
+                            class="btn btn-sm"
+                            :class="viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="viewMode = 'table'"
                         >
-                            <i class="bi bi-grid-3x3-gap"></i>
-                            <span>Thẻ</span>
+                            <i class="bi bi-table me-2"></i>Bảng
                         </button>
                         <button
                             type="button"
-                            class="staff-view-tab"
-                            :class="{ active: viewMode === 'table' }"
-                            @click="viewMode = 'table'"
+                            class="btn btn-sm"
+                            :class="viewMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="viewMode = 'grid'"
                         >
-                            <i class="bi bi-table"></i>
-                            <span>Bảng</span>
+                            <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
                         </button>
                     </div>
                     <button class="btn btn-outline-secondary" type="button" @click="fetchUsers" :disabled="loading">
@@ -1700,47 +1698,57 @@ const hideUserActivityLogModal = () => {
     font-family: var(--font-family-sans);
 }
 
-/* View mode tabs - Flat Design */
-.staff-view-tabs {
+/* Layout Toggle - Exact match with Tables.vue */
+.layout-toggle {
     display: inline-flex;
-    gap: var(--spacing-2);
-    background: var(--color-card-muted);
-    padding: var(--spacing-2);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    overflow-x: auto;
+    gap: var(--spacing-3);
+    background: transparent;
+    padding: 0;
+    border: none;
 }
 
-.staff-view-tab {
-    border: none;
-    background: transparent;
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
+.layout-toggle .btn {
+    padding: 0.65rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-2);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    white-space: nowrap;
+    gap: 0.5rem;
     font-family: var(--font-family-sans);
+    transition: all 0.2s ease;
 }
 
-.staff-view-tab i {
-    font-size: 18px;
-    line-height: 1;
-}
-
-.staff-view-tab:hover:not(.active) {
-    background: var(--color-card);
-    color: var(--color-heading);
-}
-
-.staff-view-tab.active {
+.layout-toggle .btn-primary {
     background: var(--color-primary);
-    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.layout-toggle .btn-outline-primary {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-card);
+}
+
+.layout-toggle .btn-outline-primary:hover {
+    background: var(--color-card);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.layout-toggle .btn i {
+    font-size: 1rem;
+    line-height: 1;
+    color: inherit;
+}
+
+.layout-toggle .btn-primary i {
+    color: #ffffff;
+}
+
+.layout-toggle .btn-outline-primary i {
+    color: var(--color-primary);
 }
 
 /* KPI Cards - Flat Design */
@@ -2627,8 +2635,12 @@ const hideUserActivityLogModal = () => {
         justify-content: flex-start;
     }
 
-    .staff-view-tabs {
+    .layout-toggle {
         width: 100%;
+    }
+
+    .layout-toggle .btn {
+        flex: 1;
     }
 
     .kpi-card {

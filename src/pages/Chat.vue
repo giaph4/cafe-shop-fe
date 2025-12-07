@@ -1,5 +1,5 @@
 <template>
-    <div class="chat-page">
+    <div class="chat-page" data-aos="fade-up">
         <div class="chat-page__header">
             <div class="chat-page__header-content">
                 <div class="chat-page__header-title-section">

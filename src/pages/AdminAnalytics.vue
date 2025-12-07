@@ -1,5 +1,5 @@
 <template>
-    <div class="admin-analytics-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="admin-analytics-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="admin-analytics-header">
             <div class="admin-analytics-header__content">
                 <div class="admin-analytics-header__title-section">

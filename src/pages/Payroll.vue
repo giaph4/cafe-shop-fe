@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid payroll-page" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="page-container container-fluid payroll-page" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="payroll-header">
             <div class="payroll-header__content">
                 <div class="payroll-header__title-section">

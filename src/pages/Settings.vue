@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container container-fluid settings-page" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="page-container container-fluid settings-page" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="settings-header">
             <div class="settings-header__content">
                 <div class="settings-header__title-section">

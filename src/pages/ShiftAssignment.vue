@@ -1,5 +1,5 @@
 <template>
-    <div class="shift-assignment-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="shift-assignment-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="shift-assignment-header">
             <div class="shift-assignment-header__content">
                 <div class="shift-assignment-header__title-section">

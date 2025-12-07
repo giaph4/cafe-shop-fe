@@ -1,6 +1,6 @@
 <template>
-    <div class="login-wrapper">
-        <div class="login-card" data-aos="fade-up">
+    <div class="login-wrapper" data-aos="fade-up">
+        <div class="login-card">
             <section class="login-hero">
                 <div class="brand">
 
@@ -58,7 +58,8 @@
                                     <code>staff_demo</code> / <code>Staffdemo1234.</code>
                                 </div>
                             </div>
-                            <p class="demo-note">Bạn có thể sử dụng các tài khoản này để đăng nhập và trải nghiệm hệ thống.</p>
+                            <p class="demo-note">Bạn có thể sử dụng các tài khoản này để đăng nhập và trải nghiệm hệ
+                                thống.</p>
                         </div>
                     </article>
                 </div>
@@ -74,37 +75,20 @@
                     <Form @submit="handleLogin" :validation-schema="loginSchema" v-slot="{ errors }">
                         <div class="login-form__field">
                             <label for="username" class="form-label">Tên đăng nhập</label>
-                            <Field 
-                                name="username" 
-                                type="text" 
-                                class="form-control"
-                                :class="{ 'is-invalid': errors.username }" 
-                                id="username"
-                                placeholder="ví dụ: staff01"
-                                autocomplete="username"
-                            />
+                            <Field name="username" type="text" class="form-control"
+                                :class="{ 'is-invalid': errors.username }" id="username" placeholder="ví dụ: staff01"
+                                autocomplete="username" />
                             <ErrorMessage name="username" class="invalid-feedback" />
                         </div>
 
                         <div class="login-form__field">
                             <label for="password" class="form-label">Mật khẩu</label>
                             <div class="password-input-wrapper">
-                                <Field 
-                                    name="password" 
-                                    :type="showPassword ? 'text' : 'password'" 
-                                    class="form-control"
-                                    :class="{ 'is-invalid': errors.password }" 
-                                    id="password"
-                                    placeholder="Nhập mật khẩu"
-                                    autocomplete="current-password"
-                                />
-                                <button
-                                    type="button"
-                                    class="password-toggle"
-                                    @click="showPassword = !showPassword"
-                                    :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'"
-                                    tabindex="0"
-                                >
+                                <Field name="password" :type="showPassword ? 'text' : 'password'" class="form-control"
+                                    :class="{ 'is-invalid': errors.password }" id="password" placeholder="Nhập mật khẩu"
+                                    autocomplete="current-password" />
+                                <button type="button" class="password-toggle" @click="showPassword = !showPassword"
+                                    :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'" tabindex="0">
                                     <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                                 </button>
                             </div>
@@ -113,32 +97,21 @@
 
                         <div class="login-form__options">
                             <div class="form-check">
-                                <input 
-                                    class="form-check-input" 
-                                    type="checkbox" 
-                                    id="rememberMe"
-                                    v-model="rememberMe"
-                                />
+                                <input class="form-check-input" type="checkbox" id="rememberMe" v-model="rememberMe" />
                                 <label class="form-check-label" for="rememberMe">
                                     Ghi nhớ lần đăng nhập này
                                 </label>
                             </div>
-                            <button 
-                                type="button" 
-                                class="btn btn-link p-0 login-form__forgot"
-                                @click="handleForgotPassword"
-                            >
+                            <button type="button" class="btn btn-link p-0 login-form__forgot"
+                                @click="handleForgotPassword">
                                 Quên mật khẩu?
                             </button>
                         </div>
 
                         <div class="login-form__submit">
-                            <button 
-                                type="submit" 
-                                class="btn btn-primary w-100" 
-                                :disabled="isLoading"
-                            >
-                                <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <button type="submit" class="btn btn-primary w-100" :disabled="isLoading">
+                                <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status"
+                                    aria-hidden="true"></span>
                                 <i v-else class="bi bi-box-arrow-in-right me-2"></i>
                                 <span>{{ isLoading ? 'Đang đăng nhập...' : 'Đăng nhập' }}</span>
                             </button>
@@ -175,11 +148,11 @@ const loginSchema = yup.object({
 
 const handleLogin = async (values) => {
     if (isLoading.value) return
-    
+
     isLoading.value = true
     try {
         await authStore.login(values)
-        
+
         // Handle remember me if needed
         if (rememberMe.value) {
             // Store remember me preference
@@ -187,7 +160,7 @@ const handleLogin = async (values) => {
         } else {
             localStorage.removeItem('rememberMe')
         }
-        
+
         toast.success('Đăng nhập thành công!')
         router.push('/')
     } catch (error) {

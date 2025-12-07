@@ -113,16 +113,16 @@ const mainMarginLeft = computed(() => {
     display: flex;
     flex-direction: column;
     position: relative;
-    padding: calc(72px + 1.5rem) 1.5rem 1.5rem 1.5rem;
+    padding: calc(72px + 2rem) 2rem 2rem 2rem;
     transition: margin-left 0.26s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.24s var(--transition-ease, cubic-bezier(0.4, 0, 0.2, 1));
+    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .layout__content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .layout__overlay {
@@ -155,7 +155,7 @@ const mainMarginLeft = computed(() => {
 
     .layout__main {
         margin-left: 0 !important;
-        padding: calc(72px + 1.5rem) 1rem 1.5rem;
+        padding: calc(72px + 1.5rem) 1.25rem 1.5rem;
     }
 }
 </style>

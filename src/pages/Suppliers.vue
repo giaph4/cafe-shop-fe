@@ -1,222 +1,224 @@
 <template>
-    <Teleport to="body">
-        <!-- Supplier Modal -->
-        <div class="modal fade" id="supplierModal" tabindex="-1" ref="modalElement" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div>
-                        <h5 class="modal-title">{{ isEditing ? 'Cập nhật nhà cung cấp' : 'Thêm nhà cung cấp mới' }}</h5>
-                        <p class="modal-subtitle mb-0">Lưu thông tin chính xác để quản lý chuỗi cung ứng hiệu quả.</p>
-                    </div>
-                    <button type="button" class="btn-close" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value" aria-label="Close"></button>
-                </div>
-
-                <Form @submit="handleSubmit" :validation-schema="supplierSchema" v-slot="{ errors }">
-                    <div class="modal-body">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
-                                <Field name="name" type="text" class="form-control" placeholder="Ví dụ: Công ty ABC"
-                                    :class="{ 'is-invalid': errors.name }" v-model="formData.name" />
-                                <ErrorMessage name="name" class="invalid-feedback" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Người liên hệ</label>
-                                <Field name="contactPerson" type="text" class="form-control" placeholder="Nguyễn Văn A"
-                                    :class="{ 'is-invalid': errors.contactPerson }" v-model="formData.contactPerson" />
-                                <ErrorMessage name="contactPerson" class="invalid-feedback" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                                <Field name="phone" type="text" class="form-control" placeholder="0123456789"
-                                    :class="{ 'is-invalid': errors.phone }" v-model="formData.phone" />
-                                <ErrorMessage name="phone" class="invalid-feedback" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Email</label>
-                                <Field name="email" type="email" class="form-control" placeholder="supplier@email.com"
-                                    :class="{ 'is-invalid': errors.email }" v-model="formData.email" />
-                                <ErrorMessage name="email" class="invalid-feedback" />
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Địa chỉ</label>
-                                <Field name="address" as="textarea" rows="3" class="form-control"
-                                    placeholder="Số nhà, đường, quận/huyện, tỉnh/thành"
-                                    :class="{ 'is-invalid': errors.address }" v-model="formData.address" />
-                                <ErrorMessage name="address" class="invalid-feedback" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value">Hủy</button>
-                        <button type="submit" class="btn btn-primary"
-                            :disabled="createMutation.isPending.value || updateMutation.isPending.value">
-                            <span v-if="createMutation.isPending.value || updateMutation.isPending.value"
-                                class="spinner-border spinner-border-sm me-2"></span>
-                            Lưu thay đổi
-                        </button>
-                    </div>
-                </Form>
-            </div>
-        </div>
-        </div>
-
-        <!-- Delete Supplier Confirmation Modal -->
-        <div 
-            class="modal fade" 
-            id="deleteSupplierModal" 
-            tabindex="-1" 
-            ref="deleteSupplierModalElement" 
-            aria-labelledby="deleteSupplierModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog modal-dialog-centered">
+    <div data-aos="fade-up">
+        <Teleport to="body">
+            <!-- Supplier Modal -->
+            <div class="modal fade" id="supplierModal" tabindex="-1" ref="modalElement" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <div>
-                            <h5 class="modal-title" id="deleteSupplierModalLabel">Xóa nhà cung cấp</h5>
-                            <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
+                            <h5 class="modal-title">{{ isEditing ? 'Cập nhật nhà cung cấp' : 'Thêm nhà cung cấp mới' }}</h5>
+                            <p class="modal-subtitle mb-0">Lưu thông tin chính xác để quản lý chuỗi cung ứng hiệu quả.</p>
                         </div>
-                        <button type="button" class="btn-close" @click="deleteSupplierBsModal?.hide()" :disabled="deleteMutation.isPending.value" aria-label="Close"></button>
+                        <button type="button" class="btn-close" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <p class="mb-3">Bạn có chắc chắn muốn xóa nhà cung cấp này không?</p>
-                        <div v-if="supplierToDelete" class="delete-info-card">
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Tên:</span>
-                                <span class="delete-info-value">{{ supplierToDelete.name || '—' }}</span>
-                            </div>
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Người liên hệ:</span>
-                                <span class="delete-info-value">{{ supplierToDelete.contactPerson || '—' }}</span>
-                            </div>
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Số điện thoại:</span>
-                                <span class="delete-info-value">{{ supplierToDelete.phone || '—' }}</span>
+    
+                    <Form @submit="handleSubmit" :validation-schema="supplierSchema" v-slot="{ errors }">
+                        <div class="modal-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+                                    <Field name="name" type="text" class="form-control" placeholder="Ví dụ: Công ty ABC"
+                                        :class="{ 'is-invalid': errors.name }" v-model="formData.name" />
+                                    <ErrorMessage name="name" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Người liên hệ</label>
+                                    <Field name="contactPerson" type="text" class="form-control" placeholder="Nguyễn Văn A"
+                                        :class="{ 'is-invalid': errors.contactPerson }" v-model="formData.contactPerson" />
+                                    <ErrorMessage name="contactPerson" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                    <Field name="phone" type="text" class="form-control" placeholder="0123456789"
+                                        :class="{ 'is-invalid': errors.phone }" v-model="formData.phone" />
+                                    <ErrorMessage name="phone" class="invalid-feedback" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email</label>
+                                    <Field name="email" type="email" class="form-control" placeholder="supplier@email.com"
+                                        :class="{ 'is-invalid': errors.email }" v-model="formData.email" />
+                                    <ErrorMessage name="email" class="invalid-feedback" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Địa chỉ</label>
+                                    <Field name="address" as="textarea" rows="3" class="form-control"
+                                        placeholder="Số nhà, đường, quận/huyện, tỉnh/thành"
+                                        :class="{ 'is-invalid': errors.address }" v-model="formData.address" />
+                                    <ErrorMessage name="address" class="invalid-feedback" />
+                                </div>
                             </div>
                         </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="createMutation.isPending.value || updateMutation.isPending.value">Hủy</button>
+                            <button type="submit" class="btn btn-primary"
+                                :disabled="createMutation.isPending.value || updateMutation.isPending.value">
+                                <span v-if="createMutation.isPending.value || updateMutation.isPending.value"
+                                    class="spinner-border spinner-border-sm me-2"></span>
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </Form>
+                </div>
+            </div>
+            </div>
+    
+            <!-- Delete Supplier Confirmation Modal -->
+            <div 
+                class="modal fade" 
+                id="deleteSupplierModal" 
+                tabindex="-1" 
+                ref="deleteSupplierModalElement" 
+                aria-labelledby="deleteSupplierModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title" id="deleteSupplierModalLabel">Xóa nhà cung cấp</h5>
+                                <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
+                            </div>
+                            <button type="button" class="btn-close" @click="deleteSupplierBsModal?.hide()" :disabled="deleteMutation.isPending.value" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-3">Bạn có chắc chắn muốn xóa nhà cung cấp này không?</p>
+                            <div v-if="supplierToDelete" class="delete-info-card">
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Tên:</span>
+                                    <span class="delete-info-value">{{ supplierToDelete.name || '—' }}</span>
+                                </div>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Người liên hệ:</span>
+                                    <span class="delete-info-value">{{ supplierToDelete.contactPerson || '—' }}</span>
+                                </div>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Số điện thoại:</span>
+                                    <span class="delete-info-value">{{ supplierToDelete.phone || '—' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="deleteSupplierBsModal?.hide()" :disabled="deleteMutation.isPending.value">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="confirmDeleteSupplier" :disabled="deleteMutation.isPending.value">
+                                <span v-if="deleteMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
+                                Xóa nhà cung cấp
+                            </button>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="deleteSupplierBsModal?.hide()" :disabled="deleteMutation.isPending.value">
-                            Hủy
+                </div>
+            </div>
+        </Teleport>
+    
+        <div class="suppliers-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+            <div class="suppliers-header">
+                <div class="suppliers-header__content">
+                    <div class="suppliers-header__title-section">
+                        <h2 class="suppliers-header__title">Quản lý Nhà cung cấp</h2>
+                        <p class="suppliers-header__subtitle">Theo dõi thông tin liên hệ và hợp tác chặt chẽ với đối tác cung ứng.</p>
+                    </div>
+                    <div class="suppliers-header__actions">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">
+                            <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
+                            Làm mới
                         </button>
-                        <button type="button" class="btn btn-danger" @click="confirmDeleteSupplier" :disabled="deleteMutation.isPending.value">
-                            <span v-if="deleteMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
-                            Xóa nhà cung cấp
+                        <button class="btn btn-primary btn-sm" type="button" @click="openModal()">
+                            <i class="bi bi-plus-lg me-2"></i>Thêm nhà cung cấp
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </Teleport>
-
-    <div class="suppliers-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="suppliers-header">
-            <div class="suppliers-header__content">
-                <div class="suppliers-header__title-section">
-                    <h2 class="suppliers-header__title">Quản lý Nhà cung cấp</h2>
-                    <p class="suppliers-header__subtitle">Theo dõi thông tin liên hệ và hợp tác chặt chẽ với đối tác cung ứng.</p>
-                </div>
-                <div class="suppliers-header__actions">
-                    <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">
-                        <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
-                        Làm mới
-                    </button>
-                    <button class="btn btn-primary btn-sm" type="button" @click="openModal()">
-                        <i class="bi bi-plus-lg me-2"></i>Thêm nhà cung cấp
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-4 mt-1">
-            <div class="col-md-4 d-flex" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card w-100">
-                    <div class="stat-icon" :class="stat.variant">
-                        <i :class="stat.icon"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label mb-1">{{ stat.label }}</p>
-                        <h4 class="stat-value mb-0">{{ stat.value }}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label">Tìm kiếm</label>
-                        <div class="input-group search-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Tên, người liên hệ, SĐT, email"
-                                v-model="searchQuery" />
+    
+            <div class="row g-4 mb-4 mt-1">
+                <div class="col-md-4 d-flex" v-for="stat in stats" :key="stat.label">
+                    <div class="stat-card w-100">
+                        <div class="stat-icon" :class="stat.variant">
+                            <i :class="stat.icon"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label mb-1">{{ stat.label }}</p>
+                            <h4 class="stat-value mb-0">{{ stat.value }}</h4>
                         </div>
                     </div>
-                    <div class="col-lg-2 col-md-3" v-if="supportsPagination">
-                        <label class="form-label">Số dòng / trang</label>
-                        <select class="form-select" :value="pageSize" @change="updatePageSize($event.target.value)">
-                            <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
-                        </select>
+                </div>
+            </div>
+    
+            <div class="card filter-card mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-4 col-md-6">
+                            <label class="form-label">Tìm kiếm</label>
+                            <div class="input-group search-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" placeholder="Tên, người liên hệ, SĐT, email"
+                                    v-model="searchQuery" />
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-3" v-if="supportsPagination">
+                            <label class="form-label">Số dòng / trang</label>
+                            <select class="form-select" :value="pageSize" @change="updatePageSize($event.target.value)">
+                                <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="card table-card">
-            <div class="card-body p-0">
-                <LoadingState v-if="isLoading" />
-                <ErrorState 
-                    v-else-if="isError" 
-                    :message="errorMessage"
-                    @retry="refetch"
-                />
-                <EmptyState
-                    v-else-if="!tableData.length"
-                    title="Chưa có nhà cung cấp"
-                    message="Tạo nhà cung cấp mới bằng nút ở góc trên bên phải."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col">Tên nhà cung cấp</th>
-                                <th scope="col">Người liên hệ</th>
-                                <th scope="col">Điện thoại</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Địa chỉ</th>
-                                <th scope="col" class="text-end">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="supplier in tableData" :key="supplier.id">
-                                <td class="fw-semibold">{{ supplier.name }}</td>
-                                <td>{{ supplier.contactPerson || '—' }}</td>
-                                <td>{{ supplier.phone }}</td>
-                                <td>{{ supplier.email || '—' }}</td>
-                                <td>{{ supplier.address || '—' }}</td>
-                                <td class="text-end">
-                                    <div class="action-buttons">
-                                        <button class="action-button action-button--primary" type="button" @click="openModal(supplier)">
-                                            <i class="bi bi-pencil"></i>
-                                            <span>Chỉnh sửa</span>
-                                        </button>
-                                        <button class="action-button action-button--danger" type="button" @click="handleDelete(supplier)">
-                                            <i class="bi bi-trash"></i>
-                                            <span>Xóa</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+    
+            <div class="card table-card">
+                <div class="card-body p-0">
+                    <LoadingState v-if="isLoading" />
+                    <ErrorState 
+                        v-else-if="isError" 
+                        :message="errorMessage"
+                        @retry="refetch"
+                    />
+                    <EmptyState
+                        v-else-if="!tableData.length"
+                        title="Chưa có nhà cung cấp"
+                        message="Tạo nhà cung cấp mới bằng nút ở góc trên bên phải."
+                    />
+                    <div v-else class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Tên nhà cung cấp</th>
+                                    <th scope="col">Người liên hệ</th>
+                                    <th scope="col">Điện thoại</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Địa chỉ</th>
+                                    <th scope="col" class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="supplier in tableData" :key="supplier.id">
+                                    <td class="fw-semibold">{{ supplier.name }}</td>
+                                    <td>{{ supplier.contactPerson || '—' }}</td>
+                                    <td>{{ supplier.phone }}</td>
+                                    <td>{{ supplier.email || '—' }}</td>
+                                    <td>{{ supplier.address || '—' }}</td>
+                                    <td class="text-end">
+                                        <div class="action-buttons">
+                                            <button class="action-button action-button--primary" type="button" @click="openModal(supplier)">
+                                                <i class="bi bi-pencil"></i>
+                                                <span>Chỉnh sửa</span>
+                                            </button>
+                                            <button class="action-button action-button--danger" type="button" @click="handleDelete(supplier)">
+                                                <i class="bi bi-trash"></i>
+                                                <span>Xóa</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="card-footer bg-transparent" v-if="supportsPagination && totalPages > 1">
-                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
-                    @page-change="handlePageChange" />
+                <div class="card-footer bg-transparent" v-if="supportsPagination && totalPages > 1">
+                    <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
+                        @page-change="handlePageChange" />
+                </div>
             </div>
         </div>
     </div>

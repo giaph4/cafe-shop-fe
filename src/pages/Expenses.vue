@@ -1,5 +1,6 @@
 <template>
     <!-- Expense Modal -->
+   <div data-aos="fade-up">
     <Teleport to="body">
         <div class="modal fade expense-form-modal" id="expenseModal" tabindex="-1" ref="modalElement" aria-labelledby="expenseModalLabel"
             aria-hidden="true">
@@ -272,6 +273,7 @@
             </div>
         </div>
     </div>
+   </div>
 </template>
 
 <script setup>

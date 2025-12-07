@@ -1,5 +1,5 @@
 <template>
-    <div class="attendance-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="attendance-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="attendance-header">
             <div class="attendance-header__content">
                 <div class="attendance-header__title-section">

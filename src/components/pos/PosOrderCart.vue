@@ -1785,6 +1785,11 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
     background: var(--color-card);
     border: 1px solid var(--color-border);
     padding: var(--spacing-4);
+    position: relative;
+    /* Fix để không di chuyển được */
+    user-select: none;
+    -webkit-user-drag: none;
+    touch-action: none;
 }
 
 .pos-cart__header {

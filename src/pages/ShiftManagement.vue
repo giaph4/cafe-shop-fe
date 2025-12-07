@@ -1,5 +1,5 @@
 <template>
-    <div class="shift-management-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="shift-management-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="shift-management-header">
             <div class="shift-management-header__content">
                 <div class="shift-management-header__title-section">

@@ -1,271 +1,259 @@
 <template>
-    <Teleport to="body">
-        <PurchaseOrderDetailModal :order-id="selectedOrderId" @close="selectedOrderId = null"/>
-        <PurchaseOrderUpdateModal 
-            ref="updateModal"
-            :purchase-order-id="selectedOrderId"
-            :purchase-order="selectedOrder"
-            @updated="handleOrderUpdated"
-        />
-
-        <!-- Complete Order Confirmation Modal -->
-        <div 
-            class="modal fade" 
-            id="completeOrderModal" 
-            tabindex="-1" 
-            ref="completeOrderModalElement" 
-            aria-labelledby="completeOrderModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title" id="completeOrderModalLabel">Hoàn thành phiếu nhập</h5>
-                            <p class="modal-subtitle mb-0">Xác nhận hoàn thành phiếu nhập hàng này.</p>
+    <div data-aos="fade-up">
+        <Teleport to="body">
+            <div class="modal fade" data-aos="fade-up" id="completeOrderModal" tabindex="-1"
+                ref="completeOrderModalElement" aria-labelledby="completeOrderModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title" id="completeOrderModalLabel">Hoàn thành phiếu nhập</h5>
+                                <p class="modal-subtitle mb-0">Xác nhận hoàn thành phiếu nhập hàng này.</p>
+                            </div>
+                            <button type="button" class="btn-close" @click="completeOrderBsModal?.hide()"
+                                :disabled="completeMutation.isPending.value" aria-label="Close"></button>
                         </div>
-                        <button type="button" class="btn-close" @click="completeOrderBsModal?.hide()" :disabled="completeMutation.isPending.value" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-3">Bạn có chắc chắn muốn hoàn thành phiếu nhập này không?</p>
-                        <div v-if="orderToComplete" class="delete-info-card">
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Mã đơn:</span>
-                                <span class="delete-info-value">#{{ orderToComplete.id }}</span>
-                            </div>
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Nhà cung cấp:</span>
-                                <span class="delete-info-value">{{ orderToComplete.supplierName || '—' }}</span>
-                            </div>
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Tổng tiền:</span>
-                                <span class="delete-info-value">{{ formatCurrency(orderToComplete.totalAmount) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="completeOrderBsModal?.hide()" :disabled="completeMutation.isPending.value">
-                            Hủy
-                        </button>
-                        <button type="button" class="btn btn-success" @click="confirmCompleteOrder" :disabled="completeMutation.isPending.value">
-                            <span v-if="completeMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
-                            Hoàn thành
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cancel Order Confirmation Modal -->
-        <div 
-            class="modal fade" 
-            id="cancelOrderModal" 
-            tabindex="-1" 
-            ref="cancelOrderModalElement" 
-            aria-labelledby="cancelOrderModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title" id="cancelOrderModalLabel">Hủy phiếu nhập</h5>
-                            <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="cancelOrderBsModal?.hide()" :disabled="cancelMutation.isPending.value" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-3">Bạn có chắc chắn muốn hủy phiếu nhập này không?</p>
-                        <div v-if="orderToCancel" class="delete-info-card">
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Mã đơn:</span>
-                                <span class="delete-info-value">#{{ orderToCancel.id }}</span>
-                            </div>
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Nhà cung cấp:</span>
-                                <span class="delete-info-value">{{ orderToCancel.supplierName || '—' }}</span>
-                            </div>
-                            <div class="delete-info-item">
-                                <span class="delete-info-label">Tổng tiền:</span>
-                                <span class="delete-info-value">{{ formatCurrency(orderToCancel.totalAmount) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="cancelOrderBsModal?.hide()" :disabled="cancelMutation.isPending.value">
-                            Hủy
-                        </button>
-                        <button type="button" class="btn btn-danger" @click="confirmCancelOrder" :disabled="cancelMutation.isPending.value">
-                            <span v-if="cancelMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
-                            Xác nhận hủy
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </Teleport>
-
-    <div class="purchase-orders-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="purchase-orders-header">
-            <div class="purchase-orders-header__content">
-                <div class="purchase-orders-header__title-section">
-                    <h2 class="purchase-orders-header__title">Quản lý Nhập hàng</h2>
-                    <p class="purchase-orders-header__subtitle">Theo dõi tiến độ xử lý, trạng thái và chi phí nhập kho.</p>
-                </div>
-                <div class="purchase-orders-header__actions">
-                    <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">
-                        <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
-                        Làm mới
-                    </button>
-                    <router-link to="/purchase-orders/new" class="btn btn-primary btn-sm">
-                        <i class="bi bi-plus-lg me-2"></i>Tạo đơn nhập hàng
-                    </router-link>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-4 mt-1">
-            <div class="col-sm-6 col-lg-3 d-flex" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card w-100" :class="stat.variant">
-                    <div class="stat-icon">
-                        <i :class="stat.icon"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label mb-1">{{ stat.label }}</p>
-                        <h4 class="stat-value mb-0">{{ stat.value }}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-12 col-lg-3 col-md-6">
-                        <label class="form-label">Nhà cung cấp</label>
-                        <select class="form-select" v-model="filters.supplierId">
-                            <option value="">Tất cả</option>
-                            <option v-for="supplier in supplierOptions" :key="supplier.id" :value="supplier.id">
-                                {{ supplier.name }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-lg-3 col-md-6">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" v-model="filters.status">
-                            <option value="">Tất cả</option>
-                            <option value="PENDING">Đang chờ xử lý</option>
-                            <option value="COMPLETED">Đã hoàn thành</option>
-                            <option value="CANCELLED">Đã huỷ</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-lg-2 col-md-4">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="filters.startDate"/>
-                    </div>
-                    <div class="col-12 col-lg-2 col-md-4">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="filters.endDate"/>
-                    </div>
-                    <div class="col-12 col-lg-2 col-md-4">
-                        <label class="form-label">Số dòng / trang</label>
-                        <select class="form-select" :value="pageSize" @change="updatePageSize($event.target.value)">
-                            <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
-                        </select>
-                    </div>
-                    <div class="col-12 d-flex justify-content-end">
-                        <button class="btn btn-outline-secondary btn-sm" type="button" @click="resetFilters"
-                                :disabled="isResetDisabled">
-                            <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại lọc
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card table-card">
-            <div class="card-body p-0">
-                <LoadingState v-if="isLoading || isSuppliersLoading" />
-                <ErrorState 
-                    v-else-if="isError" 
-                    :message="errorMessage"
-                    @retry="refetch"
-                />
-                <EmptyState
-                    v-else-if="!tableData.length"
-                    title="Chưa có phiếu nhập"
-                    message="Tạo phiếu nhập mới bằng nút ở góc trên bên phải."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th scope="col">Mã đơn</th>
-                            <th scope="col">Nhà cung cấp</th>
-                            <th scope="col">Người tạo</th>
-                            <th scope="col">Ngày đặt</th>
-                            <th scope="col" class="text-center">Trạng thái</th>
-                            <th scope="col" class="text-end">Tổng tiền</th>
-                            <th scope="col" class="text-end">Hành động</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="order in tableData" :key="order.id">
-                            <td class="fw-semibold">#{{ order.id }}</td>
-                            <td>{{ order.supplierName }}</td>
-                            <td>{{ order.staffUsername }}</td>
-                            <td>{{ formatDateTime(order.orderDate) || '—' }}</td>
-                            <td class="text-center">
-                            <span class="status-badge" :class="statusBadgeClass(order.status)">
-                                {{ statusLabel(order.status) }}
-                            </span>
-                            </td>
-                            <td class="text-end fw-semibold">{{ formatCurrency(order.totalAmount) }}</td>
-                            <td class="text-end">
-                                <div class="action-buttons">
-                                    <button class="action-button action-button--primary" type="button"
-                                            @click="selectedOrderId = order.id">
-                                        <i class="bi bi-eye"></i>
-                                        <span>Chi tiết</span>
-                                    </button>
-                                    <button class="action-button action-button--primary" type="button"
-                                            v-if="order.status === 'PENDING'"
-                                            @click="handleUpdate(order)">
-                                        <i class="bi bi-pencil"></i>
-                                        <span>Chỉnh sửa</span>
-                                    </button>
-                                    <button class="action-button action-button--success" type="button"
-                                            v-if="order.status === 'PENDING'"
-                                            :disabled="completeMutation.isPending.value" @click="handleComplete(order)">
-                                        <i class="bi bi-check2"></i>
-                                        <span>Hoàn thành</span>
-                                    </button>
-                                    <button class="action-button action-button--danger" type="button"
-                                            v-if="order.status === 'PENDING'"
-                                            :disabled="cancelMutation.isPending.value" @click="handleCancel(order)">
-                                        <i class="bi bi-x"></i>
-                                        <span>Hủy</span>
-                                    </button>
+                        <div class="modal-body">
+                            <p class="mb-3">Bạn có chắc chắn muốn hoàn thành phiếu nhập này không?</p>
+                            <div v-if="orderToComplete" class="delete-info-card">
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Mã đơn:</span>
+                                    <span class="delete-info-value">#{{ orderToComplete.id }}</span>
                                 </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Nhà cung cấp:</span>
+                                    <span class="delete-info-value">{{ orderToComplete.supplierName || '—' }}</span>
+                                </div>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Tổng tiền:</span>
+                                    <span class="delete-info-value">{{ formatCurrency(orderToComplete.totalAmount)
+                                        }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary"
+                                @click="completeOrderBsModal?.hide()" :disabled="completeMutation.isPending.value">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-success" @click="confirmCompleteOrder"
+                                :disabled="completeMutation.isPending.value">
+                                <span v-if="completeMutation.isPending.value"
+                                    class="spinner-border spinner-border-sm me-2"></span>
+                                Hoàn thành
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="card-footer bg-transparent d-flex justify-content-end" v-if="supportsPagination && totalPages > 1">
-                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
-                            @page-change="handlePageChange"/>
+
+            <!-- Cancel Order Confirmation Modal -->
+            <div class="modal fade" id="cancelOrderModal" tabindex="-1" ref="cancelOrderModalElement"
+                aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title" id="cancelOrderModalLabel">Hủy phiếu nhập</h5>
+                                <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
+                            </div>
+                            <button type="button" class="btn-close" @click="cancelOrderBsModal?.hide()"
+                                :disabled="cancelMutation.isPending.value" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-3">Bạn có chắc chắn muốn hủy phiếu nhập này không?</p>
+                            <div v-if="orderToCancel" class="delete-info-card">
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Mã đơn:</span>
+                                    <span class="delete-info-value">#{{ orderToCancel.id }}</span>
+                                </div>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Nhà cung cấp:</span>
+                                    <span class="delete-info-value">{{ orderToCancel.supplierName || '—' }}</span>
+                                </div>
+                                <div class="delete-info-item">
+                                    <span class="delete-info-label">Tổng tiền:</span>
+                                    <span class="delete-info-value">{{ formatCurrency(orderToCancel.totalAmount)
+                                        }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" @click="cancelOrderBsModal?.hide()"
+                                :disabled="cancelMutation.isPending.value">
+                                Hủy
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="confirmCancelOrder"
+                                :disabled="cancelMutation.isPending.value">
+                                <span v-if="cancelMutation.isPending.value"
+                                    class="spinner-border spinner-border-sm me-2"></span>
+                                Xác nhận hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <div class="purchase-orders-page container-fluid"
+            style="background: var(--color-body-bg); padding: var(--spacing-4);">
+            <div class="purchase-orders-header">
+                <div class="purchase-orders-header__content">
+                    <div class="purchase-orders-header__title-section">
+                        <h2 class="purchase-orders-header__title">Quản lý Nhập hàng</h2>
+                        <p class="purchase-orders-header__subtitle">Theo dõi tiến độ xử lý, trạng thái và chi phí nhập
+                            kho.</p>
+                    </div>
+                    <div class="purchase-orders-header__actions">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch"
+                            :disabled="isFetching">
+                            <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
+                            Làm mới
+                        </button>
+                        <router-link to="/purchase-orders/new" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg me-2"></i>Tạo đơn nhập hàng
+                        </router-link>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4 mt-1">
+                <div class="col-sm-6 col-lg-3 d-flex" v-for="stat in stats" :key="stat.label">
+                    <div class="stat-card w-100" :class="stat.variant">
+                        <div class="stat-icon">
+                            <i :class="stat.icon"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label mb-1">{{ stat.label }}</p>
+                            <h4 class="stat-value mb-0">{{ stat.value }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card filter-card mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-lg-3 col-md-6">
+                            <label class="form-label">Nhà cung cấp</label>
+                            <select class="form-select" v-model="filters.supplierId">
+                                <option value="">Tất cả</option>
+                                <option v-for="supplier in supplierOptions" :key="supplier.id" :value="supplier.id">
+                                    {{ supplier.name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-3 col-md-6">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" v-model="filters.status">
+                                <option value="">Tất cả</option>
+                                <option value="PENDING">Đang chờ xử lý</option>
+                                <option value="COMPLETED">Đã hoàn thành</option>
+                                <option value="CANCELLED">Đã huỷ</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2 col-md-4">
+                            <label class="form-label">Từ ngày</label>
+                            <input type="date" class="form-control" v-model="filters.startDate" />
+                        </div>
+                        <div class="col-12 col-lg-2 col-md-4">
+                            <label class="form-label">Đến ngày</label>
+                            <input type="date" class="form-control" v-model="filters.endDate" />
+                        </div>
+                        <div class="col-12 col-lg-2 col-md-4">
+                            <label class="form-label">Số dòng / trang</label>
+                            <select class="form-select" :value="pageSize" @change="updatePageSize($event.target.value)">
+                                <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" @click="resetFilters"
+                                :disabled="isResetDisabled">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="card-body p-0">
+                    <LoadingState v-if="isLoading || isSuppliersLoading" />
+                    <ErrorState v-else-if="isError" :message="errorMessage" @retry="refetch" />
+                    <EmptyState v-else-if="!tableData.length" title="Chưa có phiếu nhập"
+                        message="Tạo phiếu nhập mới bằng nút ở góc trên bên phải." />
+                    <div v-else class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Mã đơn</th>
+                                    <th scope="col">Nhà cung cấp</th>
+                                    <th scope="col">Người tạo</th>
+                                    <th scope="col">Ngày đặt</th>
+                                    <th scope="col" class="text-center">Trạng thái</th>
+                                    <th scope="col" class="text-end">Tổng tiền</th>
+                                    <th scope="col" class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="order in tableData" :key="order.id">
+                                    <td class="fw-semibold">#{{ order.id }}</td>
+                                    <td>{{ order.supplierName }}</td>
+                                    <td>{{ order.staffUsername }}</td>
+                                    <td>{{ formatDateTime(order.orderDate) || '—' }}</td>
+                                    <td class="text-center">
+                                        <span class="status-badge" :class="statusBadgeClass(order.status)">
+                                            {{ statusLabel(order.status) }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-semibold">{{ formatCurrency(order.totalAmount) }}</td>
+                                    <td class="text-end">
+                                        <div class="action-buttons">
+                                            <button class="action-button action-button--primary" type="button"
+                                                @click="selectedOrderId = order.id">
+                                                <i class="bi bi-eye"></i>
+                                                <span>Chi tiết</span>
+                                            </button>
+                                            <button class="action-button action-button--primary" type="button"
+                                                v-if="order.status === 'PENDING'" @click="handleUpdate(order)">
+                                                <i class="bi bi-pencil"></i>
+                                                <span>Chỉnh sửa</span>
+                                            </button>
+                                            <button class="action-button action-button--success" type="button"
+                                                v-if="order.status === 'PENDING'"
+                                                :disabled="completeMutation.isPending.value"
+                                                @click="handleComplete(order)">
+                                                <i class="bi bi-check2"></i>
+                                                <span>Hoàn thành</span>
+                                            </button>
+                                            <button class="action-button action-button--danger" type="button"
+                                                v-if="order.status === 'PENDING'"
+                                                :disabled="cancelMutation.isPending.value" @click="handleCancel(order)">
+                                                <i class="bi bi-x"></i>
+                                                <span>Hủy</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent d-flex justify-content-end"
+                    v-if="supportsPagination && totalPages > 1">
+                    <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
+                        @page-change="handlePageChange" />
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import {computed, onMounted, reactive, ref} from 'vue'
-import {Teleport} from 'vue'
-import {Modal} from 'bootstrap'
-import {useMutation, useQuery, useQueryClient} from '@tanstack/vue-query'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { Teleport } from 'vue'
+import { Modal } from 'bootstrap'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
@@ -273,14 +261,14 @@ import EmptyState from '@/components/common/EmptyState.vue'
 import PurchaseOrderDetailModal from '@/components/purchase-orders/PurchaseOrderDetailModal.vue'
 import PurchaseOrderUpdateModal from '@/components/purchase-orders/PurchaseOrderUpdateModal.vue'
 import Pagination from '@/components/common/Pagination.vue'
-import {usePagination, PaginationMode} from '@/composables/usePagination'
-import {showSuccess, showError} from '@/utils/toast'
-import {useErrorHandler} from '@/composables/useErrorHandler'
+import { usePagination, PaginationMode } from '@/composables/usePagination'
+import { showSuccess, showError } from '@/utils/toast'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
-const {handleError, extractErrorMessage} = useErrorHandler({context: 'PurchaseOrders'})
-import {formatCurrency, formatDateTime, formatNumber} from '@/utils/formatters'
-import {getSuppliers} from '@/api/supplierService'
-import {getPurchaseOrders, markOrderAsCompleted, cancelPurchaseOrder} from '@/api/purchaseOrderService'
+const { handleError, extractErrorMessage } = useErrorHandler({ context: 'PurchaseOrders' })
+import { formatCurrency, formatDateTime, formatNumber } from '@/utils/formatters'
+import { getSuppliers } from '@/api/supplierService'
+import { getPurchaseOrders, markOrderAsCompleted, cancelPurchaseOrder } from '@/api/purchaseOrderService'
 
 const queryClient = useQueryClient()
 
@@ -301,11 +289,11 @@ const DEFAULT_FILTERS = Object.freeze({
     endDate: ''
 })
 
-const filters = reactive({...DEFAULT_FILTERS})
+const filters = reactive({ ...DEFAULT_FILTERS })
 
 const pageSizeOptions = [10, 25, 50]
-const pagination = usePagination({mode: PaginationMode.ZERO_BASED, pageSize: pageSizeOptions[0]})
-const {currentPage, pageSize, zeroBasedPage, setPage, updatePageSize, resetPage} = pagination
+const pagination = usePagination({ mode: PaginationMode.ZERO_BASED, pageSize: pageSizeOptions[0] })
+const { currentPage, pageSize, zeroBasedPage, setPage, updatePageSize, resetPage } = pagination
 
 const sanitizedFilters = computed(() => ({
     supplierId: filters.supplierId ? Number(filters.supplierId) : undefined,
@@ -315,8 +303,8 @@ const sanitizedFilters = computed(() => ({
 }))
 
 const suppliersQuery = useQuery({
-    queryKey: ['suppliers', {page: 0, size: 100}],
-    queryFn: ({queryKey}) => {
+    queryKey: ['suppliers', { page: 0, size: 100 }],
+    queryFn: ({ queryKey }) => {
         const [, params] = queryKey
         return getSuppliers(params)
     }
@@ -336,14 +324,14 @@ const query = useQuery({
         size: pageSize.value,
         ...sanitizedFilters.value
     }]),
-    queryFn: ({queryKey}) => {
+    queryFn: ({ queryKey }) => {
         const [, params] = queryKey
         return getPurchaseOrders(params)
     },
     keepPreviousData: true,
 })
 
-const {data, isLoading, isError, error, isFetching, refetch} = query
+const { data, isLoading, isError, error, isFetching, refetch } = query
 const isSuppliersLoading = computed(() => suppliersQuery.isLoading.value || suppliersQuery.isFetching.value)
 
 const rawOrders = computed(() => data.value ?? null)
@@ -382,19 +370,19 @@ const stats = computed(() => {
     return [
         {
             label: 'Tổng phiếu nhập',
-            value: formatNumber(totalElements.value, {maximumFractionDigits: 0}),
+            value: formatNumber(totalElements.value, { maximumFractionDigits: 0 }),
             icon: 'bi bi-box-seam',
             variant: 'variant-primary'
         },
         {
             label: 'Đang chờ xử lý',
-            value: formatNumber(pendingCount, {maximumFractionDigits: 0}),
+            value: formatNumber(pendingCount, { maximumFractionDigits: 0 }),
             icon: 'bi bi-hourglass-split',
             variant: 'variant-warning'
         },
         {
             label: 'Đã hoàn thành',
-            value: formatNumber(completedCount, {maximumFractionDigits: 0}),
+            value: formatNumber(completedCount, { maximumFractionDigits: 0 }),
             icon: 'bi bi-check-circle',
             variant: 'variant-success'
         },
@@ -428,7 +416,7 @@ const completeMutation = useMutation({
     mutationFn: markOrderAsCompleted,
     onSuccess: (data) => {
         showSuccess(`Đơn nhập #${data.id} đã hoàn thành.`)
-        queryClient.invalidateQueries({queryKey: ['purchaseOrders']})
+        queryClient.invalidateQueries({ queryKey: ['purchaseOrders'] })
     },
     onError: (err) => handleError(err, 'Không thể hoàn thành phiếu nhập.')
 })
@@ -437,7 +425,7 @@ const cancelMutation = useMutation({
     mutationFn: cancelPurchaseOrder,
     onSuccess: (data) => {
         showSuccess(`Đơn nhập #${data.id} đã được huỷ.`)
-        queryClient.invalidateQueries({queryKey: ['purchaseOrders']})
+        queryClient.invalidateQueries({ queryKey: ['purchaseOrders'] })
     },
     onError: (err) => handleError(err, 'Không thể huỷ phiếu nhập.')
 })

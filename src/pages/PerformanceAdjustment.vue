@@ -1,5 +1,5 @@
 <template>
-    <div class="performance-adjustment-page container-fluid" style="background: var(--color-body-bg); padding: var(--spacing-4);">
+    <div class="performance-adjustment-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
         <div class="performance-adjustment-header">
             <div class="performance-adjustment-header__content">
                 <div class="performance-adjustment-header__title-section">

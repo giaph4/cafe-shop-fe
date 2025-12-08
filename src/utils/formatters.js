@@ -92,3 +92,20 @@ export function formatPercent(value, options = {}) {
     // Convert to decimal (0.755 -> 75.5%)
     return formatter.format(numericValue / 100);
 }
+
+/**
+ * Định dạng thời gian thành "HH:mm".
+ * @param {string | Date} dateTime - Ngày giờ cần định dạng.
+ * @returns {string} - Chuỗi thời gian đã định dạng.
+ */
+export function formatTime(dateTime) {
+    if (!dateTime) return '';
+    try {
+        const d = new Date(dateTime);
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    } catch (error) {
+        return '';
+    }
+}

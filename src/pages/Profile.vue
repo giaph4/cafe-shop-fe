@@ -175,39 +175,51 @@
                             <label class="form-label">Mật khẩu hiện tại <span class="text-danger">*</span></label>
                             <Field
                                 name="currentPassword"
-                                type="password"
-                                class="form-control"
-                                v-model.trim="passwordForm.currentPassword"
-                                :class="{'is-invalid': passwordFormErrors.currentPassword}"
-                                :disabled="passwordChanging || isPasswordSubmitting"
-                                autocomplete="current-password"
-                            />
+                                v-slot="{ field }"
+                            >
+                                <PasswordInput
+                                    v-bind="field"
+                                    :model-value="passwordForm.currentPassword"
+                                    @update:model-value="passwordForm.currentPassword = $event"
+                                    :input-class="['form-control', {'is-invalid': passwordFormErrors.currentPassword}]"
+                                    :disabled="passwordChanging || isPasswordSubmitting"
+                                    autocomplete="current-password"
+                                />
+                            </Field>
                             <ErrorMessage name="currentPassword" class="invalid-feedback" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
                             <Field
                                 name="newPassword"
-                                type="password"
-                                class="form-control"
-                                v-model.trim="passwordForm.newPassword"
-                                :class="{'is-invalid': passwordFormErrors.newPassword}"
-                                :disabled="passwordChanging || isPasswordSubmitting"
-                                autocomplete="new-password"
-                            />
+                                v-slot="{ field }"
+                            >
+                                <PasswordInput
+                                    v-bind="field"
+                                    :model-value="passwordForm.newPassword"
+                                    @update:model-value="passwordForm.newPassword = $event"
+                                    :input-class="['form-control', {'is-invalid': passwordFormErrors.newPassword}]"
+                                    :disabled="passwordChanging || isPasswordSubmitting"
+                                    autocomplete="new-password"
+                                />
+                            </Field>
                             <ErrorMessage name="newPassword" class="invalid-feedback" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
                             <Field
                                 name="confirmationPassword"
-                                type="password"
-                                class="form-control"
-                                v-model.trim="passwordForm.confirmationPassword"
-                                :class="{'is-invalid': passwordFormErrors.confirmationPassword}"
-                                :disabled="passwordChanging || isPasswordSubmitting"
-                                autocomplete="new-password"
-                            />
+                                v-slot="{ field }"
+                            >
+                                <PasswordInput
+                                    v-bind="field"
+                                    :model-value="passwordForm.confirmationPassword"
+                                    @update:model-value="passwordForm.confirmationPassword = $event"
+                                    :input-class="['form-control', {'is-invalid': passwordFormErrors.confirmationPassword}]"
+                                    :disabled="passwordChanging || isPasswordSubmitting"
+                                    autocomplete="new-password"
+                                />
+                            </Field>
                             <ErrorMessage name="confirmationPassword" class="invalid-feedback" />
                         </div>
                         <div class="col-12">
@@ -249,6 +261,7 @@ import {useProfileStore} from '@/store/profile'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AvatarEditorModal from '@/components/staff/AvatarEditorModal.vue'
+import PasswordInput from '@/components/common/PasswordInput.vue'
 import {uploadFile, deleteFile, extractFileName} from '@/api/fileService'
 import {formatDate, formatDateTime} from '@/utils/formatters'
 import {toast} from 'vue3-toastify'

@@ -4,7 +4,7 @@
         <div class="neo-bottom-bar__section neo-bottom-bar__section--left">
             <div class="neo-bottom-bar__info">
                 <div class="neo-bottom-bar__app-name">
-                    <strong>Cafe Dashboard</strong>
+                    <strong>Coffee GP</strong>
                     <span class="neo-bottom-bar__env-badge">POS • Production</span>
                 </div>
                 <div class="neo-bottom-bar__status">

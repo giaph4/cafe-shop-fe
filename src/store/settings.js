@@ -19,6 +19,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const currentTheme = ref(normalizeTheme(getStoredTheme() || resolveInitialTheme()))
     const language = ref(localStorage.getItem('language') || 'vi')
     const notificationSound = ref(localStorage.getItem('notificationSound') !== 'false')
+    const christmasEffectEnabled = ref(localStorage.getItem('christmasEffectEnabled') === 'true')
 
     // User Profile (lấy từ authStore)
     const userProfile = computed(() => {
@@ -51,6 +52,11 @@ export const useSettingsStore = defineStore('settings', () => {
         localStorage.setItem('notificationSound', String(value))
     }
 
+    const setChristmasEffect = (value) => {
+        christmasEffectEnabled.value = value
+        localStorage.setItem('christmasEffectEnabled', String(value))
+    }
+
     const updateProfile = async (profileData) => {
         // TODO: Gọi API để cập nhật profile
         // Ví dụ: await updateUserProfile(profileData)
@@ -81,11 +87,13 @@ export const useSettingsStore = defineStore('settings', () => {
         currentTheme,
         language,
         notificationSound,
+        christmasEffectEnabled,
         userProfile,
         // Actions
         setTheme,
         setLanguage,
         setNotificationSound,
+        setChristmasEffect,
         updateProfile,
         changePassword
     }

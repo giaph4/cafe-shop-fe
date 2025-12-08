@@ -31,11 +31,9 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
-                                    <input
+                                    <PasswordInput
                                         v-model="form.password"
-                                        type="password"
-                                        class="form-control"
-                                        :class="{'is-invalid': errors.password}"
+                                        :input-class="['form-control', {'is-invalid': errors.password}]"
                                         autocomplete="new-password"
                                         :disabled="submitting"
                                     />
@@ -47,11 +45,9 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Xác nhận mật khẩu <span
                                         class="text-danger">*</span></label>
-                                    <input
+                                    <PasswordInput
                                         v-model="form.confirmPassword"
-                                        type="password"
-                                        class="form-control"
-                                        :class="{'is-invalid': errors.confirmPassword}"
+                                        :input-class="['form-control', {'is-invalid': errors.confirmPassword}]"
                                         autocomplete="new-password"
                                         :disabled="submitting"
                                     />
@@ -144,6 +140,7 @@
 import {reactive, ref, watch, onMounted, onBeforeUnmount} from 'vue'
 import {Modal} from 'bootstrap'
 import {toast} from 'vue3-toastify'
+import PasswordInput from '@/components/common/PasswordInput.vue'
 
 const props = defineProps({
     roles: {

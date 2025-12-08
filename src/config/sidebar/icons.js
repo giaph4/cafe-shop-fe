@@ -1,5 +1,6 @@
 export const sidebarIcons = {
     dashboard: 'bi bi-speedometer2',
+    realtimeDashboard: 'bi bi-activity',
     pos: 'bi bi-calculator',
     orders: 'bi bi-receipt',
     tables: 'bi bi-grid-3x3-gap',
@@ -20,7 +21,9 @@ export const sidebarIcons = {
     attendance: 'bi bi-clock-history',
     shiftReport: 'bi bi-clipboard-data',
     shiftAssignment: 'bi bi-person-check-fill',
+    shiftEfficiency: 'bi bi-speedometer2',
     performanceAdjustment: 'bi bi-graph-up-arrow',
+    staffPerformance: 'bi bi-person-check',
     finance: 'bi bi-cash-stack',
     expenses: 'bi bi-wallet2',
     payroll: 'bi bi-cash-coin',
@@ -33,5 +36,15 @@ export const sidebarIcons = {
     fileManagement: 'bi bi-folder',
     adminAnalytics: 'bi bi-robot',
     roleDashboards: 'bi bi-person-badge',
-    customers: 'bi bi-people-fill'
+    customers: 'bi bi-people-fill',
+    revenueForecast: 'bi bi-graph-up-arrow',
+    voucherAnalytics: 'bi bi-ticket-perforated',
+    cancellationAnalysis: 'bi bi-x-circle-fill',
+    trendAnalysis: 'bi bi-graph-up-arrow',
+    menuOptimization: 'bi bi-box-seam',
+    costAnalysis: 'bi bi-cash-stack',
+    smartInventory: 'bi bi-box-seam',
+    customerAnalytics: 'bi bi-people-fill',
+    productProfitability: 'bi bi-cash-coin',
+    ingredientDemandForecast: 'bi bi-graph-up-arrow'
 }

@@ -349,10 +349,12 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control"
-                                        v-model.trim="resetPasswordForm.newPassword"
-                                        :class="{ 'is-invalid': resetPasswordErrors.newPassword }"
-                                        :disabled="resetPasswordSubmitting" />
+                                    <PasswordInput
+                                        v-model="resetPasswordForm.newPassword"
+                                        :input-class="['form-control', { 'is-invalid': resetPasswordErrors.newPassword }]"
+                                        :disabled="resetPasswordSubmitting"
+                                        autocomplete="new-password"
+                                    />
                                     <div class="invalid-feedback" v-if="resetPasswordErrors.newPassword">{{
                                         resetPasswordErrors.newPassword }}</div>
                                     <div class="form-text">Tối thiểu 6 ký tự</div>
@@ -360,10 +362,12 @@
                                 <div class="mb-3">
                                     <label class="form-label">Xác nhận mật khẩu <span
                                             class="text-danger">*</span></label>
-                                    <input type="password" class="form-control"
-                                        v-model.trim="resetPasswordForm.confirmPassword"
-                                        :class="{ 'is-invalid': resetPasswordErrors.confirmPassword }"
-                                        :disabled="resetPasswordSubmitting" />
+                                    <PasswordInput
+                                        v-model="resetPasswordForm.confirmPassword"
+                                        :input-class="['form-control', { 'is-invalid': resetPasswordErrors.confirmPassword }]"
+                                        :disabled="resetPasswordSubmitting"
+                                        autocomplete="new-password"
+                                    />
                                     <div class="invalid-feedback" v-if="resetPasswordErrors.confirmPassword">{{
                                         resetPasswordErrors.confirmPassword }}</div>
                                 </div>
@@ -641,6 +645,7 @@ import { Modal } from 'bootstrap'
 import { toast } from 'vue3-toastify'
 import EmptyState from '@/components/common/EmptyState.vue'
 import Pagination from '@/components/common/Pagination.vue'
+import PasswordInput from '@/components/common/PasswordInput.vue'
 import StaffCard from '@/components/staff/StaffCard.vue'
 import StaffDetailDrawer from '@/components/staff/StaffDetailDrawer.vue'
 import StaffCreateModal from '@/components/staff/StaffCreateModal.vue'

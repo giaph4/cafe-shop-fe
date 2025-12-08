@@ -33,14 +33,23 @@
         </div>
 
         <div class="neo-nav__section neo-nav__section--right">
-            <button
-                class="neo-nav__icon"
-                type="button"
-                :title="`Chuyển sang ${nextThemeInfo.label}`"
-                @click="handleThemeCycle"
-            >
-                <i class="bi" :class="currentThemeInfo.icon"></i>
-            </button>
+            <div class="neo-nav__theme-dropdown" ref="themeDropdownRef">
+                <button
+                    class="neo-nav__icon"
+                    type="button"
+                    :title="`Theme hiện tại: ${currentThemeInfo.label}`"
+                    @click="toggleThemeDropdown"
+                >
+                    <i class="bi" :class="currentThemeInfo.icon"></i>
+                </button>
+                <div
+                    v-if="themeDropdownOpen"
+                    class="neo-nav__theme-menu"
+                    @click.stop
+                >
+                    <ThemeSelector />
+                </div>
+            </div>
 
             <button class="neo-nav__icon" type="button" aria-label="Thông báo">
                 <span class="neo-nav__icon-indicator"></span>
@@ -95,18 +104,18 @@
 import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useAuthStore} from '@/store/auth'
+import {useSettingsStore} from '@/store/settings'
+import {storeToRefs} from 'pinia'
 import {
     getStoredTheme,
     applyThemeClass,
     persistTheme,
-    LIGHT_THEME,
-    COMFORT_THEME,
-    DARK_THEME,
     normalizeTheme,
     resolveInitialTheme,
-    THEME_SEQUENCE
+    THEME_METADATA
 } from '@/utils/theme'
 import CalculatorPanel from '@/components/CalculatorPanel.vue'
+import ThemeSelector from '@/components/common/ThemeSelector.vue'
 
 const emit = defineEmits(['toggleSidebar', 'search'])
 
@@ -120,20 +129,21 @@ const topbarLeft = computed(() => `${sidebarWidth.value}px`)
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
+const { currentTheme } = storeToRefs(settingsStore)
 
 const searchKeyword = ref('')
 const profileMenuOpen = ref(false)
 const profileRef = ref(null)
 const isScrolled = ref(false)
 const calculatorOpen = ref(false)
+const themeDropdownOpen = ref(false)
+const themeDropdownRef = ref(null)
 
-const currentTheme = ref(normalizeTheme(getStoredTheme() || resolveInitialTheme()))
-
-const THEME_META = {
-    [LIGHT_THEME]: {icon: 'bi-sun', label: 'Chế độ sáng'},
-    [COMFORT_THEME]: {icon: 'bi-droplet-half', label: 'Chế độ dịu mắt'},
-    [DARK_THEME]: {icon: 'bi-moon-stars', label: 'Chế độ tối'}
-}
+const currentThemeInfo = computed(() => {
+    const meta = THEME_METADATA[currentTheme.value]
+    return meta || { icon: 'bi-palette', label: 'Theme' }
+})
 
 const pageTitle = computed(() => route.meta?.breadcrumb || route.meta?.title || route.name || 'Trang chính')
 const displayName = computed(() => authStore.user?.fullName || authStore.user?.username || 'Người dùng')
@@ -161,23 +171,17 @@ const handleLogout = () => {
 }
 
 const applyTheme = (theme) => {
-    const normalized = normalizeTheme(theme)
-    if (currentTheme.value === normalized) return
-    currentTheme.value = normalized
-    applyThemeClass(normalized)
-    persistTheme(normalized)
+    settingsStore.setTheme(theme)
 }
 
-const nextThemeValue = computed(() => {
-    const index = THEME_SEQUENCE.indexOf(currentTheme.value)
-    return THEME_SEQUENCE[(index + 1) % THEME_SEQUENCE.length]
-})
+const toggleThemeDropdown = () => {
+    themeDropdownOpen.value = !themeDropdownOpen.value
+}
 
-const currentThemeInfo = computed(() => THEME_META[currentTheme.value])
-const nextThemeInfo = computed(() => THEME_META[nextThemeValue.value])
-
-const handleThemeCycle = () => {
-    applyTheme(nextThemeValue.value)
+const closeThemeDropdown = (event) => {
+    if (themeDropdownRef.value && !themeDropdownRef.value.contains(event.target)) {
+        themeDropdownOpen.value = false
+    }
 }
 
 const toggleProfileMenu = () => {
@@ -215,6 +219,7 @@ const handleScroll = () => {
 const handleEscape = (event) => {
     if (event.key === 'Escape') {
         profileMenuOpen.value = false
+        themeDropdownOpen.value = false
     }
 }
 
@@ -227,19 +232,20 @@ const handleStorage = (event) => {
 const handleSystemPreference = (event) => {
     const stored = getStoredTheme()
     if (stored) return
-    applyTheme(event.matches ? DARK_THEME : LIGHT_THEME)
+    applyTheme(event.matches ? 'dark-theme' : 'light-theme')
 }
 
 onMounted(() => {
     window.addEventListener('storage', handleStorage)
     window.addEventListener('pointerdown', closeProfileMenu)
+    window.addEventListener('pointerdown', closeThemeDropdown)
     window.addEventListener('keydown', handleEscape)
     window.addEventListener('scroll', handleScroll, {passive: true})
     const media = window.matchMedia?.('(prefers-color-scheme: dark)')
     if (media) {
         media.addEventListener('change', handleSystemPreference)
         if (!getStoredTheme()) {
-            applyTheme(media.matches ? DARK_THEME : LIGHT_THEME)
+            applyTheme(media.matches ? 'dark-theme' : 'light-theme')
         }
     }
     handleScroll()
@@ -248,6 +254,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
     window.removeEventListener('storage', handleStorage)
     window.removeEventListener('pointerdown', closeProfileMenu)
+    window.removeEventListener('pointerdown', closeThemeDropdown)
     window.removeEventListener('keydown', handleEscape)
     window.removeEventListener('scroll', handleScroll)
     const media = window.matchMedia?.('(prefers-color-scheme: dark)')
@@ -258,6 +265,14 @@ watch(
     () => route.fullPath,
     () => {
         profileMenuOpen.value = false
+        themeDropdownOpen.value = false
+    }
+)
+
+watch(
+    () => currentTheme.value,
+    () => {
+        themeDropdownOpen.value = false
     }
 )
 </script>
@@ -652,6 +667,33 @@ watch(
 
     .neo-nav__profile-trigger i {
         display: none;
+    }
+}
+
+.neo-nav__theme-dropdown {
+    position: relative;
+}
+
+.neo-nav__theme-menu {
+    position: absolute;
+    top: calc(100% + var(--spacing-2));
+    right: 0;
+    width: 900px;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: var(--color-card);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 1000;
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .neo-nav__theme-menu {
+        width: calc(100vw - var(--spacing-8));
+        right: var(--spacing-4);
     }
 }
 </style>

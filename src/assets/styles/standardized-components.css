@@ -1,0 +1,271 @@
+/**
+ * STANDARDIZED COMPONENTS CSS
+ * Chuẩn hóa các component theo Global Design System
+ * Áp dụng cho: RevenueForecast, VoucherAnalytics, SmartInventory và các modals
+ */
+
+/* ============================================
+   FLAT BUTTONS - Thay thế Bootstrap buttons
+   ============================================ */
+.btn-flat {
+    font-family: var(--font-family-sans);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-text);
+    padding: var(--spacing-2) var(--spacing-4);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.btn-flat:hover:not(:disabled) {
+    background: var(--color-card-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-heading);
+}
+
+.btn-flat:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-soft-primary);
+}
+
+.btn-flat:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-flat--primary {
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    border-color: var(--color-primary);
+}
+
+.btn-flat--primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: var(--color-primary-contrast);
+}
+
+.btn-flat--outline {
+    background: transparent;
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.btn-flat--outline:hover:not(:disabled) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.btn-flat--active {
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    border-color: var(--color-primary);
+}
+
+.btn-flat--active:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+}
+
+.btn-flat.btn-sm {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-sm);
+}
+
+/* ============================================
+   CLEAN INPUTS - Thay thế Bootstrap inputs
+   ============================================ */
+.clean-input,
+.form-control.clean-input,
+.form-select.clean-input {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-input-bg);
+    color: var(--color-text);
+    padding: var(--spacing-2) var(--spacing-3);
+    transition: all var(--transition-fast);
+    width: 100%;
+}
+
+.clean-input:focus,
+.form-control.clean-input:focus,
+.form-select.clean-input:focus {
+    outline: none;
+    border-color: var(--color-input-focus);
+    box-shadow: 0 0 0 2px var(--color-soft-primary);
+    background: var(--color-input-bg);
+}
+
+.clean-input::placeholder {
+    color: var(--color-placeholder);
+}
+
+.clean-input:disabled {
+    background: var(--color-surface-muted);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   STANDARD CARDS - Chuẩn hóa card styles
+   ============================================ */
+.standard-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.standard-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-table-header);
+}
+
+.card-title {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin: 0;
+}
+
+.standard-card .card-body {
+    padding: var(--spacing-4);
+}
+
+/* ============================================
+   MINIMAL TABLES - Clean table design
+   ============================================ */
+.table-minimal {
+    font-family: var(--font-family-sans);
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table-minimal thead th {
+    background: var(--color-table-header);
+    color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 2px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    text-align: left;
+}
+
+.table-minimal tbody td {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    border-left: none;
+    border-right: none;
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+}
+
+.table-minimal tbody tr:hover {
+    background: var(--color-table-hover);
+}
+
+.table-minimal tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table-minimal tbody tr.table-danger {
+    background: var(--color-soft-rose);
+}
+
+.table-minimal tbody tr.table-warning {
+    background: var(--color-soft-amber);
+}
+
+.table-minimal tbody tr.table-info {
+    background: var(--color-soft-sky);
+}
+
+.table-minimal tbody tr.table-success {
+    background: var(--color-soft-emerald);
+}
+
+/* ============================================
+   BADGE SOFT - Soft badge styles
+   ============================================ */
+.badge-soft {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-sans);
+    border: 1px solid transparent;
+    display: inline-block;
+}
+
+/* ============================================
+   FORM LABELS - Standardized labels
+   ============================================ */
+.form-label {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-2);
+}
+
+/* ============================================
+   ALERT STYLES - Standardized alerts
+   ============================================ */
+.alert {
+    font-family: var(--font-family-sans);
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+.alert-warning {
+    background: var(--color-soft-amber);
+    border-color: var(--color-warning);
+    color: var(--color-text);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .btn-flat {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-sm);
+    }
+    
+    .standard-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+    
+    .table-minimal {
+        font-size: var(--font-size-sm);
+    }
+    
+    .table-minimal thead th,
+    .table-minimal tbody td {
+        padding: var(--spacing-2) var(--spacing-3);
+    }
+}
+

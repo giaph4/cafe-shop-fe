@@ -85,6 +85,62 @@ export const sidebarMenu = [
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     },
                     {
+                        id: 'revenue-forecast',
+                        label: 'Dự báo Doanh thu',
+                        icon: 'revenueForecast',
+                        to: '/revenue-forecast',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'voucher-analytics',
+                        label: 'Phân tích Voucher',
+                        icon: 'voucherAnalytics',
+                        to: '/voucher-analytics',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'cancellation-analysis',
+                        label: 'Phân tích Hủy Đơn',
+                        icon: 'cancellationAnalysis',
+                        to: '/cancellation-analysis',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'trend-analysis',
+                        label: 'Phân tích Xu hướng',
+                        icon: 'trendAnalysis',
+                        to: '/trend-analysis',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'menu-optimization',
+                        label: 'Tối ưu Menu',
+                        icon: 'menuOptimization',
+                        to: '/menu-optimization',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'cost-analysis',
+                        label: 'Phân tích Chi phí',
+                        icon: 'costAnalysis',
+                        to: '/cost-analysis',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'customer-analytics',
+                        label: 'Phân tích Khách hàng',
+                        icon: 'customerAnalytics',
+                        to: '/customer-analytics',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'product-profitability',
+                        label: 'Phân tích Lợi nhuận',
+                        icon: 'productProfitability',
+                        to: '/product-profitability',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
                         id: 'admin-analytics',
                         label: 'Phân tích AI',
                         icon: 'adminAnalytics',
@@ -153,6 +209,20 @@ export const sidebarMenu = [
                         icon: 'inventoryReport',
                         to: '/inventory-report',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'smart-inventory',
+                        label: 'Tồn kho thông minh',
+                        icon: 'smartInventory',
+                        to: '/smart-inventory',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'ingredient-demand-forecast',
+                        label: 'Dự báo Nhu cầu',
+                        icon: 'ingredientDemandForecast',
+                        to: '/ingredient-demand-forecast',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     }
                 ]
             }
@@ -203,10 +273,24 @@ export const sidebarMenu = [
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
                     },
                     {
+                        id: 'shift-efficiency',
+                        label: 'Hiệu quả Ca làm',
+                        icon: 'shiftEfficiency',
+                        to: '/shift-efficiency',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
                         id: 'performance-adjustment',
                         label: 'Điều chỉnh hiệu suất',
                         icon: 'performanceAdjustment',
                         to: '/performance-adjustment',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'staff-performance',
+                        label: 'Phân tích Hiệu suất',
+                        icon: 'staffPerformance',
+                        to: '/staff-performance',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     }
                 ]

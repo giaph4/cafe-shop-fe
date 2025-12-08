@@ -62,6 +62,10 @@
                     <i :class="tab.icon"></i>
                     <span>{{ tab.label }}</span>
                 </button>
+                <router-link to="/realtime-dashboard" class="tab tab-realtime">
+                    <i class="bi bi-activity"></i>
+                    <span>Thời gian Thực</span>
+                </router-link>
             </div>
         </section>
 
@@ -495,6 +499,19 @@ onBeforeUnmount(() => {
     background: var(--color-primary);
     color: var(--color-text-inverse);
     font-weight: var(--font-weight-semibold);
+}
+
+.tab-realtime {
+    margin-left: auto;
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.tab-realtime:hover {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
 }
 
 .dashboard__content {

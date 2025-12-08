@@ -20,7 +20,7 @@ export const INVOICE_PRINT_STYLES = `
 `
 
 const DEFAULT_OPTIONS = Object.freeze({
-    storeName: 'Cafe Dash',
+    storeName: 'Coffee GP',
     subtitle: 'Hóa đơn bán hàng',
     footerMessage: 'Cảm ơn và hẹn gặp lại!',
     autoClose: true

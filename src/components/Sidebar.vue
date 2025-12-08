@@ -14,14 +14,14 @@
             <header class="neo-sidebar__header">
                 <router-link class="neo-sidebar__brand" to="/" @click="handleNavigate({ id: null })">
                     <span class="neo-sidebar__brand-icon">
-                        <i class="bi bi-cup-hot"></i>
+                        <img src="@/assets/logo.jpg" alt="GP Logo" class="neo-sidebar__logo" />
                     </span>
                     <span v-if="!displayCollapsed" class="neo-sidebar__brand-text">
-                        <strong>Café Dash</strong>
+                        <strong>Coffee GP</strong>
                         <small>Hệ thống quản lý</small>
                     </span>
                     <span v-else class="neo-sidebar__brand-text-collapsed">
-                        <strong>Café</strong>
+                        <strong>GP</strong>
                     </span>
                 </router-link>
 
@@ -75,9 +75,9 @@
             </nav>
 
             <footer v-if="!displayCollapsed" class="neo-sidebar__footer">
-                <button class="neo-sidebar__quick" type="button" @click="handleQuickSettings">
-                    <i class="bi bi-sliders"></i>
-                    <span>Cài đặt nhanh</span>
+                <button class="neo-sidebar__quick" type="button" @click="handleLogout">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Đăng xuất</span>
                 </button>
             </footer>
         </div>
@@ -186,8 +186,8 @@ const handleHoverLeave = (payload) => {
     scheduleHoverCleanup(payload)
 }
 
-const handleQuickSettings = () => {
-    // Placeholder for quick settings action hook
+const handleLogout = () => {
+    authStore.logout()
 }
 
 const toggleCollapsed = () => {
@@ -385,7 +385,7 @@ function searchItems(items, parents, targetPath) {
 .neo-sidebar.is-collapsed .neo-sidebar__brand-icon {
     width: 40px;
     height: 40px;
-    font-size: 20px;
+    padding: 5px;
 }
 
 .neo-sidebar.is-mobile {
@@ -431,11 +431,20 @@ function searchItems(items, parents, targetPath) {
     border-radius: var(--radius-md);
     display: grid;
     place-items: center;
-    font-size: 1.32rem;
-    color: var(--color-text-inverse);
-    background: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    box-shadow: 0 2px 8px rgba(44, 120, 115, 0.2);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    padding: 6px;
+}
+
+.neo-sidebar__logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    filter: brightness(0.95) contrast(1.1);
 }
 
 .neo-sidebar__brand-text {
@@ -445,10 +454,11 @@ function searchItems(items, parents, targetPath) {
 }
 
 .neo-sidebar__brand-text strong {
-    font-size: 1.09rem;
-    font-weight: var(--font-weight-semibold);
+    font-size: 1.15rem;
+    font-weight: var(--font-weight-bold);
     color: var(--color-heading);
     font-family: var(--font-family-sans);
+    letter-spacing: 0.02em;
 }
 
 .neo-sidebar__brand-text small {
@@ -576,22 +586,27 @@ function searchItems(items, parents, targetPath) {
     justify-content: center;
     padding: var(--spacing-3) var(--spacing-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-card-muted);
-    color: var(--color-primary);
-    font-weight: var(--font-weight-medium);
+    border: 1px solid var(--color-danger);
+    background: linear-gradient(135deg, rgba(var(--color-danger-rgb, 220, 53, 69), 0.1) 0%, var(--color-card-muted) 100%);
+    color: var(--color-danger);
+    font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-sans);
     font-size: var(--font-size-base);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
 
 .neo-sidebar__quick:hover,
 .neo-sidebar__quick:focus-visible {
-    background: rgba(44, 120, 115, 0.1);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    box-shadow: 0 2px 8px rgba(44, 120, 115, 0.15);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger-dark) 100%);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
+    box-shadow: 0 4px 12px rgba(var(--color-danger-rgb, 220, 53, 69), 0.3);
+    transform: translateY(-2px);
+}
+
+.neo-sidebar__quick:active {
+    transform: translateY(0);
 }
 
 .neo-sidebar::-webkit-scrollbar {

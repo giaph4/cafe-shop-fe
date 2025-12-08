@@ -204,6 +204,84 @@ const routes = [
                 name: 'Dashboard theo vai trò',
                 component: () => import(/* webpackChunkName: "role-dashboards" */ '../pages/RoleBasedDashboards.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
+            },
+            {
+                path: 'revenue-forecast',
+                name: 'Dự báo Doanh thu',
+                component: () => import(/* webpackChunkName: "revenue-forecast" */ '../pages/RevenueForecast.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'voucher-analytics',
+                name: 'Phân tích Voucher',
+                component: () => import(/* webpackChunkName: "voucher-analytics" */ '../pages/VoucherAnalytics.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'smart-inventory',
+                name: 'Tồn kho thông minh',
+                component: () => import(/* webpackChunkName: "smart-inventory" */ '../pages/SmartInventory.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'staff-performance',
+                name: 'Phân tích Hiệu suất Nhân viên',
+                component: () => import(/* webpackChunkName: "staff-performance" */ '../pages/StaffPerformance.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'customer-analytics',
+                name: 'Phân tích Khách hàng',
+                component: () => import(/* webpackChunkName: "customer-analytics" */ '../pages/CustomerAnalytics.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'product-profitability',
+                name: 'Phân tích Lợi nhuận Sản phẩm',
+                component: () => import(/* webpackChunkName: "product-profitability" */ '../pages/ProductProfitability.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'ingredient-demand-forecast',
+                name: 'Dự báo Nhu cầu Nguyên liệu',
+                component: () => import(/* webpackChunkName: "ingredient-demand-forecast" */ '../pages/IngredientDemandForecast.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'shift-efficiency',
+                name: 'Phân tích Hiệu quả Ca làm việc',
+                component: () => import(/* webpackChunkName: "shift-efficiency" */ '../pages/ShiftEfficiencyAnalysis.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'cancellation-analysis',
+                name: 'Phân tích Tỷ lệ Hủy Đơn',
+                component: () => import(/* webpackChunkName: "cancellation-analysis" */ '../pages/CancellationAnalysis.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'realtime-dashboard',
+                name: 'Dashboard Thời gian Thực',
+                component: () => import(/* webpackChunkName: "realtime-dashboard" */ '../pages/RealTimeDashboard.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
+            },
+            {
+                path: 'trend-analysis',
+                name: 'Phân tích Xu hướng',
+                component: () => import(/* webpackChunkName: "trend-analysis" */ '../pages/TrendAnalysis.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'menu-optimization',
+                name: 'Tối ưu Menu',
+                component: () => import(/* webpackChunkName: "menu-optimization" */ '../pages/MenuOptimization.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'cost-analysis',
+                name: 'Phân tích Chi phí',
+                component: () => import(/* webpackChunkName: "cost-analysis" */ '../pages/CostAnalysis.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             }
         ]
     },

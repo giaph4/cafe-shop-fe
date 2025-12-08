@@ -5,8 +5,8 @@
                 <div class="brand">
 
                     <div class="brand-text">
-                        <h1>Cafe Đời Thứ 3</h1>
-                        <p class="brand-tagline">Quản lý quán cà phê thông minh</p>
+                        <h1>Coffee GP</h1>
+                        <p class="brand-tagline">Hệ thống quản lý quán cà phê</p>
                     </div>
                 </div>
 
@@ -38,30 +38,6 @@
                             <p>Theo dõi nguyên liệu, nhập hàng và cảnh báo khi sắp hết.</p>
                         </div>
                     </article>
-                    <article class="highlight-item highlight-item--demo">
-                        <div class="icon">
-                            <i class="bi bi-key"></i>
-                        </div>
-                        <div class="text">
-                            <h3>Tài khoản demo</h3>
-                            <div class="demo-accounts">
-                                <div class="demo-account">
-                                    <span class="demo-role">Admin:</span>
-                                    <code>admin_demo</code> / <code>Admindemo1234.</code>
-                                </div>
-                                <div class="demo-account">
-                                    <span class="demo-role">Manager:</span>
-                                    <code>manager_demo</code> / <code>Managerdemo1234.</code>
-                                </div>
-                                <div class="demo-account">
-                                    <span class="demo-role">Staff:</span>
-                                    <code>staff_demo</code> / <code>Staffdemo1234.</code>
-                                </div>
-                            </div>
-                            <p class="demo-note">Bạn có thể sử dụng các tài khoản này để đăng nhập và trải nghiệm hệ
-                                thống.</p>
-                        </div>
-                    </article>
                 </div>
             </section>
 
@@ -69,7 +45,7 @@
                 <div class="login-form__content">
                     <div class="login-form__header">
                         <h2 class="login-form__title">Chào mừng trở lại!</h2>
-                        <p class="login-form__subtitle">Nhập thông tin đăng nhập để tiếp tục quản lý quán của bạn.</p>
+                
                     </div>
 
                     <Form @submit="handleLogin" :validation-schema="loginSchema" v-slot="{ errors }">
@@ -192,12 +168,7 @@ const handleForgotPassword = () => {
 </script>
 
 <style scoped>
-/* ============================================
-   LOGIN PAGE - CHUẨN HÓA THEO GLOBAL DESIGN SYSTEM
-   Tuân thủ nghiêm ngặt base.css và 3 theme
-   ============================================ */
 
-/* Container chuẩn hóa */
 .login-wrapper {
     background: var(--color-body-bg);
     min-height: 100vh;
@@ -241,10 +212,11 @@ const handleForgotPassword = () => {
     margin: 0;
     font-weight: var(--font-weight-bold);
     font-size: clamp(var(--font-size-2xl), 3vw, var(--font-size-3xl));
-    letter-spacing: var(--letter-spacing-tight);
+    letter-spacing: 0.05em;
     color: var(--color-heading);
     line-height: var(--line-height-tight);
     font-family: var(--font-family-sans);
+    text-transform: uppercase;
 }
 
 .login-hero .brand-text .brand-tagline {
@@ -279,11 +251,6 @@ const handleForgotPassword = () => {
     border-color: var(--color-border-strong);
 }
 
-.login-hero .highlights .highlight-item--demo {
-    background: var(--color-soft-amber);
-    border: 1px dashed var(--color-border-strong);
-}
-
 .login-hero .highlights .highlight-item .icon {
     width: 44px;
     height: 44px;
@@ -311,44 +278,6 @@ const handleForgotPassword = () => {
     color: var(--color-text-muted);
     line-height: var(--line-height-normal);
     font-family: var(--font-family-sans);
-}
-
-.login-hero .highlights .highlight-item--demo .demo-accounts {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
-    margin-top: var(--spacing-2);
-    font-size: var(--font-size-sm);
-}
-
-.login-hero .highlights .highlight-item--demo .demo-accounts .demo-account {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    flex-wrap: wrap;
-}
-
-.login-hero .highlights .highlight-item--demo .demo-accounts .demo-account .demo-role {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    min-width: 60px;
-}
-
-.login-hero .highlights .highlight-item--demo .demo-accounts .demo-account code {
-    background: var(--color-card-muted);
-    padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-xs);
-    font-size: var(--font-size-xs);
-    color: var(--color-text);
-    font-family: "Courier New", monospace;
-    border: 1px solid var(--color-border);
-}
-
-.login-hero .highlights .highlight-item--demo .demo-note {
-    margin-top: var(--spacing-2);
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    font-style: italic;
 }
 
 /* Form Section */

@@ -1,94 +1,143 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade customer-form-modal" tabindex="-1" aria-labelledby="customerFormModalLabel" aria-hidden="true" ref="modalRef" @hidden.bs.modal="onModalHidden">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title" id="customerFormModalLabel">{{ title }}</h5>
-                            <p class="modal-subtitle">{{ mode === 'edit' ? 'Cập nhật thông tin khách hàng.' : 'Điền đầy đủ thông tin để tạo khách hàng mới.' }}</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="closeModal" :disabled="loading" aria-label="Đóng"></button>
-                    </div>
-                    <form @submit.prevent="submitForm" class="customer-form">
-                        <div class="modal-body">
-                            <div v-if="error" class="error-message">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                {{ error }}
-                            </div>
-                            <div class="form-group">
-                                <label for="fullName" class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="fullName"
-                                    v-model="form.fullName"
-                                    :disabled="loading"
-                                    placeholder="Nhập họ và tên"
-                                    required
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="phone"
-                                    v-model="form.phone"
-                                    :disabled="loading"
-                                    placeholder="Nhập số điện thoại"
-                                    required
-                                />
-                                <div class="form-text">Định dạng: 0XXXXXXXXX hoặc +84XXXXXXXXX</div>
-                            </div>
-                            <div class="form-group">
-                                <label for="email" class="form-label">Email</label>
-                                <input
-                                    type="email"
-                                    class="form-control"
-                                    id="email"
-                                    v-model="form.email"
-                                    :disabled="loading"
-                                    placeholder="Nhập email (tùy chọn)"
-                                />
-                            </div>
-
-                            <div
-                                v-if="mode === 'edit' && customer"
-                                class="customer-meta"
-                            >
-                                <div class="customer-meta__item">
-                                    <span class="customer-meta__label">Mã khách hàng</span>
-                                    <span class="customer-meta__value">#{{ customer.id }}</span>
-                                </div>
-                                <div class="customer-meta__item">
-                                    <span class="customer-meta__label">Điểm thưởng hiện tại</span>
-                                    <span class="customer-meta__value">{{ customer.loyaltyPoints ?? 0 }}</span>
-                                </div>
-                                <div class="customer-meta__item">
-                                    <span class="customer-meta__label">Ngày tạo</span>
-                                    <span class="customer-meta__value">{{ customer.createdAt || '—' }}</span>
-                                </div>
-                                <div class="customer-meta__item">
-                                    <span class="customer-meta__label">Cập nhật lần cuối</span>
-                                    <span class="customer-meta__value">{{ customer.updatedAt || '—' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="closeModal" :disabled="loading">
-                                Hủy
-                            </button>
-                            <button type="submit" class="btn btn-primary" :disabled="loading">
-                                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                {{ submitButtonText }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modalRef"
+      class="modal fade customer-form-modal"
+      tabindex="-1"
+      aria-labelledby="customerFormModalLabel"
+      aria-hidden="true"
+      @hidden="onModalHidden"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5
+                id="customerFormModalLabel"
+                class="modal-title"
+              >
+                {{ title }}
+              </h5>
+              <p class="modal-subtitle">
+                {{ mode === 'edit' ? 'Cập nhật thông tin khách hàng.' : 'Điền đầy đủ thông tin để tạo khách hàng mới.' }}
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              :disabled="loading"
+              aria-label="Đóng"
+              @click="closeModal"
+            />
+          </div>
+          <form
+            class="customer-form"
+            @submit.prevent="submitForm"
+          >
+            <div class="modal-body">
+              <div
+                v-if="error"
+                class="error-message"
+              >
+                <i class="bi bi-exclamation-triangle me-2" />
+                {{ error }}
+              </div>
+              <div class="form-group">
+                <label
+                  for="fullName"
+                  class="form-label"
+                >Họ và tên <span class="text-danger">*</span></label>
+                <input
+                  id="fullName"
+                  v-model="form.fullName"
+                  type="text"
+                  class="form-control"
+                  :disabled="loading"
+                  placeholder="Nhập họ và tên"
+                  required
+                >
+              </div>
+              <div class="form-group">
+                <label
+                  for="phone"
+                  class="form-label"
+                >Số điện thoại <span class="text-danger">*</span></label>
+                <input
+                  id="phone"
+                  v-model="form.phone"
+                  type="text"
+                  class="form-control"
+                  :disabled="loading"
+                  placeholder="Nhập số điện thoại"
+                  required
+                >
+                <div class="form-text">
+                  Định dạng: 0XXXXXXXXX hoặc +84XXXXXXXXX
+                </div>
+              </div>
+              <div class="form-group">
+                <label
+                  for="email"
+                  class="form-label"
+                >Email</label>
+                <input
+                  id="email"
+                  v-model="form.email"
+                  type="email"
+                  class="form-control"
+                  :disabled="loading"
+                  placeholder="Nhập email (tùy chọn)"
+                >
+              </div>
+
+              <div
+                v-if="mode === 'edit' && customer"
+                class="customer-meta"
+              >
+                <div class="customer-meta__item">
+                  <span class="customer-meta__label">Mã khách hàng</span>
+                  <span class="customer-meta__value">#{{ customer.id }}</span>
+                </div>
+                <div class="customer-meta__item">
+                  <span class="customer-meta__label">Điểm thưởng hiện tại</span>
+                  <span class="customer-meta__value">{{ customer.loyaltyPoints ?? 0 }}</span>
+                </div>
+                <div class="customer-meta__item">
+                  <span class="customer-meta__label">Ngày tạo</span>
+                  <span class="customer-meta__value">{{ customer.createdAt || '—' }}</span>
+                </div>
+                <div class="customer-meta__item">
+                  <span class="customer-meta__label">Cập nhật lần cuối</span>
+                  <span class="customer-meta__value">{{ customer.updatedAt || '—' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="loading"
+                @click="closeModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="loading"
+              >
+                <span
+                  v-if="loading"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                {{ submitButtonText }}
+              </button>
+            </div>
+          </form>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -164,22 +213,22 @@ const onModalHidden = () => {
 
 const submitForm = () => {
     error.value = ''
-    
+
     if (!validateRequired(form.value.fullName)) {
         error.value = 'Họ tên là bắt buộc.'
         return
     }
-    
+
     if (!validateRequired(form.value.phone)) {
         error.value = 'Số điện thoại là bắt buộc.'
         return
     }
-    
+
     if (!validatePhone(form.value.phone)) {
         error.value = 'Số điện thoại không đúng định dạng Việt Nam (0XXXXXXXXX hoặc +84XXXXXXXXX).'
         return
     }
-    
+
     emit('submit', { ...form.value })
 }
 

@@ -1,88 +1,112 @@
 <template>
-    <div class="ingredient-list">
-        <div v-if="ingredients.length === 0" class="empty-list">
-            <EmptyState
-                title="Không có dữ liệu"
-                message="Không tìm thấy nguyên liệu nào phù hợp với bộ lọc"
-            />
-        </div>
-        <div v-else class="table-responsive">
-            <table class="table table-minimal">
-                <thead>
-                    <tr>
-                        <th>Nguyên liệu</th>
-                        <th>Tồn kho</th>
-                        <th>Tiêu thụ TB/ngày</th>
-                        <th>Dự báo 7 ngày</th>
-                        <th>Dự báo 30 ngày</th>
-                        <th>Số ngày còn lại</th>
-                        <th>Trạng thái</th>
-                        <th>Đề xuất đặt</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="ingredient in ingredients"
-                        :key="ingredient.ingredientId"
-                        :class="getRowClass(ingredient.status)"
-                        @click="handleSelect(ingredient)"
-                        style="cursor: pointer;"
-                    >
-                        <td>
-                            <div>
-                                <div class="fw-semibold ingredient-name">{{ ingredient.name }}</div>
-                                <small class="text-muted">{{ ingredient.unit }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="stock-value">{{ formatNumber(ingredient.currentStock) }}</span>
-                            <small class="text-muted d-block">Mức đặt: {{ formatNumber(ingredient.reorderLevel) }}</small>
-                        </td>
-                        <td>{{ formatNumber(ingredient.avgDailyConsumption, 2) }}</td>
-                        <td>{{ formatNumber(ingredient.forecast7d, 2) }}</td>
-                        <td>{{ formatNumber(ingredient.forecast30d, 2) }}</td>
-                        <td>
-                            <span v-if="ingredient.daysRemaining !== null" class="days-remaining" :class="getDaysClass(ingredient.daysRemaining)">
-                                {{ ingredient.daysRemaining }} ngày
-                            </span>
-                            <span v-else class="text-muted">N/A</span>
-                        </td>
-                        <td>
-                            <span class="badge badge-soft" :class="getStatusClass(ingredient.status)">
-                                {{ getStatusLabel(ingredient.status) }}
-                            </span>
-                        </td>
-                        <td>
-                            <span v-if="ingredient.suggestedOrder > 0" class="suggested-order">
-                                {{ formatNumber(ingredient.suggestedOrder) }}
-                            </span>
-                            <span v-else class="text-muted">-</span>
-                        </td>
-                        <td @click.stop>
-                            <div class="d-flex gap-2">
-                                <button
-                                    class="btn btn-flat btn-flat--outline btn-sm"
-                                    @click="$emit('view', ingredient)"
-                                    title="Xem chi tiết"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button
-                                    v-if="ingredient.suggestedOrder > 0"
-                                    class="btn btn-flat btn-flat--primary btn-sm"
-                                    @click="$emit('create-po', ingredient)"
-                                    title="Tạo đơn đặt hàng"
-                                >
-                                    <i class="bi bi-cart-plus"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="ingredient-list">
+    <div
+      v-if="ingredients.length === 0"
+      class="empty-list"
+    >
+      <EmptyState
+        title="Không có dữ liệu"
+        message="Không tìm thấy nguyên liệu nào phù hợp với bộ lọc"
+      />
     </div>
+    <div
+      v-else
+      class="table-responsive"
+    >
+      <table class="table table-minimal">
+        <thead>
+          <tr>
+            <th>Nguyên liệu</th>
+            <th>Tồn kho</th>
+            <th>Tiêu thụ TB/ngày</th>
+            <th>Dự báo 7 ngày</th>
+            <th>Dự báo 30 ngày</th>
+            <th>Số ngày còn lại</th>
+            <th>Trạng thái</th>
+            <th>Đề xuất đặt</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="ingredient in ingredients"
+            :key="ingredient.ingredientId"
+            :class="getRowClass(ingredient.status)"
+            style="cursor: pointer;"
+            @click="handleSelect(ingredient)"
+          >
+            <td>
+              <div>
+                <div class="fw-semibold ingredient-name">
+                  {{ ingredient.name }}
+                </div>
+                <small class="text-muted">{{ ingredient.unit }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="stock-value">{{ formatNumber(ingredient.currentStock) }}</span>
+              <small class="text-muted d-block">Mức đặt: {{ formatNumber(ingredient.reorderLevel) }}</small>
+            </td>
+            <td>{{ formatNumber(ingredient.avgDailyConsumption, 2) }}</td>
+            <td>{{ formatNumber(ingredient.forecast7d, 2) }}</td>
+            <td>{{ formatNumber(ingredient.forecast30d, 2) }}</td>
+            <td>
+              <span
+                v-if="ingredient.daysRemaining !== null"
+                class="days-remaining"
+                :class="getDaysClass(ingredient.daysRemaining)"
+              >
+                {{ ingredient.daysRemaining }} ngày
+              </span>
+              <span
+                v-else
+                class="text-muted"
+              >N/A</span>
+            </td>
+            <td>
+              <span
+                class="badge badge-soft"
+                :class="getStatusClass(ingredient.status)"
+              >
+                {{ getStatusLabel(ingredient.status) }}
+              </span>
+            </td>
+            <td>
+              <span
+                v-if="ingredient.suggestedOrder > 0"
+                class="suggested-order"
+              >
+                {{ formatNumber(ingredient.suggestedOrder) }}
+              </span>
+              <span
+                v-else
+                class="text-muted"
+              >-</span>
+            </td>
+            <td @click.stop>
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-flat btn-flat--outline btn-sm"
+                  title="Xem chi tiết"
+                  @click="$emit('view', ingredient)"
+                >
+                  <i class="bi bi-eye" />
+                </button>
+                <button
+                  v-if="ingredient.suggestedOrder > 0"
+                  class="btn btn-flat btn-flat--primary btn-sm"
+                  title="Tạo đơn đặt hàng"
+                  @click="$emit('create-po', ingredient)"
+                >
+                  <i class="bi bi-cart-plus" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>

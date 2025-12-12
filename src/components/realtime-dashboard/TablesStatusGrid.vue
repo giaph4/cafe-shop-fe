@@ -1,23 +1,28 @@
 <template>
-    <div class="tables-status-grid">
-        <div class="tables-grid">
-            <div
-                v-for="table in tables"
-                :key="table.id"
-                class="table-item"
-                :class="getTableClass(table.status)"
-            >
-                <div class="table-number">{{ table.number || table.name || 'N/A' }}</div>
-                <div class="table-status">
-                    <i :class="getTableIcon(table.status)"></i>
-                    <span>{{ getTableLabel(table.status) }}</span>
-                </div>
-                <div v-if="table.currentOrder" class="table-order">
-                    <small>Đơn: #{{ table.currentOrder.id || table.currentOrder.orderId }}</small>
-                </div>
-            </div>
+  <div class="tables-status-grid">
+    <div class="tables-grid">
+      <div
+        v-for="table in tables"
+        :key="table.id"
+        class="table-item"
+        :class="getTableClass(table.status)"
+      >
+        <div class="table-number">
+          {{ table.number || table.name || 'N/A' }}
         </div>
+        <div class="table-status">
+          <i :class="getTableIcon(table.status)" />
+          <span>{{ getTableLabel(table.status) }}</span>
+        </div>
+        <div
+          v-if="table.currentOrder"
+          class="table-order"
+        >
+          <small>Đơn: #{{ table.currentOrder.id || table.currentOrder.orderId }}</small>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>

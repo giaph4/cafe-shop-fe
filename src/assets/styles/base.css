@@ -7,7 +7,7 @@
 /* ============================================
    FONT IMPORTS
    ============================================ */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap");
 
 /* ============================================
@@ -15,16 +15,16 @@
       ============================================ */
 :root {
   /* Typography */
-  --font-family-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+  --font-family-sans: "Roboto", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  --font-size-xs: 0.75rem; /* 12px */
-  --font-size-sm: 0.875rem; /* 14px */
-  --font-size-base: 0.9375rem; /* 15px */
-  --font-size-md: 1rem; /* 16px */
-  --font-size-lg: 1.125rem; /* 18px */
-  --font-size-xl: 1.25rem; /* 20px */
-  --font-size-2xl: 1.5rem; /* 24px */
-  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-xs: 0.6875rem; /* 11px - giảm từ 12px */
+  --font-size-sm: 0.8125rem; /* 13px - giảm từ 14px */
+  --font-size-base: 0.875rem; /* 14px - giảm từ 15px */
+  --font-size-md: 0.9375rem; /* 15px - giảm từ 16px */
+  --font-size-lg: 1rem; /* 16px - giảm từ 18px */
+  --font-size-xl: 1.125rem; /* 18px - giảm từ 20px */
+  --font-size-2xl: 1.375rem; /* 22px - giảm từ 24px */
+  --font-size-3xl: 1.75rem; /* 28px - giảm từ 30px */
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -40,18 +40,18 @@
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.05em;
 
-  /* Spacing Scale */
+  /* Spacing Scale - Giảm ~10-15% */
   --spacing-0: 0;
   --spacing-1: 0.25rem; /* 4px */
-  --spacing-2: 0.5rem; /* 8px */
-  --spacing-3: 0.75rem; /* 12px */
-  --spacing-4: 1rem; /* 16px */
-  --spacing-5: 1.25rem; /* 20px */
-  --spacing-6: 1.5rem; /* 24px */
-  --spacing-8: 2rem; /* 32px */
-  --spacing-10: 2.5rem; /* 40px */
-  --spacing-12: 3rem; /* 48px */
-  --spacing-16: 4rem; /* 64px */
+  --spacing-2: 0.4375rem; /* 7px - giảm từ 8px */
+  --spacing-3: 0.6875rem; /* 11px - giảm từ 12px */
+  --spacing-4: 0.875rem; /* 14px - giảm từ 16px */
+  --spacing-5: 1.125rem; /* 18px - giảm từ 20px */
+  --spacing-6: 1.3125rem; /* 21px - giảm từ 24px */
+  --spacing-8: 1.75rem; /* 28px - giảm từ 32px */
+  --spacing-10: 2.25rem; /* 36px - giảm từ 40px */
+  --spacing-12: 2.625rem; /* 42px - giảm từ 48px */
+  --spacing-16: 3.5rem; /* 56px - giảm từ 64px */
 
   /* Border Radius - Refined & Natural: 6-12px */
   --radius-xs: 6px;
@@ -88,16 +88,16 @@
   --gradient-top: transparent;
   --gradient-bottom: transparent;
 
-  /* Component Tokens */
+  /* Component Tokens - Giảm padding */
   --component-radius: var(--radius-lg);
   --component-radius-sm: var(--radius-md);
   --component-radius-lg: var(--radius-xl);
-  --component-padding: var(--spacing-6);
-  --component-padding-sm: var(--spacing-4);
-  --component-padding-lg: var(--spacing-8);
-  --component-gap: var(--spacing-5);
-  --component-gap-sm: var(--spacing-3);
-  --component-gap-lg: var(--spacing-8);
+  --component-padding: var(--spacing-5);
+  --component-padding-sm: var(--spacing-3);
+  --component-padding-lg: var(--spacing-6);
+  --component-gap: var(--spacing-4);
+  --component-gap-sm: var(--spacing-2);
+  --component-gap-lg: var(--spacing-6);
   --component-transition: var(--transition-base);
   --component-transition-fast: var(--transition-fast);
   --component-transition-slow: var(--transition-slow);
@@ -6143,11 +6143,16 @@ label {
 /* ============================================
       BUTTONS - Tất cả button styles
       ============================================ */
+.btn,
+button {
+    margin: 2px;
+}
+
 .btn {
   border-radius: var(--radius-md);
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-base);
-  padding: var(--spacing-3) var(--spacing-6);
+  padding: var(--spacing-2) var(--spacing-5);
   transition: all var(--transition-base);
   line-height: var(--line-height-normal);
   display: inline-flex;
@@ -6168,7 +6173,7 @@ label {
 }
 
 .btn i {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
 }
 
@@ -6300,12 +6305,12 @@ label {
 }
 
 .btn-sm {
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--spacing-1) var(--spacing-3);
   font-size: var(--font-size-sm);
 }
 
 .btn-lg {
-  padding: var(--spacing-4) var(--spacing-6);
+  padding: var(--spacing-3) var(--spacing-5);
   font-size: var(--font-size-base);
 }
 
@@ -6337,7 +6342,7 @@ label {
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
-  padding: var(--spacing-6);
+  padding: var(--spacing-5);
   transition: background-color var(--transition-base),
     border-color var(--transition-base),
     box-shadow var(--transition-base);
@@ -6366,15 +6371,15 @@ label {
 
 .card-header {
   border-radius: var(--component-radius) var(--component-radius) 0 0;
-  padding-bottom: var(--spacing-4);
-  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-3);
+  margin-bottom: var(--spacing-3);
   border-bottom: 1px solid var(--color-border);
 }
 
 .card-footer {
   border-radius: 0 0 var(--component-radius) var(--component-radius);
-  padding-top: var(--spacing-4);
-  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-3);
+  margin-top: var(--spacing-3);
   border-top: 1px solid var(--color-border);
 }
 
@@ -6463,7 +6468,7 @@ label {
   border: 1px solid var(--color-input-border);
   background: var(--color-input-bg);
   color: var(--color-text);
-  padding: var(--spacing-3) var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-3);
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   transition: border-color var(--transition-base),
@@ -6760,7 +6765,7 @@ textarea.form-control {
 }
 
 .table > :not(caption) > * > * {
-  padding: var(--spacing-4) var(--spacing-5);
+  padding: var(--spacing-3) var(--spacing-4);
   vertical-align: middle;
   border-color: var(--color-border);
   font-size: var(--font-size-base);
@@ -8128,6 +8133,11 @@ small,
 /* ============================================
    8. BUTTONS - Bootstrap Override
    ============================================ */
+.btn,
+button {
+  margin: 2px !important;
+}
+
 .btn {
   border-radius: 4px !important;
   border: 1px solid transparent !important;

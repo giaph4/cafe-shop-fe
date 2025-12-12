@@ -1,5 +1,4 @@
 import api from './axios'
-import { buildApiError } from '@/utils/errorHandler'
 import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/purchase-orders'
@@ -55,30 +54,20 @@ export const cancelPurchaseOrder = async (id) => {
 
 /**
  * 12.6 Cập nhật phiếu nhập hàng
+ * @deprecated Backend KHÔNG hỗ trợ endpoint PUT /api/v1/purchase-orders/{id}
+ * PurchaseOrderController chỉ có các endpoint:
+ * - POST /api/v1/purchase-orders (create)
+ * - GET /api/v1/purchase-orders (list)
+ * - GET /api/v1/purchase-orders/{id} (get by id)
+ * - POST /api/v1/purchase-orders/{id}/complete (complete)
+ * - POST /api/v1/purchase-orders/{id}/cancel (cancel)
+ * 
+ * Nếu cần cập nhật purchase order, cần tạo endpoint mới trong backend
  * @param {string|number} id - ID của phiếu nhập cần cập nhật
  * @param {Object} updateData - Dữ liệu cần cập nhật
- * @param {number} [updateData.supplierId] - ID nhà cung cấp
- * @param {string} [updateData.note] - Ghi chú
- * @param {Array} [updateData.items] - Danh sách items (nếu cần cập nhật)
  * @returns {Promise<Object>} Purchase order đã được cập nhật
+ * @throws {Error} Backend không hỗ trợ endpoint này
  */
-export const updatePurchaseOrder = async (id, updateData) => {
-    if (!id) {
-        throw new Error('Purchase order ID is required')
-    }
-    
-    // Chuẩn hóa payload: chỉ gửi các trường có giá trị
-    const body = {}
-    if (updateData.supplierId !== undefined) {
-        body.supplierId = updateData.supplierId
-    }
-    if (updateData.note !== undefined) {
-        body.note = typeof updateData.note === 'string' ? updateData.note.trim() : updateData.note
-    }
-    if (Array.isArray(updateData.items)) {
-        body.items = updateData.items
-    }
-    
-    const { data } = await api.put(`${BASE_URL}/${id}`, body)
-    return data
+export const updatePurchaseOrder = async (_id, _updateData) => {
+    throw new Error('Backend không hỗ trợ cập nhật purchase order. Vui lòng liên hệ admin để thêm tính năng này.')
 }

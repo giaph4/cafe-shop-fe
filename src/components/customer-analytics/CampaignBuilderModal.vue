@@ -1,77 +1,112 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="campaign-builder-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="campaign-builder-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Tạo Campaign</h5>
-                            <p class="modal-subtitle mb-0">Tạo chiến dịch marketing cho phân loại khách hàng</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            Tính năng này sẽ được tích hợp với hệ thống voucher và email marketing trong tương lai.
-                        </div>
-                        <div class="form-section">
-                            <label class="form-label">Phân loại khách hàng</label>
-                            <input
-                                type="text"
-                                class="form-control clean-input"
-                                :value="customerSegment || 'Tất cả'"
-                                disabled
-                            />
-                        </div>
-                        <div class="form-section">
-                            <label class="form-label">Loại campaign</label>
-                            <select class="form-select clean-input" v-model="formData.type">
-                                <option value="voucher">Voucher giảm giá</option>
-                                <option value="loyalty">Chương trình loyalty</option>
-                                <option value="reengagement">Re-engagement</option>
-                            </select>
-                        </div>
-                        <div class="form-section">
-                            <label class="form-label">Mô tả</label>
-                            <textarea
-                                class="form-control clean-input"
-                                v-model="formData.description"
-                                rows="3"
-                                placeholder="Mô tả chiến dịch..."
-                            ></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Hủy
-                        </button>
-                        <button type="button" class="btn btn-flat btn-flat--primary" @click="handleCreate" :disabled="creating">
-                            <span v-if="creating" class="spinner-border spinner-border-sm me-2"></span>
-                            Tạo campaign
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Tạo Campaign
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Tạo chiến dịch marketing cho phân loại khách hàng
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2" />
+              Tính năng này sẽ được tích hợp với hệ thống voucher và email marketing trong tương lai.
+            </div>
+            <div class="form-section">
+              <label class="form-label">Phân loại khách hàng</label>
+              <input
+                type="text"
+                class="form-control clean-input"
+                :value="customerSegment || 'Tất cả'"
+                disabled
+              >
+            </div>
+            <div class="form-section">
+              <label class="form-label">Loại campaign</label>
+              <select
+                v-model="formData.type"
+                class="form-select clean-input"
+              >
+                <option value="voucher">
+                  Voucher giảm giá
+                </option>
+                <option value="loyalty">
+                  Chương trình loyalty
+                </option>
+                <option value="reengagement">
+                  Re-engagement
+                </option>
+              </select>
+            </div>
+            <div class="form-section">
+              <label class="form-label">Mô tả</label>
+              <textarea
+                v-model="formData.description"
+                class="form-control clean-input"
+                rows="3"
+                placeholder="Mô tả chiến dịch..."
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--primary"
+              :disabled="creating"
+              @click="handleCreate"
+            >
+              <span
+                v-if="creating"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Tạo campaign
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 
-const props = defineProps({
+defineProps({
     customerSegment: {
         type: String,
         default: null

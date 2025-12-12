@@ -1,91 +1,115 @@
 <template>
-    <div class="overview-tab">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card standard-card">
-                    <div class="card-header standard-card-header">
-                        <h6 class="card-title mb-0">Top 5 nhân viên xuất sắc</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="leaderboard">
-                            <div
-                                v-for="(staff, index) in topPerformers"
-                                :key="staff.userId"
-                                class="leaderboard-item"
-                                :class="getRankClass(index)"
-                            >
-                                <div class="leaderboard-rank">{{ index + 1 }}</div>
-                                <div class="leaderboard-info">
-                                    <div class="leaderboard-name">{{ staff.fullName }}</div>
-                                    <div class="leaderboard-metrics">
-                                        <span class="metric-item">
-                                            <i class="bi bi-cash-stack me-1"></i>
-                                            {{ formatCurrency(staff.metrics.revenue) }}
-                                        </span>
-                                        <span class="metric-item">
-                                            <i class="bi bi-cart me-1"></i>
-                                            {{ formatNumber(staff.metrics.ordersCount) }} đơn
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="leaderboard-score">
-                                    <span class="score-value">{{ staff.metrics.performanceScore.toFixed(1) }}</span>
-                                    <span class="score-label">điểm</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  <div class="overview-tab">
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card standard-card">
+          <div class="card-header standard-card-header">
+            <h6 class="card-title mb-0">
+              Top 5 nhân viên xuất sắc
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="leaderboard">
+              <div
+                v-for="(staff, index) in topPerformers"
+                :key="staff.userId"
+                class="leaderboard-item"
+                :class="getRankClass(index)"
+              >
+                <div class="leaderboard-rank">
+                  {{ index + 1 }}
                 </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card standard-card">
-                    <div class="card-header standard-card-header">
-                        <h6 class="card-title mb-0">Thống kê tổng quan</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-icon stat-icon--primary">
-                                    <i class="bi bi-cash-stack"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-label">Tổng doanh thu</div>
-                                    <div class="stat-value">{{ formatCurrency(totalRevenue) }}</div>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-icon stat-icon--success">
-                                    <i class="bi bi-cart"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-label">Tổng đơn hàng</div>
-                                    <div class="stat-value">{{ formatNumber(totalOrders) }}</div>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-icon stat-icon--info">
-                                    <i class="bi bi-clock-history"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-label">Tỷ lệ chuyên cần TB</div>
-                                    <div class="stat-value">{{ (avgAttendance * 100).toFixed(1) }}%</div>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-icon stat-icon--warning">
-                                    <i class="bi bi-check-circle"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-label">Tỷ lệ đúng giờ TB</div>
-                                    <div class="stat-value">{{ (avgOnTime * 100).toFixed(1) }}%</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="leaderboard-info">
+                  <div class="leaderboard-name">
+                    {{ staff.fullName }}
+                  </div>
+                  <div class="leaderboard-metrics">
+                    <span class="metric-item">
+                      <i class="bi bi-cash-stack me-1" />
+                      {{ formatCurrency(staff.metrics.revenue) }}
+                    </span>
+                    <span class="metric-item">
+                      <i class="bi bi-cart me-1" />
+                      {{ formatNumber(staff.metrics.ordersCount) }} đơn
+                    </span>
+                  </div>
                 </div>
+                <div class="leaderboard-score">
+                  <span class="score-value">{{ staff.metrics.performanceScore.toFixed(1) }}</span>
+                  <span class="score-label">điểm</span>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card standard-card">
+          <div class="card-header standard-card-header">
+            <h6 class="card-title mb-0">
+              Thống kê tổng quan
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-icon stat-icon--primary">
+                  <i class="bi bi-cash-stack" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">
+                    Tổng doanh thu
+                  </div>
+                  <div class="stat-value">
+                    {{ formatCurrency(totalRevenue) }}
+                  </div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon stat-icon--success">
+                  <i class="bi bi-cart" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">
+                    Tổng đơn hàng
+                  </div>
+                  <div class="stat-value">
+                    {{ formatNumber(totalOrders) }}
+                  </div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon stat-icon--info">
+                  <i class="bi bi-clock-history" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">
+                    Tỷ lệ chuyên cần TB
+                  </div>
+                  <div class="stat-value">
+                    {{ (avgAttendance * 100).toFixed(1) }}%
+                  </div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon stat-icon--warning">
+                  <i class="bi bi-check-circle" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">
+                    Tỷ lệ đúng giờ TB
+                  </div>
+                  <div class="stat-value">
+                    {{ (avgOnTime * 100).toFixed(1) }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -103,17 +127,11 @@ const props = defineProps({
     }
 })
 
-const topPerformers = computed(() => {
-    return props.staffList.slice(0, 5)
-})
+const topPerformers = computed(() => props.staffList.slice(0, 5))
 
-const totalRevenue = computed(() => {
-    return props.staffList.reduce((sum, s) => sum + (s.metrics?.revenue || 0), 0)
-})
+const totalRevenue = computed(() => props.staffList.reduce((sum, s) => sum + (s.metrics?.revenue || 0), 0))
 
-const totalOrders = computed(() => {
-    return props.staffList.reduce((sum, s) => sum + (s.metrics?.ordersCount || 0), 0)
-})
+const totalOrders = computed(() => props.staffList.reduce((sum, s) => sum + (s.metrics?.ordersCount || 0), 0))
 
 const avgAttendance = computed(() => {
     if (props.staffList.length === 0) return 0

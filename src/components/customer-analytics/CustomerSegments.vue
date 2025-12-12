@@ -1,25 +1,29 @@
 <template>
-    <div class="customer-segments">
-        <div class="segments-grid">
-            <div
-                v-for="(segment, key) in segments"
-                :key="key"
-                class="segment-card"
-                :class="getSegmentClass(key)"
-            >
-                <div class="segment-icon">
-                    <i :class="getSegmentIcon(key)"></i>
-                </div>
-                <div class="segment-content">
-                    <div class="segment-label">{{ getSegmentLabel(key) }}</div>
-                    <div class="segment-value">{{ segment?.length || 0 }}</div>
-                    <div class="segment-percentage">
-                        {{ getPercentage(segment?.length || 0) }}%
-                    </div>
-                </div>
-            </div>
+  <div class="customer-segments">
+    <div class="segments-grid">
+      <div
+        v-for="(segment, key) in segments"
+        :key="key"
+        class="segment-card"
+        :class="getSegmentClass(key)"
+      >
+        <div class="segment-icon">
+          <i :class="getSegmentIcon(key)" />
         </div>
+        <div class="segment-content">
+          <div class="segment-label">
+            {{ getSegmentLabel(key) }}
+          </div>
+          <div class="segment-value">
+            {{ segment?.length || 0 }}
+          </div>
+          <div class="segment-percentage">
+            {{ getPercentage(segment?.length || 0) }}%
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -32,9 +36,7 @@ const props = defineProps({
     }
 })
 
-const totalCustomers = computed(() => {
-    return Object.values(props.segments).reduce((sum, arr) => sum + (arr?.length || 0), 0)
-})
+const totalCustomers = computed(() => Object.values(props.segments).reduce((sum, arr) => sum + (arr?.length || 0), 0))
 
 const getPercentage = (count) => {
     if (totalCustomers.value === 0) return 0

@@ -1,69 +1,102 @@
 <template>
-        <Teleport to="body">
-        <div class="modal fade shift-status-update-modal" ref="modalRef" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Cập nhật trạng thái ca làm</h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
-                    <form @submit.prevent="handleSubmit">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Trạng thái hiện tại</label>
-                                <div class="form-control-plaintext">
-                                    <span class="badge" :class="getStatusBadgeClass(currentStatus)">
-                                        {{ getStatusLabel(currentStatus) }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Trạng thái mới <span class="text-danger">*</span></label>
-                                <select
-                                    class="form-select"
-                                    v-model="selectedStatus"
-                                    :class="{ 'is-invalid': errors.status }"
-                                    required
-                                >
-                                    <option value="">-- Chọn trạng thái --</option>
-                                    <option
-                                        v-for="status in statusOptions"
-                                        :key="status.value"
-                                        :value="status.value"
-                                    >
-                                        {{ status.label }}
-                                    </option>
-                                </select>
-                                <div class="invalid-feedback" v-if="errors.status">{{ errors.status }}</div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Ghi chú</label>
-                                <textarea
-                                    class="form-control"
-                                    v-model="notes"
-                                    rows="3"
-                                    placeholder="Nhập ghi chú (tùy chọn)"
-                                ></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="hide" :disabled="submitting">
-                                Hủy
-                            </button>
-                            <button type="submit" class="btn btn-primary" :disabled="submitting || !selectedStatus">
-                                <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                                Cập nhật
-                            </button>
-                        </div>
-                    </form>
+  <Teleport to="body">
+    <div
+      ref="modalRef"
+      class="modal fade shift-status-update-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Cập nhật trạng thái ca làm
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
+          <form @submit.prevent="handleSubmit">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Trạng thái hiện tại</label>
+                <div class="form-control-plaintext">
+                  <span
+                    class="badge"
+                    :class="getStatusBadgeClass(currentStatus)"
+                  >
+                    {{ getStatusLabel(currentStatus) }}
+                  </span>
                 </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Trạng thái mới <span class="text-danger">*</span></label>
+                <select
+                  v-model="selectedStatus"
+                  class="form-select"
+                  :class="{ 'is-invalid': errors.status }"
+                  required
+                >
+                  <option value="">
+                    -- Chọn trạng thái --
+                  </option>
+                  <option
+                    v-for="status in statusOptions"
+                    :key="status.value"
+                    :value="status.value"
+                  >
+                    {{ status.label }}
+                  </option>
+                </select>
+                <div
+                  v-if="errors.status"
+                  class="invalid-feedback"
+                >
+                  {{ errors.status }}
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Ghi chú</label>
+                <textarea
+                  v-model="notes"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Nhập ghi chú (tùy chọn)"
+                />
+              </div>
             </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="submitting"
+                @click="hide"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="submitting || !selectedStatus"
+              >
+                <span
+                  v-if="submitting"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                Cập nhật
+              </button>
+            </div>
+          </form>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive } from 'vue'
 import { Modal } from 'bootstrap'
 import { SHIFT_STATUSES } from '@/api/shiftService'
 

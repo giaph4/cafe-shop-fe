@@ -3,14 +3,14 @@
  * @param {number} value - Số cần định dạng.
  * @returns {string} - Chuỗi đã định dạng (ví dụ: "12.000 ₫").
  */
-export function formatCurrency(value) {
+export function formatCurrency (value) {
     if (typeof value !== 'number') {
-        return '';
+        return ''
     }
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: 'VND',
-    }).format(value);
+        currency: 'VND'
+    }).format(value)
 }
 
 /**
@@ -18,16 +18,16 @@ export function formatCurrency(value) {
  * @param {string | Date} date - Ngày cần định dạng.
  * @returns {string} - Chuỗi ngày đã định dạng.
  */
-export function formatDate(date) {
-    if (!date) return '';
+export function formatDate (date) {
+    if (!date) return ''
     try {
-        const d = new Date(date);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        return `${day}/${month}/${year}`;
-    } catch (error) {
-        return '';
+        const d = new Date(date)
+        const day = String(d.getDate()).padStart(2, '0')
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const year = d.getFullYear()
+        return `${day}/${month}/${year}`
+    } catch {
+        return ''
     }
 }
 
@@ -36,18 +36,18 @@ export function formatDate(date) {
  * @param {string | Date} dateTime - Ngày giờ cần định dạng.
  * @returns {string} - Chuỗi đã định dạng.
  */
-export function formatDateTime(dateTime) {
-    if (!dateTime) return '';
+export function formatDateTime (dateTime) {
+    if (!dateTime) return ''
     try {
-        const d = new Date(dateTime);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } catch (error) {
-        return '';
+        const d = new Date(dateTime)
+        const day = String(d.getDate()).padStart(2, '0')
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const year = d.getFullYear()
+        const hours = String(d.getHours()).padStart(2, '0')
+        const minutes = String(d.getMinutes()).padStart(2, '0')
+        return `${day}/${month}/${year} ${hours}:${minutes}`
+    } catch {
+        return ''
     }
 }
 
@@ -57,18 +57,18 @@ export function formatDateTime(dateTime) {
  * @param {Intl.NumberFormatOptions} options - Tuỳ chọn định dạng.
  * @returns {string}
  */
-export function formatNumber(value, options = {}) {
-    if (value === null || value === undefined || value === '') return '';
-    const numericValue = typeof value === 'number' ? value : Number(value);
-    if (!Number.isFinite(numericValue)) return '';
+export function formatNumber (value, options = {}) {
+    if (value === null || value === undefined || value === '') return ''
+    const numericValue = typeof value === 'number' ? value : Number(value)
+    if (!Number.isFinite(numericValue)) return ''
 
     const formatter = new Intl.NumberFormat('vi-VN', {
         maximumFractionDigits: 2,
         minimumFractionDigits: 0,
         ...options
-    });
+    })
 
-    return formatter.format(numericValue);
+    return formatter.format(numericValue)
 }
 
 /**
@@ -77,20 +77,20 @@ export function formatNumber(value, options = {}) {
  * @param {Intl.NumberFormatOptions} options - Tuỳ chọn định dạng.
  * @returns {string} - Chuỗi đã định dạng với ký hiệu % (ví dụ: "75,5%").
  */
-export function formatPercent(value, options = {}) {
-    if (value === null || value === undefined || value === '') return '0%';
-    const numericValue = typeof value === 'number' ? value : Number(value);
-    if (!Number.isFinite(numericValue)) return '0%';
+export function formatPercent (value, options = {}) {
+    if (value === null || value === undefined || value === '') return '0%'
+    const numericValue = typeof value === 'number' ? value : Number(value)
+    if (!Number.isFinite(numericValue)) return '0%'
 
     const formatter = new Intl.NumberFormat('vi-VN', {
         style: 'percent',
         minimumFractionDigits: 1,
         maximumFractionDigits: 2,
         ...options
-    });
+    })
 
     // Convert to decimal (0.755 -> 75.5%)
-    return formatter.format(numericValue / 100);
+    return formatter.format(numericValue / 100)
 }
 
 /**
@@ -98,14 +98,14 @@ export function formatPercent(value, options = {}) {
  * @param {string | Date} dateTime - Ngày giờ cần định dạng.
  * @returns {string} - Chuỗi thời gian đã định dạng.
  */
-export function formatTime(dateTime) {
-    if (!dateTime) return '';
+export function formatTime (dateTime) {
+    if (!dateTime) return ''
     try {
-        const d = new Date(dateTime);
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        return `${hours}:${minutes}`;
-    } catch (error) {
-        return '';
+        const d = new Date(dateTime)
+        const hours = String(d.getHours()).padStart(2, '0')
+        const minutes = String(d.getMinutes()).padStart(2, '0')
+        return `${hours}:${minutes}`
+    } catch {
+        return ''
     }
 }

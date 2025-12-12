@@ -1,29 +1,29 @@
 <template>
-    <div class="password-input-wrapper">
-        <input
-            :type="showPassword ? 'text' : 'password'"
-            :class="inputClass"
-            :id="id"
-            :name="name"
-            :value="modelValue"
-            :placeholder="placeholder"
-            :disabled="disabled"
-            :autocomplete="autocomplete"
-            @input="$emit('update:modelValue', $event.target.value)"
-            @blur="$emit('blur', $event)"
-            @focus="$emit('focus', $event)"
-        />
-        <button
-            type="button"
-            class="password-toggle"
-            @click="showPassword = !showPassword"
-            :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'"
-            tabindex="0"
-            :disabled="disabled"
-        >
-            <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-        </button>
-    </div>
+  <div class="password-input-wrapper">
+    <input
+      :id="id"
+      :type="showPassword ? 'text' : 'password'"
+      :class="inputClass"
+      :name="name"
+      :value="modelValue"
+      :placeholder="placeholder"
+      :disabled="disabled"
+      :autocomplete="autocomplete"
+      @input="$emit('update:modelValue', $event.target.value)"
+      @blur="$emit('blur', $event)"
+      @focus="$emit('focus', $event)"
+    >
+    <button
+      type="button"
+      class="password-toggle"
+      :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'"
+      tabindex="0"
+      :disabled="disabled"
+      @click="showPassword = !showPassword"
+    >
+      <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" />
+    </button>
+  </div>
 </template>
 
 <script setup>

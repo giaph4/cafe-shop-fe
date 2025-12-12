@@ -1,16 +1,31 @@
 <template>
-    <nav class="portfolio-navbar" ref="navbarRef">
-        <div class="portfolio-navbar__brand">
-            <i class="bi bi-terminal"></i>
-            <span>HGP.SYSTEM</span>
-        </div>
-        <div class="portfolio-navbar__links">
-            <a href="#about" class="portfolio-navbar__link">/ROOT/ABOUT</a>
-            <a href="#skills" class="portfolio-navbar__link">/SYS/SKILLS</a>
-            <a href="#projects" class="portfolio-navbar__link">/USR/PROJECTS</a>
-            <a href="#contact" class="portfolio-navbar__link">/NET/CONTACT</a>
-        </div>
-    </nav>
+  <nav
+    ref="navbarRef"
+    class="portfolio-navbar"
+  >
+    <div class="portfolio-navbar__brand">
+      <i class="bi bi-terminal" />
+      <span>HGP.SYSTEM</span>
+    </div>
+    <div class="portfolio-navbar__links">
+      <a
+        href="#about"
+        class="portfolio-navbar__link"
+      >/ROOT/ABOUT</a>
+      <a
+        href="#skills"
+        class="portfolio-navbar__link"
+      >/SYS/SKILLS</a>
+      <a
+        href="#projects"
+        class="portfolio-navbar__link"
+      >/USR/PROJECTS</a>
+      <a
+        href="#contact"
+        class="portfolio-navbar__link"
+      >/NET/CONTACT</a>
+    </div>
+  </nav>
 </template>
 
 <script setup>

@@ -1,21 +1,23 @@
 <template>
-    <div class="rfm-chart">
-        <apexchart
-            v-if="isMounted"
-            type="scatter"
-            height="350"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="rfm-chart">
+    <apexchart
+      v-if="isMounted"
+      type="scatter"
+      height="350"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
 import { computed, ref, onMounted, nextTick } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
+import { useChartOptions } from '@/composables/useChartOptions'
 
 const apexchart = VueApexCharts
 const isMounted = ref(false)
+const { createComputedChartOptions } = useChartOptions()
 
 onMounted(async () => {
     await nextTick()
@@ -38,24 +40,19 @@ const chartSeries = computed(() => {
         customer: c.fullName,
         segment: c.segment
     }))
-    
+
     return [{
         name: 'Khách hàng',
-        data: data
+        data
     }]
 })
 
-const chartOptions = computed(() => ({
-    chart: {
-        type: 'scatter',
-        height: 350,
-        toolbar: {
-            show: true
-        },
-        zoom: {
-            enabled: true
-        }
-    },
+const chartOptions = createComputedChartOptions({
+    type: 'scatter',
+    height: 350,
+    colors: ['var(--color-primary)'],
+    hasLegend: false,
+    hasRotatedLabels: false,
     xaxis: {
         title: {
             text: 'Recency (ngày)',
@@ -65,19 +62,6 @@ const chartOptions = computed(() => ({
                 fontSize: '12px',
                 fontWeight: 600
             }
-        },
-        labels: {
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
-            }
-        },
-        axisBorder: {
-            color: 'var(--color-border)'
-        },
-        axisTicks: {
-            color: 'var(--color-border)'
         }
     },
     yaxis: {
@@ -88,13 +72,6 @@ const chartOptions = computed(() => ({
                 fontFamily: 'var(--font-family-sans)',
                 fontSize: '12px',
                 fontWeight: 600
-            }
-        },
-        labels: {
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
             }
         }
     },
@@ -112,21 +89,18 @@ const chartOptions = computed(() => ({
             `
         }
     },
-    legend: {
-        show: false
+    chart: {
+        zoom: {
+            enabled: true
+        }
     },
-    grid: {
-        borderColor: 'var(--color-border)',
-        strokeDashArray: 4
-    },
-    colors: ['var(--color-primary)'],
     markers: {
         size: 6,
         hover: {
             size: 8
         }
     }
-}))
+})
 </script>
 
 <style scoped>

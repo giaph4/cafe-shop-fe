@@ -1,25 +1,31 @@
 <template>
-    <div v-if="enabled" class="christmas-effect-container">
-        <!-- Background tuyết rơi -->
-        <div class="snow-bg"></div>
+  <div
+    v-if="enabled"
+    class="christmas-effect-container"
+  >
+    <!-- Background tuyết rơi -->
+    <div class="snow-bg" />
 
-        <!-- Lời chúc -->
-        <div class="christmas-message" :class="{ show: showMessage }">
-            🎄 Merry Christmas! 🎄
-        </div>
-
-        <!-- Container chứa các hạt (Particles) -->
-        <div class="particle-container">
-            <div
-                v-for="p in particles"
-                :key="p.id"
-                class="particle"
-                :style="getParticleStyle(p)"
-            >
-                {{ p.char }}
-            </div>
-        </div>
+    <!-- Lời chúc -->
+    <div
+      class="christmas-message"
+      :class="{ show: showMessage }"
+    >
+      🎄 Merry Christmas! 🎄
     </div>
+
+    <!-- Container chứa các hạt (Particles) -->
+    <div class="particle-container">
+      <div
+        v-for="p in particles"
+        :key="p.id"
+        class="particle"
+        :style="getParticleStyle(p)"
+      >
+        {{ p.char }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

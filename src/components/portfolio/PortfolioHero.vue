@@ -1,49 +1,88 @@
 <template>
-    <section class="portfolio-hero" ref="heroRef">
-        <!-- Background Grid Animation -->
-        <div class="portfolio-hero__grid"></div>
+  <section
+    ref="heroRef"
+    class="portfolio-hero"
+  >
+    <!-- Background Grid Animation -->
+    <div class="portfolio-hero__grid" />
 
-        <!-- Terminal Boot Animation -->
-        <div class="portfolio-hero__terminal" v-if="showTerminal" ref="terminalRef">
-            <div class="terminal-line" v-for="(line, index) in terminalLines" :key="index" :style="{ animationDelay: `${index * 0.3}s` }">
-                <span class="terminal-prompt">></span>
-                <span class="terminal-text">{{ line }}</span>
-            </div>
-        </div>
+    <!-- Terminal Boot Animation -->
+    <div
+      v-if="showTerminal"
+      ref="terminalRef"
+      class="portfolio-hero__terminal"
+    >
+      <div
+        v-for="(line, index) in terminalLines"
+        :key="index"
+        class="terminal-line"
+        :style="{ animationDelay: `${index * 0.3}s` }"
+      >
+        <span class="terminal-prompt">></span>
+        <span class="terminal-text">{{ line }}</span>
+      </div>
+    </div>
 
-        <!-- Main Content -->
-        <div class="portfolio-hero__content" ref="contentRef">
-            <div class="portfolio-hero__status" ref="statusRef">
-                SYSTEM STATUS: ONLINE
-            </div>
+    <!-- Main Content -->
+    <div
+      ref="contentRef"
+      class="portfolio-hero__content"
+    >
+      <div
+        ref="statusRef"
+        class="portfolio-hero__status"
+      >
+        SYSTEM STATUS: ONLINE
+      </div>
 
-            <h1 class="portfolio-hero__title" ref="titleRef">
-                HUỲNH GIA PHO
-            </h1>
+      <h1
+        ref="titleRef"
+        class="portfolio-hero__title"
+      >
+        HUỲNH GIA PHO
+      </h1>
 
-            <div class="portfolio-hero__subtitle" ref="subtitleRef">
-                <span>Backend Architect</span>
-                <span class="portfolio-hero__highlight">&lt;Spring Boot /&gt;</span>
-            </div>
+      <div
+        ref="subtitleRef"
+        class="portfolio-hero__subtitle"
+      >
+        <span>Backend Architect</span>
+        <span class="portfolio-hero__highlight">&lt;Spring Boot /&gt;</span>
+      </div>
 
-            <div class="portfolio-hero__actions" ref="actionsRef">
-                <button class="portfolio-hero__btn portfolio-hero__btn--primary" @click="scrollToAbout">
-                    INITIALIZE
-                </button>
-                <button class="portfolio-hero__btn portfolio-hero__btn--secondary" @click="scrollToProjects">
-                    VIEW LOGS
-                </button>
-            </div>
-        </div>
+      <div
+        ref="actionsRef"
+        class="portfolio-hero__actions"
+      >
+        <button
+          class="portfolio-hero__btn portfolio-hero__btn--primary"
+          @click="scrollToAbout"
+        >
+          INITIALIZE
+        </button>
+        <button
+          class="portfolio-hero__btn portfolio-hero__btn--secondary"
+          @click="scrollToProjects"
+        >
+          VIEW LOGS
+        </button>
+      </div>
+    </div>
 
-        <!-- Decorative Floating Elements -->
-        <div class="portfolio-hero__decor portfolio-hero__decor--left" ref="decorLeftRef">
-            <i class="bi bi-database"></i>
-        </div>
-        <div class="portfolio-hero__decor portfolio-hero__decor--right" ref="decorRightRef">
-            <i class="bi bi-cpu"></i>
-        </div>
-    </section>
+    <!-- Decorative Floating Elements -->
+    <div
+      ref="decorLeftRef"
+      class="portfolio-hero__decor portfolio-hero__decor--left"
+    >
+      <i class="bi bi-database" />
+    </div>
+    <div
+      ref="decorRightRef"
+      class="portfolio-hero__decor portfolio-hero__decor--right"
+    >
+      <i class="bi bi-cpu" />
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -133,7 +172,7 @@ onMounted(() => {
             decorRightRef.value.style.transform = `translateY(${scrollY * -0.5 + 100}px)`
         }
     }
-    
+
     window.addEventListener('scroll', handleScroll)
     onUnmounted(() => {
         window.removeEventListener('scroll', handleScroll)
@@ -156,7 +195,7 @@ onMounted(() => {
 .portfolio-hero__grid {
     position: absolute;
     inset: 0;
-    background-image: 
+    background-image:
         linear-gradient(to right, rgba(8, 51, 68, 0.3) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(8, 51, 68, 0.3) 1px, transparent 1px);
     background-size: 4rem 4rem;

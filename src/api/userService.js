@@ -1,22 +1,21 @@
 import api from './axios'
 import { cleanParams } from './utils'
-import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/v1/users'
 
 export const getAllRoles = async () => {
-    const {data} = await api.get(`${BASE_URL}/roles`)
+    const { data } = await api.get(`${BASE_URL}/roles`)
     return data
 }
 
 export const getUsers = async (params = {}) => {
-    const query = cleanParams({page: 0, size: 15, sort: 'username,asc', ...params})
-    const {data} = await api.get(BASE_URL, {params: query})
+    const query = cleanParams({ page: 0, size: 15, sort: 'username,asc', ...params })
+    const { data } = await api.get(BASE_URL, { params: query })
     return data
 }
 
 export const getUserById = async (id) => {
-    const {data} = await api.get(`${BASE_URL}/${id}`)
+    const { data } = await api.get(`${BASE_URL}/${id}`)
     return data
 }
 
@@ -90,10 +89,10 @@ export const createUser = async (userData) => {
     // Chuẩn hóa và validate payload trước khi gửi
     // buildUserCreatePayload sẽ throw error nếu thiếu trường bắt buộc
     const body = buildUserCreatePayload(userData)
-    
+
     // Gọi API tạo user
     // Endpoint này cho phép admin tạo user với đầy đủ quyền kiểm soát (bao gồm roleIds)
-    const {data} = await api.post(BASE_URL, body)
+    const { data } = await api.post(BASE_URL, body)
     return data
 }
 
@@ -127,42 +126,39 @@ export const buildUserUpdatePayload = (payload = {}) => {
 }
 
 export const updateUser = async (idOrPayload, maybePayload) => {
-    const {id, payload} = (() => {
+    const { id, payload } = (() => {
         if (typeof idOrPayload === 'object' && idOrPayload !== null && 'id' in idOrPayload) {
-            return {id: idOrPayload.id, payload: idOrPayload.data ?? idOrPayload.payload ?? {}}
+            return { id: idOrPayload.id, payload: idOrPayload.data ?? idOrPayload.payload ?? {} }
         }
-        return {id: idOrPayload, payload: maybePayload ?? {}}
+        return { id: idOrPayload, payload: maybePayload ?? {} }
     })()
 
     const body = buildUserUpdatePayload(payload)
-    const {data} = await api.put(`${BASE_URL}/${id}`, body)
+    const { data } = await api.put(`${BASE_URL}/${id}`, body)
     return data
 }
 
 export const changePassword = async (passwordData) => {
-    const {data} = await api.post(`${BASE_URL}/change-password`, passwordData)
+    const { data } = await api.post(`${BASE_URL}/change-password`, passwordData)
     return data
 }
 
 /**
  * Admin reset password cho user (admin only)
+ * LƯU Ý: Backend KHÔNG nhận body, chỉ cần ID trong path
+ * Backend tự generate temporary password và trả về trong response
  * @param {string|number} userId - ID của user cần reset password
- * @param {string} newPassword - Mật khẩu mới
- * @returns {Promise<Object>} Response từ server
- * @throws {Error} Nếu userId hoặc newPassword không hợp lệ
+ * @returns {Promise<Object>} Response từ server với temporaryPassword
+ * @throws {Error} Nếu userId không hợp lệ
  */
-export const adminResetPassword = async (userId, newPassword) => {
+export const adminResetPassword = async (userId) => {
     if (!userId) {
         throw new Error('User ID is required')
     }
-    if (!newPassword || typeof newPassword !== 'string' || !newPassword.trim()) {
-        throw new Error('New password is required')
-    }
-    
-    // Gọi API reset password
-    const {data} = await api.post(`${BASE_URL}/${userId}/reset-password`, {
-        newPassword: newPassword.trim()
-    })
+
+    // Backend không nhận body, chỉ cần ID trong path
+    // Backend tự generate temporary password
+    const { data } = await api.post(`${BASE_URL}/${userId}/reset-password`)
     return data
 }
 
@@ -181,7 +177,7 @@ export const getUserActivityLogs = async (userId, params = {}) => {
     if (!userId) {
         throw new Error('User ID is required')
     }
-    
+
     // Chuẩn hóa params
     const queryParams = cleanParams({
         page: params.page || 0,
@@ -190,8 +186,8 @@ export const getUserActivityLogs = async (userId, params = {}) => {
         startDate: params.startDate || null,
         endDate: params.endDate || null
     })
-    
-    const {data} = await api.get(`${BASE_URL}/${userId}/activity-logs`, {
+
+    const { data } = await api.get(`${BASE_URL}/${userId}/activity-logs`, {
         params: queryParams
     })
     return data

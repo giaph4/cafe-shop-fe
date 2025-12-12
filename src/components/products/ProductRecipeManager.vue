@@ -1,136 +1,198 @@
 <template>
-    <div class="recipe-manager">
-        <div class="recipe-header">
-            <div>
-                <h5>Danh sách nguyên liệu</h5>
-                <p>Điều chỉnh định lượng cho từng nguyên liệu trong công thức.</p>
-            </div>
-            <button class="btn btn-outline-primary btn-sm" type="button" @click="refresh" :disabled="loading">
-                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                <i v-else class="bi bi-arrow-repeat me-2"></i>
-                Tải lại
-            </button>
-        </div>
-
-        <div v-if="loading" class="state-block">
-            <div class="spinner-border text-primary" role="status"></div>
-        </div>
-        <div v-else-if="error" class="alert alert-warning recipe-error-alert d-flex align-items-center gap-2">
-            <i class="bi bi-exclamation-triangle"></i>
-            <span>{{ error }}</span>
-        </div>
-        <EmptyState
-            v-else-if="!recipe.value.length"
-            title="Chưa có công thức"
-            message="Thêm nguyên liệu đầu tiên để bắt đầu xây dựng công thức cho sản phẩm."
+  <div class="recipe-manager">
+    <div class="recipe-header">
+      <div>
+        <h5>Danh sách nguyên liệu</h5>
+        <p>Điều chỉnh định lượng cho từng nguyên liệu trong công thức.</p>
+      </div>
+      <button
+        class="btn btn-outline-primary btn-sm"
+        type="button"
+        :disabled="loading"
+        @click="refresh"
+      >
+        <span
+          v-if="loading"
+          class="spinner-border spinner-border-sm me-2"
         />
-        <div v-else class="table-responsive recipe-table">
-            <table class="table table-sm align-middle mb-0">
-                <thead>
-                <tr>
-                    <th>Nguyên liệu</th>
-                    <th style="width: 140px;">Đơn vị</th>
-                    <th style="width: 180px;" class="text-end">Định lượng</th>
-                    <th style="width: 160px;" class="text-end">Hành động</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="item in recipe.value" :key="item.id || item.ingredientId">
-                    <td>
-                        <div class="fw-semibold">{{ item.ingredientName }}</div>
-                        <div class="text-muted small">Mã: {{ item.ingredientCode ?? '—' }}</div>
-                    </td>
-                    <td>{{ item.ingredientUnit || '—' }}</td>
-                    <td>
-                        <div class="input-group input-group-sm justify-content-end">
-                            <input
-                                v-model="quantityDrafts[item.id || item.ingredientId]"
-                                type="number"
-                                class="form-control text-end"
-                                min="0.001"
-                                step="0.001"
-                                :disabled="isRowSaving(item)"
-                                @keydown.enter.prevent="() => updateQuantity(item)"
-                            />
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-end gap-2">
-                            <button
-                                type="button"
-                                class="btn btn-outline-primary btn-sm"
-                                :disabled="isRowSaving(item)"
-                                @click="() => updateQuantity(item)"
-                            >
-                                <span v-if="isRowSaving(item) && rowSavingKey === getItemKey(item)"
-                                      class="spinner-border spinner-border-sm"></span>
-                                <span v-else><i class="bi bi-save me-1"></i>Lưu</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="btn btn-outline-danger btn-sm"
-                                :disabled="isRowSaving(item)"
-                                @click="() => removeIngredient(item)"
-                            >
-                                <span v-if="isRowSaving(item) && removalKey === getItemKey(item)"
-                                      class="spinner-border spinner-border-sm"></span>
-                                <span v-else><i class="bi bi-trash me-1"></i>Xóa</span>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="add-section">
-            <h6 class="mb-3">Thêm nguyên liệu mới</h6>
-            <div class="row g-2 align-items-end">
-                <div class="col-md-6">
-                    <label class="form-label"><span class="text-danger">*</span> Nguyên liệu</label>
-                    <select class="form-select" v-model="newIngredientId" :disabled="saving">
-                        <option :value="null">Chọn nguyên liệu</option>
-                        <option
-                            v-for="ingredient in availableIngredients"
-                            :key="ingredient.id"
-                            :value="ingredient.id"
-                        >
-                            {{ ingredient.name }} ({{ ingredient.unit }})
-                        </option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label"><span class="text-danger">*</span> Định lượng</label>
-                    <div class="input-group">
-                        <input
-                            v-model="newQuantity"
-                            type="number"
-                            class="form-control"
-                            min="0.001"
-                            step="0.001"
-                            placeholder="0"
-                            :disabled="saving"
-                        />
-                        <span class="input-group-text">{{ selectedIngredientUnit }}</span>
-                    </div>
-                </div>
-                <div class="col-md-2 d-grid">
-                    <button class="btn btn-primary" type="button" :disabled="saving" @click="addIngredient">
-                        <span v-if="saving" class="spinner-border spinner-border-sm"></span>
-                        <span v-else><i class="bi bi-plus-lg me-1"></i>Thêm</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        <i
+          v-else
+          class="bi bi-arrow-repeat me-2"
+        />
+        Tải lại
+      </button>
     </div>
+
+    <div
+      v-if="loading"
+      class="state-block"
+    >
+      <div
+        class="spinner-border text-primary"
+        role="status"
+      />
+    </div>
+    <div
+      v-else-if="error"
+      class="alert alert-warning recipe-error-alert d-flex align-items-center gap-2"
+    >
+      <i class="bi bi-exclamation-triangle" />
+      <span>{{ error }}</span>
+    </div>
+    <EmptyState
+      v-else-if="!recipe.value.length"
+      title="Chưa có công thức"
+      message="Thêm nguyên liệu đầu tiên để bắt đầu xây dựng công thức cho sản phẩm."
+    />
+    <div
+      v-else
+      class="table-responsive recipe-table"
+    >
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Nguyên liệu</th>
+            <th style="width: 140px;">
+              Đơn vị
+            </th>
+            <th
+              style="width: 180px;"
+              class="text-end"
+            >
+              Định lượng
+            </th>
+            <th
+              style="width: 160px;"
+              class="text-end"
+            >
+              Hành động
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="item in recipe.value"
+            :key="item.id || item.ingredientId"
+          >
+            <td>
+              <div class="fw-semibold">
+                {{ item.ingredientName }}
+              </div>
+              <div class="text-muted small">
+                Mã: {{ item.ingredientCode ?? '—' }}
+              </div>
+            </td>
+            <td>{{ item.ingredientUnit || '—' }}</td>
+            <td>
+              <div class="input-group input-group-sm justify-content-end">
+                <input
+                  v-model="quantityDrafts[item.id || item.ingredientId]"
+                  type="number"
+                  class="form-control text-end"
+                  min="0.001"
+                  step="0.001"
+                  :disabled="isRowSaving(item)"
+                  @keydown.enter.prevent="() => updateQuantity(item)"
+                >
+              </div>
+            </td>
+            <td>
+              <div class="d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm"
+                  :disabled="isRowSaving(item)"
+                  @click="() => updateQuantity(item)"
+                >
+                  <span
+                    v-if="isRowSaving(item) && rowSavingKey === getItemKey(item)"
+                    class="spinner-border spinner-border-sm"
+                  />
+                  <span v-else><i class="bi bi-save me-1" />Lưu</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  :disabled="isRowSaving(item)"
+                  @click="() => removeIngredient(item)"
+                >
+                  <span
+                    v-if="isRowSaving(item) && removalKey === getItemKey(item)"
+                    class="spinner-border spinner-border-sm"
+                  />
+                  <span v-else><i class="bi bi-trash me-1" />Xóa</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="add-section">
+      <h6 class="mb-3">
+        Thêm nguyên liệu mới
+      </h6>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label"><span class="text-danger">*</span> Nguyên liệu</label>
+          <select
+            v-model="newIngredientId"
+            class="form-select"
+            :disabled="saving"
+          >
+            <option :value="null">
+              Chọn nguyên liệu
+            </option>
+            <option
+              v-for="ingredient in availableIngredients"
+              :key="ingredient.id"
+              :value="ingredient.id"
+            >
+              {{ ingredient.name }} ({{ ingredient.unit }})
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label"><span class="text-danger">*</span> Định lượng</label>
+          <div class="input-group">
+            <input
+              v-model="newQuantity"
+              type="number"
+              class="form-control"
+              min="0.001"
+              step="0.001"
+              placeholder="0"
+              :disabled="saving"
+            >
+            <span class="input-group-text">{{ selectedIngredientUnit }}</span>
+          </div>
+        </div>
+        <div class="col-md-2 d-grid">
+          <button
+            class="btn btn-primary"
+            type="button"
+            :disabled="saving"
+            @click="addIngredient"
+          >
+            <span
+              v-if="saving"
+              class="spinner-border spinner-border-sm"
+            />
+            <span v-else><i class="bi bi-plus-lg me-1" />Thêm</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import {computed, reactive, ref, watch} from 'vue'
-import {toast} from 'vue3-toastify'
+import { computed, reactive, ref, watch } from 'vue'
+import { toast } from 'vue3-toastify'
 import EmptyState from '@/components/common/EmptyState.vue'
-import {getProductRecipe, updateProductRecipe} from '@/api/productService.js'
-import {getAllIngredients} from '@/api/ingredientService.js'
+import { getProductRecipe, updateProductRecipe } from '@/api/productService.js'
+import { getAllIngredients } from '@/api/ingredientService.js'
 import logger from '@/utils/logger'
 
 const props = defineProps({
@@ -143,7 +205,7 @@ const props = defineProps({
 const loading = ref(false)
 const saving = ref(false)
 const error = ref(null)
-const recipe = reactive({value: []})
+const recipe = reactive({ value: [] })
 const ingredientOptions = ref([])
 const quantityDrafts = reactive({})
 const newIngredientId = ref(null)
@@ -200,7 +262,7 @@ watch(
             refresh()
         }
     },
-    {immediate: true}
+    { immediate: true }
 )
 
 const availableIngredients = computed(() => {
@@ -229,7 +291,7 @@ const buildPayload = (items) =>
 
 const validatePayload = (payload) => payload.every((item) => item.ingredientId && item.quantityNeeded)
 
-const commitRecipe = async (items, {successMessage, spinnerKey} = {}) => {
+const commitRecipe = async (items, { successMessage, spinnerKey } = {}) => {
     if (!items.length) {
         toast.warning('Công thức phải có ít nhất một nguyên liệu.')
         return false
@@ -281,8 +343,8 @@ const addIngredient = async () => {
     }
 
     const updatedItems = [
-        ...recipe.value.map((item) => ({...item})),
-        {ingredientId, quantityNeeded: quantity}
+        ...recipe.value.map((item) => ({ ...item })),
+        { ingredientId, quantityNeeded: quantity }
     ]
     const success = await commitRecipe(updatedItems, {
         successMessage: 'Đã thêm nguyên liệu vào công thức.'
@@ -308,8 +370,8 @@ const updateQuantity = async (item) => {
 
     const updatedItems = recipe.value.map((entry) =>
         entry.ingredientId === item.ingredientId
-            ? {...entry, quantityNeeded: quantity}
-            : {...entry}
+            ? { ...entry, quantityNeeded: quantity }
+            : { ...entry }
     )
 
     await commitRecipe(updatedItems, {
@@ -331,7 +393,7 @@ const removeIngredient = async (item) => {
 
     const updatedItems = recipe.value
         .filter((entry) => entry.ingredientId !== item.ingredientId)
-        .map((entry) => ({...entry}))
+        .map((entry) => ({ ...entry }))
 
     removalKey.value = getItemKey(item)
     await commitRecipe(updatedItems, {

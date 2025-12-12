@@ -38,6 +38,7 @@ export const sidebarIcons = {
     roleDashboards: 'bi bi-person-badge',
     customers: 'bi bi-people-fill',
     revenueForecast: 'bi bi-graph-up-arrow',
+    stakeholderReport: 'bi bi-file-earmark-text',
     voucherAnalytics: 'bi bi-ticket-perforated',
     cancellationAnalysis: 'bi bi-x-circle-fill',
     trendAnalysis: 'bi bi-graph-up-arrow',
@@ -46,5 +47,6 @@ export const sidebarIcons = {
     smartInventory: 'bi bi-box-seam',
     customerAnalytics: 'bi bi-people-fill',
     productProfitability: 'bi bi-cash-coin',
-    ingredientDemandForecast: 'bi bi-graph-up-arrow'
+    ingredientDemandForecast: 'bi bi-graph-up-arrow',
+    inventoryAdjustmentHistory: 'bi bi-clock-history'
 }

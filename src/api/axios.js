@@ -7,6 +7,7 @@ import {
     clearUser
 } from '@/utils/tokenStorage'
 import logger from '@/utils/logger'
+import { performanceMonitor } from '@/utils/performanceMonitor'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -37,6 +38,14 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`
     }
+
+    // Performance tracking
+    config.metadata = {
+        startTime: performance.now(),
+        url: config.url,
+        method: config.method
+    }
+
     return config
 })
 
@@ -49,7 +58,7 @@ api.interceptors.request.use((config) => {
 const retryRequest = async (config, error) => {
     const retryConfig = config || {}
     const retryCount = retryConfig._retryCount ?? 0
-    
+
     // Chỉ retry cho network errors hoặc timeout, không retry cho 4xx (trừ 401 đã xử lý riêng)
     const isNetworkError = !error.response && (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message === 'Network Error')
     const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout')
@@ -96,11 +105,38 @@ const retryRequest = async (config, error) => {
 }
 
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Track performance
+        if (response.config?.metadata) {
+            const duration = performance.now() - response.config.metadata.startTime
+            const size = JSON.stringify(response.data).length
+            performanceMonitor.trackApiCall(
+                response.config.metadata.url,
+                response.config.metadata.method,
+                duration,
+                response.status,
+                size
+            )
+        }
+
+        return response
+    },
     async (error) => {
         const { response, config } = error || {}
         const status = response?.status
         const originalRequest = config
+
+        // Track performance for errors
+        if (config?.metadata) {
+            const duration = performance.now() - config.metadata.startTime
+            performanceMonitor.trackApiCall(
+                config.metadata.url,
+                config.metadata.method,
+                duration,
+                status || 0,
+                0
+            )
+        }
 
         // Xử lý retry cho network errors trước
         if (!response || error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
@@ -137,17 +173,15 @@ api.interceptors.response.use(
                 failedQueue.push({ resolve, reject, originalRequest })
             })
                 .then((token) => {
-            // Retry request với token mới
-            originalRequest.headers.Authorization = `Bearer ${token}`
-            // Đảm bảo request này không bị đánh dấu _retry để tránh infinite loop
-            delete originalRequest._retry
-            // Reset retry count để có thể retry lại nếu cần
-            delete originalRequest._retryCount
-            return api(originalRequest)
+                    // Retry request với token mới
+                    originalRequest.headers.Authorization = `Bearer ${token}`
+                    // Đảm bảo request này không bị đánh dấu _retry để tránh infinite loop
+                    delete originalRequest._retry
+                    // Reset retry count để có thể retry lại nếu cần
+                    delete originalRequest._retryCount
+                    return api(originalRequest)
                 })
-                .catch((err) => {
-                    return Promise.reject(err)
-                })
+                .catch((err) => Promise.reject(err))
         }
 
         // Bắt đầu refresh token

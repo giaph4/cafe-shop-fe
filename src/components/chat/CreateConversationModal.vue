@@ -1,113 +1,166 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modalRef" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Tạo hội thoại mới</h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
-                    <div class="modal-body">
-                        <ul class="nav nav-tabs mb-3">
-                            <li class="nav-item">
-                                <button
-                                    class="nav-link"
-                                    :class="{ active: conversationType === 'direct' }"
-                                    @click="conversationType = 'direct'"
-                                >
-                                    Trực tiếp
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button
-                                    class="nav-link"
-                                    :class="{ active: conversationType === 'group' }"
-                                    @click="conversationType = 'group'"
-                                >
-                                    Nhóm
-                                </button>
-                            </li>
-                        </ul>
+  <Teleport to="body">
+    <div
+      ref="modalRef"
+      class="modal fade"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Tạo hội thoại mới
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
+          <div class="modal-body">
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <button
+                  class="nav-link"
+                  :class="{ active: conversationType === 'direct' }"
+                  @click="conversationType = 'direct'"
+                >
+                  Trực tiếp
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link"
+                  :class="{ active: conversationType === 'group' }"
+                  @click="conversationType = 'group'"
+                >
+                  Nhóm
+                </button>
+              </li>
+            </ul>
 
-                        <div v-if="conversationType === 'direct'">
-                            <div v-if="loadingUsers" class="text-center py-3">
-                                <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
-                                <span class="ms-2 text-muted">Đang tải danh sách người dùng...</span>
-                            </div>
-                            <div v-else>
-                                <label class="form-label">Chọn người dùng <span class="text-danger">*</span></label>
-                                <select class="form-select" v-model="selectedUserId" :disabled="submitting">
-                                    <option value="">-- Chọn người dùng --</option>
-                                    <option v-for="user in availableUsers" :key="user.id" :value="user.id">
-                                        {{ user.fullName || user.username }}
-                                    </option>
-                                </select>
-                                <small class="text-muted" v-if="availableUsers.length === 0">
-                                    Không có người dùng nào khả dụng
-                                </small>
-                            </div>
-                        </div>
-
-                        <div v-else>
-                            <div class="mb-3">
-                                <label class="form-label">Tên nhóm <span class="text-danger">*</span></label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    v-model="groupTitle"
-                                    placeholder="Nhập tên nhóm"
-                                    :disabled="submitting"
-                                />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Thành viên <span class="text-danger">*</span></label>
-                                <div v-if="loadingUsers" class="text-center py-3">
-                                    <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
-                                    <span class="ms-2 text-muted">Đang tải danh sách người dùng...</span>
-                                </div>
-                                <div v-else class="member-selection">
-                                    <div
-                                        v-for="user in availableUsers"
-                                        :key="user.id"
-                                        class="form-check"
-                                    >
-                                        <input
-                                            class="form-check-input"
-                                            type="checkbox"
-                                            :id="`user-${user.id}`"
-                                            :value="user.id"
-                                            v-model="selectedMemberIds"
-                                            :disabled="submitting"
-                                        />
-                                        <label class="form-check-label" :for="`user-${user.id}`">
-                                            {{ user.fullName || user.username }}
-                                        </label>
-                                    </div>
-                                    <small class="text-muted" v-if="availableUsers.length === 0">
-                                        Không có người dùng nào khả dụng
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="hide" :disabled="submitting">
-                            Hủy
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            @click="handleSubmit"
-                            :disabled="!canSubmit || submitting"
-                        >
-                            <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                            Tạo
-                        </button>
-                    </div>
-                </div>
+            <div v-if="conversationType === 'direct'">
+              <div
+                v-if="loadingUsers"
+                class="text-center py-3"
+              >
+                <div
+                  class="spinner-border spinner-border-sm"
+                  style="color: var(--color-primary);"
+                />
+                <span class="ms-2 text-muted">Đang tải danh sách người dùng...</span>
+              </div>
+              <div v-else>
+                <label class="form-label">Chọn người dùng <span class="text-danger">*</span></label>
+                <select
+                  v-model="selectedUserId"
+                  class="form-select"
+                  :disabled="submitting"
+                >
+                  <option value="">
+                    -- Chọn người dùng --
+                  </option>
+                  <option
+                    v-for="user in availableUsers"
+                    :key="user.id"
+                    :value="user.id"
+                  >
+                    {{ user.fullName || user.username }}
+                  </option>
+                </select>
+                <small
+                  v-if="availableUsers.length === 0"
+                  class="text-muted"
+                >
+                  Không có người dùng nào khả dụng
+                </small>
+              </div>
             </div>
+
+            <div v-else>
+              <div class="mb-3">
+                <label class="form-label">Tên nhóm <span class="text-danger">*</span></label>
+                <input
+                  v-model="groupTitle"
+                  type="text"
+                  class="form-control"
+                  placeholder="Nhập tên nhóm"
+                  :disabled="submitting"
+                >
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Thành viên <span class="text-danger">*</span></label>
+                <div
+                  v-if="loadingUsers"
+                  class="text-center py-3"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm"
+                    style="color: var(--color-primary);"
+                  />
+                  <span class="ms-2 text-muted">Đang tải danh sách người dùng...</span>
+                </div>
+                <div
+                  v-else
+                  class="member-selection"
+                >
+                  <div
+                    v-for="user in availableUsers"
+                    :key="user.id"
+                    class="form-check"
+                  >
+                    <input
+                      :id="`user-${user.id}`"
+                      v-model="selectedMemberIds"
+                      class="form-check-input"
+                      type="checkbox"
+                      :value="user.id"
+                      :disabled="submitting"
+                    >
+                    <label
+                      class="form-check-label"
+                      :for="`user-${user.id}`"
+                    >
+                      {{ user.fullName || user.username }}
+                    </label>
+                  </div>
+                  <small
+                    v-if="availableUsers.length === 0"
+                    class="text-muted"
+                  >
+                    Không có người dùng nào khả dụng
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="submitting"
+              @click="hide"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              :disabled="!canSubmit || submitting"
+              @click="handleSubmit"
+            >
+              <span
+                v-if="submitting"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Tạo
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -143,7 +196,7 @@ const loadUsers = async () => {
     try {
         const response = await getUsers({ size: 100 })
         availableUsers.value = response.content || []
-    } catch (err) {
+    } catch {
         toast.error('Không thể tải danh sách người dùng.')
     } finally {
         loadingUsers.value = false

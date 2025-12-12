@@ -1,200 +1,274 @@
 <template>
-    <div class="shift-management-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="shift-management-header">
-            <div class="shift-management-header__content">
-                <div class="shift-management-header__title-section">
-                    <h2 class="shift-management-header__title">Quản lý Ca làm</h2>
-                    <p class="shift-management-header__subtitle">Theo dõi ca làm, phân công nhân viên và trạng thái thực hiện.</p>
-                </div>
-                <div class="shift-management-header__actions">
-                    <button 
-                        class="btn btn-primary" 
-                        type="button" 
-                        @click="openCreateInstance" 
-                        v-if="activeTab === 'instances'"
-                    >
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Tạo ca làm mới
-                    </button>
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button" 
-                        @click="fetchData" 
-                        :disabled="loading"
-                    >
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="shift-management-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="shift-management-header">
+      <div class="shift-management-header__content">
+        <div class="shift-management-header__title-section">
+          <h2 class="shift-management-header__title">
+            Quản lý Ca làm
+          </h2>
+          <p class="shift-management-header__subtitle">
+            Theo dõi ca làm, phân công nhân viên và trạng thái thực hiện.
+          </p>
         </div>
-
-        <div class="card tabs-card mb-4">
-            <div class="card-body">
-                <ul class="nav nav-pills reports-tabs" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
-                <div class="tab-content mt-4">
-                    <LoadingState v-if="loading && activeTab !== 'overview'" />
-                    <ErrorState 
-                        v-else-if="error && activeTab !== 'overview'" 
-                        :message="error"
-                        @retry="fetchData"
-                    />
-                    <template v-else>
-                    <ShiftOverviewTab
-                        v-if="activeTab === 'overview'"
-                        :calendar-loading="calendarLoading"
-                        :calendar-error="calendarError"
-                        :calendar-state="calendarState"
-                        :calendar-cells="calendarCells"
-                        :calendar-selected-shifts="calendarSelectedShifts"
-                        :selected-date-label="selectedDateLabel"
-                        :calendar-title="calendarTitle"
-                        @change-month="changeMonth"
-                        @select-day="handleSelectDay"
-                        @view-detail="openDetail"
-                    />
-                    <ShiftInstancesTab
-                        v-else-if="activeTab === 'instances'"
-                        :instances="instances"
-                        :loading="loading"
-                        :error="error"
-                        :filters="filters"
-                        :status-options="SHIFT_STATUSES"
-                        :pagination="instancePagination"
-                        @filter="fetchInstances"
-                        @reset-filters="resetFilters"
-                        @view-detail="openDetail"
-                        @edit="openEditInstance"
-                        @update-status="promptStatusUpdate"
-                        @remove="removeInstance"
-                        @page-change="handlePageChange"
-                    />
-                    <ShiftTemplatesTab
-                        v-else-if="activeTab === 'templates'"
-                        :templates="templates"
-                        :loading="templateLoading"
-                        :error="templateError"
-                        :pagination="templatePage"
-                        @create="openCreateTemplate"
-                        @edit="openEditTemplate"
-                        @remove="removeTemplate"
-                        @page-change="handleTemplatePageChange"
-                    />
-                    </template>
-                </div>
-            </div>
+        <div class="shift-management-header__actions">
+          <button
+            v-if="activeTab === 'instances'"
+            class="btn btn-primary"
+            type="button"
+            @click="openCreateInstance"
+          >
+            <i class="bi bi-plus-lg me-2" />
+            Tạo ca làm mới
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchData"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
         </div>
-
-        <Teleport to="body">
-            <ShiftInstanceFormModal
-                ref="formModal"
-                :templates="templateOptions"
-                :instance="editingInstance"
-                :submitting="formSubmitting"
-                @submit="handleFormSubmit"
-            />
-
-            <ShiftTemplateFormModal
-                ref="templateModal"
-                :template="editingTemplate"
-                :submitting="templateSubmitting"
-                @submit="handleTemplateSubmit"
-            />
-
-            <ShiftInstanceDetailModal ref="detailModal" />
-
-            <ShiftStatusUpdateModal
-                ref="statusModal"
-                :status-options="SHIFT_STATUSES"
-                @submit="handleStatusUpdate"
-            />
-
-            <!-- Delete Instance Confirmation Modal -->
-            <div 
-                class="modal fade" 
-                id="deleteInstanceModal" 
-                tabindex="-1" 
-                ref="deleteInstanceModalElement" 
-                aria-labelledby="deleteInstanceModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteInstanceModalLabel">Xác nhận xóa</h5>
-                            <button type="button" class="btn-close" @click="deleteInstanceBsModal?.hide()" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa ca làm này không?</p>
-                            <div v-if="instanceToDelete" class="card mt-3">
-                                <div class="card-body">
-                                    <p class="mb-2"><strong>Template:</strong> {{ instanceToDelete.templateName || 'N/A' }}</p>
-                                    <p class="mb-2"><strong>Ngày:</strong> {{ formatDate(instanceToDelete.shiftDate) }}</p>
-                                    <p class="mb-0"><strong>Thời gian:</strong> {{ formatTime(instanceToDelete.startTime) }} - {{ formatTime(instanceToDelete.endTime) }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="deleteInstanceBsModal?.hide()">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="confirmDeleteInstance">
-                                Xóa
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Delete Template Confirmation Modal -->
-            <div 
-                class="modal fade" 
-                id="deleteTemplateModal" 
-                tabindex="-1" 
-                ref="deleteTemplateModalElement" 
-                aria-labelledby="deleteTemplateModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteTemplateModalLabel">Xác nhận xóa</h5>
-                            <button type="button" class="btn-close" @click="deleteTemplateBsModal?.hide()" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa ca mẫu này không?</p>
-                            <div v-if="templateToDelete" class="card mt-3">
-                                <div class="card-body">
-                                    <p class="mb-2"><strong>Tên:</strong> {{ templateToDelete.name || 'N/A' }}</p>
-                                    <p class="mb-0"><strong>Mô tả:</strong> {{ templateToDelete.description || 'N/A' }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="deleteTemplateBsModal?.hide()">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="confirmDeleteTemplate">
-                                Xóa
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+      </div>
     </div>
+
+    <div class="card tabs-card mb-4">
+      <div class="card-body">
+        <ul
+          class="nav nav-pills reports-tabs"
+          role="tablist"
+        >
+          <li
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="nav-item"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="nav-link"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              <i :class="[tab.icon, 'me-2']" />{{ tab.label }}
+            </button>
+          </li>
+        </ul>
+        <div class="tab-content mt-4">
+          <LoadingState v-if="loading && activeTab !== 'overview'" />
+          <ErrorState
+            v-else-if="error && activeTab !== 'overview'"
+            :message="error"
+            @retry="fetchData"
+          />
+          <template v-else>
+            <ShiftOverviewTab
+              v-if="activeTab === 'overview'"
+              :calendar-loading="calendarLoading"
+              :calendar-error="calendarError"
+              :calendar-state="calendarState"
+              :calendar-cells="calendarCells"
+              :calendar-selected-shifts="calendarSelectedShifts"
+              :selected-date-label="selectedDateLabel"
+              :calendar-title="calendarTitle"
+              @change-month="changeMonth"
+              @select-day="handleSelectDay"
+              @view-detail="openDetail"
+            />
+            <ShiftInstancesTab
+              v-else-if="activeTab === 'instances'"
+              :instances="instances"
+              :loading="loading"
+              :error="error"
+              :filters="filters"
+              :status-options="SHIFT_STATUSES"
+              :pagination="instancePagination"
+              @filter="fetchInstances"
+              @reset-filters="resetFilters"
+              @view-detail="openDetail"
+              @edit="openEditInstance"
+              @update-status="promptStatusUpdate"
+              @remove="removeInstance"
+              @page-change="handlePageChange"
+            />
+            <ShiftTemplatesTab
+              v-else-if="activeTab === 'templates'"
+              :templates="templates"
+              :loading="templateLoading"
+              :error="templateError"
+              :pagination="templatePage"
+              @create="openCreateTemplate"
+              @edit="openEditTemplate"
+              @remove="removeTemplate"
+              @page-change="handleTemplatePageChange"
+            />
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <Teleport to="body">
+      <ShiftInstanceFormModal
+        ref="formModal"
+        :templates="templateOptions"
+        :instance="editingInstance"
+        :submitting="formSubmitting"
+        @submit="handleFormSubmit"
+      />
+
+      <ShiftTemplateFormModal
+        ref="templateModal"
+        :template="editingTemplate"
+        :submitting="templateSubmitting"
+        @submit="handleTemplateSubmit"
+      />
+
+      <ShiftInstanceDetailModal ref="detailModal" />
+
+      <ShiftStatusUpdateModal
+        ref="statusModal"
+        :status-options="SHIFT_STATUSES"
+        @submit="handleStatusUpdate"
+      />
+
+      <!-- Delete Instance Confirmation Modal -->
+      <div
+        id="deleteInstanceModal"
+        ref="deleteInstanceModalElement"
+        class="modal fade"
+        tabindex="-1"
+        aria-labelledby="deleteInstanceModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="deleteInstanceModalLabel"
+                class="modal-title"
+              >
+                Xác nhận xóa
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="deleteInstanceBsModal?.hide()"
+              />
+            </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa ca làm này không?</p>
+              <div
+                v-if="instanceToDelete"
+                class="card mt-3"
+              >
+                <div class="card-body">
+                  <p class="mb-2">
+                    <strong>Template:</strong> {{ instanceToDelete.templateName || 'N/A' }}
+                  </p>
+                  <p class="mb-2">
+                    <strong>Ngày:</strong> {{ formatDate(instanceToDelete.shiftDate) }}
+                  </p>
+                  <p class="mb-0">
+                    <strong>Thời gian:</strong> {{ formatTime(instanceToDelete.startTime) }} - {{ formatTime(instanceToDelete.endTime) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="deleteInstanceBsModal?.hide()"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="confirmDeleteInstance"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Template Confirmation Modal -->
+      <div
+        id="deleteTemplateModal"
+        ref="deleteTemplateModalElement"
+        class="modal fade"
+        tabindex="-1"
+        aria-labelledby="deleteTemplateModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="deleteTemplateModalLabel"
+                class="modal-title"
+              >
+                Xác nhận xóa
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="deleteTemplateBsModal?.hide()"
+              />
+            </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa ca mẫu này không?</p>
+              <div
+                v-if="templateToDelete"
+                class="card mt-3"
+              >
+                <div class="card-body">
+                  <p class="mb-2">
+                    <strong>Tên:</strong> {{ templateToDelete.name || 'N/A' }}
+                  </p>
+                  <p class="mb-0">
+                    <strong>Mô tả:</strong> {{ templateToDelete.description || 'N/A' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="deleteTemplateBsModal?.hide()"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="confirmDeleteTemplate"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -360,10 +434,10 @@ const refreshCurrentSession = async () => {
         await shiftSessionStore.loadCurrentSession()
     } catch (error) {
         // 404 là bình thường khi user chưa có active session, không cần log hoặc hiển thị lỗi
-        if (error?.status === 404) {
+        if (error.value?.status === 404) {
             return
         }
-        toast.error(error.message || 'Không thể làm mới phiên ca.')
+        toast.error(error.value.message || 'Không thể làm mới phiên ca.')
     }
 }
 
@@ -372,7 +446,7 @@ const handleStartSession = async () => {
         toast.warning('Vui lòng chọn Work Shift trước khi nhận ca.')
         return
     }
-    
+
     // Validation: Check xem user đã có active session chưa
     // Nếu đã có active session, không cho start session mới (trừ khi admin override)
     if (currentSession.value && currentSession.value.status === 'ACTIVE') {
@@ -383,7 +457,7 @@ const handleStartSession = async () => {
         // Nếu admin override, cho phép start nhưng cảnh báo
         // Sẽ được xử lý trong modal confirmation nếu cần
     }
-    
+
     try {
         const session = await shiftSessionStore.startSession({
             workShiftId: startForm.workShiftId,
@@ -397,7 +471,7 @@ const handleStartSession = async () => {
             await refreshCurrentSession()
         }
     } catch (error) {
-        toast.error(error.message || 'Không thể bắt đầu ca làm.')
+        toast.error(error.value.message || 'Không thể bắt đầu ca làm.')
     }
 }
 
@@ -408,7 +482,7 @@ const handleEndSession = async () => {
         await fetchInstances()
         await fetchCalendarData()
     } catch (error) {
-        toast.error(error.message || 'Không thể kết thúc ca làm.')
+        toast.error(error.value.message || 'Không thể kết thúc ca làm.')
     }
 }
 
@@ -451,7 +525,7 @@ const fetchTemplateOptions = async () => {
     try {
         const data = await getShiftTemplates({ page: 0, size: 100 })
         templateOptions.value = data?.content || []
-    } catch (err) {
+    } catch (error) {
         toast.error('Không thể tải template ca làm.')
         templateOptions.value = []
     }
@@ -518,29 +592,44 @@ onBeforeRouteLeave(() => {
 let suppressInstanceFetch = false
 let suppressTemplateFetch = false
 
-const buildFilterParams = () => ({
-    page: instancePage.value,
-    size: instancePageSize.value,
-    from: filters.from || undefined,
-    to: filters.to || undefined,
-    status: filters.status || undefined,
-    sort: 'shiftDate,desc' // Sắp xếp theo ngày mới nhất
-})
+const buildFilterParams = () => {
+    const params = {
+        page: instancePage.value,
+        size: instancePageSize.value
+    }
+    
+    // Convert date strings to ISO format if they exist
+    if (filters.from) {
+        params.from = filters.from.includes('/') 
+            ? filters.from.split('/').reverse().join('-') // Convert dd/MM/yyyy to yyyy-MM-dd
+            : filters.from
+    }
+    if (filters.to) {
+        params.to = filters.to.includes('/')
+            ? filters.to.split('/').reverse().join('-') // Convert dd/MM/yyyy to yyyy-MM-dd
+            : filters.to
+    }
+    if (filters.status) {
+        params.status = filters.status
+    }
+    
+    return params
+}
 
 const fetchInstances = async () => {
     loading.value = true
     error.value = null
     try {
         const data = await listShiftInstances(buildFilterParams())
-        let fetchedInstances = data?.content || []
-        
+        const fetchedInstances = data?.content || []
+
         // Sắp xếp theo ngày mới nhất (nếu backend chưa sort)
         fetchedInstances.sort((a, b) => {
             const dateA = new Date(a.shiftDate)
             const dateB = new Date(b.shiftDate)
             return dateB - dateA // Mới nhất trước
         })
-        
+
         instances.value = fetchedInstances
 
         if (!startForm.workShiftId && instances.value.length) {
@@ -626,11 +715,12 @@ const fetchCalendarData = async () => {
     try {
         const monthStart = startOfMonth(calendarState.baseDate)
         const monthEnd = endOfMonth(calendarState.baseDate)
+        // formatDateKey already returns yyyy-MM-dd format, which is correct for API
         const params = {
             page: 0,
             size: CALENDAR_FETCH_SIZE,
-            from: formatDateKey(monthStart),
-            to: formatDateKey(monthEnd)
+            from: formatDateKey(monthStart), // Already in yyyy-MM-dd format
+            to: formatDateKey(monthEnd) // Already in yyyy-MM-dd format
         }
         const data = await listShiftInstances(params)
         const mapped = mapShiftsByDate(Array.isArray(data?.content) ? data.content : [])
@@ -879,11 +969,11 @@ watch(lastEvent, async (event) => {
         await shiftSessionStore.fetchActiveSessions(session.workShiftId)
     }
     if (type === 'SESSION_STARTED') {
-        toast.info(`Ca của ${session?.fullName || session?.username || '#' + session?.userId} đã bắt đầu.`)
+        toast.info(`Ca của ${session?.fullName || session?.username || `#${  session?.userId}`} đã bắt đầu.`)
     }
     if (type === 'SESSION_ENDED' || type === 'SESSION_FORCED') {
         const verb = type === 'SESSION_FORCED' ? 'kết thúc cưỡng bức' : 'kết thúc'
-        toast.info(`Ca của ${session?.fullName || session?.username || '#' + session?.userId} đã ${verb}.`)
+        toast.info(`Ca của ${session?.fullName || session?.username || `#${  session?.userId}`} đã ${verb}.`)
     }
 })
 

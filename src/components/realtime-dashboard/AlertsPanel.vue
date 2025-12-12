@@ -1,36 +1,52 @@
 <template>
-    <div class="alerts-panel">
-        <div v-if="alerts.length === 0" class="text-muted text-center">
-            <i class="bi bi-check-circle-fill text-success mb-2" style="font-size: 2rem;"></i>
-            <div>Không có cảnh báo</div>
-        </div>
-        <div v-else class="alerts-list">
-            <div
-                v-for="(alert, index) in alerts"
-                :key="index"
-                class="alert-item"
-                :class="getAlertClass(alert.type)"
-            >
-                <div class="alert-icon">
-                    <i :class="getAlertIcon(alert.type)"></i>
-                </div>
-                <div class="alert-content">
-                    <div class="alert-title">{{ alert.title }}</div>
-                    <div class="alert-message">{{ alert.message }}</div>
-                    <button
-                        v-if="alert.action"
-                        class="btn btn-flat btn-flat--outline btn-sm mt-2"
-                        @click="$emit('action', alert)"
-                    >
-                        {{ alert.action }}
-                    </button>
-                </div>
-                <div class="alert-count" v-if="alert.count > 0">
-                    {{ alert.count }}
-                </div>
-            </div>
-        </div>
+  <div class="alerts-panel">
+    <div
+      v-if="alerts.length === 0"
+      class="text-muted text-center"
+    >
+      <i
+        class="bi bi-check-circle-fill text-success mb-2"
+        style="font-size: 2rem;"
+      />
+      <div>Không có cảnh báo</div>
     </div>
+    <div
+      v-else
+      class="alerts-list"
+    >
+      <div
+        v-for="(alert, index) in alerts"
+        :key="index"
+        class="alert-item"
+        :class="getAlertClass(alert.type)"
+      >
+        <div class="alert-icon">
+          <i :class="getAlertIcon(alert.type)" />
+        </div>
+        <div class="alert-content">
+          <div class="alert-title">
+            {{ alert.title }}
+          </div>
+          <div class="alert-message">
+            {{ alert.message }}
+          </div>
+          <button
+            v-if="alert.action"
+            class="btn btn-flat btn-flat--outline btn-sm mt-2"
+            @click="$emit('action', alert)"
+          >
+            {{ alert.action }}
+          </button>
+        </div>
+        <div
+          v-if="alert.count > 0"
+          class="alert-count"
+        >
+          {{ alert.count }}
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

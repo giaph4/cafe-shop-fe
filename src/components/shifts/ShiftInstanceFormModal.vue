@@ -1,93 +1,165 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade shift-instance-form-modal" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ isEditMode ? 'Chỉnh sửa ca làm' : 'Tạo ca làm mới' }}</h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade shift-instance-form-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {{ isEditMode ? 'Chỉnh sửa ca làm' : 'Tạo ca làm mới' }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
 
-                    <form @submit.prevent="handleSubmit">
-                        <div class="modal-body">
-                            <div class="mb-4">
-                                <label class="form-label">Template ca làm <span class="text-danger">*</span></label>
-                                <select
-                                    class="form-select"
-                                    v-model="form.templateId"
-                                    :disabled="isEditMode"
-                                    required
-                                    @change="handleTemplateChange"
-                                >
-                                    <option :value="null">Chọn template</option>
-                                    <option v-for="template in templates" :key="template.id" :value="template.id">
-                                        {{ template.name }} ({{ formatTime(template.startTime) }} - {{ formatTime(template.endTime) }})
-                                    </option>
-                                </select>
-                            </div>
+          <form @submit.prevent="handleSubmit">
+            <div class="modal-body">
+              <div class="mb-4">
+                <label class="form-label">Template ca làm <span class="text-danger">*</span></label>
+                <select
+                  v-model="form.templateId"
+                  class="form-select"
+                  :disabled="isEditMode"
+                  required
+                  @change="handleTemplateChange"
+                >
+                  <option :value="null">
+                    Chọn template
+                  </option>
+                  <option
+                    v-for="template in templates"
+                    :key="template.id"
+                    :value="template.id"
+                  >
+                    {{ template.name }} ({{ formatTime(template.startTime) }} - {{ formatTime(template.endTime) }})
+                  </option>
+                </select>
+              </div>
 
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label">Ngày chính <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" v-model="form.primaryDate" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Thêm ngày khác</label>
-                                    <div class="input-group">
-                                        <input type="date" class="form-control" v-model="extraDateInput" />
-                                        <button class="btn btn-outline-primary" type="button" @click="addExtraDate">Thêm</button>
-                                    </div>
-                                    <small class="text-muted">Có thể tạo nhiều ca từ cùng một template trong một lần.</small>
-                                </div>
-                            </div>
-
-                            <div v-if="form.extraDates.length" class="mb-4">
-                                <span class="badge badge-extra-date me-2" v-for="date in form.extraDates" :key="date">
-                                    {{ date }}
-                                    <button type="button" class="btn-close btn-close-sm ms-2" aria-label="X" @click="removeExtraDate(date)"></button>
-                                </span>
-                            </div>
-
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" v-model="form.startTime" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" v-model="form.endTime" required />
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Ghi chú</label>
-                                <textarea class="form-control" rows="3" v-model.trim="form.notes" maxlength="500"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="hide">Hủy</button>
-                            <button type="submit" class="btn btn-primary" :disabled="submitting">
-                                <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                                {{ submitting ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Tạo mới' }}
-                            </button>
-                        </div>
-                    </form>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label">Ngày chính <span class="text-danger">*</span></label>
+                  <input
+                    v-model="form.primaryDate"
+                    type="date"
+                    class="form-control"
+                    required
+                  >
                 </div>
+                <div class="col-md-6">
+                  <label class="form-label">Thêm ngày khác</label>
+                  <div class="input-group">
+                    <input
+                      v-model="extraDateInput"
+                      type="date"
+                      class="form-control"
+                    >
+                    <button
+                      class="btn btn-outline-primary"
+                      type="button"
+                      @click="addExtraDate"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                  <small class="text-muted">Có thể tạo nhiều ca từ cùng một template trong một lần.</small>
+                </div>
+              </div>
+
+              <div
+                v-if="form.extraDates.length"
+                class="mb-4"
+              >
+                <span
+                  v-for="date in form.extraDates"
+                  :key="date"
+                  class="badge badge-extra-date me-2"
+                >
+                  {{ date }}
+                  <button
+                    type="button"
+                    class="btn-close btn-close-sm ms-2"
+                    aria-label="X"
+                    @click="removeExtraDate(date)"
+                  />
+                </span>
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                  <input
+                    v-model="form.startTime"
+                    type="time"
+                    class="form-control"
+                    required
+                  >
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                  <input
+                    v-model="form.endTime"
+                    type="time"
+                    class="form-control"
+                    required
+                  >
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Ghi chú</label>
+                <textarea
+                  v-model.trim="form.notes"
+                  class="form-control"
+                  rows="3"
+                  maxlength="500"
+                />
+              </div>
             </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="hide"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="submitting"
+              >
+                <span
+                  v-if="submitting"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                {{ submitting ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+              </button>
+            </div>
+          </form>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import {computed, ref, watch, onMounted, onBeforeUnmount} from 'vue'
-import {Modal} from 'bootstrap'
-import {toast} from 'vue3-toastify'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { Modal } from 'bootstrap'
+import { toast } from 'vue3-toastify'
 
 const props = defineProps({
-    templates: {type: Array, default: () => []},
-    instance: {type: Object, default: null},
-    submitting: {type: Boolean, default: false}
+    templates: { type: Array, default: () => [] },
+    instance: { type: Object, default: null },
+    submitting: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['submit'])
@@ -129,7 +201,7 @@ const populateFromInstance = () => {
     }
 }
 
-watch(() => props.instance, populateFromInstance, {immediate: true})
+watch(() => props.instance, populateFromInstance, { immediate: true })
 
 const addExtraDate = () => {
     if (!extraDateInput.value) return
@@ -208,10 +280,10 @@ const handleSubmit = () => {
 const show = () => modalInstance?.show()
 const hide = () => modalInstance?.hide()
 
-defineExpose({show, hide})
+defineExpose({ show, hide })
 
 onMounted(() => {
-    modalInstance = new Modal(modal.value, {backdrop: 'static'})
+    modalInstance = new Modal(modal.value, { backdrop: 'static' })
 })
 
 onBeforeUnmount(() => {

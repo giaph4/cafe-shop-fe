@@ -1,126 +1,184 @@
 <template>
-    <div class="pos-page" data-aos="fade-up">
-        <header class="pos-header">
-            <div class="pos-header__content">
-                <h2 class="pos-header__title">Điều phối POS</h2>
-                <p class="pos-header__subtitle">Chọn món hoặc chọn bàn, hệ thống sẽ tự động đồng bộ theo nhu cầu của bạn.</p>
+  <div
+    class="pos-page"
+    data-aos="fade-up"
+  >
+    <header class="pos-header">
+      <div class="pos-header__content">
+        <h2 class="pos-header__title">
+          Điều phối POS
+        </h2>
+        <p class="pos-header__subtitle">
+          Chọn món hoặc chọn bàn, hệ thống sẽ tự động đồng bộ theo nhu cầu của bạn.
+        </p>
+      </div>
+      <div class="pos-header__actions">
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          @click="startTableSelection"
+        >
+          <i class="bi bi-grid-3x3-gap-fill me-1" />
+          Xem sơ đồ bàn
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          @click="startProductFirst"
+        >
+          <i class="bi bi-list-ul me-1" />
+          Chọn món trước
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          @click="handleNewTakeaway"
+        >
+          <i class="bi bi-bag-check-fill me-2" />
+          Bán Mang Về
+        </button>
+      </div>
+    </header>
+
+    <div class="pos-container">
+      <aside class="pos-panel pos-panel--left">
+        <transition
+          name="fade"
+          mode="out-in"
+        >
+          <div
+            v-if="viewState.mode === 'tables'"
+            class="pos-table-map-wrapper"
+          >
+            <div class="pos-table-map-header">
+              <div>
+                <h3 class="pos-table-map-title">
+                  Sơ đồ Bàn
+                </h3>
+                <p class="pos-table-map-subtitle">
+                  Chọn bàn để tiếp tục phục vụ hoặc gán đơn nháp hiện tại.
+                </p>
+              </div>
+              <div class="pos-table-map-actions">
+                <span
+                  v-if="selectedTable"
+                  class="pos-table-map-badge"
+                >
+                  Bàn đang chọn: {{ selectedTable.name }}
+                </span>
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  @click="viewState.mode = 'menu'"
+                >
+                  <i class="bi bi-arrow-right-circle me-1" />
+                  Tiếp tục chọn món
+                </button>
+              </div>
             </div>
-            <div class="pos-header__actions">
-                <button type="button" class="btn btn-outline-primary" @click="startTableSelection">
-                    <i class="bi bi-grid-3x3-gap-fill me-1"></i>
-                    Xem sơ đồ bàn
-                </button>
-                <button type="button" class="btn btn-outline-secondary" @click="startProductFirst">
-                    <i class="bi bi-list-ul me-1"></i>
-                    Chọn món trước
-                </button>
-                <button type="button" class="btn btn-success" @click="handleNewTakeaway">
-                    <i class="bi bi-bag-check-fill me-2"></i>
-                    Bán Mang Về
-                </button>
+            <PosTableMap @table-selected="handleTableSelected" />
+          </div>
+          <PosProductMenu
+            v-else
+            :selected-table="selectedTable"
+            @product-selected="handleProductSelected"
+            @back-to-tables="startTableSelection"
+          />
+        </transition>
+      </aside>
+
+      <aside class="pos-panel pos-panel--right">
+        <section class="pos-order-section">
+          <header class="pos-order-section__header">
+            <div>
+              <h5 class="pos-order-section__title">
+                Đơn mang về đang chờ
+              </h5>
+              <p class="pos-order-section__subtitle">
+                Chọn để tiếp tục xử lý hoặc thanh toán.
+              </p>
             </div>
-        </header>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              :disabled="isLoadingTakeawayOrders"
+              @click="handleRefreshTakeawayOrders"
+            >
+              <span
+                v-if="isLoadingTakeawayOrders"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-arrow-clockwise me-1"
+              />
+              Làm mới
+            </button>
+          </header>
 
-        <div class="pos-container">
-            <aside class="pos-panel pos-panel--left">
-                <transition name="fade" mode="out-in">
-                    <div v-if="viewState.mode === 'tables'" class="pos-table-map-wrapper">
-                        <div class="pos-table-map-header">
-                            <div>
-                                <h3 class="pos-table-map-title">Sơ đồ Bàn</h3>
-                                <p class="pos-table-map-subtitle">Chọn bàn để tiếp tục phục vụ hoặc gán đơn nháp hiện tại.</p>
-                            </div>
-                            <div class="pos-table-map-actions">
-                                <span v-if="selectedTable" class="pos-table-map-badge">
-                                    Bàn đang chọn: {{ selectedTable.name }}
-                                </span>
-                                <button class="btn btn-primary" type="button" @click="viewState.mode = 'menu'">
-                                    <i class="bi bi-arrow-right-circle me-1"></i>
-                                    Tiếp tục chọn món
-                                </button>
-                            </div>
-                        </div>
-                        <PosTableMap @table-selected="handleTableSelected" />
-                    </div>
-                    <PosProductMenu
-                        v-else
-                        :selected-table="selectedTable"
-                        @product-selected="handleProductSelected"
-                        @back-to-tables="startTableSelection"
-                    />
-                </transition>
-            </aside>
+          <EmptyState
+            v-if="pendingTakeawayOrders.length === 0"
+            title="Chưa có đơn mang về"
+            message="Chưa có đơn mang về nào đang chờ."
+          >
+            <template #icon>
+              <i class="bi bi-bag-dash" />
+            </template>
+          </EmptyState>
+          <ul
+            v-else
+            class="pos-order-list"
+          >
+            <li
+              v-for="order in pendingTakeawayOrders"
+              :key="order.id"
+              :class="['pos-order-list__item', { 'pos-order-list__item--active': order.id === selectedTakeawayOrder?.id }]"
+              @click="handleTakeawaySelected(order)"
+            >
+              <div class="pos-order-list__content">
+                <div>
+                  <div class="pos-order-list__title">
+                    Đơn #{{ order.id }}
+                  </div>
+                  <small class="pos-order-list__meta">Tạo lúc {{ formatDateTime(order.createdAt) }}</small>
+                </div>
+                <div class="pos-order-list__right">
+                  <div class="pos-order-list__amount">
+                    {{ formatCurrency(order.totalAmount) }}
+                  </div>
+                  <small class="pos-order-list__meta">{{ order.orderDetails?.length || 0 }} món</small>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </section>
 
-            <aside class="pos-panel pos-panel--right">
-                <section class="pos-order-section">
-                    <header class="pos-order-section__header">
-                        <div>
-                            <h5 class="pos-order-section__title">Đơn mang về đang chờ</h5>
-                            <p class="pos-order-section__subtitle">Chọn để tiếp tục xử lý hoặc thanh toán.</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-outline-secondary"
-                            :disabled="isLoadingTakeawayOrders"
-                            @click="handleRefreshTakeawayOrders"
-                        >
-                            <span v-if="isLoadingTakeawayOrders" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-arrow-clockwise me-1"></i>
-                            Làm mới
-                        </button>
-                    </header>
+        <section class="pos-order-section">
+          <header class="pos-order-section__header">
+            <div>
+              <h5 class="pos-order-section__title">
+                Đơn nháp (chờ gán bàn)
+              </h5>
+              <span
+                v-if="!selectedTable && activeOrder && !activeOrder.id"
+                class="pos-order-section__badge"
+              >CHƯA GÁN BÀN</span>
+            </div>
+          </header>
 
-                    <EmptyState
-                        v-if="pendingTakeawayOrders.length === 0"
-                        title="Chưa có đơn mang về"
-                        message="Chưa có đơn mang về nào đang chờ."
-                    >
-                        <template #icon>
-                            <i class="bi bi-bag-dash"></i>
-                        </template>
-                    </EmptyState>
-                    <ul v-else class="pos-order-list">
-                        <li
-                            v-for="order in pendingTakeawayOrders"
-                            :key="order.id"
-                            :class="['pos-order-list__item', { 'pos-order-list__item--active': order.id === selectedTakeawayOrder?.id }]"
-                            @click="handleTakeawaySelected(order)"
-                        >
-                            <div class="pos-order-list__content">
-                                <div>
-                                    <div class="pos-order-list__title">Đơn #{{ order.id }}</div>
-                                    <small class="pos-order-list__meta">Tạo lúc {{ formatDateTime(order.createdAt) }}</small>
-                                </div>
-                                <div class="pos-order-list__right">
-                                    <div class="pos-order-list__amount">{{ formatCurrency(order.totalAmount) }}</div>
-                                    <small class="pos-order-list__meta">{{ order.orderDetails?.length || 0 }} món</small>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </section>
-
-                <section class="pos-order-section">
-                    <header class="pos-order-section__header">
-                        <div>
-                            <h5 class="pos-order-section__title">Đơn nháp (chờ gán bàn)</h5>
-                            <span v-if="!selectedTable && activeOrder && !activeOrder.id" class="pos-order-section__badge">CHƯA GÁN BÀN</span>
-                        </div>
-                    </header>
-
-                    <PosOrderCart
-                        ref="orderCartRef"
-                        :table="selectedTable"
-                        :order="activeOrder"
-                        :view-intent="viewState.intent"
-                        @order-updated="handleOrderUpdated"
-                        @create-new-takeaway="handleNewTakeaway"
-                        @request-table-selection="startTableSelection"
-                    />
-                </section>
-            </aside>
-        </div>
+          <PosOrderCart
+            ref="orderCartRef"
+            :table="selectedTable"
+            :order="activeOrder"
+            :view-intent="viewState.intent"
+            @order-updated="handleOrderUpdated"
+            @create-new-takeaway="handleNewTakeaway"
+            @request-table-selection="startTableSelection"
+          />
+        </section>
+      </aside>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -139,7 +197,7 @@ const tableStore = useTableStore()
 
 const viewState = reactive({
     mode: 'menu',
-    intent: 'product-first',
+    intent: 'product-first'
 })
 
 const TAKEAWAY_PAGE_SIZE = 50
@@ -147,10 +205,10 @@ const TAKEAWAY_PAGE_SIZE = 50
 const {
     data: takeawayOrdersPage,
     refetch: refetchTakeawayOrders,
-    isLoading: isLoadingTakeawayOrders,
+    isLoading: isLoadingTakeawayOrders
 } = useQuery({
     queryKey: ['pendingTakeawayOrders'],
-    queryFn: () => getOrdersByStatus('PENDING', 0, TAKEAWAY_PAGE_SIZE),
+    queryFn: () => getOrdersByStatus('PENDING', 0, TAKEAWAY_PAGE_SIZE)
 })
 
 const pendingTakeawayOrders = computed(() => {
@@ -188,7 +246,7 @@ const { data: fetchedOrder, refetch: refetchPendingOrder } = useQuery({
         }
     },
     enabled: shouldFetchPendingOrder,
-    retry: (failureCount, error) => error.response?.status !== 404 && failureCount < 2,
+    retry: (failureCount, error) => error.response?.status !== 404 && failureCount < 2
 })
 
 const startTableSelection = () => {
@@ -257,7 +315,7 @@ const handleOrderUpdated = async ({ reason, order } = {}) => {
     if ((reason === 'payment' || reason === 'cancelled') && selectedTable.value && (!targetTableId || selectedTable.value.id === targetTableId) && !isTakeaway) {
         selectedTable.value = {
             ...selectedTable.value,
-            status: 'EMPTY',
+            status: 'EMPTY'
         }
     }
 

@@ -1,56 +1,70 @@
 <template>
-    <div class="top-categories-table">
-        <div v-if="categories.length === 0" class="text-muted text-center">
-            Không có dữ liệu
-        </div>
-        <div v-else class="table-responsive">
-            <table class="table table-minimal">
-                <thead>
-                    <tr>
-                        <th>Danh mục</th>
-                        <th>Số lượng</th>
-                        <th>Tổng chi phí</th>
-                        <th>Tỷ lệ</th>
-                        <th>Xu hướng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="(category, index) in categories"
-                        :key="category.category"
-                    >
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="category-color" :style="{ backgroundColor: getCategoryColor(index) }"></div>
-                                <span class="fw-semibold">{{ category.categoryLabel }}</span>
-                            </div>
-                        </td>
-                        <td>{{ formatNumber(category.count) }}</td>
-                        <td class="cost-cell">{{ formatCurrency(category.amount) }}</td>
-                        <td>
-                            <div class="ratio-display">
-                                <div class="ratio-bar">
-                                    <div
-                                        class="ratio-fill"
-                                        :style="{
-                                            width: `${getRatio(category.amount)}%`,
-                                            backgroundColor: getCategoryColor(index)
-                                        }"
-                                    ></div>
-                                </div>
-                                <span class="ratio-text">{{ getRatio(category.amount).toFixed(1) }}%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="trend-badge" :class="getTrendClass(category)">
-                                <i :class="getTrendIcon(category)"></i>
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="top-categories-table">
+    <div
+      v-if="categories.length === 0"
+      class="text-muted text-center"
+    >
+      Không có dữ liệu
     </div>
+    <div
+      v-else
+      class="table-responsive"
+    >
+      <table class="table table-minimal">
+        <thead>
+          <tr>
+            <th>Danh mục</th>
+            <th>Số lượng</th>
+            <th>Tổng chi phí</th>
+            <th>Tỷ lệ</th>
+            <th>Xu hướng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(category, index) in categories"
+            :key="category.category"
+          >
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div
+                  class="category-color"
+                  :style="{ backgroundColor: getCategoryColor(index) }"
+                />
+                <span class="fw-semibold">{{ category.categoryLabel }}</span>
+              </div>
+            </td>
+            <td>{{ formatNumber(category.count) }}</td>
+            <td class="cost-cell">
+              {{ formatCurrency(category.amount) }}
+            </td>
+            <td>
+              <div class="ratio-display">
+                <div class="ratio-bar">
+                  <div
+                    class="ratio-fill"
+                    :style="{
+                      width: `${getRatio(category.amount)}%`,
+                      backgroundColor: getCategoryColor(index)
+                    }"
+                  />
+                </div>
+                <span class="ratio-text">{{ getRatio(category.amount).toFixed(1) }}%</span>
+              </div>
+            </td>
+            <td>
+              <span
+                class="trend-badge"
+                :class="getTrendClass(category)"
+              >
+                <i :class="getTrendIcon(category)" />
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>

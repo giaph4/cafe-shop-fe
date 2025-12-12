@@ -1,22 +1,27 @@
 <template>
-    <div class="emoji-picker">
-        <div class="emoji-picker__header">
-            <h6 class="mb-0">Chọn emoji</h6>
-            <button class="btn btn-sm btn-link p-0" @click="$emit('close')">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-        <div class="emoji-picker__grid">
-            <button
-                v-for="emoji in emojis"
-                :key="emoji"
-                class="emoji-picker__item"
-                @click="handleSelect(emoji)"
-            >
-                {{ emoji }}
-            </button>
-        </div>
+  <div class="emoji-picker">
+    <div class="emoji-picker__header">
+      <h6 class="mb-0">
+        Chọn emoji
+      </h6>
+      <button
+        class="btn btn-sm btn-link p-0"
+        @click="$emit('close')"
+      >
+        <i class="bi bi-x-lg" />
+      </button>
     </div>
+    <div class="emoji-picker__grid">
+      <button
+        v-for="emoji in emojis"
+        :key="emoji"
+        class="emoji-picker__item"
+        @click="handleSelect(emoji)"
+      >
+        {{ emoji }}
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>

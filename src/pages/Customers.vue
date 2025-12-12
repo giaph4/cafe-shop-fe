@@ -1,190 +1,279 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="customers-header">
-            <div class="customers-header__content">
-                <div class="customers-header__title-section">
-                    <h2 class="customers-header__title">Quản lý Khách hàng</h2>
-                    <p class="customers-header__subtitle">Xem thông tin khách hàng, lịch sử mua hàng và quản lý điểm tích lũy.</p>
-                </div>
-                <div class="customers-header__actions">
-                    <div class="form-check form-switch">
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            role="switch"
-                            id="autoRefreshSwitch"
-                            v-model="autoRefresh"
-                        >
-                        <label class="form-check-label" for="autoRefreshSwitch">Tự động làm mới</label>
-                    </div>
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="page-container container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="customers-header">
+      <div class="customers-header__content">
+        <div class="customers-header__title-section">
+          <h2 class="customers-header__title">
+            Quản lý Khách hàng
+          </h2>
+          <p class="customers-header__subtitle">
+            Xem thông tin khách hàng, lịch sử mua hàng và quản lý điểm tích lũy.
+          </p>
         </div>
-
-        <div class="card filter-card mb-4" v-if="activeTab === 'list'">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Tìm kiếm</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="Tên, SĐT hoặc email"
-                                v-model="filters.keyword"
-                                :disabled="loading"
-                            />
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
-                        <label class="form-label">Điểm thưởng từ</label>
-                        <input
-                            type="number"
-                            class="form-control"
-                            placeholder="0"
-                            v-model.number="filters.minLoyaltyPoints"
-                            min="0"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
-                        <label class="form-label">Điểm thưởng đến</label>
-                        <input
-                            type="number"
-                            class="form-control"
-                            placeholder="999999"
-                            v-model.number="filters.maxLoyaltyPoints"
-                            min="0"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
-                        <label class="form-label">Ngày tạo từ</label>
-                        <input type="date" class="form-control" v-model="filters.createdDateFrom" />
-                    </div>
-                    <div class="col-lg-2 col-md-4" v-if="activeTab === 'list'">
-                        <label class="form-label">Ngày tạo đến</label>
-                        <input type="date" class="form-control" v-model="filters.createdDateTo" />
-                    </div>
-                    <div class="col-lg-1 col-md-4">
-                        <button class="btn btn-outline-secondary w-100" type="button" @click="resetFilters" :disabled="loading">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="customers-header__actions">
+          <div class="form-check form-switch">
+            <input
+              id="autoRefreshSwitch"
+              v-model="autoRefresh"
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+            >
+            <label
+              class="form-check-label"
+              for="autoRefreshSwitch"
+            >Tự động làm mới</label>
+          </div>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchData"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            Làm mới
+          </button>
         </div>
-
-        <div class="card tabs-card">
-            <div class="card-body">
-                <div class="customer-tabs mb-4">
-                    <button
-                        v-for="tab in tabs"
-                        :key="tab.key"
-                        type="button"
-                        class="customer-tab"
-                        :class="{ active: activeTab === tab.key }"
-                        @click="activeTab = tab.key"
-                    >
-                        <i :class="tab.icon"></i>
-                        <span>{{ tab.label }}</span>
-                    </button>
-                </div>
-                <LoadingState v-if="loading && activeTab !== 'overview'" />
-                <ErrorState v-else-if="error && activeTab !== 'overview'" :message="error" @retry="fetchData" />
-                <div v-else class="tab-content">
-                    <CustomerOverviewTab
-                        v-if="activeTab === 'overview'"
-                        :stats="overviewStats"
-                        :recent-customers="recentCustomers"
-                        :top-customers="topCustomers"
-                    />
-                    <CustomerListTab
-                        v-else-if="activeTab === 'list'"
-                        :customers="filteredCustomers"
-                        :loading="loading"
-                        :error="error"
-                        :zero-based-page="zeroBasedPage"
-                        :total-pages="totalPages"
-                        :total-elements="totalElements"
-                        :can-manage="canManage"
-                        :can-delete="canDelete"
-                        :can-export="canExport"
-                        :deleting="deleting"
-                        @create="openCreateModal"
-                        @view-detail="openDetailDrawer"
-                        @edit="openEditModal"
-                        @delete="confirmDelete"
-                        @page-change="handlePageChange"
-                        @export="handleExport"
-                    />
-                    <CustomerStatisticsTab
-                        v-else-if="activeTab === 'statistics'"
-                        :stats="statisticsStats"
-                        :loyalty-distribution="loyaltyDistribution"
-                        :monthly-new-customers="monthlyNewCustomers"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <CustomerDetailModal
-            ref="customerDetailModalRef"
-            :customer-id="detailState.customerId"
-            @close="handleDetailClose"
-            @edit="handleDetailEdit"
-        />
-
-        <CustomerFormModal
-            ref="customerFormModalRef"
-            :mode="formState.mode"
-            :loading="formState.submitting"
-            :customer="formState.initialData"
-            @close="handleFormClose"
-            @submit="handleFormSubmit"
-        />
-
-        <Teleport to="body">
-            <div class="modal fade customer-delete-modal" tabindex="-1" aria-labelledby="deleteCustomerModalLabel" aria-hidden="true" ref="deleteModalRef">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div class="modal-header__content">
-                                <h5 class="modal-title" id="deleteCustomerModalLabel">Xóa khách hàng</h5>
-                                <p class="modal-subtitle">Hành động này không thể hoàn tác.</p>
-                            </div>
-                            <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="deleting" aria-label="Đóng"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="mb-4">Bạn có chắc chắn muốn xóa khách hàng này không?</p>
-                            <div class="delete-info-card">
-                                <div class="delete-info-item">
-                                    <span class="delete-info-label">Khách hàng:</span>
-                                    <span class="delete-info-value">{{ deleteTarget?.fullName || '—' }}</span>
-                                </div>
-                                <div class="delete-info-item">
-                                    <span class="delete-info-label">Số điện thoại:</span>
-                                    <span class="delete-info-value">{{ deleteTarget?.phone || '—' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="closeDeleteModal" :disabled="deleting">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="handleDeleteConfirm" :disabled="deleting">
-                                <span v-if="deleting" class="spinner-border spinner-border-sm me-2"></span>
-                                Xóa khách hàng
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+      </div>
     </div>
+
+    <div
+      v-if="activeTab === 'list'"
+      class="card filter-card mb-4"
+    >
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Tìm kiếm</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search" /></span>
+              <input
+                v-model="filters.keyword"
+                type="text"
+                class="form-control"
+                placeholder="Tên, SĐT hoặc email"
+                :disabled="loading"
+              >
+            </div>
+          </div>
+          <div
+            v-if="activeTab === 'list'"
+            class="col-lg-2 col-md-4"
+          >
+            <label class="form-label">Điểm thưởng từ</label>
+            <input
+              v-model.number="filters.minLoyaltyPoints"
+              type="number"
+              class="form-control"
+              placeholder="0"
+              min="0"
+            >
+          </div>
+          <div
+            v-if="activeTab === 'list'"
+            class="col-lg-2 col-md-4"
+          >
+            <label class="form-label">Điểm thưởng đến</label>
+            <input
+              v-model.number="filters.maxLoyaltyPoints"
+              type="number"
+              class="form-control"
+              placeholder="999999"
+              min="0"
+            >
+          </div>
+          <div
+            v-if="activeTab === 'list'"
+            class="col-lg-2 col-md-4"
+          >
+            <label class="form-label">Ngày tạo từ</label>
+            <input
+              v-model="filters.createdDateFrom"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div
+            v-if="activeTab === 'list'"
+            class="col-lg-2 col-md-4"
+          >
+            <label class="form-label">Ngày tạo đến</label>
+            <input
+              v-model="filters.createdDateTo"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-1 col-md-4">
+            <button
+              class="btn btn-outline-secondary w-100"
+              type="button"
+              :disabled="loading"
+              @click="resetFilters"
+            >
+              <i class="bi bi-arrow-counterclockwise" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card tabs-card">
+      <div class="card-body">
+        <div class="customer-tabs mb-4">
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            type="button"
+            class="customer-tab"
+            :class="{ active: activeTab === tab.key }"
+            @click="activeTab = tab.key"
+          >
+            <i :class="tab.icon" />
+            <span>{{ tab.label }}</span>
+          </button>
+        </div>
+        <LoadingState v-if="loading && activeTab !== 'overview'" />
+        <ErrorState
+          v-else-if="error && activeTab !== 'overview'"
+          :message="error"
+          @retry="fetchData"
+        />
+        <div
+          v-else
+          class="tab-content"
+        >
+          <CustomerOverviewTab
+            v-if="activeTab === 'overview'"
+            :stats="overviewStats"
+            :recent-customers="recentCustomers"
+            :top-customers="topCustomers"
+          />
+          <CustomerListTab
+            v-else-if="activeTab === 'list'"
+            :customers="filteredCustomers"
+            :loading="loading"
+            :error="error"
+            :zero-based-page="zeroBasedPage"
+            :total-pages="totalPages"
+            :total-elements="totalElements"
+            :can-manage="canManage"
+            :can-delete="canDelete"
+            :can-export="canExport"
+            :deleting="deleting"
+            @create="openCreateModal"
+            @view-detail="openDetailDrawer"
+            @edit="openEditModal"
+            @delete="confirmDelete"
+            @page-change="handlePageChange"
+            @export="handleExport"
+            @refresh="fetchData"
+          />
+          <CustomerStatisticsTab
+            v-else-if="activeTab === 'statistics'"
+            :stats="statisticsStats"
+            :loyalty-distribution="loyaltyDistribution"
+            :monthly-new-customers="monthlyNewCustomers"
+          />
+        </div>
+      </div>
+    </div>
+
+    <CustomerDetailModal
+      ref="customerDetailModalRef"
+      :customer-id="detailState.customerId"
+      @close="handleDetailClose"
+      @edit="handleDetailEdit"
+    />
+
+    <CustomerFormModal
+      ref="customerFormModalRef"
+      :mode="formState.mode"
+      :loading="formState.submitting"
+      :customer="formState.initialData"
+      @close="handleFormClose"
+      @submit="handleFormSubmit"
+    />
+
+    <Teleport to="body">
+      <div
+        ref="deleteModalRef"
+        class="modal fade customer-delete-modal"
+        tabindex="-1"
+        aria-labelledby="deleteCustomerModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div class="modal-header__content">
+                <h5
+                  id="deleteCustomerModalLabel"
+                  class="modal-title"
+                >
+                  Xóa khách hàng
+                </h5>
+                <p class="modal-subtitle">
+                  Hành động này không thể hoàn tác.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                :disabled="deleting"
+                aria-label="Đóng"
+                @click="closeDeleteModal"
+              />
+            </div>
+            <div class="modal-body">
+              <p class="mb-4">
+                Bạn có chắc chắn muốn xóa khách hàng này không?
+              </p>
+              <div class="delete-info-card">
+                <div class="delete-info-item">
+                  <span class="delete-info-label">Khách hàng:</span>
+                  <span class="delete-info-value">{{ deleteTarget?.fullName || '—' }}</span>
+                </div>
+                <div class="delete-info-item">
+                  <span class="delete-info-label">Số điện thoại:</span>
+                  <span class="delete-info-value">{{ deleteTarget?.phone || '—' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="deleting"
+                @click="closeDeleteModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                :disabled="deleting"
+                @click="handleDeleteConfirm"
+              >
+                <span
+                  v-if="deleting"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                Xóa khách hàng
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -204,6 +293,7 @@ import ErrorState from '@/components/common/ErrorState.vue'
 import { PaginationMode, usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/store/auth'
 import { useAsyncOperation } from '@/composables/useAsyncOperation'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import {
     createCustomer,
     deleteCustomer,
@@ -294,11 +384,11 @@ const fetchCustomers = async (fetchAll = false) => {
         const response = await getCustomers({
             keyword: filters.keyword?.trim() || '',
             page: fetchAll ? 0 : zeroBasedPage.value,
-            size: size
+            size
         })
 
         const list = Array.isArray(response?.content) ? response.content : []
-        
+
         if (fetchAll) {
             allCustomers.value = list
         } else {
@@ -419,17 +509,17 @@ const overviewStats = computed(() => {
     const thisMonth = new Date()
     thisMonth.setDate(1)
     thisMonth.setHours(0, 0, 0, 0)
-    
+
     const newThisMonth = allCustomers.value.filter(c => {
         const created = new Date(c.createdAt)
         return created >= thisMonth
     }).length
-    
+
     const totalLoyaltyPoints = allCustomers.value.reduce((sum, c) => sum + (Number(c.loyaltyPoints) || 0), 0)
     const avgLoyaltyPoints = total > 0 ? Math.round(totalLoyaltyPoints / total) : 0
-    
+
     const vipCount = allCustomers.value.filter(c => (Number(c.loyaltyPoints) || 0) >= 1000).length
-    
+
     return [
         {
             label: 'Tổng khách hàng',
@@ -458,17 +548,13 @@ const overviewStats = computed(() => {
     ]
 })
 
-const recentCustomers = computed(() => {
-    return [...allCustomers.value]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5)
-})
+const recentCustomers = computed(() => [...allCustomers.value]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5))
 
-const topCustomers = computed(() => {
-    return [...allCustomers.value]
-        .sort((a, b) => (Number(b.loyaltyPoints) || 0) - (Number(a.loyaltyPoints) || 0))
-        .slice(0, 5)
-})
+const topCustomers = computed(() => [...allCustomers.value]
+    .sort((a, b) => (Number(b.loyaltyPoints) || 0) - (Number(a.loyaltyPoints) || 0))
+    .slice(0, 5))
 
 const statisticsStats = computed(() => {
     const total = allCustomers.value.length
@@ -477,7 +563,7 @@ const statisticsStats = computed(() => {
     const maxLoyaltyPoints = allCustomers.value.length > 0
         ? Math.max(...allCustomers.value.map(c => Number(c.loyaltyPoints) || 0))
         : 0
-    
+
     return [
         {
             label: 'Tổng khách hàng',
@@ -508,7 +594,7 @@ const loyaltyDistribution = computed(() => {
         { label: '1001-5000', min: 1001, max: 5000 },
         { label: '5000+', min: 5001, max: Infinity }
     ]
-    
+
     const distribution = ranges.map(range => {
         const count = allCustomers.value.filter(c => {
             const points = Number(c.loyaltyPoints) || 0
@@ -516,9 +602,9 @@ const loyaltyDistribution = computed(() => {
         }).length
         return { ...range, count }
     })
-    
+
     const total = distribution.reduce((sum, item) => sum + item.count, 0)
-    
+
     return distribution.map(item => ({
         range: item.label,
         count: item.count,
@@ -536,7 +622,7 @@ const monthlyNewCustomers = computed(() => {
         }
         monthly[key].count++
     })
-    
+
     return Object.values(monthly)
         .sort((a, b) => {
             if (a.year !== b.year) return b.year - a.year
@@ -557,13 +643,13 @@ const handleExport = () => {
         c.createdAt || '',
         c.updatedAt || ''
     ])
-    
+
     const csvContent = [
         headers.join(','),
         ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n')
-    
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+
+    const blob = new Blob([`\ufeff${  csvContent}`], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
@@ -572,9 +658,32 @@ const handleExport = () => {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     toast.success('Đã xuất danh sách khách hàng thành công!')
 }
+
+// Setup keyboard shortcuts
+useKeyboardShortcuts({
+    page: 'customers',
+    shortcuts: {
+        'new-customer': {
+            handler: () => {
+                if (canManage.value) {
+                    openCreateModal()
+                }
+            }
+        },
+        'search': {
+            handler: () => {
+                // Focus vào search input
+                const searchInput = document.querySelector('.filter-card input[type="text"]')
+                if (searchInput) {
+                    searchInput.focus()
+                }
+            }
+        }
+    }
+})
 
 const openCreateModal = () => {
     if (!canManage.value) return
@@ -707,9 +816,9 @@ const handlePageChange = (page) => {
 // Filter customers for List tab
 const filteredCustomers = computed(() => {
     if (activeTab.value !== 'list') return customers.value
-    
+
     let filtered = [...customers.value]
-    
+
     // Filter by loyalty points
     if (filters.minLoyaltyPoints !== null && filters.minLoyaltyPoints !== '') {
         filtered = filtered.filter(c => (Number(c.loyaltyPoints) || 0) >= Number(filters.minLoyaltyPoints))
@@ -717,7 +826,7 @@ const filteredCustomers = computed(() => {
     if (filters.maxLoyaltyPoints !== null && filters.maxLoyaltyPoints !== '') {
         filtered = filtered.filter(c => (Number(c.loyaltyPoints) || 0) <= Number(filters.maxLoyaltyPoints))
     }
-    
+
     // Filter by created date
     if (filters.createdDateFrom) {
         const fromDate = new Date(filters.createdDateFrom)
@@ -737,7 +846,7 @@ const filteredCustomers = computed(() => {
             return created <= toDate
         })
     }
-    
+
     return filtered
 })
 

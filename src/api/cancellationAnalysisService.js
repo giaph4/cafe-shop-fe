@@ -1,5 +1,5 @@
 import { buildApiError } from '@/utils/errorHandler'
-import * as orderService from './orderService'
+import api from './axios'
 
 const toNumber = (value) => {
     if (value === null || value === undefined) return 0
@@ -14,152 +14,95 @@ const calculateCancellationRate = (cancelled, total) => {
 
 export const analyzeCancellations = async ({ startDate, endDate } = {}) => {
     try {
-        const [allOrders, cancelledOrders] = await Promise.all([
-            orderService.getOrdersByDateRange(startDate, endDate, 0, 10000),
-            orderService.getOrdersByStatus('CANCELLED', { startDate, endDate })
-        ])
-        
-        const ordersList = Array.isArray(allOrders) ? allOrders : (allOrders?.content || [])
-        const cancelledList = Array.isArray(cancelledOrders) ? cancelledOrders : (cancelledOrders?.content || [])
-        
-        const totalOrders = ordersList.length
-        const totalCancelled = cancelledList.length
-        const cancellationRate = calculateCancellationRate(totalCancelled, totalOrders)
-        
-        const revenueLost = cancelledList.reduce((sum, order) => sum + toNumber(order.totalAmount), 0)
-        
-        const hourlyAnalysis = {}
-        const productAnalysis = {}
-        const tableAnalysis = {}
-        const reasonAnalysis = {}
-        
-        cancelledList.forEach(order => {
-            const orderDate = order.createdAt ? new Date(order.createdAt) : new Date()
-            if (!isNaN(orderDate.getTime())) {
-                const hour = orderDate.getHours()
-                if (!hourlyAnalysis[hour]) {
-                    hourlyAnalysis[hour] = {
-                        hour,
-                        count: 0,
-                        revenue: 0
-                    }
-                }
-                hourlyAnalysis[hour].count++
-                hourlyAnalysis[hour].revenue += toNumber(order.totalAmount)
-            }
-            
-            if (order.items && Array.isArray(order.items)) {
-                order.items.forEach(item => {
-                    const productId = item.productId || item.product?.id
-                    const productName = item.productName || item.product?.name || 'Unknown'
-                    
-                    if (!productAnalysis[productId]) {
-                        productAnalysis[productId] = {
-                            productId,
-                            productName,
-                            count: 0,
-                            revenue: 0
-                        }
-                    }
-                    productAnalysis[productId].count++
-                    productAnalysis[productId].revenue += toNumber(item.totalPrice)
-                })
-            }
-            
-            const tableId = order.tableId || order.table?.id
-            const tableName = order.tableName || order.table?.name || 'Takeaway'
-            if (tableId) {
-                if (!tableAnalysis[tableId]) {
-                    tableAnalysis[tableId] = {
-                        tableId,
-                        tableName,
-                        count: 0,
-                        revenue: 0
-                    }
-                }
-                tableAnalysis[tableId].count++
-                tableAnalysis[tableId].revenue += toNumber(order.totalAmount)
-            }
-            
-            const reason = order.cancellationReason || order.reason || 'Không rõ'
-            if (!reasonAnalysis[reason]) {
-                reasonAnalysis[reason] = {
-                    reason,
-                    count: 0,
-                    revenue: 0
-                }
-            }
-            reasonAnalysis[reason].count++
-            reasonAnalysis[reason].revenue += toNumber(order.totalAmount)
+        // Call backend API instead of calculating locally
+        const { data } = await api.get('/api/v1/reports/cancellation-analysis', {
+            params: { startDate, endDate }
         })
-        
-        const topCancelledHours = Object.values(hourlyAnalysis)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 5)
-        
-        const topCancelledProducts = Object.values(productAnalysis)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 10)
-        
-        const topCancelledTables = Object.values(tableAnalysis)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 10)
-        
-        const topReasons = Object.values(reasonAnalysis)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 5)
-        
-        const dailyTrend = {}
-        cancelledList.forEach(order => {
-            const orderDate = order.createdAt ? new Date(order.createdAt) : new Date()
-            if (!isNaN(orderDate.getTime())) {
-                const dateKey = orderDate.toISOString().split('T')[0]
-                if (!dailyTrend[dateKey]) {
-                    dailyTrend[dateKey] = {
-                        date: dateKey,
-                        count: 0,
-                        revenue: 0
-                    }
-                }
-                dailyTrend[dateKey].count++
-                dailyTrend[dateKey].revenue += toNumber(order.totalAmount)
-            }
-        })
-        
-        const recommendations = generateRecommendations({
-            cancellationRate,
-            topCancelledHours,
-            topCancelledProducts,
-            topCancelledTables,
-            topReasons,
-            revenueLost
-        })
-        
+
+        if (!data) {
+            throw new Error('Không nhận được dữ liệu từ server')
+        }
+
+        // Normalize response to match frontend expectations
         return {
             summary: {
-                totalOrders,
-                totalCancelled,
-                cancellationRate,
-                revenueLost,
-                avgOrderValue: totalCancelled > 0 ? revenueLost / totalCancelled : 0
+                totalOrders: data.summary?.totalOrders || 0,
+                totalCancelled: data.summary?.totalCancelled || 0,
+                cancellationRate: toNumber(data.summary?.cancellationRate),
+                revenueLost: toNumber(data.summary?.revenueLost),
+                avgOrderValue: toNumber(data.summary?.avgOrderValue)
             },
-            hourlyAnalysis: Object.values(hourlyAnalysis).sort((a, b) => a.hour - b.hour),
-            topCancelledHours,
-            productAnalysis: Object.values(productAnalysis),
-            topCancelledProducts,
-            tableAnalysis: Object.values(tableAnalysis),
-            topCancelledTables,
-            reasonAnalysis: Object.values(reasonAnalysis),
-            topReasons,
-            dailyTrend: Object.values(dailyTrend).sort((a, b) => a.date.localeCompare(b.date)),
-            cancelledOrders: cancelledList.sort((a, b) => {
-                const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0)
-                const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0)
-                return dateB - dateA
-            }),
-            recommendations,
-            period: { startDate, endDate },
-            generatedAt: new Date().toISOString()
+            hourlyAnalysis: (data.hourlyAnalysis || []).map(h => ({
+                hour: h.hour,
+                count: h.count || 0,
+                revenue: toNumber(h.revenue)
+            })),
+            topCancelledHours: (data.topCancelledHours || []).map(h => ({
+                hour: parseInt(h.key || h.name?.replace(':00', '') || '0'),
+                count: h.count || 0,
+                revenue: toNumber(h.revenue)
+            })),
+            productAnalysis: (data.productAnalysis || []).map(p => ({
+                productId: p.productId,
+                productName: p.productName,
+                count: p.count || 0,
+                revenue: toNumber(p.revenue)
+            })),
+            topCancelledProducts: (data.topCancelledProducts || []).map(p => ({
+                productId: parseInt(p.key || '0'),
+                productName: p.name,
+                count: p.count || 0,
+                revenue: toNumber(p.revenue)
+            })),
+            tableAnalysis: (data.tableAnalysis || []).map(t => ({
+                tableId: t.tableId,
+                tableName: t.tableName,
+                count: t.count || 0,
+                revenue: toNumber(t.revenue)
+            })),
+            topCancelledTables: (data.topCancelledTables || []).map(t => ({
+                tableId: parseInt(t.key || '0'),
+                tableName: t.name,
+                count: t.count || 0,
+                revenue: toNumber(t.revenue)
+            })),
+            reasonAnalysis: (data.reasonAnalysis || []).map(r => ({
+                reason: r.reason,
+                count: r.count || 0,
+                revenue: toNumber(r.revenue)
+            })),
+            topReasons: (data.topReasons || []).map(r => ({
+                reason: r.name,
+                count: r.count || 0,
+                revenue: toNumber(r.revenue)
+            })),
+            dailyTrend: (data.dailyTrend || []).map(d => ({
+                date: d.date,
+                count: d.count || 0,
+                revenue: toNumber(d.revenue)
+            })),
+            cancelledOrders: (data.cancelledOrders || []).map(o => ({
+                id: o.id,
+                orderId: o.id,
+                createdAt: o.createdAt,
+                totalAmount: toNumber(o.totalAmount),
+                cancellationReason: o.cancellationReason || 'Không rõ',
+                reason: o.cancellationReason || 'Không rõ',
+                tableName: o.tableName,
+                table: o.tableName ? { name: o.tableName } : null
+            })),
+            recommendations: (data.recommendations || []).map(r => ({
+                type: r.type,
+                priority: r.priority,
+                message: r.message,
+                impact: r.impact,
+                action: r.action
+            })),
+            period: {
+                startDate: data.period?.startDate || startDate,
+                endDate: data.period?.endDate || endDate
+            },
+            generatedAt: data.generatedAt || new Date().toISOString()
         }
     } catch (error) {
         throw buildApiError(error)
@@ -168,7 +111,7 @@ export const analyzeCancellations = async ({ startDate, endDate } = {}) => {
 
 const generateRecommendations = (data) => {
     const recommendations = []
-    
+
     if (data.cancellationRate > 10) {
         recommendations.push({
             type: 'high_rate',
@@ -178,7 +121,7 @@ const generateRecommendations = (data) => {
             action: 'Phân tích chi tiết các đơn hủy và cải thiện service'
         })
     }
-    
+
     if (data.topCancelledHours.length > 0) {
         const peakHour = data.topCancelledHours[0]
         recommendations.push({
@@ -189,7 +132,7 @@ const generateRecommendations = (data) => {
             action: 'Tăng nhân sự hoặc tối ưu quy trình trong giờ cao điểm'
         })
     }
-    
+
     if (data.topCancelledProducts.length > 0) {
         const topProduct = data.topCancelledProducts[0]
         recommendations.push({
@@ -200,7 +143,7 @@ const generateRecommendations = (data) => {
             action: 'Kiểm tra chất lượng, thời gian chế biến hoặc giá cả của sản phẩm'
         })
     }
-    
+
     if (data.topReasons.length > 0) {
         const topReason = data.topReasons[0]
         recommendations.push({
@@ -211,7 +154,7 @@ const generateRecommendations = (data) => {
             action: `Tập trung giải quyết vấn đề: ${topReason.reason}`
         })
     }
-    
+
     if (data.revenueLost > 10000000) {
         recommendations.push({
             type: 'revenue_impact',
@@ -221,11 +164,11 @@ const generateRecommendations = (data) => {
             action: 'Ưu tiên cải thiện để giảm tỷ lệ hủy đơn'
         })
     }
-    
+
     return recommendations
 }
 
-export const exportCancellationReport = async (analysisData) => {
+export const exportCancellationReport = (analysisData) => {
     const data = [
         ['BÁO CÁO PHÂN TÍCH TỶ LỆ HỦY ĐƠN'],
         ['Thời gian:', `${analysisData.period.startDate} - ${analysisData.period.endDate}`],
@@ -240,7 +183,7 @@ export const exportCancellationReport = async (analysisData) => {
         ['CHI TIẾT ĐƠN HỦY'],
         ['Mã đơn', 'Thời gian', 'Tổng tiền', 'Lý do hủy', 'Bàn']
     ]
-    
+
     analysisData.cancelledOrders.slice(0, 100).forEach(order => {
         const orderDate = order.createdAt ? new Date(order.createdAt) : new Date()
         data.push([
@@ -251,7 +194,7 @@ export const exportCancellationReport = async (analysisData) => {
             order.tableName || order.table?.name || 'Takeaway'
         ])
     })
-    
+
     return {
         data,
         sheetName: 'Phân tích hủy đơn',

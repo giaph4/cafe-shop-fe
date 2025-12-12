@@ -1,179 +1,231 @@
 <template>
-    <div class="order-overview-tab">
-        <div class="row g-4 mb-4">
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--revenue">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-cash-stack"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Doanh thu hôm nay:</div>
-                        <div class="kpi-card__value">{{ formatCurrency(todayRevenue) }}</div>
-                    </div>
-                </div>
+  <div class="order-overview-tab">
+    <div class="row g-4 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--revenue">
+          <div class="kpi-card__icon">
+            <i class="bi bi-cash-stack" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Doanh thu hôm nay:
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--month">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-calendar-check"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Doanh thu tháng:</div>
-                        <div class="kpi-card__value">{{ formatCurrency(monthlyRevenue) }}</div>
-                    </div>
-                </div>
+            <div class="kpi-card__value">
+              {{ formatCurrency(todayRevenue) }}
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--orders">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-clipboard-check"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Đơn hàng hôm nay:</div>
-                        <div class="kpi-card__value">{{ formatNumber(todayOrders) }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--pending">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Đơn đang chờ:</div>
-                        <div class="kpi-card__value">{{ formatNumber(pendingOrders) }}</div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-
-        <div class="row g-4 mb-4">
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--average">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-receipt"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Giá trị đơn trung bình:</div>
-                        <div class="kpi-card__value">{{ formatCurrency(averageOrderValue) }}</div>
-                    </div>
-                </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--month">
+          <div class="kpi-card__icon">
+            <i class="bi bi-calendar-check" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Doanh thu tháng:
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--profit">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Lợi nhuận hôm nay:</div>
-                        <div class="kpi-card__value">{{ formatCurrency(todayProfit) }}</div>
-                    </div>
-                </div>
+            <div class="kpi-card__value">
+              {{ formatCurrency(monthlyRevenue) }}
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--paid">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Đã thanh toán:</div>
-                        <div class="kpi-card__value">{{ formatNumber(paidOrders) }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--total">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-bag-check"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Tổng đơn hàng:</div>
-                        <div class="kpi-card__value">{{ formatNumber(totalOrders) }}</div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-lg-6">
-                <div class="card card-shadow">
-                    <div class="card-header">
-                        <h5 class="mb-0">Đơn hàng gần đây</h5>
-                    </div>
-                    <div class="card-body">
-                        <EmptyState
-                            v-if="recentOrders.length === 0"
-                            title="Chưa có đơn hàng"
-                            message="Chưa có đơn hàng nào được tạo."
-                        >
-                            <template #icon>
-                                <i class="bi bi-receipt-cutoff"></i>
-                            </template>
-                        </EmptyState>
-                        <div v-else class="list-group list-group-flush">
-                            <div
-                                v-for="order in recentOrders"
-                                :key="order.id"
-                                class="list-group-item px-0 border-bottom"
-                            >
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold">Đơn #{{ order.id }}</div>
-                                        <small class="text-muted">
-                                            {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
-                                        </small>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-semibold" style="color: var(--color-primary); font-family: var(--font-family-sans);">{{ formatCurrency(order.totalAmount) }}</div>
-                                        <span :class="['badge', getStatusBadgeClass(order.status)]" :style="getStatusBadgeStyle(order.status)">
-                                            {{ getStatusLabel(order.status) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--orders">
+          <div class="kpi-card__icon">
+            <i class="bi bi-clipboard-check" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Đơn hàng hôm nay:
             </div>
-            <div class="col-lg-6">
-                <div class="card card-shadow">
-                    <div class="card-header">
-                        <h5 class="mb-0">Phân bổ theo trạng thái</h5>
-                    </div>
-                    <div class="card-body">
-                        <EmptyState
-                            v-if="statusDistribution.length === 0"
-                            title="Chưa có dữ liệu"
-                            message="Chưa có dữ liệu phân bổ trạng thái."
-                        >
-                            <template #icon>
-                                <i class="bi bi-pie-chart"></i>
-                            </template>
-                        </EmptyState>
-                        <div v-else>
-                            <div
-                                v-for="item in statusDistribution"
-                                :key="item.status"
-                                class="mb-3"
-                            >
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="small fw-semibold">{{ item.label }}</span>
-                                    <span class="small text-muted">{{ item.count }} ({{ formatPercent(item.percentage) }})</span>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div
-                                        class="progress-bar"
-                                        :class="getStatusProgressClass(item.status)"
-                                        :style="{ width: `${item.percentage}%` }"
-                                    ></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(todayOrders) }}
             </div>
+          </div>
         </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--pending">
+          <div class="kpi-card__icon">
+            <i class="bi bi-exclamation-triangle" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Đơn đang chờ:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(pendingOrders) }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--average">
+          <div class="kpi-card__icon">
+            <i class="bi bi-receipt" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Giá trị đơn trung bình:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatCurrency(averageOrderValue) }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--profit">
+          <div class="kpi-card__icon">
+            <i class="bi bi-graph-up" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Lợi nhuận hôm nay:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatCurrency(todayProfit) }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--paid">
+          <div class="kpi-card__icon">
+            <i class="bi bi-people" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Đã thanh toán:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(paidOrders) }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--total">
+          <div class="kpi-card__icon">
+            <i class="bi bi-bag-check" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Tổng đơn hàng:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(totalOrders) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-lg-6">
+        <div class="card card-shadow">
+          <div class="card-header">
+            <h5 class="mb-0">
+              Đơn hàng gần đây
+            </h5>
+          </div>
+          <div class="card-body">
+            <EmptyState
+              v-if="recentOrders.length === 0"
+              title="Chưa có đơn hàng"
+              message="Chưa có đơn hàng nào được tạo."
+            >
+              <template #icon>
+                <i class="bi bi-receipt-cutoff" />
+              </template>
+            </EmptyState>
+            <div
+              v-else
+              class="list-group list-group-flush"
+            >
+              <div
+                v-for="order in recentOrders"
+                :key="order.id"
+                class="list-group-item px-0 border-bottom"
+              >
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="fw-semibold">
+                      Đơn #{{ order.id }}
+                    </div>
+                    <small class="text-muted">
+                      {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
+                    </small>
+                  </div>
+                  <div class="text-end">
+                    <div
+                      class="fw-semibold"
+                      style="color: var(--color-primary); font-family: var(--font-family-sans);"
+                    >
+                      {{ formatCurrency(order.totalAmount) }}
+                    </div>
+                    <span
+                      :class="['badge', getStatusBadgeClass(order.status)]"
+                      :style="getStatusBadgeStyle(order.status)"
+                    >
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card card-shadow">
+          <div class="card-header">
+            <h5 class="mb-0">
+              Phân bổ theo trạng thái
+            </h5>
+          </div>
+          <div class="card-body">
+            <EmptyState
+              v-if="statusDistribution.length === 0"
+              title="Chưa có dữ liệu"
+              message="Chưa có dữ liệu phân bổ trạng thái."
+            >
+              <template #icon>
+                <i class="bi bi-pie-chart" />
+              </template>
+            </EmptyState>
+            <div v-else>
+              <div
+                v-for="item in statusDistribution"
+                :key="item.status"
+                class="mb-3"
+              >
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="small fw-semibold">{{ item.label }}</span>
+                  <span class="small text-muted">{{ item.count }} ({{ formatPercent(item.percentage) }})</span>
+                </div>
+                <div
+                  class="progress"
+                  style="height: 8px;"
+                >
+                  <div
+                    class="progress-bar"
+                    :class="getStatusProgressClass(item.status)"
+                    :style="{ width: `${item.percentage}%` }"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -201,51 +253,41 @@ const STATUS_METADATA = {
 
 const totalOrders = computed(() => props.orders.length)
 
-const pendingOrders = computed(() => {
-    return props.orders.filter(o => o.status === 'PENDING').length
-})
+const pendingOrders = computed(() => props.orders.filter(o => o.status === 'PENDING').length)
 
-const paidOrders = computed(() => {
-    return props.orders.filter(o => o.status === 'PAID').length
-})
+const paidOrders = computed(() => props.orders.filter(o => o.status === 'PAID').length)
 
-const paidRate = computed(() => {
+const _paidRate = computed(() => {
     if (totalOrders.value === 0) return 0
     return (paidOrders.value / totalOrders.value) * 100
 })
 
-const totalRevenue = computed(() => {
-    return props.orders
-        .filter(o => o.status === 'PAID')
-        .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0)
-})
+const _totalRevenue = computed(() => props.orders
+    .filter(o => o.status === 'PAID')
+    .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0))
 
 // Today's data
 const today = new Date()
 today.setHours(0, 0, 0, 0)
 
-const todayOrders = computed(() => {
-    return props.orders.filter(o => {
+const todayOrders = computed(() => props.orders.filter(o => {
+    const orderDate = new Date(o.createdAt)
+    orderDate.setHours(0, 0, 0, 0)
+    return orderDate.getTime() === today.getTime()
+}).length)
+
+const todayRevenue = computed(() => props.orders
+    .filter(o => {
         const orderDate = new Date(o.createdAt)
         orderDate.setHours(0, 0, 0, 0)
-        return orderDate.getTime() === today.getTime()
-    }).length
-})
+        return orderDate.getTime() === today.getTime() && o.status === 'PAID'
+    })
+    .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0))
 
-const todayRevenue = computed(() => {
-    return props.orders
-        .filter(o => {
-            const orderDate = new Date(o.createdAt)
-            orderDate.setHours(0, 0, 0, 0)
-            return orderDate.getTime() === today.getTime() && o.status === 'PAID'
-        })
-        .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0)
-})
-
-const todayProfit = computed(() => {
+const todayProfit = computed(() =>
     // Simplified: profit = revenue * 0.3 (30% margin)
-    return todayRevenue.value * 0.3
-})
+    todayRevenue.value * 0.3
+)
 
 // Monthly data
 const monthlyRevenue = computed(() => {
@@ -254,8 +296,8 @@ const monthlyRevenue = computed(() => {
     return props.orders
         .filter(o => {
             const orderDate = new Date(o.createdAt)
-            return orderDate.getMonth() === currentMonth && 
-                   orderDate.getFullYear() === currentYear && 
+            return orderDate.getMonth() === currentMonth &&
+                   orderDate.getFullYear() === currentYear &&
                    o.status === 'PAID'
         })
         .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0)
@@ -268,11 +310,9 @@ const averageOrderValue = computed(() => {
     return sum / paidOrdersList.length
 })
 
-const recentOrders = computed(() => {
-    return [...props.orders]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5)
-})
+const recentOrders = computed(() => [...props.orders]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5))
 
 const statusDistribution = computed(() => {
     const distribution = {}
@@ -291,13 +331,9 @@ const statusDistribution = computed(() => {
     }).sort((a, b) => b.count - a.count)
 })
 
-const getStatusLabel = (status) => {
-    return STATUS_METADATA[status]?.label || status
-}
+const getStatusLabel = (status) => STATUS_METADATA[status]?.label || status
 
-const getStatusBadgeClass = (status) => {
-    return STATUS_METADATA[status]?.badgeClass || 'badge'
-}
+const getStatusBadgeClass = (status) => STATUS_METADATA[status]?.badgeClass || 'badge'
 
 const getStatusBadgeStyle = (status) => {
     const styles = {
@@ -329,9 +365,7 @@ const getStatusBadgeStyle = (status) => {
     }
 }
 
-const getStatusProgressClass = (status) => {
-    return STATUS_METADATA[status]?.progressClass || 'bg-secondary'
-}
+const getStatusProgressClass = (status) => STATUS_METADATA[status]?.progressClass || 'bg-secondary'
 </script>
 
 <style scoped>
@@ -497,7 +531,7 @@ const getStatusProgressClass = (status) => {
         text-align: center;
         min-height: auto;
     }
-    
+
     .kpi-card__icon {
         width: 48px;
         height: 48px;

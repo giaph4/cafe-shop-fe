@@ -1,167 +1,206 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="shift-detail-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="shift-detail-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Chi tiết ca: <strong>{{ shift.shiftName }}</strong></h5>
-                            <p class="modal-subtitle mb-0">Xem thông tin chi tiết về hiệu quả ca làm việc</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-calendar me-2"></i>
-                                        Thông tin ca
-                                    </h6>
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <span class="info-label">Tên ca:</span>
-                                            <span class="info-value fw-semibold">{{ shift.shiftName }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Ngày:</span>
-                                            <span class="info-value">{{ formatDate(shift.date) }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Thời gian:</span>
-                                            <span class="info-value">{{ formatTime(shift.startTime) }} - {{ formatTime(shift.endTime) }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Thời lượng:</span>
-                                            <span class="info-value">{{ formatNumber(shift.duration, 1) }} giờ</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Số nhân viên:</span>
-                                            <span class="info-value">{{ formatNumber(shift.staffCount) }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-graph-up me-2"></i>
-                                        Chỉ số hiệu quả
-                                    </h6>
-                                    <div class="row g-3">
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--success">
-                                                    <i class="bi bi-cash-stack"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Doanh thu</div>
-                                                    <div class="stat-value">{{ formatCurrency(shift.revenue) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--info">
-                                                    <i class="bi bi-cart"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Số đơn</div>
-                                                    <div class="stat-value">{{ formatNumber(shift.ordersCount) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--primary">
-                                                    <i class="bi bi-percent"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Đơn TB</div>
-                                                    <div class="stat-value">{{ formatCurrency(shift.avgOrderValue) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--warning">
-                                                    <i class="bi bi-star"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Điểm hiệu quả</div>
-                                                    <div class="stat-value">{{ shift.efficiencyScore.toFixed(1) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-4">
-                            <div class="col-12">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-list-check me-2"></i>
-                                        Chi tiết metrics
-                                    </h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-minimal">
-                                            <thead>
-                                                <tr>
-                                                    <th>Chỉ số</th>
-                                                    <th>Giá trị</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Doanh thu/Nhân viên</td>
-                                                    <td class="revenue-cell">{{ formatCurrency(shift.revenuePerStaff) }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Đơn hàng/Nhân viên</td>
-                                                    <td>{{ formatNumber(shift.ordersPerStaff, 1) }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Trạng thái</td>
-                                                    <td>
-                                                        <span class="badge badge-soft" :class="getStatusClass(shift.status)">
-                                                            {{ getStatusLabel(shift.status) }}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Đóng
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Chi tiết ca: <strong>{{ shift.shiftName }}</strong>
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Xem thông tin chi tiết về hiệu quả ca làm việc
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <div class="row g-4 mb-4">
+              <div class="col-md-6">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-calendar me-2" />
+                    Thông tin ca
+                  </h6>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Tên ca:</span>
+                      <span class="info-value fw-semibold">{{ shift.shiftName }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Ngày:</span>
+                      <span class="info-value">{{ formatDate(shift.date) }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Thời gian:</span>
+                      <span class="info-value">{{ formatTime(shift.startTime) }} - {{ formatTime(shift.endTime) }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Thời lượng:</span>
+                      <span class="info-value">{{ formatNumber(shift.duration, 1) }} giờ</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Số nhân viên:</span>
+                      <span class="info-value">{{ formatNumber(shift.staffCount) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-graph-up me-2" />
+                    Chỉ số hiệu quả
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--success">
+                          <i class="bi bi-cash-stack" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Doanh thu
+                          </div>
+                          <div class="stat-value">
+                            {{ formatCurrency(shift.revenue) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--info">
+                          <i class="bi bi-cart" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Số đơn
+                          </div>
+                          <div class="stat-value">
+                            {{ formatNumber(shift.ordersCount) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--primary">
+                          <i class="bi bi-percent" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Đơn TB
+                          </div>
+                          <div class="stat-value">
+                            {{ formatCurrency(shift.avgOrderValue) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--warning">
+                          <i class="bi bi-star" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Điểm hiệu quả
+                          </div>
+                          <div class="stat-value">
+                            {{ shift.efficiencyScore.toFixed(1) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row g-4">
+              <div class="col-12">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-list-check me-2" />
+                    Chi tiết metrics
+                  </h6>
+                  <div class="table-responsive">
+                    <table class="table table-minimal">
+                      <thead>
+                        <tr>
+                          <th>Chỉ số</th>
+                          <th>Giá trị</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Doanh thu/Nhân viên</td>
+                          <td class="revenue-cell">
+                            {{ formatCurrency(shift.revenuePerStaff) }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Đơn hàng/Nhân viên</td>
+                          <td>{{ formatNumber(shift.ordersPerStaff, 1) }}</td>
+                        </tr>
+                        <tr>
+                          <td>Trạng thái</td>
+                          <td>
+                            <span
+                              class="badge badge-soft"
+                              :class="getStatusClass(shift.status)"
+                            >
+                              {{ getStatusLabel(shift.status) }}
+                            </span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Đóng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { formatCurrency, formatNumber, formatDate, formatTime } from '@/utils/formatters'
 
-const props = defineProps({
+defineProps({
     shift: {
         type: Object,
         required: true

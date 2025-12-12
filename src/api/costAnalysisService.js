@@ -1,6 +1,5 @@
 import { buildApiError } from '@/utils/errorHandler'
-import * as reportService from './reportService'
-import * as shiftService from './shiftService'
+import api from './axios'
 
 const toNumber = (value) => {
     if (value === null || value === undefined) return 0
@@ -11,7 +10,7 @@ const toNumber = (value) => {
 const categorizeExpense = (expense) => {
     const category = expense.category || expense.categoryName || 'OTHER'
     const categoryUpper = category.toUpperCase()
-    
+
     if (categoryUpper.includes('INGREDIENT') || categoryUpper.includes('NGUYEN LIEU') || categoryUpper.includes('MATERIAL')) {
         return 'INGREDIENTS'
     } else if (categoryUpper.includes('LABOR') || categoryUpper.includes('LUONG') || categoryUpper.includes('SALARY') || categoryUpper.includes('WAGE')) {
@@ -22,9 +21,8 @@ const categorizeExpense = (expense) => {
         return 'UTILITIES'
     } else if (categoryUpper.includes('MARKETING') || categoryUpper.includes('QUANG CAO')) {
         return 'MARKETING'
-    } else {
-        return 'OTHER'
     }
+    return 'OTHER'
 }
 
 const getCategoryLabel = (category) => {
@@ -41,6 +39,64 @@ const getCategoryLabel = (category) => {
 
 export const analyzeCosts = async ({ startDate, endDate } = {}) => {
     try {
+        // Call backend API instead of calculating locally
+        const { data } = await api.get('/api/v1/reports/cost-analysis', {
+            params: { startDate, endDate }
+        })
+
+        if (!data) {
+            throw new Error('Không nhận được dữ liệu từ server')
+        }
+
+        // Normalize response to match frontend expectations
+        return {
+            summary: {
+                totalCost: toNumber(data.summary?.totalCost),
+                totalRevenue: toNumber(data.summary?.totalRevenue),
+                totalProfit: toNumber(data.summary?.totalProfit),
+                costRevenueRatio: toNumber(data.summary?.costRevenueRatio),
+                costPerOrder: toNumber(data.summary?.costPerOrder),
+                profitMargin: toNumber(data.summary?.profitMargin)
+            },
+            categoryBreakdown: (data.categoryBreakdown || []).map(cat => ({
+                category: cat.category,
+                categoryLabel: cat.categoryLabel,
+                amount: toNumber(cat.amount),
+                count: cat.count || 0
+            })),
+            dailyCosts: (data.dailyCosts || []).map(day => ({
+                date: day.date,
+                cost: toNumber(day.cost),
+                revenue: toNumber(day.revenue)
+            })),
+            topCategories: (data.topCategories || []).map(cat => ({
+                category: cat.category,
+                categoryLabel: cat.categoryLabel,
+                amount: toNumber(cat.amount),
+                count: cat.count || 0
+            })),
+            recommendations: (data.recommendations || []).map(r => ({
+                type: r.type,
+                priority: r.priority,
+                message: r.message,
+                impact: r.impact,
+                action: r.action
+            })),
+            period: {
+                startDate: data.period?.startDate || startDate,
+                endDate: data.period?.endDate || endDate
+            },
+            generatedAt: data.generatedAt || new Date().toISOString()
+        }
+    } catch (error) {
+        throw buildApiError(error)
+    }
+}
+
+// Keep the old implementation as fallback (commented out)
+/*
+export const analyzeCosts_OLD = async ({ startDate, endDate } = {}) => {
+    try {
         const [expensesByDate, totalExpenses, ingredientCost, profitReport, revenueData, payrollSummaries] = await Promise.all([
             reportService.getExpensesByDate(startDate, endDate).catch(() => ({ entries: [] })),
             reportService.getTotalExpenses(startDate, endDate).catch(() => ({ totalExpenses: 0 })),
@@ -49,18 +105,18 @@ export const analyzeCosts = async ({ startDate, endDate } = {}) => {
             reportService.getRevenueByDate(startDate, endDate).catch(() => ({ entries: [] })),
             shiftService.listPayrollSummaries({ startDate, endDate }).catch(() => [])
         ])
-        
+
         const expensesEntries = expensesByDate.entries || []
         const revenueEntries = revenueData.entries || []
         const payrollList = Array.isArray(payrollSummaries) ? payrollSummaries : (payrollSummaries?.content || [])
-        
+
         const totalCost = toNumber(totalExpenses.totalExpenses || 0)
         const ingredientCostValue = toNumber(ingredientCost.totalImportedIngredientCost || 0)
         const laborCost = payrollList.reduce((sum, p) => sum + toNumber(p.totalAmount || p.totalSalary || 0), 0)
         const revenueFromEntries = revenueEntries.reduce((sum, e) => sum + toNumber(e.value || 0), 0)
         const totalRevenue = toNumber(profitReport.totalRevenue || revenueData.summary?.total || revenueFromEntries || 0)
         const totalProfit = toNumber(profitReport.totalProfit || 0)
-        
+
         const categoryBreakdown = {}
         expensesEntries.forEach(entry => {
             entry.categories?.forEach(cat => {
@@ -77,13 +133,13 @@ export const analyzeCosts = async ({ startDate, endDate } = {}) => {
                 categoryBreakdown[category].count++
             })
         })
-        
-        categoryBreakdown['INGREDIENTS'] = categoryBreakdown['INGREDIENTS'] || { category: 'INGREDIENTS', categoryLabel: 'Nguyên liệu', amount: 0, count: 0 }
-        categoryBreakdown['INGREDIENTS'].amount += ingredientCostValue
-        
-        categoryBreakdown['LABOR'] = categoryBreakdown['LABOR'] || { category: 'LABOR', categoryLabel: 'Nhân công', amount: 0, count: 0 }
-        categoryBreakdown['LABOR'].amount += laborCost
-        
+
+        categoryBreakdown.INGREDIENTS = categoryBreakdown.INGREDIENTS || { category: 'INGREDIENTS', categoryLabel: 'Nguyên liệu', amount: 0, count: 0 }
+        categoryBreakdown.INGREDIENTS.amount += ingredientCostValue
+
+        categoryBreakdown.LABOR = categoryBreakdown.LABOR || { category: 'LABOR', categoryLabel: 'Nhân công', amount: 0, count: 0 }
+        categoryBreakdown.LABOR.amount += laborCost
+
         const dailyCosts = {}
         expensesEntries.forEach(entry => {
             const date = entry.date
@@ -96,7 +152,7 @@ export const analyzeCosts = async ({ startDate, endDate } = {}) => {
             }
             dailyCosts[date].cost += entry.total || 0
         })
-        
+
         revenueEntries.forEach(entry => {
             if (!dailyCosts[entry.date]) {
                 dailyCosts[entry.date] = {
@@ -107,20 +163,20 @@ export const analyzeCosts = async ({ startDate, endDate } = {}) => {
             }
             dailyCosts[entry.date].revenue = entry.value
         })
-        
+
         const totalOrders = toNumber(profitReport.totalOrders || 0)
-        const costPerOrder = totalOrders > 0 
-            ? totalCost / totalOrders 
+        const costPerOrder = totalOrders > 0
+            ? totalCost / totalOrders
             : 0
-        
-        const costRevenueRatio = totalRevenue > 0 
-            ? (totalCost / totalRevenue) * 100 
+
+        const costRevenueRatio = totalRevenue > 0
+            ? (totalCost / totalRevenue) * 100
             : 0
-        
+
         const topCategories = Object.values(categoryBreakdown)
             .sort((a, b) => b.amount - a.amount)
             .slice(0, 5)
-        
+
         const recommendations = generateRecommendations({
             categoryBreakdown: Object.values(categoryBreakdown),
             topCategories,
@@ -129,7 +185,7 @@ export const analyzeCosts = async ({ startDate, endDate } = {}) => {
             costRevenueRatio,
             costPerOrder
         })
-        
+
         return {
             summary: {
                 totalCost,
@@ -153,7 +209,7 @@ export const analyzeCosts = async ({ startDate, endDate } = {}) => {
 
 const generateRecommendations = (data) => {
     const recommendations = []
-    
+
     if (data.costRevenueRatio > 80) {
         recommendations.push({
             type: 'high_cost_ratio',
@@ -163,7 +219,7 @@ const generateRecommendations = (data) => {
             action: 'Xem xét cắt giảm chi phí không cần thiết'
         })
     }
-    
+
     if (data.topCategories && data.topCategories.length > 0) {
         const topCategory = data.topCategories[0]
         if (topCategory && data.totalCost > 0 && topCategory.amount > data.totalCost * 0.4) {
@@ -176,7 +232,7 @@ const generateRecommendations = (data) => {
             })
         }
     }
-    
+
     if (data.costPerOrder > 100000) {
         recommendations.push({
             type: 'high_cost_per_order',
@@ -186,11 +242,11 @@ const generateRecommendations = (data) => {
             action: 'Tối ưu quy trình để giảm chi phí'
         })
     }
-    
+
     return recommendations
 }
 
-export const exportCostReport = async (costData) => {
+export const exportCostReport = (costData) => {
     const data = [
         ['BÁO CÁO PHÂN TÍCH CHI PHÍ'],
         ['Thời gian:', `${costData.period.startDate} - ${costData.period.endDate}`],
@@ -206,10 +262,10 @@ export const exportCostReport = async (costData) => {
         ['PHÂN LOẠI CHI PHÍ'],
         ['Danh mục', 'Số lượng', 'Tổng chi phí', 'Tỷ lệ']
     ]
-    
+
     costData.categoryBreakdown.forEach(cat => {
-        const ratio = costData.summary.totalCost > 0 
-            ? (cat.amount / costData.summary.totalCost) * 100 
+        const ratio = costData.summary.totalCost > 0
+            ? (cat.amount / costData.summary.totalCost) * 100
             : 0
         data.push([
             cat.categoryLabel,
@@ -218,11 +274,11 @@ export const exportCostReport = async (costData) => {
             `${ratio.toFixed(2)}%`
         ])
     })
-    
+
     data.push([])
     data.push(['CHI TIẾT THEO NGÀY'])
     data.push(['Ngày', 'Chi phí', 'Doanh thu', 'Lợi nhuận'])
-    
+
     costData.dailyCosts.slice(0, 100).forEach(day => {
         const profit = day.revenue - day.cost
         data.push([
@@ -232,7 +288,7 @@ export const exportCostReport = async (costData) => {
             profit.toLocaleString('vi-VN')
         ])
     })
-    
+
     return {
         data,
         sheetName: 'Phân tích chi phí',

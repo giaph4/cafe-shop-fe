@@ -1,70 +1,98 @@
 <template>
-    <section id="contact" class="portfolio-contact">
-        <div class="portfolio-contact__container">
-            <h2 class="portfolio-contact__title">
-                <span class="portfolio-contact__number">04.</span>
-                INITIALIZE HANDSHAKE
-            </h2>
+  <section
+    id="contact"
+    class="portfolio-contact"
+  >
+    <div class="portfolio-contact__container">
+      <h2 class="portfolio-contact__title">
+        <span class="portfolio-contact__number">04.</span>
+        INITIALIZE HANDSHAKE
+      </h2>
 
-            <p class="portfolio-contact__subtitle">
-                Hệ thống của tôi luôn sẵn sàng cho những thử thách mới.
-                Nếu bạn cần một giải pháp Backend mạnh mẽ hay chỉ đơn giản là muốn trao đổi về công nghệ, hãy kết nối.
-            </p>
+      <p class="portfolio-contact__subtitle">
+        Hệ thống của tôi luôn sẵn sàng cho những thử thách mới.
+        Nếu bạn cần một giải pháp Backend mạnh mẽ hay chỉ đơn giản là muốn trao đổi về công nghệ, hãy kết nối.
+      </p>
 
-            <!-- Terminal Input -->
-            <div class="portfolio-contact__terminal" ref="terminalRef">
-                <div class="portfolio-contact__terminal-header">
-                    <div class="portfolio-contact__terminal-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                    <span class="portfolio-contact__terminal-title">Terminal</span>
-                </div>
-                <div class="portfolio-contact__terminal-body">
-                    <div class="portfolio-contact__terminal-line" v-for="(line, index) in terminalHistory" :key="index">
-                        <span class="portfolio-contact__terminal-prompt">$</span>
-                        <span class="portfolio-contact__terminal-text">{{ line }}</span>
-                    </div>
-                    <div class="portfolio-contact__terminal-input">
-                        <span class="portfolio-contact__terminal-prompt">$</span>
-                        <input 
-                            v-model="message"
-                            @keyup.enter="sendMessage"
-                            type="text"
-                            class="portfolio-contact__terminal-field"
-                            placeholder="Type your message here..."
-                            ref="inputRef"
-                        />
-                        <span class="portfolio-contact__terminal-cursor" :class="{ 'portfolio-contact__terminal-cursor--blink': !isTyping }"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Social Links -->
-            <div class="portfolio-contact__social" ref="socialRef">
-                <a 
-                    v-for="(social, index) in socialLinks" 
-                    :key="index"
-                    :href="social.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="portfolio-contact__social-link"
-                    :ref="el => socialRefs[index] = el"
-                >
-                    <i :class="social.icon"></i>
-                    <span>{{ social.name }}</span>
-                </a>
-            </div>
-
-            <!-- Footer -->
-            <footer class="portfolio-contact__footer" ref="footerRef">
-                <p class="portfolio-contact__footer-text">BUILT WITH VUE & SPRING BOOT PASSION</p>
-                <p class="portfolio-contact__footer-text">© 2024 HUỲNH GIA PHO. ALL RIGHTS RESERVED.</p>
-                <p class="portfolio-contact__footer-shutdown" v-if="showShutdown">System shutting down...</p>
-            </footer>
+      <!-- Terminal Input -->
+      <div
+        ref="terminalRef"
+        class="portfolio-contact__terminal"
+      >
+        <div class="portfolio-contact__terminal-header">
+          <div class="portfolio-contact__terminal-dots">
+            <span />
+            <span />
+            <span />
+          </div>
+          <span class="portfolio-contact__terminal-title">Terminal</span>
         </div>
-    </section>
+        <div class="portfolio-contact__terminal-body">
+          <div
+            v-for="(line, index) in terminalHistory"
+            :key="index"
+            class="portfolio-contact__terminal-line"
+          >
+            <span class="portfolio-contact__terminal-prompt">$</span>
+            <span class="portfolio-contact__terminal-text">{{ line }}</span>
+          </div>
+          <div class="portfolio-contact__terminal-input">
+            <span class="portfolio-contact__terminal-prompt">$</span>
+            <input
+              ref="inputRef"
+              v-model="message"
+              type="text"
+              class="portfolio-contact__terminal-field"
+              placeholder="Type your message here..."
+              @keyup.enter="sendMessage"
+            >
+            <span
+              class="portfolio-contact__terminal-cursor"
+              :class="{ 'portfolio-contact__terminal-cursor--blink': !isTyping }"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Links -->
+      <div
+        ref="socialRef"
+        class="portfolio-contact__social"
+      >
+        <a
+          v-for="(social, index) in socialLinks"
+          :key="index"
+          :ref="el => socialRefs[index] = el"
+          :href="social.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="portfolio-contact__social-link"
+        >
+          <i :class="social.icon" />
+          <span>{{ social.name }}</span>
+        </a>
+      </div>
+
+      <!-- Footer -->
+      <footer
+        ref="footerRef"
+        class="portfolio-contact__footer"
+      >
+        <p class="portfolio-contact__footer-text">
+          BUILT WITH VUE & SPRING BOOT PASSION
+        </p>
+        <p class="portfolio-contact__footer-text">
+          © 2024 HUỲNH GIA PHO. ALL RIGHTS RESERVED.
+        </p>
+        <p
+          v-if="showShutdown"
+          class="portfolio-contact__footer-shutdown"
+        >
+          System shutting down...
+        </p>
+      </footer>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -94,7 +122,7 @@ const sendMessage = () => {
 
     terminalHistory.value.push(`> ${message.value}`)
     message.value = ''
-    
+
     // Simulate response
     setTimeout(() => {
         terminalHistory.value.push('Message received. I will get back to you soon!')
@@ -108,13 +136,13 @@ onMounted(() => {
             if (isIntersecting) {
                 useMotion(terminalRef.value, {
                     initial: { opacity: 0, y: 30 },
-                    enter: { 
-                        opacity: 1, 
+                    enter: {
+                        opacity: 1,
                         y: 0,
-                        transition: { duration: 0.8 } 
+                        transition: { duration: 0.8 }
                     }
                 })
-                
+
                 // Focus input
                 nextTick(() => {
                     if (inputRef.value) {
@@ -132,14 +160,14 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(socialRef, {
                         initial: { opacity: 0, scale: 0.8 },
-                        enter: { 
-                            opacity: 1, 
+                        enter: {
+                            opacity: 1,
                             scale: 1,
-                            transition: { 
+                            transition: {
                                 delay: index * 0.1,
                                 duration: 0.5,
                                 type: 'spring'
-                            } 
+                            }
                         }
                     })
                 }
@@ -152,7 +180,7 @@ onMounted(() => {
         const windowHeight = window.innerHeight
         const documentHeight = document.documentElement.scrollHeight
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-        
+
         if (scrollTop + windowHeight >= documentHeight - 100) {
             showShutdown.value = true
         } else {

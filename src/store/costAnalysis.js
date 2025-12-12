@@ -7,48 +7,48 @@ export const useCostAnalysisStore = defineStore('costAnalysis', () => {
     const loading = ref(false)
     const error = ref(null)
     const costData = ref(null)
-    
-    const hasData = computed(() => !!costData.value)
-    
+
+    const hasData = computed(() => Boolean(costData.value))
+
     const summary = computed(() => {
         if (!costData.value) return null
         return costData.value.summary || null
     })
-    
+
     const categoryBreakdown = computed(() => {
         if (!costData.value) return []
         return costData.value.categoryBreakdown || []
     })
-    
+
     const dailyCosts = computed(() => {
         if (!costData.value) return []
         return costData.value.dailyCosts || []
     })
-    
+
     const topCategories = computed(() => {
         if (!costData.value) return []
         return costData.value.topCategories || []
     })
-    
+
     const recommendations = computed(() => {
         if (!costData.value) return []
         return costData.value.recommendations || []
     })
-    
+
     const analyzeCosts = async ({ startDate, endDate } = {}) => {
         loading.value = true
         error.value = null
-        
+
         try {
             const data = await costAnalysisService.analyzeCosts({
                 startDate,
                 endDate
             })
-            
+
             costData.value = data
-            logger.log('[CostAnalysis] Analysis completed', { 
+            logger.log('[CostAnalysis] Analysis completed', {
                 totalCost: data.summary.totalCost,
-                period: data.period 
+                period: data.period
             })
             return data
         } catch (err) {
@@ -59,12 +59,12 @@ export const useCostAnalysisStore = defineStore('costAnalysis', () => {
             loading.value = false
         }
     }
-    
+
     const exportReport = async () => {
         if (!costData.value) {
             throw new Error('Chưa có dữ liệu để xuất')
         }
-        
+
         try {
             const exportData = await costAnalysisService.exportCostReport(costData.value)
             return exportData
@@ -73,12 +73,12 @@ export const useCostAnalysisStore = defineStore('costAnalysis', () => {
             throw err
         }
     }
-    
+
     const reset = () => {
         costData.value = null
         error.value = null
     }
-    
+
     return {
         loading,
         error,

@@ -1,186 +1,233 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modalElement" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">Cập nhật đơn nhập hàng #{{ purchaseOrderId }}</h5>
-                            <p class="modal-subtitle mb-0">Chỉnh sửa thông tin và danh sách nguyên liệu của phiếu nhập.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide" :disabled="submitting"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form @submit.prevent="handleSubmit">
-                            <!-- Supplier Selection -->
-                            <div class="mb-3">
-                                <label class="form-label">Nhà cung cấp</label>
-                                <select 
-                                    class="form-select" 
-                                    v-model="form.supplierId"
-                                    :disabled="submitting || loadingSuppliers"
-                                >
-                                    <option :value="null">-- Chọn nhà cung cấp --</option>
-                                    <option 
-                                        v-for="supplier in suppliers" 
-                                        :key="supplier.id" 
-                                        :value="supplier.id"
-                                    >
-                                        {{ supplier.name }} ({{ supplier.phone || 'N/A' }})
-                                    </option>
-                                </select>
-                                <div v-if="loadingSuppliers" class="form-text">
-                                    <span class="spinner-border spinner-border-sm me-1"></span>
-                                    Đang tải danh sách nhà cung cấp...
-                                </div>
-                            </div>
-
-                            <!-- Note -->
-                            <div class="mb-3">
-                                <label class="form-label">Ghi chú</label>
-                                <textarea 
-                                    class="form-control" 
-                                    v-model="form.note"
-                                    rows="3"
-                                    :disabled="submitting"
-                                    placeholder="Nhập ghi chú cho đơn nhập hàng..."
-                                ></textarea>
-                            </div>
-
-                            <!-- Items Section -->
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label mb-0">Danh sách nguyên liệu</label>
-                                    <button 
-                                        type="button" 
-                                        class="btn btn-sm btn-outline-primary"
-                                        @click="addItem"
-                                        :disabled="submitting"
-                                    >
-                                        <i class="bi bi-plus-lg me-1"></i>
-                                        Thêm nguyên liệu
-                                    </button>
-                                </div>
-                                <div v-if="form.items.length === 0" class="text-muted text-center py-3 border rounded">
-                                    Chưa có nguyên liệu nào. Nhấn "Thêm nguyên liệu" để thêm.
-                                </div>
-                                <div v-else class="table-responsive">
-                                    <table class="table table-sm table-bordered">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Nguyên liệu</th>
-                                                <th class="text-end">Số lượng</th>
-                                                <th class="text-end">Đơn giá</th>
-                                                <th class="text-end">Thành tiền</th>
-                                                <th class="text-center">Thao tác</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="(item, index) in form.items" :key="index">
-                                                <td>
-                                                    <select 
-                                                        class="form-select form-select-sm" 
-                                                        v-model="item.ingredientId"
-                                                        :disabled="submitting || loadingIngredients"
-                                                        required
-                                                    >
-                                                        <option :value="null">-- Chọn nguyên liệu --</option>
-                                                        <option 
-                                                            v-for="ingredient in ingredients" 
-                                                            :key="ingredient.id" 
-                                                            :value="ingredient.id"
-                                                        >
-                                                            {{ ingredient.name }} ({{ ingredient.unit }})
-                                                        </option>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input 
-                                                        type="number" 
-                                                        class="form-control form-control-sm text-end" 
-                                                        v-model.number="item.quantity"
-                                                        :disabled="submitting"
-                                                        min="0"
-                                                        step="0.01"
-                                                        required
-                                                        @input="calculateItemTotal(index)"
-                                                    >
-                                                </td>
-                                                <td>
-                                                    <input 
-                                                        type="number" 
-                                                        class="form-control form-control-sm text-end" 
-                                                        v-model.number="item.unitPrice"
-                                                        :disabled="submitting"
-                                                        min="0"
-                                                        step="1000"
-                                                        required
-                                                        @input="calculateItemTotal(index)"
-                                                    >
-                                                </td>
-                                                <td class="text-end fw-semibold">
-                                                    {{ formatCurrency((item.quantity || 0) * (item.unitPrice || 0)) }}
-                                                </td>
-                                                <td class="text-center">
-                                                    <button 
-                                                        type="button" 
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        @click="removeItem(index)"
-                                                        :disabled="submitting"
-                                                    >
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                        <tfoot v-if="form.items.length > 0">
-                                            <tr>
-                                                <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
-                                                <td class="text-end fw-bold text-primary">
-                                                    {{ formatCurrency(totalAmount) }}
-                                                </td>
-                                                <td></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Error Message -->
-                            <div v-if="error" class="alert alert-danger mb-0">
-                                {{ error }}
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button 
-                            type="button" 
-                            class="btn btn-outline-secondary" 
-                            @click="hide"
-                            :disabled="submitting"
-                        >
-                            Hủy
-                        </button>
-                        <button 
-                            type="button" 
-                            class="btn btn-primary" 
-                            @click="handleSubmit"
-                            :disabled="submitting || !canSubmit"
-                        >
-                            <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                            Cập nhật
-                        </button>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modalElement"
+      class="modal fade"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title">
+                Cập nhật đơn nhập hàng #{{ purchaseOrderId }}
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Chỉnh sửa thông tin và danh sách nguyên liệu của phiếu nhập.
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              :disabled="submitting"
+              @click="hide"
+            />
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="handleSubmit">
+              <!-- Supplier Selection -->
+              <div class="mb-3">
+                <label class="form-label">Nhà cung cấp</label>
+                <select
+                  v-model="form.supplierId"
+                  class="form-select"
+                  :disabled="submitting || loadingSuppliers"
+                >
+                  <option :value="null">
+                    -- Chọn nhà cung cấp --
+                  </option>
+                  <option
+                    v-for="supplier in suppliers"
+                    :key="supplier.id"
+                    :value="supplier.id"
+                  >
+                    {{ supplier.name }} ({{ supplier.phone || 'N/A' }})
+                  </option>
+                </select>
+                <div
+                  v-if="loadingSuppliers"
+                  class="form-text"
+                >
+                  <span class="spinner-border spinner-border-sm me-1" />
+                  Đang tải danh sách nhà cung cấp...
+                </div>
+              </div>
+
+              <!-- Note -->
+              <div class="mb-3">
+                <label class="form-label">Ghi chú</label>
+                <textarea
+                  v-model="form.note"
+                  class="form-control"
+                  rows="3"
+                  :disabled="submitting"
+                  placeholder="Nhập ghi chú cho đơn nhập hàng..."
+                />
+              </div>
+
+              <!-- Items Section -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label mb-0">Danh sách nguyên liệu</label>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    :disabled="submitting"
+                    @click="addItem"
+                  >
+                    <i class="bi bi-plus-lg me-1" />
+                    Thêm nguyên liệu
+                  </button>
+                </div>
+                <div
+                  v-if="form.items.length === 0"
+                  class="text-muted text-center py-3 border rounded"
+                >
+                  Chưa có nguyên liệu nào. Nhấn "Thêm nguyên liệu" để thêm.
+                </div>
+                <div
+                  v-else
+                  class="table-responsive"
+                >
+                  <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Nguyên liệu</th>
+                        <th class="text-end">
+                          Số lượng
+                        </th>
+                        <th class="text-end">
+                          Đơn giá
+                        </th>
+                        <th class="text-end">
+                          Thành tiền
+                        </th>
+                        <th class="text-center">
+                          Thao tác
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(item, index) in form.items"
+                        :key="index"
+                      >
+                        <td>
+                          <select
+                            v-model="item.ingredientId"
+                            class="form-select form-select-sm"
+                            :disabled="submitting || loadingIngredients"
+                            required
+                          >
+                            <option :value="null">
+                              -- Chọn nguyên liệu --
+                            </option>
+                            <option
+                              v-for="ingredient in ingredients"
+                              :key="ingredient.id"
+                              :value="ingredient.id"
+                            >
+                              {{ ingredient.name }} ({{ ingredient.unit }})
+                            </option>
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            v-model.number="item.quantity"
+                            type="number"
+                            class="form-control form-control-sm text-end"
+                            :disabled="submitting"
+                            min="0"
+                            step="0.01"
+                            required
+                            @input="calculateItemTotal(index)"
+                          >
+                        </td>
+                        <td>
+                          <input
+                            v-model.number="item.unitPrice"
+                            type="number"
+                            class="form-control form-control-sm text-end"
+                            :disabled="submitting"
+                            min="0"
+                            step="1000"
+                            required
+                            @input="calculateItemTotal(index)"
+                          >
+                        </td>
+                        <td class="text-end fw-semibold">
+                          {{ formatCurrency((item.quantity || 0) * (item.unitPrice || 0)) }}
+                        </td>
+                        <td class="text-center">
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            :disabled="submitting"
+                            @click="removeItem(index)"
+                          >
+                            <i class="bi bi-trash" />
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot v-if="form.items.length > 0">
+                      <tr>
+                        <td
+                          colspan="3"
+                          class="text-end fw-bold"
+                        >
+                          Tổng cộng:
+                        </td>
+                        <td class="text-end fw-bold text-primary">
+                          {{ formatCurrency(totalAmount) }}
+                        </td>
+                        <td />
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Error Message -->
+              <div
+                v-if="error"
+                class="alert alert-danger mb-0"
+              >
+                {{ error }}
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="submitting"
+              @click="hide"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              :disabled="submitting || !canSubmit"
+              @click="handleSubmit"
+            >
+              <span
+                v-if="submitting"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Cập nhật
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Modal } from 'bootstrap'
-import { updatePurchaseOrder } from '@/api/purchaseOrderService'
 import { getSuppliers } from '@/api/supplierService'
 import { getIngredients } from '@/api/ingredientService'
 import { formatCurrency } from '@/utils/formatters'
@@ -216,11 +263,7 @@ const loadingIngredients = ref(false)
 const submitting = ref(false)
 const error = ref(null)
 
-const totalAmount = computed(() => {
-    return form.items.reduce((sum, item) => {
-        return sum + ((item.quantity || 0) * (item.unitPrice || 0))
-    }, 0)
-})
+const totalAmount = computed(() => form.items.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unitPrice || 0)), 0))
 
 const canSubmit = computed(() => {
     if (submitting.value) return false
@@ -260,7 +303,7 @@ const initializeForm = () => {
     if (props.purchaseOrder) {
         form.supplierId = props.purchaseOrder.supplierId || null
         form.note = props.purchaseOrder.note || ''
-        
+
         // Initialize items from purchaseOrder
         if (Array.isArray(props.purchaseOrder.items)) {
             form.items = props.purchaseOrder.items.map(item => ({
@@ -292,7 +335,7 @@ const removeItem = (index) => {
     form.items.splice(index, 1)
 }
 
-const calculateItemTotal = (index) => {
+const calculateItemTotal = () => {
     // This is handled by computed totalAmount
     // But we can add validation here if needed
 }
@@ -327,10 +370,11 @@ const handleSubmit = async () => {
             }))
         }
 
-        await updatePurchaseOrder(props.purchaseOrderId, updateData)
-        toast.success('Đã cập nhật đơn nhập hàng thành công.')
-        emit('updated')
-        hide()
+        // Backend không hỗ trợ cập nhật purchase order
+        // Thông báo rõ ràng cho người dùng
+        error.value = 'Backend không hỗ trợ cập nhật đơn nhập hàng. Vui lòng hủy đơn cũ và tạo đơn mới.'
+        toast.error(error.value)
+        return
     } catch (err) {
         error.value = err.response?.data?.message || err.message || 'Không thể cập nhật đơn nhập hàng.'
         toast.error(error.value)

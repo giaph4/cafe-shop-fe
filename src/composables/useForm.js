@@ -3,7 +3,7 @@
  * Chuẩn hóa form state, validation, và submission
  */
 
-import { reactive, ref, computed } from 'vue'
+import { reactive, computed } from 'vue'
 import { useAsyncOperation } from './useAsyncOperation'
 
 /**
@@ -99,13 +99,13 @@ export const useForm = (options = {}) => {
      */
     const validate = () => {
         clearErrors()
-        
+
         if (!validator || typeof validator !== 'function') {
             return true
         }
 
         const validationErrors = validator(formData)
-        
+
         if (validationErrors && typeof validationErrors === 'object') {
             setErrors(validationErrors)
             return Object.keys(validationErrors).length === 0
@@ -128,7 +128,7 @@ export const useForm = (options = {}) => {
         }
 
         const validationErrors = validator(formData)
-        
+
         if (validationErrors && validationErrors[field]) {
             setError(field, validationErrors[field])
             return false
@@ -157,7 +157,7 @@ export const useForm = (options = {}) => {
         try {
             await execute(() => onSubmit(formData))
             return true
-        } catch (err) {
+        } catch {
             // Error already handled by useAsyncOperation
             return false
         }
@@ -166,25 +166,17 @@ export const useForm = (options = {}) => {
     /**
      * Check if form is valid
      */
-    const isValid = computed(() => {
-        return Object.values(errors).every(error => !error)
-    })
+    const isValid = computed(() => Object.values(errors).every(error => !error))
 
     /**
      * Check if form has been touched
      */
-    const isTouched = computed(() => {
-        return Object.values(touched).some(t => t)
-    })
+    const isTouched = computed(() => Object.values(touched).some(t => t))
 
     /**
      * Check if form is dirty (values changed from initial)
      */
-    const isDirty = computed(() => {
-        return Object.keys(formData).some(key => {
-            return formData[key] !== (initialValues[key] ?? '')
-        })
-    })
+    const isDirty = computed(() => Object.keys(formData).some(key => formData[key] !== (initialValues[key] ?? '')))
 
     return {
         formData,

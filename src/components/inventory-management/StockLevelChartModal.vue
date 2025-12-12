@@ -1,43 +1,63 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="stock-chart-modal modal fade show"
+      tabindex="-1"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        @click="handleClose"
+      />
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div
-            class="stock-chart-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose"></div>
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Lịch sử tồn kho: <strong>{{ ingredient.name }}</strong></h5>
-                            <p class="modal-subtitle mb-0">Theo dõi biến động tồn kho theo thời gian</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <div v-if="stockHistory && stockHistory.length > 0" class="chart-container">
-                            <StockLevelChart :history="stockHistory" />
-                        </div>
-                        <div v-else class="empty-chart-state">
-                            <i class="bi bi-graph-up"></i>
-                            <p>Chưa có dữ liệu lịch sử</p>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-flat btn-flat--outline" @click="handleClose">
-                            Đóng
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Lịch sử tồn kho: <strong>{{ ingredient.name }}</strong>
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Theo dõi biến động tồn kho theo thời gian
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <div
+              v-if="stockHistory && stockHistory.length > 0"
+              class="chart-container"
+            >
+              <StockLevelChart :history="stockHistory" />
+            </div>
+            <div
+              v-else
+              class="empty-chart-state"
+            >
+              <i class="bi bi-graph-up" />
+              <p>Chưa có dữ liệu lịch sử</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Đóng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -45,7 +65,7 @@ import { computed } from 'vue'
 import { useInventoryManagementStore } from '@/store/inventoryManagement'
 import StockLevelChart from './StockLevelChart.vue'
 
-const props = defineProps({
+defineProps({
     ingredient: {
         type: Object,
         required: true

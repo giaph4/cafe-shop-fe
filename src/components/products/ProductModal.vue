@@ -1,175 +1,245 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade product-modal" ref="modal" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' }}</h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade product-modal"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {{ isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
+
+          <form @submit.prevent="handleFormSubmit">
+            <div class="modal-body modal-body-scroll">
+              <div class="modal-tabs">
+                <button
+                  type="button"
+                  :class="['tab-btn', { active: activeTab === 'info' }]"
+                  @click="setTab('info')"
+                >
+                  <i class="bi bi-info-circle me-2" />Thông tin
+                </button>
+                <button
+                  type="button"
+                  :class="['tab-btn', { active: activeTab === 'recipe' }]"
+                  :disabled="!isEditMode"
+                  title="Lưu sản phẩm trước để quản lý công thức"
+                  @click="setTab('recipe')"
+                >
+                  <i class="bi bi-diagram-3 me-2" />Công thức
+                </button>
+              </div>
+
+              <div
+                v-if="activeTab === 'info'"
+                class="tab-panel"
+              >
+                <div class="row g-4">
+                  <div class="col-lg-8 col-md-7">
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <label class="form-label">Tên sản phẩm<span class="text-danger">*</span></label>
+                        <input
+                          v-model.trim="form.name"
+                          type="text"
+                          class="form-control"
+                          required
+                          maxlength="120"
+                        >
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Mã sản phẩm<span class="text-danger">*</span></label>
+                        <input
+                          v-model.trim="form.code"
+                          type="text"
+                          class="form-control"
+                          required
+                          maxlength="60"
+                        >
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Danh mục<span
+                          class="text-danger"
+                        >*</span></label>
+                        <select
+                          v-model="form.categoryId"
+                          class="form-select"
+                          required
+                        >
+                          <option
+                            disabled
+                            value=""
+                          >
+                            Chọn danh mục
+                          </option>
+                          <option
+                            v-for="category in categories"
+                            :key="category.id"
+                            :value="category.id"
+                          >
+                            {{ category.name }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Giá bán (VNĐ)<span
+                          class="text-danger"
+                        >*</span></label>
+                        <input
+                          v-model.number="form.price"
+                          type="number"
+                          min="0"
+                          step="1000"
+                          class="form-control"
+                          required
+                        >
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Giá vốn (VNĐ)</label>
+                        <input
+                          v-model.number="form.cost"
+                          type="number"
+                          min="0"
+                          step="1000"
+                          class="form-control"
+                        >
+                      </div>
+                      <div class="col-12">
+                        <label class="form-label">Mô tả</label>
+                        <textarea
+                          v-model.trim="form.description"
+                          class="form-control"
+                          rows="3"
+                          maxlength="500"
+                          placeholder="Mô tả ngắn về sản phẩm"
+                        />
+                      </div>
                     </div>
+                  </div>
 
-                    <form @submit.prevent="handleFormSubmit">
-                        <div class="modal-body modal-body-scroll">
-                            <div class="modal-tabs">
-                                <button type="button" :class="['tab-btn', { active: activeTab === 'info' }]"
-                                        @click="setTab('info')">
-                                    <i class="bi bi-info-circle me-2"></i>Thông tin
-                                </button>
-                                <button
-                                    type="button"
-                                    :class="['tab-btn', { active: activeTab === 'recipe' }]"
-                                    :disabled="!isEditMode"
-                                    title="Lưu sản phẩm trước để quản lý công thức"
-                                    @click="setTab('recipe')"
-                                >
-                                    <i class="bi bi-diagram-3 me-2"></i>Công thức
-                                </button>
-                            </div>
-
-                            <div v-if="activeTab === 'info'" class="tab-panel">
-                                <div class="row g-4">
-                                    <div class="col-lg-8 col-md-7">
-                                        <div class="row g-3">
-                                            <div class="col-12">
-                                                <label class="form-label">Tên sản phẩm<span class="text-danger">*</span></label>
-                                                <input
-                                                    v-model.trim="form.name"
-                                                    type="text"
-                                                    class="form-control"
-                                                    required
-                                                    maxlength="120"
-                                                />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Mã sản phẩm<span class="text-danger">*</span></label>
-                                                <input
-                                                    v-model.trim="form.code"
-                                                    type="text"
-                                                    class="form-control"
-                                                    required
-                                                    maxlength="60"
-                                                />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Danh mục<span
-                                                    class="text-danger">*</span></label>
-                                                <select v-model="form.categoryId" class="form-select" required>
-                                                    <option disabled value="">Chọn danh mục</option>
-                                                    <option
-                                                        v-for="category in categories"
-                                                        :key="category.id"
-                                                        :value="category.id"
-                                                    >
-                                                        {{ category.name }}
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Giá bán (VNĐ)<span
-                                                    class="text-danger">*</span></label>
-                                                <input
-                                                    v-model.number="form.price"
-                                                    type="number"
-                                                    min="0"
-                                                    step="1000"
-                                                    class="form-control"
-                                                    required
-                                                />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Giá vốn (VNĐ)</label>
-                                                <input
-                                                    v-model.number="form.cost"
-                                                    type="number"
-                                                    min="0"
-                                                    step="1000"
-                                                    class="form-control"
-                                                />
-                                            </div>
-                                            <div class="col-12">
-                                                <label class="form-label">Mô tả</label>
-                                                <textarea
-                                                    v-model.trim="form.description"
-                                                    class="form-control"
-                                                    rows="3"
-                                                    maxlength="500"
-                                                    placeholder="Mô tả ngắn về sản phẩm"
-                                                ></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-lg-4 col-md-5">
-                                        <label class="form-label">Ảnh sản phẩm</label>
-                                        <div class="image-uploader">
-                                            <img :src="previewImage" alt="Product preview"/>
-                                            <label class="upload-btn">
-                                                <input type="file" accept="image/*" @change="handleImageSelect"/>
-                                                <span><i class="bi bi-cloud-arrow-up me-2"></i>Tải ảnh</span>
-                                            </label>
-                                            <button
-                                                v-if="imageFile || form.imageUrl"
-                                                type="button"
-                                                class="btn btn-sm btn-outline-danger"
-                                                :disabled="removingImage"
-                                                @click="clearImage"
-                                            >
-                                                {{ removingImage ? 'Đang xóa...' : 'Xóa ảnh hiện tại' }}
-                                            </button>
-                                        </div>
-                                        <p class="text-muted small mt-2">Định dạng hỗ trợ: JPG, PNG. Kích thước &lt;
-                                            2MB.</p>
-                                    </div>
-                                </div>
-
-                                <div
-                                    v-if="form.createdAt"
-                                    class="product-meta-info mt-4 mb-0"
-                                >
-                                    <span><i class="bi bi-clock-history me-2"></i>Đã tạo: {{
-                                            formatDate(form.createdAt)
-                                        }}</span>
-                                    <span class="product-meta-badge"
-                                          :class="form.available ? 'product-meta-badge--active' : 'product-meta-badge--inactive'">
-                                    {{ form.available ? 'Đang kinh doanh' : 'Ngừng bán' }}
-                                </span>
-                                </div>
-                            </div>
-
-                            <div v-else class="tab-panel">
-                                <ProductRecipeManager v-if="isEditMode" :product-id="props.product?.id"/>
-                                <EmptyState
-                                    v-else
-                                    title="Chưa thể thiết lập công thức"
-                                    message="Vui lòng lưu sản phẩm trước, sau đó bạn có thể thêm nguyên liệu và định lượng."
-                                />
-                            </div>
-                        </div>
-
-                        <div v-if="activeTab === 'info'" class="modal-footer dual-buttons">
-                            <button type="button" class="btn btn-outline-secondary" @click="hide">Hủy</button>
-                            <button type="submit" class="btn btn-primary" :disabled="saving">
-                                {{ saving ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Tạo mới' }}
-                            </button>
-                        </div>
-
-                        <div v-else class="modal-footer dual-buttons">
-                            <button type="button" class="btn btn-outline-secondary" @click="setTab('info')">
-                                Quay lại thông tin
-                            </button>
-                            <button type="button" class="btn btn-primary" @click="hide">Đóng</button>
-                        </div>
-                    </form>
+                  <div class="col-lg-4 col-md-5">
+                    <label class="form-label">Ảnh sản phẩm</label>
+                    <div class="image-uploader">
+                      <img
+                        :src="previewImage"
+                        alt="Product preview"
+                      >
+                      <label class="upload-btn">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          @change="handleImageSelect"
+                        >
+                        <span><i class="bi bi-cloud-arrow-up me-2" />Tải ảnh</span>
+                      </label>
+                      <button
+                        v-if="imageFile || form.imageUrl"
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        :disabled="removingImage"
+                        @click="clearImage"
+                      >
+                        {{ removingImage ? 'Đang xóa...' : 'Xóa ảnh hiện tại' }}
+                      </button>
+                    </div>
+                    <p class="text-muted small mt-2">
+                      Định dạng hỗ trợ: JPG, PNG. Kích thước &lt;
+                      2MB.
+                    </p>
+                  </div>
                 </div>
+
+                <div
+                  v-if="form.createdAt"
+                  class="product-meta-info mt-4 mb-0"
+                >
+                  <span><i class="bi bi-clock-history me-2" />Đã tạo: {{
+                    formatDate(form.createdAt)
+                  }}</span>
+                  <span
+                    class="product-meta-badge"
+                    :class="form.available ? 'product-meta-badge--active' : 'product-meta-badge--inactive'"
+                  >
+                    {{ form.available ? 'Đang kinh doanh' : 'Ngừng bán' }}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                v-else
+                class="tab-panel"
+              >
+                <ProductRecipeManager
+                  v-if="isEditMode"
+                  :product-id="props.product?.id"
+                />
+                <EmptyState
+                  v-else
+                  title="Chưa thể thiết lập công thức"
+                  message="Vui lòng lưu sản phẩm trước, sau đó bạn có thể thêm nguyên liệu và định lượng."
+                />
+              </div>
             </div>
+
+            <div
+              v-if="activeTab === 'info'"
+              class="modal-footer dual-buttons"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="hide"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="saving"
+              >
+                {{ saving ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+              </button>
+            </div>
+
+            <div
+              v-else
+              class="modal-footer dual-buttons"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="setTab('info')"
+              >
+                Quay lại thông tin
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click="hide"
+              >
+                Đóng
+              </button>
+            </div>
+          </form>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import {computed, onMounted, onBeforeUnmount, ref, watch} from 'vue'
-import {Modal} from 'bootstrap'
-import {toast} from 'vue3-toastify'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { Modal } from 'bootstrap'
+import { toast } from 'vue3-toastify'
 import {
     createProduct,
     createProductWithImage,
@@ -177,13 +247,13 @@ import {
     updateProductWithImage,
     deleteProductImage
 } from '@/api/productService'
-import {formatDateTime} from '@/utils/formatters'
+import { formatDateTime } from '@/utils/formatters'
 import ProductRecipeManager from '@/components/products/ProductRecipeManager.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
-    product: {type: Object, default: null},
-    categories: {type: Array, default: () => []}
+    product: { type: Object, default: null },
+    categories: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['saved'])
@@ -235,7 +305,7 @@ watch(
         }
         activeTab.value = 'info'
     },
-    {immediate: true}
+    { immediate: true }
 )
 
 watch(isEditMode, (value) => {
@@ -350,7 +420,7 @@ const show = () => modalInstance?.show()
 const hide = () => modalInstance?.hide()
 
 onMounted(() => {
-    modalInstance = new Modal(modal.value, {backdrop: 'static'})
+    modalInstance = new Modal(modal.value, { backdrop: 'static' })
 })
 
 onBeforeUnmount(() => {
@@ -361,7 +431,7 @@ onBeforeUnmount(() => {
 
 const formatDate = (date) => (date ? formatDateTime(date) : '')
 
-defineExpose({show, hide, setTab})
+defineExpose({ show, hide, setTab })
 </script>
 
 <style scoped>

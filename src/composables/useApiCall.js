@@ -15,7 +15,7 @@ import { useErrorHandler } from './useErrorHandler'
  * @param {string} options.errorContext - Context for error logging
  * @returns {Object} - API call utilities
  */
-export function useApiCall(options = {}) {
+export function useApiCall (options = {}) {
     const {
         autoLoading = true,
         showErrorToast = true,
@@ -34,15 +34,12 @@ export function useApiCall(options = {}) {
      */
     const execute = async (apiFn, ...args) => {
         error.value = null
-        
+
         try {
             if (autoLoading) {
-                return await withLoading(async () => {
-                    return await apiFn(...args)
-                })
-            } else {
-                return await apiFn(...args)
+                return withLoading(async () => apiFn(...args))
             }
+            return apiFn(...args)
         } catch (err) {
             error.value = handleError(err)
             throw err

@@ -1,122 +1,163 @@
 <template>
-    <div class="attendance-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="attendance-header">
-            <div class="attendance-header__content">
-                <div class="attendance-header__title-section">
-                    <h2 class="attendance-header__title">Quản lý Chấm công</h2>
-                    <p class="attendance-header__subtitle">
-                        Theo dõi và quản lý chấm công của nhân viên, xem lịch sử và thống kê chi tiết.
-                    </p>
-                </div>
-                <div class="attendance-header__actions">
-                    <button
-                        class="btn btn-outline-secondary"
-                        type="button"
-                        @click="fetchData"
-                        :disabled="loading"
-                    >
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="attendance-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="attendance-header">
+      <div class="attendance-header__content">
+        <div class="attendance-header__title-section">
+          <h2 class="attendance-header__title">
+            Quản lý Chấm công
+          </h2>
+          <p class="attendance-header__subtitle">
+            Theo dõi và quản lý chấm công của nhân viên, xem lịch sử và thống kê chi tiết.
+          </p>
         </div>
-
-        <div class="card filter-card mb-4" v-if="activeTab === 'history' || activeTab === 'statistics'">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="filters.startDate" />
-                    </div>
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="filters.endDate" />
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label">Khoảng thời gian</label>
-                        <div class="btn-group w-100" role="group">
-                            <button
-                                v-for="preset in presets"
-                                :key="preset.value"
-                                type="button"
-                                class="btn"
-                                :class="preset.value === selectedPreset ? 'btn-primary' : 'btn-outline-primary'"
-                                @click="applyPreset(preset.value)"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-4" v-if="isManagerOrAdmin">
-                        <label class="form-label">Nhân viên</label>
-                        <select class="form-select" v-model="filters.userId">
-                            <option :value="authStore.user?.id">Tôi</option>
-                            <option v-for="user in filteredStaffList" :key="user.id" :value="user.id">
-                                {{ user.fullName || user.username }}
-                            </option>
-                        </select>
-                        <small class="text-muted d-block mt-1">
-                            Lưu ý: Chỉ hiển thị ca làm của nhân viên được chọn
-                        </small>
-                    </div>
-                </div>
-            </div>
+        <div class="attendance-header__actions">
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchData"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
         </div>
-
-        <section class="attendance-tabs">
-            <div class="card tabs-card mb-4">
-                <div class="card-body">
-                    <div class="tabs">
-                        <button
-                            v-for="tab in tabs"
-                            :key="tab.key"
-                            type="button"
-                            class="tab"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="tab.icon"></i>
-                            <span>{{ tab.label }}</span>
-                        </button>
-                    </div>
-
-                    <LoadingState v-if="loading && activeTab !== 'overview'" />
-                    <ErrorState
-                        v-else-if="error"
-                        :message="error"
-                        @retry="fetchData"
-                    />
-                    <div v-else class="tab-content">
-                        <AttendanceOverviewTab
-                            v-if="activeTab === 'overview'"
-                            :current-session="currentSession"
-                            :assignments="myAssignments"
-                            :loading="overviewLoading"
-                            :check-in-submitting="checkInSubmitting"
-                            :check-out-submitting="checkOutSubmitting"
-                            @check-in="handleCheckIn"
-                            @check-out="handleCheckOut"
-                            @refresh="fetchMyAssignments"
-                        />
-                        <AttendanceHistoryTab
-                            v-else-if="activeTab === 'history'"
-                            :records="attendanceRecords"
-                            :loading="historyLoading"
-                            :filters="filters"
-                        />
-                        <AttendanceStatisticsTab
-                            v-else-if="activeTab === 'statistics'"
-                            :statistics="statistics"
-                            :loading="statisticsLoading"
-                            :filters="filters"
-                        />
-                    </div>
-                </div>
-            </div>
-        </section>
+      </div>
     </div>
+
+    <div
+      v-if="activeTab === 'history' || activeTab === 'statistics'"
+      class="card filter-card mb-4"
+    >
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label">Khoảng thời gian</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in presets"
+                :key="preset.value"
+                type="button"
+                class="btn"
+                :class="preset.value === selectedPreset ? 'btn-primary' : 'btn-outline-primary'"
+                @click="applyPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+          </div>
+          <div
+            v-if="isManagerOrAdmin"
+            class="col-lg-2 col-md-4"
+          >
+            <label class="form-label">Nhân viên</label>
+            <select
+              v-model="filters.userId"
+              class="form-select"
+            >
+              <option :value="authStore.user?.id">
+                Tôi
+              </option>
+              <option
+                v-for="user in filteredStaffList"
+                :key="user.id"
+                :value="user.id"
+              >
+                {{ user.fullName || user.username }}
+              </option>
+            </select>
+            <small class="text-muted d-block mt-1">
+              Lưu ý: Chỉ hiển thị ca làm của nhân viên được chọn
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="attendance-tabs">
+      <div class="card tabs-card mb-4">
+        <div class="card-body">
+          <div class="tabs">
+            <button
+              v-for="tab in tabs"
+              :key="tab.key"
+              type="button"
+              class="tab"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              <i :class="tab.icon" />
+              <span>{{ tab.label }}</span>
+            </button>
+          </div>
+
+          <LoadingState v-if="loading && activeTab !== 'overview'" />
+          <ErrorState
+            v-else-if="error"
+            :message="error"
+            @retry="fetchData"
+          />
+          <div
+            v-else
+            class="tab-content"
+          >
+            <AttendanceOverviewTab
+              v-if="activeTab === 'overview'"
+              :current-session="currentSession"
+              :assignments="myAssignments"
+              :loading="overviewLoading"
+              :check-in-submitting="checkInSubmitting"
+              :check-out-submitting="checkOutSubmitting"
+              @check-in="handleCheckIn"
+              @check-out="handleCheckOut"
+              @refresh="fetchMyAssignments"
+            />
+            <AttendanceHistoryTab
+              v-else-if="activeTab === 'history'"
+              :records="attendanceRecords"
+              :loading="historyLoading"
+              :filters="filters"
+            />
+            <AttendanceStatisticsTab
+              v-else-if="activeTab === 'statistics'"
+              :statistics="statistics"
+              :loading="statisticsLoading"
+              :filters="filters"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup>
@@ -193,9 +234,7 @@ const statistics = ref(null)
 
 // Staff list for filter
 const staffList = ref([])
-const filteredStaffList = computed(() => {
-    return staffList.value.filter(user => user.id !== authStore.user?.id)
-})
+const filteredStaffList = computed(() => staffList.value.filter(user => user.id !== authStore.user?.id))
 
 const applyPreset = (value) => {
     selectedPreset.value = value
@@ -213,7 +252,7 @@ const fetchMyAssignments = async () => {
     overviewLoading.value = true
     try {
         let assignments = []
-        
+
         // Nếu là admin/manager và có filter userId, lấy assignments của user đó
         if (isManagerOrAdmin.value && filters.userId && filters.userId !== authStore.user?.id) {
             assignments = await getAssignmentsByUserId(filters.userId, {
@@ -224,14 +263,14 @@ const fetchMyAssignments = async () => {
             // Lấy assignments của current user
             assignments = await getAssignmentsForCurrentUser()
         }
-        
+
         myAssignments.value = Array.isArray(assignments) ? assignments : (Array.isArray(assignments?.content) ? assignments.content : [])
-        
+
         // Find active assignment with active session
-        const activeAssignment = myAssignments.value.find(a => 
+        const activeAssignment = myAssignments.value.find(a =>
             a.status === 'ACCEPTED' && a.shiftInstance?.status === 'ACTIVE'
         )
-        
+
         if (activeAssignment) {
             // Try to get current session from shift session service
             // For now, we'll use the assignment as current session
@@ -291,7 +330,7 @@ const fetchHistory = async () => {
     try {
         let records = []
         let assignments = []
-        
+
         // Nếu là admin/manager và có filter userId, lấy assignments của user đó
         if (isManagerOrAdmin.value && filters.userId && filters.userId !== authStore.user?.id) {
             assignments = await getAssignmentsByUserId(filters.userId, {
@@ -304,36 +343,36 @@ const fetchHistory = async () => {
             assignments = await getAssignmentsForCurrentUser()
             assignments = Array.isArray(assignments) ? assignments : []
         }
-        
-        let filteredAssignments = assignments
-        
+
+        const filteredAssignments = assignments
+
         for (const assignment of filteredAssignments) {
             try {
                 const attendance = await getAttendanceByAssignment(assignment.id)
                 if (Array.isArray(attendance)) {
                     records.push(...attendance)
                 }
-            } catch (err) {
+            } catch {
                 // Bỏ qua lỗi khi fetch attendance cho assignment đơn lẻ
             }
         }
-        
+
         // Filter by date range
-        const start = new Date(filters.startDate + 'T00:00:00')
-        const end = new Date(filters.endDate + 'T23:59:59')
-        
+        const start = new Date(`${filters.startDate  }T00:00:00`)
+        const end = new Date(`${filters.endDate  }T23:59:59`)
+
         records = records.filter(record => {
             const checkInDate = record.checkInAt ? new Date(record.checkInAt) : null
             return checkInDate && checkInDate >= start && checkInDate <= end
         })
-        
+
         // Sort by check-in time descending
         records.sort((a, b) => {
             const dateA = a.checkInAt ? new Date(a.checkInAt).getTime() : 0
             const dateB = b.checkInAt ? new Date(b.checkInAt).getTime() : 0
             return dateB - dateA
         })
-        
+
         attendanceRecords.value = records
     } catch (err) {
         error.value = err.response?.data?.message || 'Không thể tải lịch sử chấm công.'
@@ -348,7 +387,7 @@ const fetchStatistics = async () => {
     try {
         let records = []
         let assignments = []
-        
+
         // Nếu là admin/manager và có filter userId, lấy assignments của user đó
         if (isManagerOrAdmin.value && filters.userId && filters.userId !== authStore.user?.id) {
             assignments = await getAssignmentsByUserId(filters.userId, {
@@ -361,47 +400,47 @@ const fetchStatistics = async () => {
             assignments = await getAssignmentsForCurrentUser()
             assignments = Array.isArray(assignments) ? assignments : []
         }
-        
-        let filteredAssignments = assignments
-        
+
+        const filteredAssignments = assignments
+
         if (filteredAssignments.length === 0) {
             statistics.value = null
             return
         }
-        
+
         for (const assignment of filteredAssignments) {
             try {
                 const attendance = await getAttendanceByAssignment(assignment.id)
                 if (Array.isArray(attendance)) {
                     records.push(...attendance)
                 }
-            } catch (err) {
+            } catch {
                 // Bỏ qua lỗi khi fetch attendance cho assignment đơn lẻ
             }
         }
-        
+
         // Filter by date range
-        const start = new Date(filters.startDate + 'T00:00:00')
-        const end = new Date(filters.endDate + 'T23:59:59')
-        
+        const start = new Date(`${filters.startDate  }T00:00:00`)
+        const end = new Date(`${filters.endDate  }T23:59:59`)
+
         records = records.filter(record => {
             const checkInDate = record.checkInAt ? new Date(record.checkInAt) : null
             return checkInDate && checkInDate >= start && checkInDate <= end
         })
-        
+
         // Calculate statistics
         const totalRecords = records.length
         const checkedIn = records.filter(r => r.checkInAt).length
         const checkedOut = records.filter(r => r.checkOutAt).length
         const lateCount = records.filter(r => r.lateMinutes && r.lateMinutes > 0).length
         const earlyLeaveCount = records.filter(r => r.earlyLeaveMinutes && r.earlyLeaveMinutes > 0).length
-        
+
         const totalLateMinutes = records.reduce((sum, r) => sum + (r.lateMinutes || 0), 0)
         const totalEarlyLeaveMinutes = records.reduce((sum, r) => sum + (r.earlyLeaveMinutes || 0), 0)
-        
+
         const avgLateMinutes = lateCount > 0 ? Math.round(totalLateMinutes / lateCount) : 0
         const avgEarlyLeaveMinutes = earlyLeaveCount > 0 ? Math.round(totalEarlyLeaveMinutes / earlyLeaveCount) : 0
-        
+
         statistics.value = {
             totalRecords,
             checkedIn,
@@ -426,10 +465,10 @@ const fetchStaffList = async () => {
     try {
         const response = await getUsers({ page: 0, size: 100, sort: 'fullName,asc' })
         const users = response?.content || response?.items || []
-        staffList.value = users.filter(u => 
+        staffList.value = users.filter(u =>
             u.roles?.some(r => r.name === 'ROLE_STAFF' || r === 'ROLE_STAFF')
         )
-    } catch (err) {
+    } catch (error) {
         // Export error handled silently
     }
 }

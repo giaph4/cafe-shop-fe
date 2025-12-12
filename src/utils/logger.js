@@ -1,7 +1,7 @@
 /**
  * Logger utility để replace console statements trong production
  * PERFORMANCE & SECURITY FIX: Disable console trong production để tránh performance issues và data leakage
- * 
+ *
  * Usage:
  * import logger from '@/utils/logger'
  * logger.log('message')
@@ -24,7 +24,7 @@ const logger = {
             console.log(...args)
         }
     },
-    
+
     /**
      * Log error (luôn log trong production để debug)
      */
@@ -37,7 +37,7 @@ const logger = {
             // Error tracking service integration có thể được thêm ở đây
         }
     },
-    
+
     /**
      * Log warning (chỉ trong development)
      */
@@ -46,7 +46,7 @@ const logger = {
             console.warn(...args)
         }
     },
-    
+
     /**
      * Log info (chỉ trong development)
      */
@@ -55,7 +55,7 @@ const logger = {
             console.info(...args)
         }
     },
-    
+
     /**
      * Log debug (chỉ trong development)
      */
@@ -64,7 +64,7 @@ const logger = {
             console.debug(...args)
         }
     },
-    
+
     /**
      * Log table (chỉ trong development)
      */
@@ -73,7 +73,7 @@ const logger = {
             console.table(...args)
         }
     },
-    
+
     /**
      * Log group (chỉ trong development)
      */
@@ -82,7 +82,7 @@ const logger = {
             console.group(...args)
         }
     },
-    
+
     /**
      * End group (chỉ trong development)
      */

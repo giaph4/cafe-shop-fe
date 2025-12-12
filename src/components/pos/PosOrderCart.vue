@@ -1,591 +1,822 @@
 <template>
-    <div class="pos-cart">
-        <header class="pos-cart__header">
-            <div class="pos-cart__header-top">
-                <div class="pos-cart__header-left">
-                    <h4 class="pos-cart__title">{{ cartTitle }}</h4>
-                    <button
-                        v-if="showSelectTableButton"
-                        class="btn btn-outline-primary btn-sm"
-                        type="button"
-                        @click="requestTableSelection"
-                    >
-                        <i class="bi bi-grid-3x3-gap me-1"></i>
-                        Chọn bàn
-                    </button>
-                </div>
-                <div class="pos-cart__header-right">
-                    <button
-                        v-if="showExpandButton"
-                        class="btn btn-outline-secondary btn-sm pos-cart__expand-btn"
-                        type="button"
-                        @click="openDrawer"
-                        :title="`Mở rộng giỏ hàng (${cartItemCount} sản phẩm)`"
-                    >
-                        <i class="bi bi-arrows-angle-expand me-1"></i>
-                        Mở rộng
-                        <span v-if="cartItemCount > 5" class="badge bg-primary ms-2">{{ cartItemCount }}</span>
-                    </button>
-                    <span class="status-pill" :class="orderStatusClass">{{ orderStatusLabel }}</span>
-                </div>
-            </div>
-            <p v-if="localOrder.code || localOrder.id" class="pos-cart__order-code">
-                Mã đơn: #{{ localOrder.code || localOrder.id }}
+  <div class="pos-cart">
+    <header class="pos-cart__header">
+      <div class="pos-cart__header-top">
+        <div class="pos-cart__header-left">
+          <h4 class="pos-cart__title">
+            {{ cartTitle }}
+          </h4>
+          <button
+            v-if="showSelectTableButton"
+            class="btn btn-outline-primary btn-sm"
+            type="button"
+            @click="requestTableSelection"
+          >
+            <i class="bi bi-grid-3x3-gap me-1" />
+            Chọn bàn
+          </button>
+        </div>
+        <div class="pos-cart__header-right">
+          <button
+            v-if="showExpandButton"
+            class="btn btn-outline-secondary btn-sm pos-cart__expand-btn"
+            type="button"
+            :title="`Mở rộng giỏ hàng (${cartItemCount} sản phẩm)`"
+            @click="openDrawer"
+          >
+            <i class="bi bi-arrows-angle-expand me-1" />
+            Mở rộng
+            <span
+              v-if="cartItemCount > 5"
+              class="badge bg-primary ms-2"
+            >{{ cartItemCount }}</span>
+          </button>
+          <span
+            class="status-pill"
+            :class="orderStatusClass"
+          >{{ orderStatusLabel }}</span>
+        </div>
+      </div>
+      <p
+        v-if="localOrder.code || localOrder.id"
+        class="pos-cart__order-code"
+      >
+        Mã đơn: #{{ localOrder.code || localOrder.id }}
+      </p>
+    </header>
+
+    <EmptyState
+      v-if="!order && !isCreatingNew"
+      title="Chưa có đơn hàng"
+      message="Chưa có đơn hàng nào cho bàn này."
+    >
+      <template #icon>
+        <i class="bi bi-plus-square" />
+      </template>
+      <template #action>
+        <button
+          class="btn btn-primary"
+          @click="createNewOrder"
+        >
+          Tạo đơn hàng mới
+        </button>
+      </template>
+    </EmptyState>
+
+    <template v-else>
+      <section
+        v-if="!cartIsEmpty"
+        class="pos-cart__items"
+      >
+        <div
+          v-for="(item, index) in localOrder.items"
+          :key="item.id || item.productId || index"
+          class="pos-cart__item"
+        >
+          <div class="pos-cart__item-info">
+            <h6 class="mb-1">
+              {{ item.productName }}
+            </h6>
+            <p class="mb-0 text-muted small">
+              {{ formatCurrencySafe(item.priceAtOrder) }} × {{ item.quantity }}
             </p>
+            <!-- Ghi chú cho món -->
+            <div class="pos-cart__item-notes">
+              <div
+                v-if="editingNotesIndex !== index"
+                class="pos-cart__item-notes-display"
+              >
+                <span
+                  v-if="item.notes"
+                  class="pos-cart__item-notes-text"
+                >
+                  <i class="bi bi-sticky me-1" />
+                  {{ item.notes }}
+                </span>
+                <button
+                  class="btn btn-sm btn-link p-0 text-muted pos-cart__item-notes-edit-btn"
+                  type="button"
+                  :disabled="isProcessing('quantity')"
+                  title="Chỉnh sửa ghi chú"
+                  @click="startEditNotes(index)"
+                >
+                  <i
+                    :class="item.notes ? 'bi bi-pencil' : 'bi bi-plus-circle'"
+                  />
+                  {{ item.notes ? 'Sửa' : 'Thêm ghi chú' }}
+                </button>
+              </div>
+              <div
+                v-else
+                class="pos-cart__item-notes-edit"
+              >
+                <input
+                  v-model="editingNotesValue"
+                  type="text"
+                  class="form-control form-control-sm"
+                  placeholder="Nhập ghi chú cho món này..."
+                  :disabled="isProcessing('quantity')"
+                  @keyup.enter="saveItemNotes(index)"
+                  @keyup.esc="cancelEditNotes"
+                  @blur="saveItemNotes(index)"
+                >
+                <div class="pos-cart__item-notes-edit-actions">
+                  <button
+                    class="btn btn-sm btn-success"
+                    type="button"
+                    :disabled="isProcessing('quantity')"
+                    @click="saveItemNotes(index)"
+                  >
+                    <i class="bi bi-check" />
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-secondary"
+                    type="button"
+                    :disabled="isProcessing('quantity')"
+                    @click="cancelEditNotes"
+                  >
+                    <i class="bi bi-x" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pos-cart__item-actions">
+            <div class="quantity-controls">
+              <button
+                class="btn btn-sm btn-outline-secondary quantity-btn"
+                type="button"
+                :disabled="isProcessing('quantity')"
+                aria-label="Giảm số lượng"
+                title="Giảm (Phím -)"
+                @click="updateQuantity(index, -1)"
+              >
+                <i class="bi bi-dash" />
+              </button>
+              <input
+                type="number"
+                class="quantity-input"
+                :value="item.quantity"
+                min="1"
+                :disabled="isProcessing('quantity')"
+                @input="setQuantity(index, $event.target.value)"
+                @change="setQuantity(index, $event.target.value)"
+                @blur="setQuantity(index, item.quantity)"
+              >
+              <button
+                class="btn btn-sm btn-outline-secondary quantity-btn"
+                type="button"
+                :disabled="isProcessing('quantity')"
+                aria-label="Tăng số lượng"
+                title="Tăng (Phím +)"
+                @click="updateQuantity(index, 1)"
+              >
+                <i class="bi bi-plus" />
+              </button>
+            </div>
+            <button
+              class="btn btn-sm btn-outline-danger"
+              type="button"
+              :disabled="isProcessing('quantity')"
+              aria-label="Xóa món"
+              title="Xóa (Phím Delete)"
+              @click="removeItem(index)"
+            >
+              <i class="bi bi-trash" />
+            </button>
+          </div>
+          <span class="pos-cart__item-total">{{ formatCurrencySafe(item.priceAtOrder * item.quantity)
+          }}</span>
+        </div>
+      </section>
+      <EmptyState
+        v-else
+        title="Giỏ hàng trống"
+        message="Giỏ hàng đang trống. Vui lòng chọn sản phẩm."
+      >
+        <template #icon>
+          <i class="bi bi-basket" />
+        </template>
+      </EmptyState>
+
+      <section class="pos-cart__customer">
+        <div class="pos-cart__customer-header">
+          <h6 class="pos-cart__customer-title">
+            Khách hàng
+          </h6>
+          <button
+            v-if="hasSelectedCustomer"
+            type="button"
+            class="pos-cart__customer-clear"
+            @click="clearSelectedCustomer"
+          >
+            Bỏ chọn
+          </button>
+        </div>
+
+        <template v-if="hasSelectedCustomer">
+          <div class="pos-cart__customer-chip">
+            <div>
+              <div class="fw-semibold">
+                {{ selectedCustomerName }}
+              </div>
+              <small class="text-muted">
+                {{ selectedCustomerPhone || 'Không có số điện thoại' }}
+              </small>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="input-group">
+            <input
+              v-model.trim="customerSearchTerm"
+              type="text"
+              class="form-control"
+              placeholder="Nhập tên hoặc SĐT khách hàng"
+              @keyup.enter.prevent="triggerCustomerSearch"
+            >
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="customerSearchLoading"
+              @click="triggerCustomerSearch"
+            >
+              <span
+                v-if="customerSearchLoading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Tìm
+            </button>
+          </div>
+          <ul
+            v-if="showCustomerSuggestions"
+            class="pos-cart__customer-results"
+          >
+            <li
+              v-for="customer in customerSearchResults"
+              :key="customer.id || customer.customerId"
+              class="pos-cart__customer-item"
+              @click="selectCustomer(customer)"
+            >
+              <div class="pos-cart__customer-item-name">
+                {{ customer.fullName || customer.customerName || customer.name }}
+              </div>
+              <small class="pos-cart__customer-item-phone">{{ customer.phone || customer.customerPhone ||
+                '—' }}</small>
+            </li>
+            <li
+              v-if="!customerSearchResults.length"
+              class="pos-cart__customer-item pos-cart__customer-item--empty"
+            >
+              Không tìm thấy khách phù hợp.
+            </li>
+          </ul>
+          <small class="pos-cart__customer-hint">Chọn khách để tích điểm và hiển thị trên hóa đơn.</small>
+        </template>
+      </section>
+
+      <section class="pos-cart__summary">
+        <div class="pos-cart__summary-row">
+          <span>Tổng phụ</span>
+          <span>{{ formatCurrencySafe(subTotal) }}</span>
+        </div>
+        <div
+          v-if="showDiscountRow"
+          class="pos-cart__summary-row"
+        >
+          <span>Giảm giá</span>
+          <span>-{{ formatCurrencySafe(discountAmount) }}</span>
+        </div>
+        <div
+          v-if="showTipRow"
+          class="pos-cart__summary-row"
+        >
+          <span class="text-success">Tiền típ</span>
+          <span class="text-success">+{{ formatCurrencySafe(tipAmount) }}</span>
+        </div>
+        <div class="pos-cart__summary-divider" />
+        <div class="pos-cart__summary-row pos-cart__summary-row--total">
+          <span>Tổng cộng</span>
+          <span>{{ formatCurrencySafe(totalAmount) }}</span>
+        </div>
+      </section>
+
+      <section class="pos-cart__voucher">
+        <template v-if="hasVoucherApplied">
+          <div class="pos-cart__voucher-applied">
+            <div class="pos-cart__voucher-applied-content">
+              <strong>Voucher đã áp dụng:</strong> {{ localOrder.voucherCode }}
+            </div>
+            <button
+              class="btn btn-sm btn-outline-danger"
+              type="button"
+              :disabled="isProcessing('remove-voucher')"
+              @click="removeVoucher"
+            >
+              <span
+                v-if="isProcessing('remove-voucher')"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Bỏ voucher
+            </button>
+          </div>
+        </template>
+        <div v-else>
+          <div class="input-group mb-2">
+            <span class="input-group-text voucher-input-icon">
+              <i class="bi bi-ticket-perforated" />
+            </span>
+            <input
+              v-model.trim="voucherCode"
+              type="text"
+              class="form-control"
+              placeholder="Nhập mã voucher và nhấn Áp dụng"
+              :disabled="!isExistingOrder || isProcessing('apply-voucher')"
+              @keyup.enter="applyVoucher"
+            >
+            <button
+              v-if="isProcessing('apply-voucher')"
+              class="btn btn-warning"
+              type="button"
+              disabled
+            >
+              <span class="spinner-border spinner-border-sm me-1" />
+              Đang xử lý...
+            </button>
+            <button
+              v-else
+              class="btn btn-success"
+              type="button"
+              :disabled="!canApplyVoucher"
+              @click="applyVoucher"
+            >
+              <i class="bi bi-check-circle me-1" />
+              Áp dụng
+            </button>
+          </div>
+          <div
+            v-if="voucherError"
+            class="pos-cart__voucher-error mt-2"
+          >
+            <i class="bi bi-exclamation-triangle-fill me-1" />
+            {{ voucherError }}
+          </div>
+          <small
+            v-if="!isExistingOrder"
+            class="pos-cart__voucher-hint"
+          >Lưu đơn hàng trước khi áp dụng
+            voucher.</small>
+        </div>
+      </section>
+
+      <section class="pos-cart__actions">
+        <button
+          class="btn btn-success"
+          type="button"
+          :disabled="!canProcessPayment"
+          @click="processPayment"
+        >
+          <span
+            v-if="isProcessing('pay')"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          Thanh toán
+        </button>
+        <button
+          class="btn btn-outline-primary"
+          type="button"
+          :disabled="isProcessing('save') || cartIsEmpty"
+          @click="saveOrder"
+        >
+          <span
+            v-if="isProcessing('save')"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          Lưu đơn hàng
+        </button>
+        <button
+          class="btn btn-outline-danger"
+          type="button"
+          :disabled="isProcessing('cancel')"
+          @click="cancelOrder"
+        >
+          <span
+            v-if="isProcessing('cancel')"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          {{ isExistingOrder ? 'Hủy đơn hàng' : 'Hủy tạo mới' }}
+        </button>
+      </section>
+    </template>
+  </div>
+
+  <PosPaymentModal
+    ref="paymentModalRef"
+    :order="localOrder"
+    :table="props.table"
+    :processing="loadingAction === 'pay'"
+    @confirm-payment="confirmPayment"
+    @closed="handlePaymentModalClosed"
+  />
+
+  <!-- Order Cart Drawer -->
+  <Teleport to="body">
+    <div
+      v-if="drawerOpen"
+      class="order-cart-drawer-backdrop"
+      @click="closeDrawer"
+      @keydown.esc="closeDrawer"
+    >
+      <div
+        class="order-cart-drawer"
+        :class="{ 'order-cart-drawer--open': drawerOpen }"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawer-title"
+        aria-describedby="drawer-description"
+        tabindex="-1"
+        @click.stop
+      >
+        <!-- Drawer Header -->
+        <header class="order-cart-drawer__header">
+          <div class="order-cart-drawer__header-left">
+            <h5
+              id="drawer-title"
+              class="order-cart-drawer__title"
+            >
+              <i
+                class="bi bi-cart me-2"
+                aria-hidden="true"
+              />
+              Giỏ hàng
+              <span
+                class="badge bg-primary ms-2"
+                aria-label="Số lượng sản phẩm"
+              >{{ cartItemCount
+              }}</span>
+            </h5>
+            <p
+              id="drawer-description"
+              class="visually-hidden"
+            >
+              Danh sách sản phẩm trong giỏ hàng. Sử dụng phím Tab để điều hướng, Escape để đóng.
+            </p>
+            <div class="order-cart-drawer__total-badge">
+              {{ formatCurrencySafe(totalAmount) }}
+            </div>
+            <!-- Voucher Progress Bar -->
+            <div
+              v-if="hasVoucherApplied && localOrder.voucherCode"
+              class="order-cart-drawer__voucher-progress"
+            >
+              <div class="order-cart-drawer__voucher-progress-label">
+                <i class="bi bi-ticket-perforated me-1" />
+                Voucher: {{ localOrder.voucherCode }}
+              </div>
+              <div class="order-cart-drawer__voucher-progress-bar">
+                <div
+                  class="order-cart-drawer__voucher-progress-fill"
+                  :style="{ width: '100%' }"
+                />
+              </div>
+              <small class="order-cart-drawer__voucher-progress-text text-success">
+                Đã áp dụng: -{{ formatCurrencySafe(discountAmount) }}
+              </small>
+            </div>
+          </div>
+          <button
+            class="btn btn-sm btn-outline-secondary order-cart-drawer__close-btn"
+            type="button"
+            aria-label="Đóng giỏ hàng"
+            @click="closeDrawer"
+          >
+            <i class="bi bi-x-lg" />
+          </button>
         </header>
 
-            <EmptyState
-                v-if="!order && !isCreatingNew"
-                title="Chưa có đơn hàng"
-                message="Chưa có đơn hàng nào cho bàn này."
-            >
-                <template #icon>
-                    <i class="bi bi-plus-square"></i>
-                </template>
-                <template #action>
-                    <button class="btn btn-primary" @click="createNewOrder">
-                        Tạo đơn hàng mới
-                    </button>
-                </template>
-            </EmptyState>
-
-            <template v-else>
-                <section class="pos-cart__items" v-if="!cartIsEmpty">
-                    <div
-                        v-for="(item, index) in localOrder.items"
-                        :key="item.id || item.productId || index"
-                        class="pos-cart__item"
-                    >
-                        <div class="pos-cart__item-info">
-                            <h6 class="mb-1">{{ item.productName }}</h6>
-                            <p class="mb-0 text-muted small">
-                                {{ formatCurrencySafe(item.priceAtOrder) }} × {{ item.quantity }}
-                                <span v-if="item.notes" class="ms-1 fst-italic">({{ item.notes }})</span>
-                            </p>
-                        </div>
-                        <div class="pos-cart__item-actions">
-                            <div class="quantity-controls">
-                                <button
-                                    class="btn btn-sm btn-outline-secondary quantity-btn"
-                                    type="button"
-                                    @click="updateQuantity(index, -1)"
-                                    :disabled="isProcessing('quantity')"
-                                    aria-label="Giảm số lượng"
-                                    title="Giảm (Phím -)"
-                                >
-                                    <i class="bi bi-dash"></i>
-                                </button>
-                                <input
-                                    type="number"
-                                    class="quantity-input"
-                                    :value="item.quantity"
-                                    @input="setQuantity(index, $event.target.value)"
-                                    @change="setQuantity(index, $event.target.value)"
-                                    @blur="setQuantity(index, item.quantity)"
-                                    min="1"
-                                    :disabled="isProcessing('quantity')"
-                                >
-                                <button
-                                    class="btn btn-sm btn-outline-secondary quantity-btn"
-                                    type="button"
-                                    @click="updateQuantity(index, 1)"
-                                    :disabled="isProcessing('quantity')"
-                                    aria-label="Tăng số lượng"
-                                    title="Tăng (Phím +)"
-                                >
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            </div>
-                            <button
-                                class="btn btn-sm btn-outline-danger"
-                                type="button"
-                                @click="removeItem(index)"
-                                :disabled="isProcessing('quantity')"
-                                aria-label="Xóa món"
-                                title="Xóa (Phím Delete)"
-                            >
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                        <span class="pos-cart__item-total">{{ formatCurrencySafe(item.priceAtOrder * item.quantity) }}</span>
-                    </div>
-                </section>
-                <EmptyState
-                    v-else
-                    title="Giỏ hàng trống"
-                    message="Giỏ hàng đang trống. Vui lòng chọn sản phẩm."
-                >
-                    <template #icon>
-                        <i class="bi bi-basket"></i>
-                    </template>
-                </EmptyState>
-
-                <section class="pos-cart__customer">
-                    <div class="pos-cart__customer-header">
-                        <h6 class="pos-cart__customer-title">Khách hàng</h6>
-                        <button
-                            v-if="hasSelectedCustomer"
-                            type="button"
-                            class="pos-cart__customer-clear"
-                            @click="clearSelectedCustomer"
-                        >
-                            Bỏ chọn
-                        </button>
-                    </div>
-
-                    <template v-if="hasSelectedCustomer">
-                        <div class="pos-cart__customer-chip">
-                            <div>
-                                <div class="fw-semibold">{{ selectedCustomerName }}</div>
-                                <small class="text-muted">
-                                    {{ selectedCustomerPhone || 'Không có số điện thoại' }}
-                                </small>
-                            </div>
-                        </div>
-                    </template>
-                    <template v-else>
-                        <div class="input-group">
-                            <input
-                                v-model.trim="customerSearchTerm"
-                                type="text"
-                                class="form-control"
-                                placeholder="Nhập tên hoặc SĐT khách hàng"
-                                @keyup.enter.prevent="triggerCustomerSearch"
-                            >
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                :disabled="customerSearchLoading"
-                                @click="triggerCustomerSearch"
-                            >
-                                <span v-if="customerSearchLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                Tìm
-                            </button>
-                        </div>
-                        <ul v-if="showCustomerSuggestions" class="pos-cart__customer-results">
-                            <li
-                                v-for="customer in customerSearchResults"
-                                :key="customer.id || customer.customerId"
-                                class="pos-cart__customer-item"
-                                @click="selectCustomer(customer)"
-                            >
-                                <div class="pos-cart__customer-item-name">{{ customer.fullName || customer.customerName || customer.name }}</div>
-                                <small class="pos-cart__customer-item-phone">{{ customer.phone || customer.customerPhone || '—' }}</small>
-                            </li>
-                            <li v-if="!customerSearchResults.length" class="pos-cart__customer-item pos-cart__customer-item--empty">
-                                Không tìm thấy khách phù hợp.
-                            </li>
-                        </ul>
-                        <small class="pos-cart__customer-hint">Chọn khách để tích điểm và hiển thị trên hóa đơn.</small>
-                    </template>
-                </section>
-
-                <section class="pos-cart__notes">
-                    <div class="pos-cart__notes-header">
-                        <h6 class="pos-cart__notes-title">
-                            <i class="bi bi-sticky me-2"></i>Ghi chú đơn hàng
-                        </h6>
-                    </div>
-                    <textarea
-                        v-model.trim="orderNotes"
-                        class="form-control pos-cart__notes-input"
-                        rows="3"
-                        placeholder="Nhập ghi chú cho đơn hàng (tùy chọn)"
-                        :disabled="isProcessing('save')"
-                    ></textarea>
-                    <small class="pos-cart__notes-hint">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Ghi chú sẽ được lưu khi bạn lưu đơn hàng
-                    </small>
-                </section>
-
-                <section class="pos-cart__summary">
-                    <div class="pos-cart__summary-row">
-                        <span>Tổng phụ</span>
-                        <span>{{ formatCurrencySafe(subTotal) }}</span>
-                    </div>
-                    <div class="pos-cart__summary-row" v-if="showDiscountRow">
-                        <span>Giảm giá</span>
-                        <span>-{{ formatCurrencySafe(discountAmount) }}</span>
-                    </div>
-                    <div class="pos-cart__summary-row" v-if="showTipRow">
-                        <span class="text-success">Tiền típ</span>
-                        <span class="text-success">+{{ formatCurrencySafe(tipAmount) }}</span>
-                    </div>
-                    <div class="pos-cart__summary-divider"></div>
-                    <div class="pos-cart__summary-row pos-cart__summary-row--total">
-                        <span>Tổng cộng</span>
-                        <span>{{ formatCurrencySafe(totalAmount) }}</span>
-                    </div>
-                </section>
-
-                <section class="pos-cart__voucher">
-                    <template v-if="hasVoucherApplied">
-                        <div class="pos-cart__voucher-applied">
-                            <div class="pos-cart__voucher-applied-content">
-                                <strong>Voucher đã áp dụng:</strong> {{ localOrder.voucherCode }}
-                            </div>
-                            <button
-                                class="btn btn-sm btn-outline-danger"
-                                type="button"
-                                @click="removeVoucher"
-                                :disabled="isProcessing('remove-voucher')"
-                            >
-                                <span v-if="isProcessing('remove-voucher')" class="spinner-border spinner-border-sm me-2"></span>
-                                Bỏ voucher
-                            </button>
-                        </div>
-                    </template>
-                    <div v-else>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text voucher-input-icon">
-                                <i class="bi bi-ticket-perforated"></i>
-                            </span>
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="Nhập mã voucher và nhấn Áp dụng"
-                                v-model.trim="voucherCode"
-                                :disabled="!isExistingOrder || isProcessing('apply-voucher')"
-                                @keyup.enter="applyVoucher"
-                            >
-                            <button
-                                v-if="isProcessing('apply-voucher')"
-                                class="btn btn-warning"
-                                type="button"
-                                disabled
-                            >
-                                <span class="spinner-border spinner-border-sm me-1"></span>
-                                Đang xử lý...
-                            </button>
-                            <button
-                                v-else
-                                class="btn btn-success"
-                                type="button"
-                                @click="applyVoucher"
-                                :disabled="!canApplyVoucher"
-                            >
-                                <i class="bi bi-check-circle me-1"></i>
-                                Áp dụng
-                            </button>
-                        </div>
-                        <div v-if="voucherError" class="pos-cart__voucher-error mt-2">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                            {{ voucherError }}
-                        </div>
-                        <small v-if="!isExistingOrder" class="pos-cart__voucher-hint">Lưu đơn hàng trước khi áp dụng voucher.</small>
-                    </div>
-                </section>
-
-                <section class="pos-cart__actions">
-                    <button
-                        class="btn btn-success"
-                        type="button"
-                        @click="processPayment"
-                        :disabled="!canProcessPayment"
-                    >
-                        <span v-if="isProcessing('pay')" class="spinner-border spinner-border-sm me-2"></span>
-                        Thanh toán
-                    </button>
-                    <button
-                        class="btn btn-outline-primary"
-                        type="button"
-                        @click="saveOrder"
-                        :disabled="isProcessing('save') || cartIsEmpty"
-                    >
-                        <span v-if="isProcessing('save')" class="spinner-border spinner-border-sm me-2"></span>
-                        Lưu đơn hàng
-                    </button>
-                    <button
-                        class="btn btn-outline-danger"
-                        type="button"
-                        @click="cancelOrder"
-                        :disabled="isProcessing('cancel')"
-                    >
-                        <span v-if="isProcessing('cancel')" class="spinner-border spinner-border-sm me-2"></span>
-                        {{ isExistingOrder ? 'Hủy đơn hàng' : 'Hủy tạo mới' }}
-                    </button>
-                </section>
-            </template>
-    </div>
-
-    <PosPaymentModal
-        ref="paymentModalRef"
-        :order="localOrder"
-        :table="props.table"
-        :processing="loadingAction === 'pay'"
-        @confirm-payment="confirmPayment"
-        @closed="handlePaymentModalClosed"
-    />
-
-    <!-- Order Cart Drawer -->
-    <Teleport to="body">
-        <div
-            v-if="drawerOpen"
-            class="order-cart-drawer-backdrop"
-            @click="closeDrawer"
-            @keydown.esc="closeDrawer"
-        >
-            <div
-                class="order-cart-drawer"
-                :class="{ 'order-cart-drawer--open': drawerOpen }"
-                @click.stop
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="drawer-title"
-                aria-describedby="drawer-description"
-                tabindex="-1"
-            >
-                <!-- Drawer Header -->
-                <header class="order-cart-drawer__header">
-                    <div class="order-cart-drawer__header-left">
-                        <h5 id="drawer-title" class="order-cart-drawer__title">
-                            <i class="bi bi-cart me-2" aria-hidden="true"></i>
-                            Giỏ hàng
-                            <span class="badge bg-primary ms-2" aria-label="Số lượng sản phẩm">{{ cartItemCount }}</span>
-                        </h5>
-                        <p id="drawer-description" class="visually-hidden">
-                            Danh sách sản phẩm trong giỏ hàng. Sử dụng phím Tab để điều hướng, Escape để đóng.
-                        </p>
-                        <div class="order-cart-drawer__total-badge">
-                            {{ formatCurrencySafe(totalAmount) }}
-                        </div>
-                        <!-- Voucher Progress Bar -->
-                        <div v-if="hasVoucherApplied && localOrder.voucherCode" class="order-cart-drawer__voucher-progress">
-                            <div class="order-cart-drawer__voucher-progress-label">
-                                <i class="bi bi-ticket-perforated me-1"></i>
-                                Voucher: {{ localOrder.voucherCode }}
-                            </div>
-                            <div class="order-cart-drawer__voucher-progress-bar">
-                                <div
-                                    class="order-cart-drawer__voucher-progress-fill"
-                                    :style="{ width: '100%' }"
-                                ></div>
-                            </div>
-                            <small class="order-cart-drawer__voucher-progress-text text-success">
-                                Đã áp dụng: -{{ formatCurrencySafe(discountAmount) }}
-                            </small>
-                        </div>
-                    </div>
-                    <button
-                        class="btn btn-sm btn-outline-secondary order-cart-drawer__close-btn"
-                        type="button"
-                        @click="closeDrawer"
-                        aria-label="Đóng giỏ hàng"
-                    >
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </header>
-
-                <!-- Drawer Body -->
-                <div class="order-cart-drawer__body">
-                    <!-- Search and Filters -->
-                    <div v-if="cartItemCount > 3" class="order-cart-drawer__toolbar">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input
-                                v-model.trim="drawerSearchQuery"
-                                type="text"
-                                class="form-control"
-                                placeholder="Tìm kiếm sản phẩm..."
-                                @input="handleDrawerSearch"
-                                aria-label="Tìm kiếm sản phẩm trong giỏ hàng"
-                                autocomplete="off"
-                            />
-                        </div>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <select
-                                v-model="drawerSortBy"
-                                class="form-select form-select-sm"
-                                @change="handleDrawerSort"
-                                aria-label="Sắp xếp sản phẩm"
-                            >
-                                <option value="newest">Mới nhất</option>
-                                <option value="price-asc">Giá: Tăng dần</option>
-                                <option value="price-desc">Giá: Giảm dần</option>
-                                <option value="name-asc">Tên: A-Z</option>
-                                <option value="name-desc">Tên: Z-A</option>
-                            </select>
-                            <select
-                                v-if="drawerCategories.length > 0"
-                                v-model="drawerCategoryFilter"
-                                class="form-select form-select-sm"
-                                @change="handleDrawerFilter"
-                                aria-label="Lọc theo danh mục"
-                            >
-                                <option value="">Tất cả danh mục</option>
-                                <option
-                                    v-for="cat in drawerCategories"
-                                    :key="cat.id"
-                                    :value="cat.id"
-                                >
-                                    {{ cat.name }}
-                                </option>
-                            </select>
-                            <button
-                                v-if="cartItemCount > 1"
-                                class="btn btn-sm btn-outline-danger"
-                                type="button"
-                                @click="handleClearAll"
-                            >
-                                <i class="bi bi-trash me-1"></i>
-                                Xóa tất cả
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Loading State -->
-                    <div v-if="drawerLoading" class="order-cart-drawer__loading">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Đang tải...</span>
-                        </div>
-                        <p class="mt-3 text-muted">Đang tải sản phẩm...</p>
-                    </div>
-
-                    <!-- Empty State -->
-                    <EmptyState
-                        v-else-if="filteredDrawerItems.length === 0"
-                        :title="drawerSearchQueryDebounced || drawerCategoryFilter ? 'Không tìm thấy sản phẩm' : 'Giỏ hàng trống'"
-                        :message="drawerSearchQueryDebounced || drawerCategoryFilter ? 'Thử tìm kiếm với từ khóa khác' : 'Chưa có sản phẩm nào trong giỏ hàng'"
-                    >
-                        <template #icon>
-                            <i class="bi bi-basket"></i>
-                        </template>
-                        <template #action>
-                            <button
-                                v-if="!drawerSearchQueryDebounced && !drawerCategoryFilter"
-                                class="btn btn-primary"
-                                @click="closeDrawer"
-                            >
-                                Thêm sản phẩm
-                            </button>
-                        </template>
-                    </EmptyState>
-
-                    <!-- Product List -->
-                    <div v-else class="order-cart-drawer__items">
-                        <div
-                            v-for="(item, index) in filteredDrawerItems"
-                            :key="item.id || item.productId || index"
-                            class="order-cart-drawer__item"
-                        >
-                            <div class="order-cart-drawer__item-image">
-                                <img
-                                    v-if="item.productImage"
-                                    :src="item.productImage"
-                                    :alt="item.productName"
-                                    loading="lazy"
-                                />
-                                <div v-else class="order-cart-drawer__item-placeholder">
-                                    <i class="bi bi-image"></i>
-                                </div>
-                            </div>
-                            <div class="order-cart-drawer__item-info">
-                                <h6 class="order-cart-drawer__item-name">{{ item.productName }}</h6>
-                                <p class="order-cart-drawer__item-price">
-                                    {{ formatCurrencySafe(item.priceAtOrder) }} × {{ item.quantity }}
-                                </p>
-                                <small v-if="item.notes" class="order-cart-drawer__item-notes">
-                                    <i class="bi bi-sticky me-1"></i>{{ item.notes }}
-                                </small>
-                            </div>
-                            <div class="order-cart-drawer__item-actions">
-                                <div class="quantity-controls">
-                                    <button
-                                        class="btn btn-sm btn-outline-secondary"
-                                        type="button"
-                                        @click="updateQuantity(index, -1)"
-                                        :disabled="isProcessing('quantity')"
-                                        :aria-label="`Giảm số lượng ${item.productName}`"
-                                    >
-                                        <i class="bi bi-dash" aria-hidden="true"></i>
-                                    </button>
-                                    <input
-                                        type="number"
-                                        class="quantity-input"
-                                        :value="item.quantity"
-                                        @input="setQuantity(index, $event.target.value)"
-                                        @change="setQuantity(index, item.quantity)"
-                                        min="1"
-                                        :disabled="isProcessing('quantity')"
-                                        :aria-label="`Số lượng ${item.productName}`"
-                                    />
-                                    <button
-                                        class="btn btn-sm btn-outline-secondary"
-                                        type="button"
-                                        @click="updateQuantity(index, 1)"
-                                        :disabled="isProcessing('quantity')"
-                                        :aria-label="`Tăng số lượng ${item.productName}`"
-                                    >
-                                        <i class="bi bi-plus" aria-hidden="true"></i>
-                                    </button>
-                                </div>
-                                <button
-                                    class="btn btn-sm btn-outline-danger"
-                                    type="button"
-                                    @click="removeItem(index)"
-                                    :disabled="isProcessing('quantity')"
-                                    :aria-label="`Xóa ${item.productName} khỏi giỏ hàng`"
-                                >
-                                    <i class="bi bi-trash" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                            <div class="order-cart-drawer__item-total">
-                                {{ formatCurrencySafe(item.priceAtOrder * item.quantity) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Drawer Footer -->
-                <footer class="order-cart-drawer__footer">
-                    <div class="order-cart-drawer__summary">
-                        <div class="order-cart-drawer__summary-row">
-                            <span>Tổng phụ</span>
-                            <span>{{ formatCurrencySafe(subTotal) }}</span>
-                        </div>
-                        <div v-if="showDiscountRow" class="order-cart-drawer__summary-row">
-                            <span>Giảm giá</span>
-                            <span class="text-danger">-{{ formatCurrencySafe(discountAmount) }}</span>
-                        </div>
-                        <div v-if="showTipRow" class="order-cart-drawer__summary-row">
-                            <span class="text-success">Tiền típ</span>
-                            <span class="text-success">+{{ formatCurrencySafe(tipAmount) }}</span>
-                        </div>
-                        <div class="order-cart-drawer__summary-divider"></div>
-                        <div class="order-cart-drawer__summary-row order-cart-drawer__summary-row--total">
-                            <span>Tổng cộng</span>
-                            <span>{{ formatCurrencySafe(totalAmount) }}</span>
-                        </div>
-                    </div>
-                    <div class="order-cart-drawer__actions">
-                        <button
-                            class="btn btn-success btn-lg w-100"
-                            type="button"
-                            @click="handleDrawerPayment"
-                            :disabled="!canProcessPayment"
-                        >
-                            <span v-if="isProcessing('pay')" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-credit-card me-2"></i>
-                            Thanh toán
-                        </button>
-                        <button
-                            class="btn btn-outline-primary w-100"
-                            type="button"
-                            @click="handleDrawerSave"
-                            :disabled="isProcessing('save') || cartIsEmpty"
-                        >
-                            <span v-if="isProcessing('save')" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-save me-2"></i>
-                            Lưu đơn hàng
-                        </button>
-                    </div>
-                </footer>
+        <!-- Drawer Body -->
+        <div class="order-cart-drawer__body">
+          <!-- Search and Filters -->
+          <div
+            v-if="cartItemCount > 3"
+            class="order-cart-drawer__toolbar"
+          >
+            <div class="input-group mb-3">
+              <span class="input-group-text">
+                <i class="bi bi-search" />
+              </span>
+              <input
+                v-model.trim="drawerSearchQuery"
+                type="text"
+                class="form-control"
+                placeholder="Tìm kiếm sản phẩm..."
+                aria-label="Tìm kiếm sản phẩm trong giỏ hàng"
+                autocomplete="off"
+                @input="handleDrawerSearch"
+              >
             </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <select
+                v-model="drawerSortBy"
+                class="form-select form-select-sm"
+                aria-label="Sắp xếp sản phẩm"
+                @change="handleDrawerSort"
+              >
+                <option value="newest">
+                  Mới nhất
+                </option>
+                <option value="price-asc">
+                  Giá: Tăng dần
+                </option>
+                <option value="price-desc">
+                  Giá: Giảm dần
+                </option>
+                <option value="name-asc">
+                  Tên: A-Z
+                </option>
+                <option value="name-desc">
+                  Tên: Z-A
+                </option>
+              </select>
+              <select
+                v-if="drawerCategories.length > 0"
+                v-model="drawerCategoryFilter"
+                class="form-select form-select-sm"
+                aria-label="Lọc theo danh mục"
+                @change="handleDrawerFilter"
+              >
+                <option value="">
+                  Tất cả danh mục
+                </option>
+                <option
+                  v-for="cat in drawerCategories"
+                  :key="cat.id"
+                  :value="cat.id"
+                >
+                  {{ cat.name }}
+                </option>
+              </select>
+              <button
+                v-if="cartItemCount > 1"
+                class="btn btn-sm btn-outline-danger"
+                type="button"
+                @click="handleClearAll"
+              >
+                <i class="bi bi-trash me-1" />
+                Xóa tất cả
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div
+            v-if="drawerLoading"
+            class="order-cart-drawer__loading"
+          >
+            <div
+              class="spinner-border text-primary"
+              role="status"
+            >
+              <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3 text-muted">
+              Đang tải sản phẩm...
+            </p>
+          </div>
+
+          <!-- Empty State -->
+          <EmptyState
+            v-else-if="filteredDrawerItems.length === 0"
+            :title="drawerSearchQueryDebounced || drawerCategoryFilter ? 'Không tìm thấy sản phẩm' : 'Giỏ hàng trống'"
+            :message="drawerSearchQueryDebounced || drawerCategoryFilter ? 'Thử tìm kiếm với từ khóa khác' : 'Chưa có sản phẩm nào trong giỏ hàng'"
+          >
+            <template #icon>
+              <i class="bi bi-basket" />
+            </template>
+            <template #action>
+              <button
+                v-if="!drawerSearchQueryDebounced && !drawerCategoryFilter"
+                class="btn btn-primary"
+                @click="closeDrawer"
+              >
+                Thêm sản phẩm
+              </button>
+            </template>
+          </EmptyState>
+
+          <!-- Product List -->
+          <div
+            v-else
+            class="order-cart-drawer__items"
+          >
+            <div
+              v-for="(item, index) in filteredDrawerItems"
+              :key="item.id || item.productId || index"
+              class="order-cart-drawer__item"
+            >
+              <div class="order-cart-drawer__item-image">
+                <img
+                  v-if="item.productImage"
+                  :src="item.productImage"
+                  :alt="item.productName"
+                  loading="lazy"
+                >
+                <div
+                  v-else
+                  class="order-cart-drawer__item-placeholder"
+                >
+                  <i class="bi bi-image" />
+                </div>
+              </div>
+              <div class="order-cart-drawer__item-info">
+                <h6 class="order-cart-drawer__item-name">
+                  {{ item.productName }}
+                </h6>
+                <p class="order-cart-drawer__item-price">
+                  {{ formatCurrencySafe(item.priceAtOrder) }} × {{ item.quantity }}
+                </p>
+                <!-- Ghi chú cho món trong drawer -->
+                <div class="order-cart-drawer__item-notes-section">
+                  <div
+                    v-if="editingNotesIndex !== getDrawerItemRealIndex(item)"
+                    class="order-cart-drawer__item-notes-display"
+                  >
+                    <small
+                      v-if="item.notes"
+                      class="order-cart-drawer__item-notes"
+                    >
+                      <i class="bi bi-sticky me-1" />{{ item.notes }}
+                    </small>
+                    <button
+                      class="btn btn-sm btn-link p-0 text-muted order-cart-drawer__item-notes-edit-btn"
+                      type="button"
+                      :disabled="isProcessing('quantity')"
+                      title="Chỉnh sửa ghi chú"
+                      @click="startEditNotesForDrawerItem(item)"
+                    >
+                      <i
+                        :class="item.notes ? 'bi bi-pencil' : 'bi bi-plus-circle'"
+                      />
+                      {{ item.notes ? 'Sửa' : 'Thêm ghi chú' }}
+                    </button>
+                  </div>
+                  <div
+                    v-else
+                    class="order-cart-drawer__item-notes-edit"
+                  >
+                    <input
+                      v-model="editingNotesValue"
+                      type="text"
+                      class="form-control form-control-sm"
+                      placeholder="Nhập ghi chú cho món này..."
+                      :disabled="isProcessing('quantity')"
+                      @keyup.enter="saveItemNotesForDrawerItem(item)"
+                      @keyup.esc="cancelEditNotes"
+                      @blur="saveItemNotesForDrawerItem(item)"
+                    >
+                    <div class="order-cart-drawer__item-notes-edit-actions">
+                      <button
+                        class="btn btn-sm btn-success"
+                        type="button"
+                        :disabled="isProcessing('quantity')"
+                        @click="saveItemNotesForDrawerItem(item)"
+                      >
+                        <i class="bi bi-check" />
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        :disabled="isProcessing('quantity')"
+                        @click="cancelEditNotes"
+                      >
+                        <i class="bi bi-x" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="order-cart-drawer__item-actions">
+                <div class="quantity-controls">
+                  <button
+                    class="btn btn-sm btn-outline-secondary"
+                    type="button"
+                    :disabled="isProcessing('quantity')"
+                    :aria-label="`Giảm số lượng ${item.productName}`"
+                    @click="updateQuantityForDrawerItem(item, -1)"
+                  >
+                    <i
+                      class="bi bi-dash"
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <input
+                    type="number"
+                    class="quantity-input"
+                    :value="item.quantity"
+                    min="1"
+                    :disabled="isProcessing('quantity')"
+                    :aria-label="`Số lượng ${item.productName}`"
+                    @input="setQuantityForDrawerItem(item, $event.target.value)"
+                    @change="setQuantityForDrawerItem(item, item.quantity)"
+                  >
+                  <button
+                    class="btn btn-sm btn-outline-secondary"
+                    type="button"
+                    :disabled="isProcessing('quantity')"
+                    :aria-label="`Tăng số lượng ${item.productName}`"
+                    @click="updateQuantityForDrawerItem(item, 1)"
+                  >
+                    <i
+                      class="bi bi-plus"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </div>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  type="button"
+                  :disabled="isProcessing('quantity')"
+                  :aria-label="`Xóa ${item.productName} khỏi giỏ hàng`"
+                  @click="removeDrawerItem(item)"
+                >
+                  <i
+                    class="bi bi-trash"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+              <div class="order-cart-drawer__item-total">
+                {{ formatCurrencySafe(item.priceAtOrder * item.quantity) }}
+              </div>
+            </div>
+          </div>
         </div>
-    </Teleport>
+
+        <!-- Drawer Footer -->
+        <footer class="order-cart-drawer__footer">
+          <div class="order-cart-drawer__summary">
+            <div class="order-cart-drawer__summary-row">
+              <span>Tổng phụ</span>
+              <span>{{ formatCurrencySafe(subTotal) }}</span>
+            </div>
+            <div
+              v-if="showDiscountRow"
+              class="order-cart-drawer__summary-row"
+            >
+              <span>Giảm giá</span>
+              <span class="text-danger">-{{ formatCurrencySafe(discountAmount) }}</span>
+            </div>
+            <div
+              v-if="showTipRow"
+              class="order-cart-drawer__summary-row"
+            >
+              <span class="text-success">Tiền típ</span>
+              <span class="text-success">+{{ formatCurrencySafe(tipAmount) }}</span>
+            </div>
+            <div class="order-cart-drawer__summary-divider" />
+            <div class="order-cart-drawer__summary-row order-cart-drawer__summary-row--total">
+              <span>Tổng cộng</span>
+              <span>{{ formatCurrencySafe(totalAmount) }}</span>
+            </div>
+          </div>
+          <div class="order-cart-drawer__actions">
+            <button
+              class="btn btn-success btn-lg w-100"
+              type="button"
+              :disabled="!canProcessPayment"
+              @click="handleDrawerPayment"
+            >
+              <span
+                v-if="isProcessing('pay')"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-credit-card me-2"
+              />
+              Thanh toán
+            </button>
+            <button
+              class="btn btn-outline-primary w-100"
+              type="button"
+              :disabled="isProcessing('save') || cartIsEmpty"
+              @click="handleDrawerSave"
+            >
+              <span
+                v-if="isProcessing('save')"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-save me-2"
+              />
+              Lưu đơn hàng
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -603,8 +834,8 @@ const props = defineProps({
     order: Object,
     viewIntent: {
         type: String,
-        default: 'table-first',
-    },
+        default: 'table-first'
+    }
 })
 
 const emit = defineEmits(['order-updated', 'create-new-takeaway', 'request-table-selection'])
@@ -614,14 +845,15 @@ const localOrder = ref({
     customerId: null,
     customerName: null,
     customerPhone: null,
-    customerEmail: null,
+    customerEmail: null
 })
 const originalOrderSnapshot = ref(null)
 const isCreatingNew = ref(false)
 const voucherCode = ref('')
 const voucherError = ref(null)
-const orderNotes = ref('')
 const loadingAction = ref(null)
+const editingNotesIndex = ref(null)
+const editingNotesValue = ref('')
 
 // Drawer state
 const drawerOpen = ref(false)
@@ -669,14 +901,14 @@ const normalizeItems = (orderLike) => {
         categoryName: detail.categoryName ?? detail.product?.categoryName ?? detail.category?.name ?? null,
         quantity: toNumberSafe(detail.quantity ?? detail.qty ?? 0),
         priceAtOrder: toNumberSafe(detail.priceAtOrder ?? detail.price ?? detail.unitPrice ?? 0),
-        notes: detail.notes ?? '',
+        notes: detail.notes ?? ''
     }))
 }
 
 const cloneDeep = (value) => {
     try {
         return structuredClone(value)
-    } catch (err) {
+    } catch {
         return JSON.parse(JSON.stringify(value))
     }
 }
@@ -693,7 +925,7 @@ const normalizeOrder = (incoming) => {
         customerId,
         customerName,
         customerPhone,
-        customerEmail,
+        customerEmail
     })
     return cloned
 }
@@ -701,7 +933,7 @@ const normalizeOrder = (incoming) => {
 const emitOrderUpdated = (reason, order = localOrder.value) => {
     emit('order-updated', {
         reason,
-        order: cloneDeep(order),
+        order: cloneDeep(order)
     })
 }
 
@@ -712,9 +944,8 @@ const updateLocalOrderFromServer = (order, { syncBaseline = false } = {}) => {
             customerId: null,
             customerName: null,
             customerPhone: null,
-            customerEmail: null,
+            customerEmail: null
         }
-        orderNotes.value = ''
         if (syncBaseline) {
             originalOrderSnapshot.value = null
         }
@@ -722,8 +953,6 @@ const updateLocalOrderFromServer = (order, { syncBaseline = false } = {}) => {
     }
     const normalized = normalizeOrder(order)
     localOrder.value = normalized
-    // Khôi phục ghi chú từ order
-    orderNotes.value = order.notes || order.note || ''
     if (syncBaseline) {
         originalOrderSnapshot.value = cloneDeep(normalized)
     }
@@ -800,7 +1029,7 @@ const subTotal = computed(() => {
         const qty = Number(item.quantity) || 0
         return acc + (price * qty)
     }, 0)
-    
+
     // Only use backend value if no local items (for initial load)
     if (items.length === 0) {
         const backendSubTotal = localOrder.value.subTotal
@@ -808,7 +1037,7 @@ const subTotal = computed(() => {
             return backendSubTotal
         }
     }
-    
+
     return calculated
 })
 
@@ -825,19 +1054,19 @@ const tipAmount = computed(() => {
 const totalAmount = computed(() => {
     // Always calculate from local items for real-time updates
     const items = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
-    
+
     // If we have local items, always calculate from them
     if (items.length > 0) {
         const amountAfterDiscount = Math.max(subTotal.value - discountAmount.value, 0)
         return Math.max(amountAfterDiscount + tipAmount.value, 0)
     }
-    
+
     // Only use backend value if no local items (for initial load)
     const backendTotal = Number(localOrder.value.totalAmount)
     if (Number.isFinite(backendTotal)) {
         return Math.max(backendTotal, 0)
     }
-    
+
     const amountAfterDiscount = Math.max(subTotal.value - discountAmount.value, 0)
     return Math.max(amountAfterDiscount + tipAmount.value, 0)
 })
@@ -886,7 +1115,7 @@ const filteredDrawerItems = computed(() => {
         const query = drawerSearchQueryDebounced.value.toLowerCase()
         items = items.filter(item =>
             item.productName?.toLowerCase().includes(query) ||
-            item.notes?.toLowerCase().includes(query)
+			item.notes?.toLowerCase().includes(query)
         )
     }
 
@@ -944,7 +1173,7 @@ const addProduct = (product) => {
             productName: product.name,
             quantity: 1,
             priceAtOrder: product.price,
-            notes: '',
+            notes: ''
         })
     }
 }
@@ -977,9 +1206,76 @@ const setQuantity = (index, value) => {
 const removeItem = (index) => {
     const item = localOrder.value.items[index]
     if (!item) return
+    // Cancel editing if removing the item being edited
+    if (editingNotesIndex.value === index) {
+        cancelEditNotes()
+    }
     // Quick remove without confirmation for better UX in POS
     localOrder.value.items.splice(index, 1)
     toast.info(`Đã xóa "${item.productName}" khỏi đơn hàng`, { autoClose: 2000 })
+}
+
+const startEditNotes = (index) => {
+    editingNotesIndex.value = index
+    editingNotesValue.value = localOrder.value.items[index]?.notes || ''
+}
+
+const saveItemNotes = (index) => {
+    if (editingNotesIndex.value === index && localOrder.value.items[index]) {
+        const trimmedNotes = editingNotesValue.value?.trim() || ''
+        localOrder.value.items[index].notes = trimmedNotes
+        // Force reactivity update
+        localOrder.value = { ...localOrder.value }
+    }
+    cancelEditNotes()
+}
+
+const cancelEditNotes = () => {
+    editingNotesIndex.value = null
+    editingNotesValue.value = ''
+}
+
+// Helper functions for drawer items
+const getDrawerItemRealIndex = (item) => {
+    return localOrder.value.items.findIndex(i => 
+        (i.id && i.id === item.id) || 
+        (i.productId === item.productId && (!i.orderDetailId || i.orderDetailId === item.orderDetailId))
+    )
+}
+
+const startEditNotesForDrawerItem = (item) => {
+    const realIndex = getDrawerItemRealIndex(item)
+    if (realIndex !== -1) {
+        startEditNotes(realIndex)
+    }
+}
+
+const saveItemNotesForDrawerItem = (item) => {
+    const realIndex = getDrawerItemRealIndex(item)
+    if (realIndex !== -1) {
+        saveItemNotes(realIndex)
+    }
+}
+
+const updateQuantityForDrawerItem = (item, change) => {
+    const realIndex = getDrawerItemRealIndex(item)
+    if (realIndex !== -1) {
+        updateQuantity(realIndex, change)
+    }
+}
+
+const setQuantityForDrawerItem = (item, value) => {
+    const realIndex = getDrawerItemRealIndex(item)
+    if (realIndex !== -1) {
+        setQuantity(realIndex, value)
+    }
+}
+
+const removeDrawerItem = (item) => {
+    const realIndex = getDrawerItemRealIndex(item)
+    if (realIndex !== -1) {
+        removeItem(realIndex)
+    }
 }
 
 const saveOrder = async () => {
@@ -992,13 +1288,13 @@ const saveOrder = async () => {
             items: localOrder.value.items.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
-                notes: item.notes,
-            })),
+                notes: item.notes
+            }))
         }
 
         if (localOrder.value.id) {
             const orderId = localOrder.value.id
-            
+
             // Kiểm tra order status trước khi cập nhật
             try {
                 const currentOrder = await orderService.getOrderById(orderId)
@@ -1040,23 +1336,23 @@ const saveOrder = async () => {
                     // Đảm bảo productId là number và quantity là integer
                     const productId = Number(item.productId)
                     const quantity = Math.max(1, Math.floor(toNumberSafe(item.quantity, 1)))
-                    
+
                     if (!Number.isFinite(productId) || productId <= 0) {
                         logger.warn('Invalid productId:', item.productId)
                         continue
                     }
-                    
+
                     const itemToAdd = {
-                        productId: productId,
-                        quantity: quantity
+                        productId,
+                        quantity
                     }
-                    
+
                     // Chỉ thêm notes nếu có giá trị
                     const notesValue = item.notes ? String(item.notes).trim() : ''
                     if (notesValue) {
                         itemToAdd.notes = notesValue
                     }
-                    
+
                     itemsToAdd.push(itemToAdd)
                 }
             }
@@ -1079,13 +1375,13 @@ const saveOrder = async () => {
                         orderDetailId: detailId,
                         quantity: Math.max(1, toNumberSafe(item.quantity, 1))
                     }
-                    
+
                     // Chỉ thêm notes nếu có giá trị (không gửi empty string)
                     const notesValue = item.notes ? String(item.notes).trim() : null
                     if (notesValue) {
                         updateData.notes = notesValue
                     }
-                    
+
                     itemsToUpdate.push(updateData)
                 }
             })
@@ -1126,12 +1422,12 @@ const saveOrder = async () => {
                         const updateData = {
                             quantity: update.quantity
                         }
-                        
+
                         // Chỉ thêm notes nếu có giá trị (không gửi empty string)
                         if (update.notes && String(update.notes).trim()) {
                             updateData.notes = String(update.notes).trim()
                         }
-                        
+
                         lastResponse = await orderService.updateOrderItem({
                             orderId,
                             orderDetailId: update.orderDetailId,
@@ -1153,8 +1449,8 @@ const saveOrder = async () => {
                         if (i > 0) {
                             await new Promise(resolve => setTimeout(resolve, 200)) // 200ms delay
                         }
-                        
-                        // Log addition để debug
+
+                        // Ghi log thêm món để debug
                         if (import.meta.env.DEV) {
                             logger.log('[PosOrderCart] Processing addition:', {
                                 addition,
@@ -1167,16 +1463,16 @@ const saveOrder = async () => {
                                 total: itemsToAdd.length
                             })
                         }
-                        
+
                         // Kiểm tra order status một lần nữa trước khi thêm item
                         if (localOrder.value?.status && localOrder.value.status !== 'PENDING') {
                             throw new Error(`Đơn hàng đã ${localOrder.value.status === 'PAID' ? 'được thanh toán' : 'bị hủy'}. Không thể thêm món.`)
                         }
-                        
+
                         // Đảm bảo format đúng: productId là Long, quantity là int
                         const productId = Number(addition.productId)
                         const quantity = Math.max(1, Math.floor(Number(addition.quantity || 1)))
-                        
+
                         // Validate trước khi tạo itemData
                         if (!Number.isFinite(productId) || productId <= 0 || !Number.isInteger(productId)) {
                             throw new Error(`Product ID không hợp lệ: ${addition.productId} (phải là số nguyên dương)`)
@@ -1184,20 +1480,20 @@ const saveOrder = async () => {
                         if (!Number.isFinite(quantity) || quantity < 1 || !Number.isInteger(quantity)) {
                             throw new Error(`Số lượng không hợp lệ: ${addition.quantity} (phải là số nguyên >= 1)`)
                         }
-                        
+
                         itemData = {
-                            productId: productId,
-                            quantity: quantity
+                            productId,
+                            quantity
                         }
-                        
+
                         // Chỉ thêm notes nếu có giá trị (không gửi empty string hoặc null)
-                        if (addition.notes != null && addition.notes !== undefined && String(addition.notes).trim()) {
+                        if (addition.notes !== null && addition.notes !== undefined && String(addition.notes).trim()) {
                             itemData.notes = String(addition.notes).trim()
                         }
-                        
-                        // Log itemData trước khi gửi
+
+                        // Ghi log itemData trước khi gửi
                         if (import.meta.env.DEV) {
-                            console.log('[PosOrderCart] Prepared itemData:', {
+                            logger.log('[PosOrderCart] Đã chuẩn bị itemData:', {
                                 itemData,
                                 itemDataString: JSON.stringify(itemData),
                                 itemDataType: {
@@ -1207,40 +1503,39 @@ const saveOrder = async () => {
                                 }
                             })
                         }
-                        
+
                         // Retry logic với exponential backoff cho lỗi 500
                         let retries = 0
                         const maxRetries = 2
-                        let lastError = null
-                        
+
                         while (retries <= maxRetries) {
                             try {
                                 lastResponse = await orderService.addItemToOrder({
                                     orderId,
                                     itemData
                                 })
-                                
+
                                 // Refresh order sau mỗi lần thêm thành công để đồng bộ state
                                 // Điều này giúp tránh lỗi Hibernate orphan deletion khi gọi request tiếp theo
                                 if (lastResponse) {
                                     updateLocalOrderFromServer(lastResponse, { syncBaseline: false })
                                 }
-                                
+
                                 // Thành công, break khỏi retry loop
                                 break
                             } catch (retryError) {
-                                lastError = retryError
+                                const _lastError = retryError
                                 const retryStatus = retryError.response?.status || retryError.status
-                                
+
                                 // Chỉ retry nếu là lỗi 500 và chưa vượt quá maxRetries
                                 if (retryStatus === 500 && retries < maxRetries) {
                                     retries++
                                     const delay = Math.min(300 * Math.pow(2, retries - 1), 1000) // Exponential backoff: 300ms, 600ms, max 1000ms
-                                    
+
                                     if (import.meta.env.DEV) {
                                         logger.log(`[PosOrderCart] Retrying addItemToOrder (attempt ${retries}/${maxRetries}) after ${delay}ms delay`)
                                     }
-                                    
+
                                     // Refresh order trước khi retry để đảm bảo state đồng bộ
                                     try {
                                         const refreshedOrder = await orderService.getOrderById(orderId)
@@ -1248,7 +1543,7 @@ const saveOrder = async () => {
                                     } catch (refreshError) {
                                         logger.error('[PosOrderCart] Failed to refresh order before retry:', refreshError)
                                     }
-                                    
+
                                     await new Promise(resolve => setTimeout(resolve, delay))
                                     continue
                                 } else {
@@ -1260,7 +1555,7 @@ const saveOrder = async () => {
                     } catch (error) {
                         const errorResponse = error.response?.data || error.originalError?.response?.data
                         const errorStatus = error.response?.status || error.status || error.originalError?.response?.status
-                        
+
                         logger.error('[PosOrderCart] Failed to add item:', {
                             error,
                             errorMessage: error.message,
@@ -1268,15 +1563,15 @@ const saveOrder = async () => {
                             errorStatus,
                             itemData: itemData || addition,
                             orderId,
-                            // Log chi tiết hơn
+                            // Ghi log chi tiết hơn
                             productId: itemData?.productId || addition?.productId,
                             quantity: itemData?.quantity || addition?.quantity
                         })
                         hasError = true
-                        
+
                         // Xử lý các loại lỗi cụ thể
                         let errorMessage = error.message || 'Không thể thêm món'
-                        
+
                         if (errorStatus === 400) {
                             errorMessage = errorResponse?.message || errorResponse?.error || 'Dữ liệu không hợp lệ'
                         } else if (errorStatus === 404) {
@@ -1295,9 +1590,9 @@ const saveOrder = async () => {
                         } else {
                             errorMessage = errorResponse?.message || errorResponse?.error || error.message || 'Không thể thêm món'
                         }
-                        
+
                         toast.error(`Không thể thêm món: ${errorMessage}`)
-                        
+
                         // Nếu là lỗi về order status hoặc 500, refresh order để đồng bộ
                         if (errorStatus === 409 || errorStatus === 422 || errorStatus === 500) {
                             try {
@@ -1346,11 +1641,11 @@ const saveOrder = async () => {
         } else {
             const newOrder = await orderService.createOrder(orderData)
             updateLocalOrderFromServer(newOrder, { syncBaseline: true })
-            
+
             // Lưu ý: Backend không hỗ trợ order-level note
             // Ghi chú chỉ có thể lưu ở item-level (OrderDetail.notes)
             // Nếu cần order-level note, cần thêm field vào Order entity và endpoint PUT /api/v1/orders/{orderId}
-            
+
             isCreatingNew.value = false
             toast.success('Đơn hàng đã được tạo.')
             emitOrderUpdated('create', localOrder.value)
@@ -1375,11 +1670,11 @@ const applyVoucher = async () => {
         toast.info('Nhập mã voucher trước khi áp dụng.')
         return
     }
-    
+
     try {
         loadingAction.value = 'apply-voucher'
         voucherError.value = null
-        
+
         // Áp dụng voucher trực tiếp
         const updatedOrder = await orderService.applyVoucher({
             orderId: localOrder.value.id,
@@ -1471,7 +1766,7 @@ const handleClearAll = async () => {
     if (!confirm('Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi giỏ hàng?')) {
         return
     }
-    
+
     if (!localOrder.value?.items || localOrder.value.items.length === 0) {
         return
     }
@@ -1513,25 +1808,25 @@ const handleDrawerSave = async () => {
 // Handle keyboard navigation and focus trap
 const handleKeydown = (event) => {
     if (!drawerOpen.value) return
-    
+
     if (event.key === 'Escape') {
         closeDrawer()
         return
     }
-    
+
     // Focus trap: keep focus within drawer
     if (event.key === 'Tab') {
         const drawer = document.querySelector('.order-cart-drawer')
         if (!drawer) return
-        
+
         const focusableElements = drawer.querySelectorAll(
             'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         )
         if (focusableElements.length === 0) return
-        
+
         const firstElement = focusableElements[0]
         const lastElement = focusableElements[focusableElements.length - 1]
-        
+
         if (event.shiftKey) {
             // Shift + Tab
             if (document.activeElement === firstElement) {
@@ -1575,46 +1870,60 @@ const confirmPayment = async ({ orderId, paymentMethod, tipAmount: tip, customer
         toast.error('Thiếu thông tin đơn hàng để thanh toán.')
         return
     }
-    
+
     try {
         loadingAction.value = 'pay'
-        
+
         // Xây dựng payment data
         const paymentData = {
-            paymentMethod: paymentMethod || 'CASH',
+            paymentMethod: paymentMethod || 'CASH'
         }
-        
+
         // Thêm customerId từ modal hoặc từ order hiện tại
         if (customerId) {
             paymentData.customerId = customerId
         } else if (localOrder.value.customerId) {
             paymentData.customerId = localOrder.value.customerId
         }
-        
+
         // Thêm tipAmount nếu có (chỉ gửi khi > 0)
         const tipValue = Number(tip) || 0
         if (tipValue > 0) {
             paymentData.tipAmount = tipValue
         }
-        
+
         // Thêm voucherCode từ modal hoặc từ order hiện tại
         if (voucherCode) {
             paymentData.voucherCode = voucherCode
         } else if (localOrder.value.voucherCode) {
             paymentData.voucherCode = localOrder.value.voucherCode
         }
-        
+
         const updatedOrder = await orderService.processPayment({
             orderId,
-            paymentData,
+            paymentData
         })
-        
+
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
         paymentModalRef.value?.show()
         toast.success('Thanh toán thành công.')
         emitOrderUpdated('payment', updatedOrder)
     } catch (error) {
-        const message = error?.response?.data?.message || 'Thanh toán thất bại.'
+        // Extract error message from enhanced error or response
+        const message = error?.message
+			|| error?.response?.data?.message
+			|| error?.response?.data?.error
+			|| 'Thanh toán thất bại. Vui lòng kiểm tra lại thông tin thanh toán.'
+
+        // Ghi log lỗi để debug
+        if (import.meta.env.DEV) {
+            logger.error('[PosOrderCart] Lỗi thanh toán:', {
+                message,
+                status: error?.status || error?.response?.status,
+                response: error?.response?.data
+            })
+        }
+
         toast.error(message)
     } finally {
         loadingAction.value = null
@@ -1669,7 +1978,7 @@ const startDraft = () => {
             customerId: null,
             customerName: null,
             customerPhone: null,
-            customerEmail: null,
+            customerEmail: null
         }
     }
 }
@@ -1682,7 +1991,7 @@ const attachToTable = (table) => {
             customerId: null,
             customerName: null,
             customerPhone: null,
-            customerEmail: null,
+            customerEmail: null
         }
     }
     if (!localOrder.value.items.length) {
@@ -1698,7 +2007,7 @@ const detachFromTable = () => {
             customerId: null,
             customerName: null,
             customerPhone: null,
-            customerEmail: null,
+            customerEmail: null
         }
     }
     isCreatingNew.value = true
@@ -1728,7 +2037,7 @@ const fetchCustomerSuggestions = async (keyword) => {
                     ? response
                     : []
             customerSearchResults.value = content
-        } catch (error) {
+        } catch {
             toast.error('Không thể tìm khách hàng. Vui lòng thử lại.')
         } finally {
             customerSearchLoading.value = false
@@ -1778,810 +2087,901 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 <style scoped>
 /* Cart - Chuẩn hóa theo base.css */
 .pos-cart {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-4);
-    border-radius: var(--radius-sm);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    padding: var(--spacing-4);
-    position: relative;
-    /* Fix để không di chuyển được */
-    user-select: none;
-    -webkit-user-drag: none;
-    touch-action: none;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-4);
+	border-radius: var(--radius-sm);
+	background: var(--color-card);
+	border: 1px solid var(--color-border);
+	padding: var(--spacing-4);
+	position: relative;
+	/* Fix để không di chuyển được */
+	user-select: none;
+	-webkit-user-drag: none;
+	touch-action: none;
 }
 
 .pos-cart__header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
-    padding-bottom: var(--spacing-4);
-    border-bottom: 1px solid var(--color-border);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+	padding-bottom: var(--spacing-4);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .pos-cart__header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-4);
-    flex-wrap: wrap;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-4);
+	flex-wrap: wrap;
 }
 
 .pos-cart__header-left {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
 }
 
 .pos-cart__title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin: 0;
-    font-family: var(--font-family-sans);
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	margin: 0;
+	font-family: var(--font-family-sans);
 }
 
 .pos-cart__order-code {
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
-    margin: 0;
+	font-size: var(--font-size-base);
+	color: var(--color-text-muted);
+	margin: 0;
 }
 
 
 .pos-cart__items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-4);
 }
 
 /* Cart Item - Chuẩn hóa */
 .pos-cart__item {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: var(--spacing-3);
-    align-items: center;
-    padding: var(--spacing-3) var(--spacing-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-card);
-    transition: all var(--transition-base);
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	gap: var(--spacing-3);
+	align-items: center;
+	padding: var(--spacing-3) var(--spacing-4);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-card);
+	transition: all var(--transition-base);
 }
 
 .pos-cart__item:hover {
-    background: var(--color-card-muted);
+	background: var(--color-card-muted);
 }
 
 .pos-cart__item-info h6 {
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-base);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-1);
-    font-family: var(--font-family-sans);
+	font-weight: var(--font-weight-semibold);
+	font-size: var(--font-size-base);
+	color: var(--color-heading);
+	margin-bottom: var(--spacing-1);
+	font-family: var(--font-family-sans);
 }
 
 .pos-cart__item-actions {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-2);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-2);
 }
 
 /* Quantity Controls - Chuẩn hóa */
 .quantity-controls {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 0;
-    background: var(--color-card);
-    overflow: hidden;
+	display: flex;
+	align-items: center;
+	gap: 0;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	padding: 0;
+	background: var(--color-card);
+	overflow: hidden;
 }
 
 .quantity-btn {
-    min-width: 32px;
-    height: 32px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    color: var(--color-text-muted);
-    transition: all var(--transition-base);
-    cursor: pointer;
+	min-width: 32px;
+	height: 32px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: transparent;
+	color: var(--color-text-muted);
+	transition: all var(--transition-base);
+	cursor: pointer;
 }
 
 .quantity-btn:hover:not(:disabled) {
-    background: var(--color-card-muted);
-    color: var(--color-primary);
+	background: var(--color-card-muted);
+	color: var(--color-primary);
 }
 
 .quantity-btn:active:not(:disabled) {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
+	background: var(--color-primary);
+	color: var(--color-text-inverse);
 }
 
 .quantity-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+	opacity: 0.5;
+	cursor: not-allowed;
 }
 
 .quantity-btn i {
-    font-size: 16px;
-    line-height: 1;
+	font-size: 16px;
+	line-height: 1;
 }
 
 .quantity-input {
-    width: 50px;
-    text-align: center;
-    border: none;
-    border-left: 1px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
-    background: transparent;
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-base);
-    padding: var(--spacing-1);
-    color: var(--color-text);
+	width: 50px;
+	text-align: center;
+	border: none;
+	border-left: 1px solid var(--color-border);
+	border-right: 1px solid var(--color-border);
+	background: transparent;
+	font-weight: var(--font-weight-semibold);
+	font-size: var(--font-size-base);
+	padding: var(--spacing-1);
+	color: var(--color-text);
 }
 
 .quantity-input:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: -2px;
-    border-radius: 0;
-    box-shadow: none;
+	outline: 2px solid var(--color-primary);
+	outline-offset: -2px;
+	border-radius: 0;
+	box-shadow: none;
 }
 
 .pos-cart__item-total {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	font-size: var(--font-size-base);
+	font-family: var(--font-family-sans);
+}
+
+/* Item Notes - Ghi chú cho từng món */
+.pos-cart__item-notes {
+	margin-top: var(--spacing-2);
+	padding-top: var(--spacing-2);
+	border-top: 1px solid var(--color-border);
+}
+
+.pos-cart__item-notes-display {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-2);
+}
+
+.pos-cart__item-notes-text {
+	font-size: var(--font-size-sm);
+	color: var(--color-text-muted);
+	font-style: italic;
+	display: flex;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
+}
+
+.pos-cart__item-notes-text i {
+	font-size: 12px;
+	margin-right: var(--spacing-1);
+}
+
+.pos-cart__item-notes-edit-btn {
+	font-size: var(--font-size-xs);
+	padding: 2px 6px;
+	text-decoration: none;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.pos-cart__item-notes-edit-btn:hover {
+	text-decoration: underline;
+}
+
+.pos-cart__item-notes-edit {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+}
+
+.pos-cart__item-notes-edit .form-control {
+	font-size: var(--font-size-sm);
+	padding: var(--spacing-1) var(--spacing-2);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--color-border);
+	background: var(--color-card);
+	color: var(--color-text);
+}
+
+.pos-cart__item-notes-edit .form-control:focus {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 0;
+	border-color: var(--color-primary);
+	box-shadow: none;
+}
+
+.pos-cart__item-notes-edit-actions {
+	display: flex;
+	gap: var(--spacing-1);
+	justify-content: flex-end;
+}
+
+.pos-cart__item-notes-edit-actions .btn {
+	padding: 2px 8px;
+	font-size: var(--font-size-xs);
+	min-width: 28px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 /* Summary - Chuẩn hóa */
 .pos-cart__summary {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3);
-    padding: var(--spacing-4);
-    border-radius: var(--radius-sm);
-    background: var(--color-card-muted);
-    border: 1px solid var(--color-border);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
+	padding: var(--spacing-4);
+	border-radius: var(--radius-sm);
+	background: var(--color-card-muted);
+	border: 1px solid var(--color-border);
 }
 
 .pos-cart__summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: var(--font-size-base);
-    color: var(--color-text);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: var(--font-size-base);
+	color: var(--color-text);
 }
 
 .pos-cart__summary-row--total {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin-top: var(--spacing-1);
-    font-family: var(--font-family-sans);
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	margin-top: var(--spacing-1);
+	font-family: var(--font-family-sans);
 }
 
 .pos-cart__summary-divider {
-    height: 1px;
-    background: var(--color-border);
-    margin: var(--spacing-2) 0;
+	height: 1px;
+	background: var(--color-border);
+	margin: var(--spacing-2) 0;
 }
 
 /* Customer Section - Chuẩn hóa */
 .pos-cart__customer {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
 }
 
 .pos-cart__customer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-2);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: var(--spacing-2);
 }
 
 .pos-cart__customer-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin: 0;
-    font-family: var(--font-family-sans);
+	font-size: var(--font-size-base);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	margin: 0;
+	font-family: var(--font-family-sans);
 }
 
 .pos-cart__customer-clear {
-    padding: var(--spacing-1) var(--spacing-2);
-    border: none;
-    background: transparent;
-    color: var(--color-danger);
-    font-size: var(--font-size-base);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-family-sans);
+	padding: var(--spacing-1) var(--spacing-2);
+	border: none;
+	background: transparent;
+	color: var(--color-danger);
+	font-size: var(--font-size-base);
+	cursor: pointer;
+	transition: all var(--transition-base);
+	border-radius: var(--radius-sm);
+	font-family: var(--font-family-sans);
 }
 
 .pos-cart__customer-clear:hover {
-    background: var(--color-card-muted);
-    color: var(--color-danger);
+	background: var(--color-card-muted);
+	color: var(--color-danger);
 }
 
 .pos-cart__customer-results {
-    max-height: 220px;
-    overflow-y: auto;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    list-style: none;
-    padding: 0;
-    margin: var(--spacing-2) 0 0 0;
+	max-height: 220px;
+	overflow-y: auto;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--color-border);
+	background: var(--color-card);
+	list-style: none;
+	padding: 0;
+	margin: var(--spacing-2) 0 0 0;
 }
 
 .pos-cart__customer-item {
-    padding: var(--spacing-3) var(--spacing-4);
-    cursor: pointer;
-    border-bottom: 1px solid var(--color-border);
-    transition: background-color var(--transition-base);
+	padding: var(--spacing-3) var(--spacing-4);
+	cursor: pointer;
+	border-bottom: 1px solid var(--color-border);
+	transition: background-color var(--transition-base);
 }
 
 .pos-cart__customer-item:last-child {
-    border-bottom: none;
+	border-bottom: none;
 }
 
 .pos-cart__customer-item:hover {
-    background: var(--color-card-muted);
+	background: var(--color-card-muted);
 }
 
 .pos-cart__customer-item--empty {
-    text-align: center;
-    color: var(--color-text-muted);
-    font-size: var(--font-size-base);
-    cursor: default;
+	text-align: center;
+	color: var(--color-text-muted);
+	font-size: var(--font-size-base);
+	cursor: default;
 }
 
 .pos-cart__customer-item--empty:hover {
-    background: transparent;
+	background: transparent;
 }
 
 .pos-cart__customer-item-name {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	margin-bottom: var(--spacing-1);
+	font-size: var(--font-size-base);
+	font-family: var(--font-family-sans);
 }
 
 .pos-cart__customer-item-phone {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-base);
+	color: var(--color-text-muted);
+	font-size: var(--font-size-base);
 }
 
 .pos-cart__customer-hint {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-base);
-    display: block;
-    margin-top: var(--spacing-2);
+	color: var(--color-text-muted);
+	font-size: var(--font-size-base);
+	display: block;
+	margin-top: var(--spacing-2);
 }
 
 /* Customer Chip - Chuẩn hóa theo badge/pill */
 .pos-cart__customer-chip {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-3);
-    padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-sm);
-    background: var(--color-soft-primary);
-    border: 1px solid var(--color-primary);
-    color: var(--color-primary);
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-3);
+	padding: var(--spacing-3) var(--spacing-4);
+	border-radius: var(--radius-sm);
+	background: var(--color-soft-primary);
+	border: 1px solid var(--color-primary);
+	color: var(--color-primary);
 }
 
 /* Voucher Section - Chuẩn hóa */
 .pos-cart__voucher {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
 }
 
 .pos-cart__voucher-applied {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-sm);
-    background: var(--color-soft-emerald);
-    border: 1px solid var(--color-success);
-    color: var(--color-success);
-    margin-bottom: var(--spacing-2);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: var(--spacing-3) var(--spacing-4);
+	border-radius: var(--radius-sm);
+	background: var(--color-soft-emerald);
+	border: 1px solid var(--color-success);
+	color: var(--color-success);
+	margin-bottom: var(--spacing-2);
 }
 
 .pos-cart__voucher-applied-content {
-    flex: 1;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
+	flex: 1;
+	font-size: var(--font-size-base);
+	font-weight: var(--font-weight-medium);
 }
 
 .pos-cart__voucher-error {
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
-    background: var(--color-soft-rose);
-    border: 1px solid var(--color-danger);
-    color: var(--color-danger);
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
+	padding: var(--spacing-2) var(--spacing-3);
+	border-radius: var(--radius-sm);
+	background: var(--color-soft-rose);
+	border: 1px solid var(--color-danger);
+	color: var(--color-danger);
+	font-size: var(--font-size-sm);
+	display: flex;
+	align-items: center;
+	font-family: var(--font-family-sans);
 }
 
 .pos-cart__voucher-hint {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-xs);
-    display: block;
-    margin-top: var(--spacing-1);
+	color: var(--color-text-muted);
+	font-size: var(--font-size-xs);
+	display: block;
+	margin-top: var(--spacing-1);
 }
 
 .voucher-input-icon {
-    background: var(--color-card-muted);
-    border-color: var(--color-border);
-    color: var(--color-text-muted);
-    transition: all var(--transition-base);
+	background: var(--color-card-muted);
+	border-color: var(--color-border);
+	color: var(--color-text-muted);
+	transition: all var(--transition-base);
 }
 
-/* Notes Section */
-.pos-cart__notes {
-    padding: var(--spacing-3);
-    background: var(--color-card);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    margin-bottom: var(--spacing-3);
-}
-
-.pos-cart__notes-header {
-    margin-bottom: var(--spacing-2);
-}
-
-.pos-cart__notes-title {
-    margin: 0;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
-}
-
-.pos-cart__notes-input {
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    color: var(--color-text);
-    font-size: var(--font-size-base);
-    transition: all var(--transition-base);
-    resize: vertical;
-    font-family: var(--font-family-sans);
-}
-
-.pos-cart__notes-input:focus {
-    border-color: var(--color-primary);
-    outline: 2px solid var(--color-primary);
-    outline-offset: 0;
-    box-shadow: none;
-}
-
-.pos-cart__notes-input:disabled {
-    background: var(--color-card-muted);
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.pos-cart__notes-hint {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-xs);
-    display: flex;
-    align-items: center;
-    margin-top: var(--spacing-2);
-}
 
 .pos-cart__actions {
-    display: grid;
-    gap: var(--spacing-3);
+	display: grid;
+	gap: var(--spacing-3);
 }
 
 /* Status Pill - Chuẩn hóa theo badge/pill hệ thống */
 .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    font-family: var(--font-family-sans);
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: var(--spacing-1) var(--spacing-2);
+	border-radius: var(--radius-sm);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	font-family: var(--font-family-sans);
 }
 
 .status-pill i {
-    font-size: 16px;
-    line-height: 1;
+	font-size: 16px;
+	line-height: 1;
 }
 
 .status-pill--pending {
-    background: var(--color-soft-amber);
-    border: 1px solid var(--color-warning);
-    color: var(--color-warning);
+	background: var(--color-soft-amber);
+	border: 1px solid var(--color-warning);
+	color: var(--color-warning);
 }
 
 .status-pill--paid {
-    background: var(--color-soft-emerald);
-    border: 1px solid var(--color-success);
-    color: var(--color-success);
+	background: var(--color-soft-emerald);
+	border: 1px solid var(--color-success);
+	color: var(--color-success);
 }
 
 .status-pill--cancelled {
-    background: var(--color-soft-rose);
-    border: 1px solid var(--color-danger);
-    color: var(--color-danger);
+	background: var(--color-soft-rose);
+	border: 1px solid var(--color-danger);
+	color: var(--color-danger);
 }
 
 .status-pill--transferred {
-    background: var(--color-soft-sky);
-    border: 1px solid var(--color-info);
-    color: var(--color-info);
+	background: var(--color-soft-sky);
+	border: 1px solid var(--color-info);
+	color: var(--color-info);
 }
 
 .status-pill--takeaway {
-    background: var(--color-soft-primary);
-    border: 1px solid var(--color-primary);
-    color: var(--color-primary);
+	background: var(--color-soft-primary);
+	border: 1px solid var(--color-primary);
+	color: var(--color-primary);
 }
 
 .status-pill--draft,
 .status-pill--default {
-    background: var(--color-card-muted);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-muted);
+	background: var(--color-card-muted);
+	border: 1px solid var(--color-border);
+	color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {
-    .pos-cart__item {
-        grid-template-columns: minmax(0, 1fr);
-    }
+	.pos-cart__item {
+		grid-template-columns: minmax(0, 1fr);
+	}
 
-    .pos-cart__item-total {
-        justify-self: flex-end;
-    }
+	.pos-cart__item-total {
+		justify-self: flex-end;
+	}
 
-    .pos-cart__actions {
-        grid-template-columns: minmax(0, 1fr);
-    }
+	.pos-cart__actions {
+		grid-template-columns: minmax(0, 1fr);
+	}
 }
 
 /* Drawer Styles */
 .order-cart-drawer-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    animation: fadeIn 0.2s ease-out;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 1050;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	animation: fadeIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
 }
 
 .order-cart-drawer {
-    width: 50%;
-    max-width: 600px;
-    height: 100vh;
-    background: var(--color-card);
-    box-shadow: var(--shadow-modal);
-    display: flex;
-    flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.3s ease-out;
-    position: relative;
-    z-index: 1051;
+	width: 50%;
+	max-width: 600px;
+	height: 100vh;
+	background: var(--color-card);
+	box-shadow: var(--shadow-modal);
+	display: flex;
+	flex-direction: column;
+	transform: translateX(100%);
+	transition: transform 0.3s ease-out;
+	position: relative;
+	z-index: 1051;
 }
 
 .order-cart-drawer--open {
-    transform: translateX(0);
+	transform: translateX(0);
 }
 
 .order-cart-drawer__header {
-    padding: var(--spacing-4);
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-card);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
+	padding: var(--spacing-4);
+	border-bottom: 1px solid var(--color-border);
+	background: var(--color-card);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-shrink: 0;
 }
 
 .order-cart-drawer__header-left {
-    flex: 1;
+	flex: 1;
 }
 
 .order-cart-drawer__title {
-    margin: 0;
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
+	margin: 0;
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	display: flex;
+	align-items: center;
+	font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__total-badge {
-    margin-top: var(--spacing-2);
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-primary);
+	margin-top: var(--spacing-2);
+	font-size: var(--font-size-xl);
+	font-weight: var(--font-weight-bold);
+	color: var(--color-primary);
 }
 
 .order-cart-drawer__voucher-progress {
-    margin-top: var(--spacing-3);
-    padding-top: var(--spacing-3);
-    border-top: 1px solid var(--color-border);
+	margin-top: var(--spacing-3);
+	padding-top: var(--spacing-3);
+	border-top: 1px solid var(--color-border);
 }
 
 .order-cart-drawer__voucher-progress-label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--spacing-2);
-    display: flex;
-    align-items: center;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text);
+	margin-bottom: var(--spacing-2);
+	display: flex;
+	align-items: center;
 }
 
 .order-cart-drawer__voucher-progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--color-card-muted);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    margin-bottom: var(--spacing-1);
+	width: 100%;
+	height: 8px;
+	background: var(--color-card-muted);
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+	margin-bottom: var(--spacing-1);
 }
 
 .order-cart-drawer__voucher-progress-fill {
-    height: 100%;
-    background: var(--color-primary);
-    border-radius: var(--radius-sm);
-    transition: width 0.3s ease;
+	height: 100%;
+	background: var(--color-primary);
+	border-radius: var(--radius-sm);
+	transition: width 0.3s ease;
 }
 
 .order-cart-drawer__voucher-progress-text {
-    font-size: var(--font-size-xs);
-    display: block;
+	font-size: var(--font-size-xs);
+	display: block;
 }
 
 .order-cart-drawer__close-btn {
-    border-radius: var(--radius-sm);
-    padding: var(--spacing-2);
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	border-radius: var(--radius-sm);
+	padding: var(--spacing-2);
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .order-cart-drawer__body {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--spacing-4);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3);
+	flex: 1;
+	overflow-y: auto;
+	padding: var(--spacing-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
 }
 
 .order-cart-drawer__toolbar {
-    flex-shrink: 0;
+	flex-shrink: 0;
 }
 
 .order-cart-drawer__loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-8);
-    color: var(--color-text-muted);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: var(--spacing-8);
+	color: var(--color-text-muted);
 }
 
 .order-cart-drawer__items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
 }
 
 .order-cart-drawer__item {
-    display: grid;
-    grid-template-columns: 60px 1fr auto auto;
-    gap: var(--spacing-3);
-    padding: var(--spacing-3);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    align-items: center;
-    transition: all var(--transition-base);
+	display: grid;
+	grid-template-columns: 60px 1fr auto auto;
+	gap: var(--spacing-3);
+	padding: var(--spacing-3);
+	background: var(--color-card);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	align-items: center;
+	transition: all var(--transition-base);
 }
 
 .order-cart-drawer__item:hover {
-    border-color: var(--color-primary);
-    background: var(--color-card-muted);
+	border-color: var(--color-primary);
+	background: var(--color-card-muted);
 }
 
 .order-cart-drawer__item-image {
-    width: 60px;
-    height: 60px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    background: var(--color-card-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	width: 60px;
+	height: 60px;
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+	background: var(--color-card-muted);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .order-cart-drawer__item-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
 .order-cart-drawer__item-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-muted);
-    font-size: 24px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-text-muted);
+	font-size: 24px;
 }
 
 .order-cart-drawer__item-info {
-    flex: 1;
-    min-width: 0;
+	flex: 1;
+	min-width: 0;
 }
 
 .order-cart-drawer__item-name {
-    margin: 0 0 var(--spacing-1) 0;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: var(--font-family-sans);
+	margin: 0 0 var(--spacing-1) 0;
+	font-size: var(--font-size-base);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__item-price {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
+	margin: 0;
+	font-size: var(--font-size-sm);
+	color: var(--color-text-muted);
+}
+
+.order-cart-drawer__item-notes-section {
+	margin-top: var(--spacing-2);
+	padding-top: var(--spacing-2);
+	border-top: 1px solid var(--color-border);
+}
+
+.order-cart-drawer__item-notes-display {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-2);
+	flex-wrap: wrap;
 }
 
 .order-cart-drawer__item-notes {
-    margin-top: var(--spacing-1);
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    font-style: italic;
-    display: flex;
-    align-items: center;
+	font-size: var(--font-size-xs);
+	color: var(--color-text-muted);
+	font-style: italic;
+	display: flex;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
+}
+
+.order-cart-drawer__item-notes-edit-btn {
+	font-size: var(--font-size-xs);
+	padding: 2px 6px;
+	text-decoration: none;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.order-cart-drawer__item-notes-edit-btn:hover {
+	text-decoration: underline;
+}
+
+.order-cart-drawer__item-notes-edit {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+}
+
+.order-cart-drawer__item-notes-edit .form-control {
+	font-size: var(--font-size-sm);
+	padding: var(--spacing-1) var(--spacing-2);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--color-border);
+	background: var(--color-card);
+	color: var(--color-text);
+}
+
+.order-cart-drawer__item-notes-edit .form-control:focus {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 0;
+	border-color: var(--color-primary);
+	box-shadow: none;
+}
+
+.order-cart-drawer__item-notes-edit-actions {
+	display: flex;
+	gap: var(--spacing-1);
+	justify-content: flex-end;
+}
+
+.order-cart-drawer__item-notes-edit-actions .btn {
+	padding: 2px 8px;
+	font-size: var(--font-size-xs);
+	min-width: 28px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .order-cart-drawer__item-actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
-    align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+	align-items: center;
 }
 
 .order-cart-drawer__item-total {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    text-align: right;
-    min-width: 100px;
-    font-family: var(--font-family-sans);
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	text-align: right;
+	min-width: 100px;
+	font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__footer {
-    padding: var(--spacing-4);
-    border-top: 1px solid var(--color-border);
-    background: var(--color-card);
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3);
+	padding: var(--spacing-4);
+	border-top: 1px solid var(--color-border);
+	background: var(--color-card);
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
 }
 
 .order-cart-drawer__summary {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
 }
 
 .order-cart-drawer__summary-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: var(--font-size-base);
-    color: var(--color-text);
+	display: flex;
+	justify-content: space-between;
+	font-size: var(--font-size-base);
+	color: var(--color-text);
 }
 
 .order-cart-drawer__summary-row--total {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    padding-top: var(--spacing-2);
-    border-top: 1px solid var(--color-border);
-    color: var(--color-heading);
-    font-family: var(--font-family-sans);
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	padding-top: var(--spacing-2);
+	border-top: 1px solid var(--color-border);
+	color: var(--color-heading);
+	font-family: var(--font-family-sans);
 }
 
 .order-cart-drawer__summary-divider {
-    height: 1px;
-    background: var(--color-border);
-    margin: var(--spacing-2) 0;
+	height: 1px;
+	background: var(--color-border);
+	margin: var(--spacing-2) 0;
 }
 
 .order-cart-drawer__actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
 }
 
 .pos-cart__header-right {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
 }
 
 .pos-cart__expand-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-1);
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-1);
 }
 
 /* Responsive Drawer */
 @media (max-width: 992px) {
-    .order-cart-drawer {
-        width: 60%;
-    }
+	.order-cart-drawer {
+		width: 60%;
+	}
 }
 
 @media (max-width: 768px) {
-    .order-cart-drawer {
-        width: 90%;
-        max-width: none;
-    }
-    
-    .order-cart-drawer__item {
-        grid-template-columns: 50px 1fr;
-        gap: var(--spacing-2);
-    }
-    
-    .order-cart-drawer__item-actions {
-        grid-column: 1 / -1;
-        flex-direction: row;
-        justify-content: space-between;
-        width: 100%;
-    }
-    
-    .order-cart-drawer__item-total {
-        grid-column: 1 / -1;
-        text-align: left;
-        margin-top: var(--spacing-2);
-    }
+	.order-cart-drawer {
+		width: 90%;
+		max-width: none;
+	}
+
+	.order-cart-drawer__item {
+		grid-template-columns: 50px 1fr;
+		gap: var(--spacing-2);
+	}
+
+	.order-cart-drawer__item-actions {
+		grid-column: 1 / -1;
+		flex-direction: row;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	.order-cart-drawer__item-total {
+		grid-column: 1 / -1;
+		text-align: left;
+		margin-top: var(--spacing-2);
+	}
 }
 </style>

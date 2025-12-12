@@ -35,7 +35,7 @@ export const useCategoryStore = defineStore('categories', () => {
         try {
             const data = await categoryService.getCategories()
             const categoriesList = Array.isArray(data) ? data : []
-            
+
             categories.value = categoriesList
             categoriesMap.clear()
             categoriesList.forEach(category => {
@@ -43,7 +43,7 @@ export const useCategoryStore = defineStore('categories', () => {
                     categoriesMap.set(category.id, category)
                 }
             })
-            
+
             lastFetch.value = Date.now()
             return categories.value
         } catch (err) {
@@ -140,9 +140,7 @@ export const useCategoryStore = defineStore('categories', () => {
     }
 
     // Computed properties
-    const activeCategories = computed(() => {
-        return categories.value.filter(c => c.status !== 'INACTIVE')
-    })
+    const activeCategories = computed(() => categories.value.filter(c => c.status !== 'INACTIVE'))
 
     const categoryCount = computed(() => categories.value.length)
 
@@ -151,7 +149,7 @@ export const useCategoryStore = defineStore('categories', () => {
         categories,
         loading,
         error,
-        
+
         // Methods
         loadCategories,
         getCategoryById,
@@ -159,7 +157,7 @@ export const useCategoryStore = defineStore('categories', () => {
         updateCategory,
         deleteCategory,
         clear,
-        
+
         // Computed
         activeCategories,
         categoryCount

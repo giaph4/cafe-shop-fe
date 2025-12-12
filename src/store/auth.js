@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
     const user = ref(getUserFromStorage())
     const router = useRouter()
 
-    const isAuthenticated = computed(() => !!token.value)
+    const isAuthenticated = computed(() => Boolean(token.value))
     const userRoles = computed(() => user.value?.roles?.map(r => r.name) || [])
     const isAdmin = computed(() => userRoles.value.includes('ROLE_ADMIN'))
     const isManager = computed(() => userRoles.value.includes('ROLE_MANAGER'))
@@ -83,7 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
                 .replace(/_/g, '/')
             const decoded = JSON.parse(atob(payload))
             return decoded
-        } catch (error) {
+        } catch {
             // JWT decode failed - return null silently
             return null
         }
@@ -119,15 +119,15 @@ export const useAuthStore = defineStore('auth', () => {
          * - Format 1: { accessToken, refreshToken, user, expiresIn, refreshExpiresIn }
          * - Format 2: { token, refreshToken, user, username }
          * - Format 3: { access_token, refresh_token, user } (OAuth2 style)
-         * 
+         *
          * @param {Object} payload - Response từ backend
          * @returns {Object|null} Mapped response hoặc null nếu không hợp lệ
          */
         const mapResponse = (payload) => {
             if (!payload || typeof payload !== 'object') {
-            if (import.meta.env.DEV) {
-                logger.warn('[AuthStore] Invalid login response payload:', payload)
-            }
+                if (import.meta.env.DEV) {
+                    logger.warn('[AuthStore] Invalid login response payload:', payload)
+                }
                 return null
             }
 
@@ -142,8 +142,8 @@ export const useAuthStore = defineStore('auth', () => {
                 }
 
                 const claims = decodeToken(accessToken)
-                const derivedUser = payload.user 
-                    || buildUserFromToken(claims) 
+                const derivedUser = payload.user
+                    || buildUserFromToken(claims)
                     || null
 
                 if (!derivedUser) {
@@ -181,7 +181,7 @@ export const useAuthStore = defineStore('auth', () => {
                         id: claims?.userId ?? null,
                         username: payload.username || claims?.sub || claims?.username || null,
                         fullName: claims?.fullName || payload.fullName || payload.username || '',
-                        roles: Array.isArray(claims?.authorities) 
+                        roles: Array.isArray(claims?.authorities)
                             ? claims.authorities.map(r => ({ name: typeof r === 'string' ? r : r.authority }))
                             : []
                     }
@@ -190,7 +190,7 @@ export const useAuthStore = defineStore('auth', () => {
                     accessToken: token,
                     refreshToken: String(payload.refreshToken || '').trim(),
                     user: derivedUser,
-                    meta: { 
+                    meta: {
                         loggedInAt: Date.now(),
                         expiresIn: claims?.exp ? claims.exp - Math.floor(Date.now() / 1000) : null
                     }
@@ -208,8 +208,8 @@ export const useAuthStore = defineStore('auth', () => {
                 }
 
                 const claims = decodeToken(accessToken)
-                const derivedUser = payload.user 
-                    || buildUserFromToken(claims) 
+                const derivedUser = payload.user
+                    || buildUserFromToken(claims)
                     || null
 
                 return {
@@ -248,7 +248,7 @@ export const useAuthStore = defineStore('auth', () => {
             window.location.href = '/login'
         }
     }
-    
+
     const checkAuth = async () => {
         const storedAccess = getAccessToken()
         const storedUser = getUserFromStorage()
@@ -276,13 +276,11 @@ export const useAuthStore = defineStore('auth', () => {
                         token.value = newAccess
                         refreshToken.value = getRefreshToken() || null
                         api.defaults.headers.common.Authorization = `Bearer ${newAccess}`
-                        return
                     }
                 } catch (error) {
                     // Refresh thất bại, logout
                     logger.warn('Failed to refresh token on checkAuth:', error)
                     clearAuthData()
-                    return
                 }
             } else {
                 // Không có refresh token, logout

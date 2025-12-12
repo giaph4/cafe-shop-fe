@@ -1,187 +1,298 @@
 <template>
-    <div class="customers-staff">
-        <div class="chart-grid">
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Top khách hàng</h5>
-                        <p class="text-muted mb-0">Theo {{ customerMetric === 'spend' ? 'tổng chi tiêu' : 'số đơn' }}</p>
-                    </div>
-                    <div class="chart-controls d-flex gap-2">
-                        <select class="form-select form-select-sm" v-model="customerMetric">
-                            <option value="spend">Doanh thu</option>
-                            <option value="orders">Số đơn</option>
-                        </select>
-                        <select class="form-select form-select-sm" v-model="customerChartType">
-                            <option value="bar">Bar</option>
-                            <option value="horizontalBar">Bar ngang</option>
-                            <option value="pie">Pie</option>
-                        </select>
-                        <select class="form-select form-select-sm" v-model="customerLimit">
-                            <option value="5">Top 5</option>
-                            <option value="10">Top 10</option>
-                            <option value="all">Tất cả</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart
-                        v-if="customerChartSeries.length"
-                        :type="resolvedCustomerChartType"
-                        height="320"
-                        :series="customerChartSeries"
-                        :options="customerChartOptions"
-                    />
-                    <p v-else class="text-muted mb-0">Chưa có dữ liệu khách hàng.</p>
-                </div>
-            </div>
-
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Hiệu suất nhân viên</h5>
-                        <p class="text-muted mb-0">Theo {{ staffMetric === 'revenue' ? 'doanh thu' : 'số đơn' }}</p>
-                    </div>
-                    <div class="chart-controls d-flex gap-2">
-                        <select class="form-select form-select-sm" v-model="staffMetric">
-                            <option value="revenue">Doanh thu</option>
-                            <option value="orders">Số đơn</option>
-                        </select>
-                        <select class="form-select form-select-sm" v-model="staffChartType">
-                            <option value="bar">Bar</option>
-                            <option value="horizontalBar">Bar ngang</option>
-                            <option value="radar">Radar</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart
-                        v-if="staffChartSeries.length"
-                        :type="resolvedStaffChartType"
-                        height="320"
-                        :series="staffChartSeries"
-                        :options="staffChartOptions"
-                    />
-                    <p v-else class="text-muted mb-0">Chưa có dữ liệu nhân viên.</p>
-                </div>
-            </div>
+  <div class="customers-staff">
+    <div class="chart-grid">
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Top khách hàng
+            </h5>
+            <p class="text-muted mb-0">
+              Theo {{ customerMetric === 'spend' ? 'tổng chi tiêu' : 'số đơn' }}
+            </p>
+          </div>
+          <div class="chart-controls d-flex gap-2">
+            <select
+              v-model="customerMetric"
+              class="form-select form-select-sm"
+            >
+              <option value="spend">
+                Doanh thu
+              </option>
+              <option value="orders">
+                Số đơn
+              </option>
+            </select>
+            <select
+              v-model="customerChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="bar">
+                Bar
+              </option>
+              <option value="horizontalBar">
+                Bar ngang
+              </option>
+              <option value="pie">
+                Pie
+              </option>
+            </select>
+            <select
+              v-model="customerLimit"
+              class="form-select form-select-sm"
+            >
+              <option value="5">
+                Top 5
+              </option>
+              <option value="10">
+                Top 10
+              </option>
+              <option value="all">
+                Tất cả
+              </option>
+            </select>
+          </div>
         </div>
-
-        <div class="summary-grid">
-            <div class="card summary-card">
-                <div class="summary-card__icon bg-emerald-light">
-                    <i class="bi bi-wallet2"></i>
-                </div>
-                <div class="summary-card__meta">
-                    <span>Tổng chi phí</span>
-                    <strong>{{ formatCurrency(expenseTotals.totalExpenses) }}</strong>
-                    <small v-if="expenseTotals.range">{{ expenseTotals.range }}</small>
-                </div>
-            </div>
-            <div class="card summary-card">
-                <div class="summary-card__icon bg-sky-light">
-                    <i class="bi bi-bag-plus"></i>
-                </div>
-                <div class="summary-card__meta">
-                    <span>Chi phí nhập nguyên liệu</span>
-                    <strong>{{ formatCurrency(importTotals.totalImportedCost) }}</strong>
-                    <small v-if="importTotals.range">{{ importTotals.range }}</small>
-                </div>
-            </div>
-            <div class="card summary-card">
-                <div class="summary-card__icon bg-indigo-light">
-                    <i class="bi bi-people"></i>
-                </div>
-                <div class="summary-card__meta">
-                    <span>Giá trị trung bình mỗi khách</span>
-                    <strong>{{ formatCurrency(customerInsights.averageSpendPerCustomer) }}</strong>
-                    <small>{{ customerInsights.totalCustomers }} khách</small>
-                </div>
-            </div>
-            <div class="card summary-card">
-                <div class="summary-card__icon bg-amber-light">
-                    <i class="bi bi-briefcase"></i>
-                </div>
-                <div class="summary-card__meta">
-                    <span>Doanh thu trung bình mỗi nhân viên</span>
-                    <strong>{{ formatCurrency(staffInsights.averageRevenuePerStaff) }}</strong>
-                    <small>{{ staffInsights.totalStaff }} nhân viên</small>
-                </div>
-            </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="customerChartSeries.length"
+            :type="resolvedCustomerChartType"
+            height="320"
+            :series="customerChartSeries"
+            :options="customerChartOptions"
+          />
+          <p
+            v-else
+            class="text-muted mb-0"
+          >
+            Chưa có dữ liệu khách hàng.
+          </p>
         </div>
+      </div>
 
-        <div class="grid">
-            <div class="card table-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Khách hàng tiêu biểu</h5>
-                    <p class="text-muted mb-0">Top khách hàng theo doanh số và tần suất mua</p>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Thứ hạng</th>
-                                <th>Khách hàng</th>
-                                <th>Số điện thoại</th>
-                                <th class="text-end">Số đơn</th>
-                                <th class="text-end">Tổng chi tiêu</th>
-                                <th class="text-end">Đơn TB</th>
-                                <th>Đơn gần nhất</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="customer in topCustomers" :key="customer.customerId">
-                                <td><span class="badge bg-primary-subtle text-primary">#{{ customer.rank }}</span></td>
-                                <td class="fw-semibold">{{ customer.customerName }}</td>
-                                <td>{{ customer.phone || '—' }}</td>
-                                <td class="text-end">{{ formatNumber(customer.totalOrders) }}</td>
-                                <td class="text-end">{{ formatCurrency(customer.totalSpent) }}</td>
-                                <td class="text-end">{{ formatCurrency(customer.averageOrderValue) }}</td>
-                                <td>{{ formatDate(customer.lastOrderDate) }}</td>
-                            </tr>
-                            <tr v-if="!topCustomers.length">
-                                <td colspan="7" class="text-center text-muted py-4">Chưa có dữ liệu khách hàng.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card table-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Hiệu suất nhân viên</h5>
-                    <p class="text-muted mb-0">Top nhân viên theo doanh số</p>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Thứ hạng</th>
-                                <th>Nhân viên</th>
-                                <th>Vai trò</th>
-                                <th class="text-end">Số đơn</th>
-                                <th class="text-end">Doanh thu</th>
-                                <th class="text-end">Đơn TB</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="staff in staffPerformance" :key="staff.userId">
-                                <td><span class="badge bg-success-subtle text-success">#{{ staff.rank }}</span></td>
-                                <td class="fw-semibold">{{ staff.fullName || staff.username }}</td>
-                                <td><span class="role-chip">{{ prettyRole(staff.role) }}</span></td>
-                                <td class="text-end">{{ formatNumber(staff.totalOrders) }}</td>
-                                <td class="text-end">{{ formatCurrency(staff.totalRevenue) }}</td>
-                                <td class="text-end">{{ formatCurrency(staff.averageOrderValue) }}</td>
-                            </tr>
-                            <tr v-if="!staffPerformance.length">
-                                <td colspan="6" class="text-center text-muted py-4">Chưa có dữ liệu nhân viên.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Hiệu suất nhân viên
+            </h5>
+            <p class="text-muted mb-0">
+              Theo {{ staffMetric === 'revenue' ? 'doanh thu' : 'số đơn' }}
+            </p>
+          </div>
+          <div class="chart-controls d-flex gap-2">
+            <select
+              v-model="staffMetric"
+              class="form-select form-select-sm"
+            >
+              <option value="revenue">
+                Doanh thu
+              </option>
+              <option value="orders">
+                Số đơn
+              </option>
+            </select>
+            <select
+              v-model="staffChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="bar">
+                Bar
+              </option>
+              <option value="horizontalBar">
+                Bar ngang
+              </option>
+              <option value="radar">
+                Radar
+              </option>
+            </select>
+          </div>
         </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="staffChartSeries.length"
+            :type="resolvedStaffChartType"
+            height="320"
+            :series="staffChartSeries"
+            :options="staffChartOptions"
+          />
+          <p
+            v-else
+            class="text-muted mb-0"
+          >
+            Chưa có dữ liệu nhân viên.
+          </p>
+        </div>
+      </div>
     </div>
+
+    <div class="summary-grid">
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-emerald-light">
+          <i class="bi bi-wallet2" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Tổng chi phí</span>
+          <strong>{{ formatCurrency(expenseTotals.totalExpenses) }}</strong>
+          <small v-if="expenseTotals.range">{{ expenseTotals.range }}</small>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-sky-light">
+          <i class="bi bi-bag-plus" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Chi phí nhập nguyên liệu</span>
+          <strong>{{ formatCurrency(importTotals.totalImportedCost) }}</strong>
+          <small v-if="importTotals.range">{{ importTotals.range }}</small>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-indigo-light">
+          <i class="bi bi-people" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Giá trị trung bình mỗi khách</span>
+          <strong>{{ formatCurrency(customerInsights.averageSpendPerCustomer) }}</strong>
+          <small>{{ customerInsights.totalCustomers }} khách</small>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-amber-light">
+          <i class="bi bi-briefcase" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Doanh thu trung bình mỗi nhân viên</span>
+          <strong>{{ formatCurrency(staffInsights.averageRevenuePerStaff) }}</strong>
+          <small>{{ staffInsights.totalStaff }} nhân viên</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card table-card">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Khách hàng tiêu biểu
+          </h5>
+          <p class="text-muted mb-0">
+            Top khách hàng theo doanh số và tần suất mua
+          </p>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Thứ hạng</th>
+                <th>Khách hàng</th>
+                <th>Số điện thoại</th>
+                <th class="text-end">
+                  Số đơn
+                </th>
+                <th class="text-end">
+                  Tổng chi tiêu
+                </th>
+                <th class="text-end">
+                  Đơn TB
+                </th>
+                <th>Đơn gần nhất</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="customer in topCustomers"
+                :key="customer.customerId"
+              >
+                <td><span class="badge bg-primary-subtle text-primary">#{{ customer.rank }}</span></td>
+                <td class="fw-semibold">
+                  {{ customer.customerName }}
+                </td>
+                <td>{{ customer.phone || '—' }}</td>
+                <td class="text-end">
+                  {{ formatNumber(customer.totalOrders) }}
+                </td>
+                <td class="text-end">
+                  {{ formatCurrency(customer.totalSpent) }}
+                </td>
+                <td class="text-end">
+                  {{ formatCurrency(customer.averageOrderValue) }}
+                </td>
+                <td>{{ formatDate(customer.lastOrderDate) }}</td>
+              </tr>
+              <tr v-if="!topCustomers.length">
+                <td
+                  colspan="7"
+                  class="text-center text-muted py-4"
+                >
+                  Chưa có dữ liệu khách hàng.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Hiệu suất nhân viên
+          </h5>
+          <p class="text-muted mb-0">
+            Top nhân viên theo doanh số
+          </p>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Thứ hạng</th>
+                <th>Nhân viên</th>
+                <th>Vai trò</th>
+                <th class="text-end">
+                  Số đơn
+                </th>
+                <th class="text-end">
+                  Doanh thu
+                </th>
+                <th class="text-end">
+                  Đơn TB
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="staff in staffPerformance"
+                :key="staff.userId"
+              >
+                <td><span class="badge bg-success-subtle text-success">#{{ staff.rank }}</span></td>
+                <td class="fw-semibold">
+                  {{ staff.fullName || staff.username }}
+                </td>
+                <td><span class="role-chip">{{ prettyRole(staff.role) }}</span></td>
+                <td class="text-end">
+                  {{ formatNumber(staff.totalOrders) }}
+                </td>
+                <td class="text-end">
+                  {{ formatCurrency(staff.totalRevenue) }}
+                </td>
+                <td class="text-end">
+                  {{ formatCurrency(staff.averageOrderValue) }}
+                </td>
+              </tr>
+              <tr v-if="!staffPerformance.length">
+                <td
+                  colspan="6"
+                  class="text-center text-muted py-4"
+                >
+                  Chưa có dữ liệu nhân viên.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

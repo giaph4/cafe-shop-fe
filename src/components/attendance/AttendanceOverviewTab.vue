@@ -1,151 +1,250 @@
 <template>
-    <div class="attendance-overview">
-        <div class="check-in-out-card card mb-4">
-            <div class="card-body">
-                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-                    <div>
-                        <h5 class="mb-1">Chấm công nhanh</h5>
-                        <p class="text-muted mb-0">Thực hiện check-in/check-out cho ca làm hiện tại</p>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-sm" type="button" @click="$emit('refresh')" :disabled="loading">
-                        <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
-                    </button>
-                </div>
-
-                <LoadingState v-if="loading" />
-
-                <div v-else-if="currentSession" class="current-session">
-                    <div class="session-info-card">
-                        <div class="session-info-card__header">
-                            <div class="session-info-card__icon bg-success">
-                                <i class="bi bi-check-circle"></i>
-                            </div>
-                            <div class="session-info-card__meta">
-                                <h6 class="mb-1">Ca làm đang hoạt động</h6>
-                                <p class="text-muted mb-0 small">Work Shift #{{ currentSession.workShiftId }}</p>
-                            </div>
-                        </div>
-                        <div class="session-info-card__details">
-                            <div class="detail-item">
-                                <span class="detail-item__label">Thời gian bắt đầu</span>
-                                <strong>{{ formatDateTime(currentSession.startTime) }}</strong>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-item__label">Thời gian kết thúc</span>
-                                <strong>{{ formatDateTime(currentSession.endTime) }}</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="check-actions mt-4">
-                        <form @submit.prevent="handleCheckIn" class="check-form">
-                            <div class="row g-3 align-items-end">
-                                <div class="col-md-4">
-                                    <label class="form-label">Nguồn chấm công</label>
-                                    <select class="form-select" v-model="checkInForm.source" required>
-                                        <option v-for="source in attendanceSources" :key="source.value" :value="source.value">
-                                            {{ source.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="form-label">Ghi chú (tùy chọn)</label>
-                                    <input type="text" class="form-control" v-model="checkInForm.note" maxlength="255" placeholder="Nhập ghi chú nếu có" />
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-success w-100" type="submit" :disabled="checkInSubmitting || checkOutSubmitting">
-                                        <span v-if="checkInSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-                                        <i v-else class="bi bi-box-arrow-in-right me-2"></i>
-                                        Check-in
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-
-                        <form @submit.prevent="handleCheckOut" class="check-form mt-3">
-                            <div class="row g-3 align-items-end">
-                                <div class="col-md-4">
-                                    <label class="form-label">Nguồn chấm công</label>
-                                    <select class="form-select" v-model="checkOutForm.source" required>
-                                        <option v-for="source in attendanceSources" :key="source.value" :value="source.value">
-                                            {{ source.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="form-label">Ghi chú (tùy chọn)</label>
-                                    <input type="text" class="form-control" v-model="checkOutForm.note" maxlength="255" placeholder="Nhập ghi chú nếu có" />
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-danger w-100" type="submit" :disabled="checkInSubmitting || checkOutSubmitting">
-                                        <span v-if="checkOutSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-                                        <i v-else class="bi bi-box-arrow-right me-2"></i>
-                                        Check-out
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div v-else class="no-session">
-                    <div class="no-session__icon">
-                        <i class="bi bi-calendar-x"></i>
-                    </div>
-                    <h6 class="no-session__title">Không có ca làm đang hoạt động</h6>
-                    <p class="text-muted mb-0">Bạn cần có ca làm được phân công và đang hoạt động để thực hiện chấm công.</p>
-                </div>
-            </div>
+  <div class="attendance-overview">
+    <div class="check-in-out-card card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+          <div>
+            <h5 class="mb-1">
+              Chấm công nhanh
+            </h5>
+            <p class="text-muted mb-0">
+              Thực hiện check-in/check-out cho ca làm hiện tại
+            </p>
+          </div>
+          <button
+            class="btn btn-outline-secondary btn-sm"
+            type="button"
+            :disabled="loading"
+            @click="$emit('refresh')"
+          >
+            <i class="bi bi-arrow-clockwise me-1" />Làm mới
+          </button>
         </div>
 
-        <div class="assignments-card card">
-            <div class="card-header border-0">
-                <h5 class="mb-1">Danh sách ca làm của tôi</h5>
-                <p class="text-muted mb-0">Các ca làm đã được phân công</p>
+        <LoadingState v-if="loading" />
+
+        <div
+          v-else-if="currentSession"
+          class="current-session"
+        >
+          <div class="session-info-card">
+            <div class="session-info-card__header">
+              <div class="session-info-card__icon bg-success">
+                <i class="bi bi-check-circle" />
+              </div>
+              <div class="session-info-card__meta">
+                <h6 class="mb-1">
+                  Ca làm đang hoạt động
+                </h6>
+                <p class="text-muted mb-0 small">
+                  Work Shift #{{ currentSession.workShiftId }}
+                </p>
+              </div>
             </div>
-            <div class="card-body">
-                <LoadingState v-if="loading" />
-                <EmptyState
-                    v-else-if="!assignments || assignments.length === 0"
-                    title="Chưa có ca làm"
-                    message="Chưa có ca làm nào được phân công."
-                />
-                <div v-else class="assignments-list">
-                    <div v-for="assignment in assignments" :key="assignment.id" class="assignment-item">
-                        <div class="assignment-item__header">
-                            <div class="assignment-item__icon" :class="getStatusClass(assignment.status)">
-                                <i :class="getStatusIcon(assignment.status)"></i>
-                            </div>
-                            <div class="assignment-item__meta">
-                                <h6 class="mb-1">Ca làm #{{ assignment.shiftInstance?.id || 'N/A' }}</h6>
-                                <p class="text-muted mb-0 small">
-                                    {{ formatDateTime(assignment.shiftInstance?.startTime) }} - 
-                                    {{ formatDateTime(assignment.shiftInstance?.endTime) }}
-                                </p>
-                            </div>
-                            <span class="badge" :class="getStatusBadgeClass(assignment.status)">
-                                {{ getStatusLabel(assignment.status) }}
-                            </span>
-                        </div>
-                        <div class="assignment-item__details">
-                            <div class="detail-row">
-                                <span>Work Shift ID:</span>
-                                <strong>#{{ assignment.shiftInstance?.workShiftId || 'N/A' }}</strong>
-                            </div>
-                            <div class="detail-row" v-if="assignment.shiftInstance?.shiftTemplate">
-                                <span>Template:</span>
-                                <strong>{{ assignment.shiftInstance.shiftTemplate.name }}</strong>
-                            </div>
-                        </div>
-                    </div>
+            <div class="session-info-card__details">
+              <div class="detail-item">
+                <span class="detail-item__label">Thời gian bắt đầu</span>
+                <strong>{{ formatDateTime(currentSession.startTime) }}</strong>
+              </div>
+              <div class="detail-item">
+                <span class="detail-item__label">Thời gian kết thúc</span>
+                <strong>{{ formatDateTime(currentSession.endTime) }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="check-actions mt-4">
+            <form
+              class="check-form"
+              @submit.prevent="handleCheckIn"
+            >
+              <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label class="form-label">Nguồn chấm công</label>
+                  <select
+                    v-model="checkInForm.source"
+                    class="form-select"
+                    required
+                  >
+                    <option
+                      v-for="source in attendanceSources"
+                      :key="source.value"
+                      :value="source.value"
+                    >
+                      {{ source.label }}
+                    </option>
+                  </select>
                 </div>
-            </div>
+                <div class="col-md-5">
+                  <label class="form-label">Ghi chú (tùy chọn)</label>
+                  <input
+                    v-model="checkInForm.note"
+                    type="text"
+                    class="form-control"
+                    maxlength="255"
+                    placeholder="Nhập ghi chú nếu có"
+                  >
+                </div>
+                <div class="col-md-3">
+                  <button
+                    class="btn btn-success w-100"
+                    type="submit"
+                    :disabled="checkInSubmitting || checkOutSubmitting"
+                  >
+                    <span
+                      v-if="checkInSubmitting"
+                      class="spinner-border spinner-border-sm me-2"
+                    />
+                    <i
+                      v-else
+                      class="bi bi-box-arrow-in-right me-2"
+                    />
+                    Check-in
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <form
+              class="check-form mt-3"
+              @submit.prevent="handleCheckOut"
+            >
+              <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label class="form-label">Nguồn chấm công</label>
+                  <select
+                    v-model="checkOutForm.source"
+                    class="form-select"
+                    required
+                  >
+                    <option
+                      v-for="source in attendanceSources"
+                      :key="source.value"
+                      :value="source.value"
+                    >
+                      {{ source.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label">Ghi chú (tùy chọn)</label>
+                  <input
+                    v-model="checkOutForm.note"
+                    type="text"
+                    class="form-control"
+                    maxlength="255"
+                    placeholder="Nhập ghi chú nếu có"
+                  >
+                </div>
+                <div class="col-md-3">
+                  <button
+                    class="btn btn-danger w-100"
+                    type="submit"
+                    :disabled="checkInSubmitting || checkOutSubmitting"
+                  >
+                    <span
+                      v-if="checkOutSubmitting"
+                      class="spinner-border spinner-border-sm me-2"
+                    />
+                    <i
+                      v-else
+                      class="bi bi-box-arrow-right me-2"
+                    />
+                    Check-out
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
+
+        <div
+          v-else
+          class="no-session"
+        >
+          <div class="no-session__icon">
+            <i class="bi bi-calendar-x" />
+          </div>
+          <h6 class="no-session__title">
+            Không có ca làm đang hoạt động
+          </h6>
+          <p class="text-muted mb-0">
+            Bạn cần có ca làm được phân công và đang hoạt động để thực hiện chấm công.
+          </p>
+        </div>
+      </div>
     </div>
+
+    <div class="assignments-card card">
+      <div class="card-header border-0">
+        <h5 class="mb-1">
+          Danh sách ca làm của tôi
+        </h5>
+        <p class="text-muted mb-0">
+          Các ca làm đã được phân công
+        </p>
+      </div>
+      <div class="card-body">
+        <LoadingState v-if="loading" />
+        <EmptyState
+          v-else-if="!assignments || assignments.length === 0"
+          title="Chưa có ca làm"
+          message="Chưa có ca làm nào được phân công."
+        />
+        <div
+          v-else
+          class="assignments-list"
+        >
+          <div
+            v-for="assignment in assignments"
+            :key="assignment.id"
+            class="assignment-item"
+          >
+            <div class="assignment-item__header">
+              <div
+                class="assignment-item__icon"
+                :class="getStatusClass(assignment.status)"
+              >
+                <i :class="getStatusIcon(assignment.status)" />
+              </div>
+              <div class="assignment-item__meta">
+                <h6 class="mb-1">
+                  Ca làm #{{ assignment.shiftInstance?.id || 'N/A' }}
+                </h6>
+                <p class="text-muted mb-0 small">
+                  {{ formatDateTime(assignment.shiftInstance?.startTime) }} -
+                  {{ formatDateTime(assignment.shiftInstance?.endTime) }}
+                </p>
+              </div>
+              <span
+                class="badge"
+                :class="getStatusBadgeClass(assignment.status)"
+              >
+                {{ getStatusLabel(assignment.status) }}
+              </span>
+            </div>
+            <div class="assignment-item__details">
+              <div class="detail-row">
+                <span>Work Shift ID:</span>
+                <strong>#{{ assignment.shiftInstance?.workShiftId || 'N/A' }}</strong>
+              </div>
+              <div
+                v-if="assignment.shiftInstance?.shiftTemplate"
+                class="detail-row"
+              >
+                <span>Template:</span>
+                <strong>{{ assignment.shiftInstance.shiftTemplate.name }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { ATTENDANCE_SOURCES } from '@/api/shiftService'
 import { formatDateTime } from '@/utils/formatters'
 import { useAuthStore } from '@/store/auth'
@@ -178,7 +277,7 @@ const checkOutForm = reactive({
 
 const handleCheckIn = () => {
     if (!props.currentSession) return
-    
+
     const payload = {
         assignmentId: props.currentSession.assignmentId,
         shiftId: props.currentSession.shiftInstanceId,
@@ -186,14 +285,14 @@ const handleCheckIn = () => {
         source: checkInForm.source,
         note: checkInForm.note || null
     }
-    
+
     emit('check-in', payload)
     checkInForm.note = ''
 }
 
 const handleCheckOut = () => {
     if (!props.currentSession) return
-    
+
     const payload = {
         assignmentId: props.currentSession.assignmentId,
         shiftId: props.currentSession.shiftInstanceId,
@@ -201,7 +300,7 @@ const handleCheckOut = () => {
         source: checkOutForm.source,
         note: checkOutForm.note || null
     }
-    
+
     emit('check-out', payload)
     checkOutForm.note = ''
 }

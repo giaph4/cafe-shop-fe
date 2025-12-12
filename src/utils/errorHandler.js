@@ -17,7 +17,7 @@ import logger from './logger'
  * @param {Error|AxiosError|Object} error - Error object
  * @returns {string} Error message
  */
-export function getErrorMessage(error) {
+export function getErrorMessage (error) {
     if (!error) return ERROR_MESSAGES.UNKNOWN_ERROR
 
     // Network error
@@ -29,7 +29,7 @@ export function getErrorMessage(error) {
     if (error.response) {
         const status = error.response.status
         const data = error.response.data || {}
-        
+
         // Ưu tiên message từ backend
         if (data.message) return data.message
         if (data.error) return data.error
@@ -79,7 +79,7 @@ export const buildApiError = (error) => {
     const response = error?.response
     const status = response?.status
     const data = response?.data || {}
-    
+
     return {
         status: status || null,
         code: data.code || null,
@@ -97,7 +97,7 @@ export const buildApiError = (error) => {
  * @param {number} status - HTTP status code
  * @returns {boolean}
  */
-export function isErrorStatus(error, status) {
+export function isErrorStatus (error, status) {
     return error?.response?.status === status
 }
 
@@ -106,10 +106,10 @@ export function isErrorStatus(error, status) {
  * @param {Error|AxiosError} error - Error object
  * @returns {boolean}
  */
-export function isNetworkError(error) {
+export function isNetworkError (error) {
     return !error?.response && (
-        error?.code === 'ECONNABORTED' || 
-        error?.code === 'ERR_NETWORK' || 
+        error?.code === 'ECONNABORTED' ||
+        error?.code === 'ERR_NETWORK' ||
         error?.code === 'NETWORK_ERROR' ||
         error?.message === 'Network Error'
     )
@@ -120,7 +120,7 @@ export function isNetworkError(error) {
  * @param {Error|AxiosError} error - Error object
  * @returns {boolean}
  */
-export function isTimeoutError(error) {
+export function isTimeoutError (error) {
     return error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')
 }
 
@@ -129,7 +129,7 @@ export function isTimeoutError(error) {
  * @param {Error|AxiosError} error - Error object
  * @returns {boolean}
  */
-export function isRetryableError(error) {
+export function isRetryableError (error) {
     const status = error?.response?.status
     return status >= 500 && status < 600
 }
@@ -145,7 +145,7 @@ export function isRetryableError(error) {
  * @param {string} [options.context] - Context for logging
  * @returns {string} Error message
  */
-export function handleError(error, options = {}) {
+export function handleError (error, options = {}) {
     const {
         showToast = true,
         onError,
@@ -180,7 +180,7 @@ export function handleError(error, options = {}) {
  * @param {string} options.fallbackMessage - Fallback message (deprecated, dùng ERROR_MESSAGES)
  * @returns {string} Error message
  */
-export function handleApiError(error, options = {}) {
+export function handleApiError (error, options = {}) {
     const {
         context = 'API',
         showToast = true
@@ -198,14 +198,14 @@ export function handleApiError(error, options = {}) {
  * @param {Object} [options] - Options
  * @param {string} [options.level='error'] - Log level (error, warn, info)
  */
-export function logError(error, context = '', options = {}) {
+export function logError (error, context = '', options = {}) {
     const { level = 'error' } = options
     const message = getErrorMessage(error)
-    
-    const logMessage = context 
+
+    const logMessage = context
         ? `[${context}] ${message}`
         : message
-    
+
     if (level === 'warn') {
         logger.warn(logMessage, error)
     } else if (level === 'info') {

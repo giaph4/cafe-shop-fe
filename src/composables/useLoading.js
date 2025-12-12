@@ -10,7 +10,7 @@ import { ref } from 'vue'
  * @param {boolean} initialState - Initial loading state
  * @returns {Object} - Loading state utilities
  */
-export function useLoading(initialState = false) {
+export function useLoading (initialState = false) {
     const loading = ref(initialState)
 
     const setLoading = (value) => {

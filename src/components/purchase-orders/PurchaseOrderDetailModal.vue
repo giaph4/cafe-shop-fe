@@ -1,106 +1,172 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" id="purchaseDetailModal" tabindex="-1" ref="modalElement" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content detail-modal">
-                <div class="modal-header">
-                    <div>
-                        <h5 class="modal-title">Chi tiết đơn nhập hàng #{{ orderId }}</h5>
-                        <p class="modal-subtitle mb-0">Theo dõi tình trạng xử lý và các hạng mục trong phiếu nhập.</p>
-                    </div>
-                    <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
-                </div>
-
-                <div class="modal-body">
-                    <LoadingState v-if="isLoading" />
-                    <ErrorState 
-                        v-else-if="isError" 
-                        :message="errorMessage"
-                    />
-                    <div v-else-if="detail" class="detail-content">
-                        <div class="row g-4 mb-3">
-                            <div class="col-md-6">
-                                <div class="info-card">
-                                    <p class="label">Nhà cung cấp</p>
-                                    <p class="value">{{ detail.supplierName }}</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-card">
-                                    <p class="label">Người tạo phiếu</p>
-                                    <p class="value">{{ detail.staffUsername }}</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="info-card">
-                                    <p class="label">Ngày đặt</p>
-                                    <p class="value">{{ formatDateTime(detail.orderDate) || '—' }}</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="info-card">
-                                    <p class="label">Trạng thái</p>
-                                    <p class="value">
-                                        <span class="status-badge" :class="statusBadgeClass(detail.status)">
-                                            {{ statusLabel(detail.status) }}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="info-card">
-                                    <p class="label">Tổng giá trị</p>
-                                    <p class="value text-primary fw-semibold">{{ formatCurrency(detail.totalAmount) }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="table-wrapper">
-                            <h6 class="section-title">Danh sách mặt hàng</h6>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Nguyên liệu</th>
-                                            <th class="text-end">Số lượng</th>
-                                            <th class="text-end">Đơn giá</th>
-                                            <th class="text-end">Thành tiền</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="item in lineItems" :key="item.id">
-                                            <td>
-                                                <div class="d-flex flex-column">
-                                                    <span class="fw-semibold">{{ item.ingredientName }}</span>
-                                                    <small class="text-muted">Đơn vị: {{ item.ingredientUnit }}</small>
-                                                </div>
-                                            </td>
-                                            <td class="text-end">{{ formatNumber(item.quantity) }}</td>
-                                            <td class="text-end">{{ formatCurrency(item.unitPrice) }}</td>
-                                            <td class="text-end fw-semibold">{{ formatCurrency(item.lineTotal) }}</td>
-                                        </tr>
-                                        <tr v-if="!lineItems.length">
-                                            <td colspan="4" class="text-center text-muted py-4">Không có mặt hàng nào trong đơn.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" @click="closeModal">Đóng</button>
-                </div>
+  <Teleport to="body">
+    <div
+      id="purchaseDetailModal"
+      ref="modalElement"
+      class="modal fade"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content detail-modal">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title">
+                Chi tiết đơn nhập hàng #{{ orderId }}
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Theo dõi tình trạng xử lý và các hạng mục trong phiếu nhập.
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Close"
+              @click="closeModal"
+            />
+          </div>
+
+          <div class="modal-body">
+            <LoadingState v-if="isLoading" />
+            <ErrorState
+              v-else-if="isError"
+              :message="errorMessage"
+            />
+            <div
+              v-else-if="detail"
+              class="detail-content"
+            >
+              <div class="row g-4 mb-3">
+                <div class="col-md-6">
+                  <div class="info-card">
+                    <p class="label">
+                      Nhà cung cấp
+                    </p>
+                    <p class="value">
+                      {{ detail.supplierName }}
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-card">
+                    <p class="label">
+                      Người tạo phiếu
+                    </p>
+                    <p class="value">
+                      {{ detail.staffUsername }}
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="info-card">
+                    <p class="label">
+                      Ngày đặt
+                    </p>
+                    <p class="value">
+                      {{ formatDateTime(detail.orderDate) || '—' }}
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="info-card">
+                    <p class="label">
+                      Trạng thái
+                    </p>
+                    <p class="value">
+                      <span
+                        class="status-badge"
+                        :class="statusBadgeClass(detail.status)"
+                      >
+                        {{ statusLabel(detail.status) }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="info-card">
+                    <p class="label">
+                      Tổng giá trị
+                    </p>
+                    <p class="value text-primary fw-semibold">
+                      {{ formatCurrency(detail.totalAmount) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="table-wrapper">
+                <h6 class="section-title">
+                  Danh sách mặt hàng
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Nguyên liệu</th>
+                        <th class="text-end">
+                          Số lượng
+                        </th>
+                        <th class="text-end">
+                          Đơn giá
+                        </th>
+                        <th class="text-end">
+                          Thành tiền
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="item in lineItems"
+                        :key="item.id"
+                      >
+                        <td>
+                          <div class="d-flex flex-column">
+                            <span class="fw-semibold">{{ item.ingredientName }}</span>
+                            <small class="text-muted">Đơn vị: {{ item.ingredientUnit }}</small>
+                          </div>
+                        </td>
+                        <td class="text-end">
+                          {{ formatNumber(item.quantity) }}
+                        </td>
+                        <td class="text-end">
+                          {{ formatCurrency(item.unitPrice) }}
+                        </td>
+                        <td class="text-end fw-semibold">
+                          {{ formatCurrency(item.lineTotal) }}
+                        </td>
+                      </tr>
+                      <tr v-if="!lineItems.length">
+                        <td
+                          colspan="4"
+                          class="text-center text-muted py-4"
+                        >
+                          Không có mặt hàng nào trong đơn.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="closeModal"
+            >
+              Đóng
+            </button>
+          </div>
         </div>
-        </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { Teleport } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { Modal } from 'bootstrap'
 

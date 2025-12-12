@@ -1,6 +1,5 @@
 import api from './axios'
 import { cleanParams } from './utils'
-import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/admin/analytics'
 
@@ -109,9 +108,14 @@ export const generateAdminInsight = async (payload) => {
             includeVoucherStats: data?.request?.includeVoucherStats ?? body.includeVoucherStats,
             includeCustomerStats: data?.request?.includeCustomerStats ?? body.includeCustomerStats
         },
-        metrics: normalizeDashboardMetrics(data?.metrics, 'AdminAnalyticsController#generateInsight'),
-        aiInsightMarkdown: typeof data?.aiInsightMarkdown === 'string' ? data.aiInsightMarkdown : '',
+        metrics: normalizeDashboardMetrics(
+            data?.metrics,
+            'AdminAnalyticsController#generateInsight'
+        ),
+        aiInsightMarkdown:
+            typeof data?.aiInsightMarkdown === 'string'
+                ? data.aiInsightMarkdown
+                : '',
         generatedAt: data?.generatedAt ?? new Date().toISOString()
     }
 }
-

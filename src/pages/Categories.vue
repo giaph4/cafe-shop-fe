@@ -1,202 +1,346 @@
 <template>
-    <div data-aos="fade-up">
-        <Teleport to="body">
-            <div class="modal fade" id="categoryModal" tabindex="-1" ref="modalElement">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div>
-                                <h5 class="modal-title">{{ isEditing ? 'Cập nhật Danh mục' : 'Tạo mới Danh mục' }}</h5>
-                                <p class="mb-0 text-muted small">Điền đầy đủ thông tin theo quy định backend.</p>
-                            </div>
-                            <button type="button" class="btn-close" @click="closeModal"
-                                :disabled="createMutation.isPending.value || updateMutation.isPending.value"
-                                aria-label="Close"></button>
-                        </div>
-
-                        <Form @submit="handleSubmit" :validation-schema="categorySchema" v-slot="{ errors }">
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="name" class="form-label fw-semibold">Tên Danh mục <span
-                                            class="text-danger">*</span></label>
-                                    <Field name="name" type="text" class="form-control"
-                                        :class="{ 'is-invalid': errors.name }" id="name" placeholder="Cà phê Việt Nam"
-                                        v-model="formData.name"
-                                        :disabled="createMutation.isPending.value || updateMutation.isPending.value" />
-                                    <ErrorMessage name="name" class="invalid-feedback" />
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="description" class="form-label fw-semibold">Mô tả</label>
-                                    <Field name="description" as="textarea" rows="3" class="form-control"
-                                        id="description" placeholder="Mô tả ngắn gọn về danh mục..."
-                                        v-model="formData.description"
-                                        :disabled="createMutation.isPending.value || updateMutation.isPending.value" />
-                                    <ErrorMessage name="description" class="invalid-feedback" />
-                                </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" @click="closeModal"
-                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value">
-                                    Hủy
-                                </button>
-                                <button type="submit" class="btn btn-primary"
-                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value">
-                                    <span v-if="createMutation.isPending.value || updateMutation.isPending.value"
-                                        class="spinner-border spinner-border-sm me-2" role="status"
-                                        aria-hidden="true"></span>
-                                    {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
-                                </button>
-                            </div>
-                        </Form>
-                    </div>
-                </div>
+  <div data-aos="fade-up">
+    <Teleport to="body">
+      <div
+        id="categoryModal"
+        ref="modalElement"
+        class="modal fade"
+        tabindex="-1"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">
+                  {{ isEditing ? 'Cập nhật Danh mục' : 'Tạo mới Danh mục' }}
+                </h5>
+                <p class="mb-0 text-muted small">
+                  Điền đầy đủ thông tin theo quy định backend.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                aria-label="Close"
+                @click="closeModal"
+              />
             </div>
 
-            <div class="modal fade" id="deleteCategoryModal" tabindex="-1" ref="deleteModalElement">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div>
-                                <h5 class="modal-title">Xóa danh mục</h5>
-                                <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
-                            </div>
-                            <button type="button" class="btn-close" @click="closeDeleteModal"
-                                :disabled="deleteMutation.isPending.value" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="mb-3">Bạn có chắc chắn muốn xóa danh mục này không?</p>
-                            <div class="delete-info-card">
-                                <div class="delete-info-item">
-                                    <span class="delete-info-label">Tên danh mục:</span>
-                                    <span class="delete-info-value">{{ deleteTarget?.name || '—' }}</span>
-                                </div>
-                                <div class="delete-info-item" v-if="deleteTarget?.description">
-                                    <span class="delete-info-label">Mô tả:</span>
-                                    <span class="delete-info-value">{{ deleteTarget.description }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="closeDeleteModal"
-                                :disabled="deleteMutation.isPending.value">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="confirmDelete"
-                                :disabled="deleteMutation.isPending.value">
-                                <span v-if="deleteMutation.isPending.value"
-                                    class="spinner-border spinner-border-sm me-2"></span>
-                                Xóa danh mục
-                            </button>
-                        </div>
-                    </div>
+            <Form
+              v-slot="{ errors }"
+              :validation-schema="categorySchema"
+              @submit="handleSubmit"
+            >
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label
+                    for="name"
+                    class="form-label fw-semibold"
+                  >Tên Danh mục <span
+                    class="text-danger"
+                  >*</span></label>
+                  <Field
+                    id="name"
+                    v-model="formData.name"
+                    name="name"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.name }"
+                    placeholder="Cà phê Việt Nam"
+                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                  />
+                  <ErrorMessage
+                    name="name"
+                    class="invalid-feedback"
+                  />
                 </div>
-            </div>
-        </Teleport>
 
-        <div class="categories-page container-fluid"
-            style="background: var(--color-body-bg); padding: var(--spacing-4);">
-            <div class="categories-header">
-                <div class="categories-header__content">
-                    <div class="categories-header__title-section">
-                        <h2 class="categories-header__title">Quản lý Danh mục</h2>
-                        <p class="categories-header__subtitle">Quản lý các danh mục sản phẩm trong hệ thống</p>
-                    </div>
-                    <div class="categories-header__actions">
-                        <button class="btn btn-primary btn-sm" @click="openModal()">
-                            <i class="bi bi-plus-lg me-2"></i> Thêm mới
-                        </button>
-                    </div>
+                <div class="mb-3">
+                  <label
+                    for="description"
+                    class="form-label fw-semibold"
+                  >Mô tả</label>
+                  <Field
+                    id="description"
+                    v-model="formData.description"
+                    name="description"
+                    as="textarea"
+                    rows="3"
+                    class="form-control"
+                    placeholder="Mô tả ngắn gọn về danh mục..."
+                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                  />
+                  <ErrorMessage
+                    name="description"
+                    class="invalid-feedback"
+                  />
                 </div>
-            </div>
+              </div>
 
-            <div class="row g-4 mb-4 mt-1">
-                <div class="col-md-4 d-flex" v-for="stat in stats" :key="stat.label">
-                    <div class="stat-card w-100">
-                        <div class="stat-icon" :class="stat.variant">
-                            <i :class="stat.icon"></i>
-                        </div>
-                        <div>
-                            <p class="stat-label mb-1">{{ stat.label }}</p>
-                            <h4 class="stat-value mb-0">{{ stat.value }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card filter-card mb-4">
-                <div class="card-body">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-lg-4 col-md-6">
-                            <label class="form-label">Tìm kiếm</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" placeholder="Tìm kiếm theo tên danh mục..."
-                                    v-model="searchQuery" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card tabs-card">
-                <div class="card-body">
-                    <LoadingState v-if="isLoading" />
-                    <ErrorState v-else-if="isError" :message="errorMessage || 'Không thể tải dữ liệu danh mục.'"
-                        :show-retry="true" :retry-handler="() => queryClient.invalidateQueries(['categories'])" />
-                    <template v-else>
-                        <EmptyState v-if="!filteredCategories.length" title="Không tìm thấy danh mục"
-                            :message="searchQuery ? 'Không tìm thấy danh mục nào phù hợp với từ khóa tìm kiếm.' : 'Chưa có danh mục nào. Hãy tạo danh mục đầu tiên.'">
-                            <template #icon>
-                                <i class="bi bi-folder-x"></i>
-                            </template>
-                            <template v-if="!searchQuery" #action>
-                                <button class="btn btn-primary" @click="openModal()">
-                                    <i class="bi bi-plus-lg me-2"></i>
-                                    Tạo danh mục đầu tiên
-                                </button>
-                            </template>
-                        </EmptyState>
-                        <div v-else class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">ID</th>
-                                        <th scope="col">Tên Danh mục</th>
-                                        <th scope="col">Mô tả</th>
-                                        <th scope="col" class="text-end">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="category in filteredCategories" :key="category.id">
-                                        <th scope="row">{{ category.id }}</th>
-                                        <td class="fw-semibold">{{ category.name }}</td>
-                                        <td>{{ category.description || '—' }}</td>
-                                        <td class="text-end">
-                                            <div class="action-buttons">
-                                                <button class="action-button action-button--primary" type="button"
-                                                    @click="openModal(category)">
-                                                    <i class="bi bi-pencil"></i>
-                                                    <span>Chỉnh sửa</span>
-                                                </button>
-                                                <button class="action-button action-button--danger" type="button"
-                                                    @click="handleDelete(category)">
-                                                    <i class="bi bi-trash"></i>
-                                                    <span>Xóa</span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                  @click="closeModal"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                >
+                  <span
+                    v-if="createMutation.isPending.value || updateMutation.isPending.value"
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
+                </button>
+              </div>
+            </Form>
+          </div>
         </div>
+      </div>
+
+      <div
+        id="deleteCategoryModal"
+        ref="deleteModalElement"
+        class="modal fade"
+        tabindex="-1"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">
+                  Xóa danh mục
+                </h5>
+                <p class="mb-0 text-muted small">
+                  Hành động này không thể hoàn tác.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                :disabled="deleteMutation.isPending.value"
+                aria-label="Close"
+                @click="closeDeleteModal"
+              />
+            </div>
+            <div class="modal-body">
+              <p class="mb-3">
+                Bạn có chắc chắn muốn xóa danh mục này không?
+              </p>
+              <div class="delete-info-card">
+                <div class="delete-info-item">
+                  <span class="delete-info-label">Tên danh mục:</span>
+                  <span class="delete-info-value">{{ deleteTarget?.name || '—' }}</span>
+                </div>
+                <div
+                  v-if="deleteTarget?.description"
+                  class="delete-info-item"
+                >
+                  <span class="delete-info-label">Mô tả:</span>
+                  <span class="delete-info-value">{{ deleteTarget.description }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="deleteMutation.isPending.value"
+                @click="closeDeleteModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                :disabled="deleteMutation.isPending.value"
+                @click="confirmDelete"
+              >
+                <span
+                  v-if="deleteMutation.isPending.value"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                Xóa danh mục
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <div
+      class="categories-page container-fluid"
+      style="background: var(--color-body-bg); padding: var(--spacing-4);"
+    >
+      <div class="categories-header">
+        <div class="categories-header__content">
+          <div class="categories-header__title-section">
+            <h2 class="categories-header__title">
+              Quản lý Danh mục
+            </h2>
+            <p class="categories-header__subtitle">
+              Quản lý các danh mục sản phẩm trong hệ thống
+            </p>
+          </div>
+          <div class="categories-header__actions">
+            <button
+              class="btn btn-primary btn-sm"
+              @click="openModal()"
+            >
+              <i class="bi bi-plus-lg me-2" /> Thêm mới
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4 mt-1">
+        <div
+          v-for="stat in stats"
+          :key="stat.label"
+          class="col-md-4 d-flex"
+        >
+          <div class="stat-card w-100">
+            <div
+              class="stat-icon"
+              :class="stat.variant"
+            >
+              <i :class="stat.icon" />
+            </div>
+            <div>
+              <p class="stat-label mb-1">
+                {{ stat.label }}
+              </p>
+              <h4 class="stat-value mb-0">
+                {{ stat.value }}
+              </h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card filter-card mb-4">
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-lg-4 col-md-6">
+              <label class="form-label">Tìm kiếm</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search" /></span>
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  class="form-control"
+                  placeholder="Tìm kiếm theo tên danh mục..."
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card tabs-card">
+        <div class="card-body">
+          <LoadingState v-if="isLoading" />
+          <ErrorState
+            v-else-if="isError"
+            :message="errorMessage || 'Không thể tải dữ liệu danh mục.'"
+            :show-retry="true"
+            :retry-handler="() => queryClient.invalidateQueries(['categories'])"
+          />
+          <template v-else>
+            <EmptyState
+              v-if="!filteredCategories.length"
+              title="Không tìm thấy danh mục"
+              :message="searchQuery ? 'Không tìm thấy danh mục nào phù hợp với từ khóa tìm kiếm.' : 'Chưa có danh mục nào. Hãy tạo danh mục đầu tiên.'"
+            >
+              <template #icon>
+                <i class="bi bi-folder-x" />
+              </template>
+              <template
+                v-if="!searchQuery"
+                #action
+              >
+                <button
+                  class="btn btn-primary"
+                  @click="openModal()"
+                >
+                  <i class="bi bi-plus-lg me-2" />
+                  Tạo danh mục đầu tiên
+                </button>
+              </template>
+            </EmptyState>
+            <div
+              v-else
+              class="table-responsive"
+            >
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">
+                      ID
+                    </th>
+                    <th scope="col">
+                      Tên Danh mục
+                    </th>
+                    <th scope="col">
+                      Mô tả
+                    </th>
+                    <th
+                      scope="col"
+                      class="text-end"
+                    >
+                      Hành động
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="category in filteredCategories"
+                    :key="category.id"
+                  >
+                    <th scope="row">
+                      {{ category.id }}
+                    </th>
+                    <td class="fw-semibold">
+                      {{ category.name }}
+                    </td>
+                    <td>{{ category.description || '—' }}</td>
+                    <td class="text-end">
+                      <div class="action-buttons">
+                        <button
+                          class="action-button action-button--primary"
+                          type="button"
+                          @click="openModal(category)"
+                        >
+                          <i class="bi bi-pencil" />
+                          <span>Chỉnh sửa</span>
+                        </button>
+                        <button
+                          class="action-button action-button--danger"
+                          type="button"
+                          @click="handleDelete(category)"
+                        >
+                          <i class="bi bi-trash" />
+                          <span>Xóa</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>

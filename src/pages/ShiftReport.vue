@@ -1,64 +1,91 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Báo cáo ca làm việc</h2>
-                <p class="page-subtitle">Theo dõi số liệu phiên làm việc, tái tổng hợp và cập nhật realtime từ sự kiện ca.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
-            </div>
-        </div>
-
-        <div class="card tabs-card mb-4 mt-4">
-            <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
-                <LoadingState v-if="loading && activeTab === 'list'" />
-                <ErrorState 
-                    v-else-if="error && activeTab === 'list'" 
-                    :message="error"
-                    @retry="fetchData"
-                />
-                <div v-else class="tab-content">
-                    <ShiftReportDetailTab
-                        v-if="activeTab === 'detail'"
-                        :report="report"
-                        :loading="loading"
-                        :error-message="errorMessage"
-                        :event-log="eventLog"
-                        :connection-state="connectionState"
-                        :connection-status-label="connectionStatusLabel"
-                        :connection-error="connectionError"
-                        :connecting-realtime="connectingRealtime"
-                        @fetch="handleFetchReport"
-                        @regenerate="handleRegenerate"
-                        @reconnect="handleReconnect"
-                    />
-                    <ShiftReportListTab
-                        v-else-if="activeTab === 'list'"
-                        :reports="workShiftReports"
-                        :loading="workShiftLoading"
-                        :error="workShiftError"
-                        @fetch="handleFetchWorkShiftReports"
-                    />
-                </div>
-            </div>
-        </div>
+  <div
+    class="page-container container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="page-header card-shadow">
+      <div>
+        <h2 class="page-title">
+          Báo cáo ca làm việc
+        </h2>
+        <p class="page-subtitle">
+          Theo dõi số liệu phiên làm việc, tái tổng hợp và cập nhật realtime từ sự kiện ca.
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          :disabled="loading"
+          @click="fetchData"
+        >
+          <span
+            v-if="loading"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          Làm mới
+        </button>
+      </div>
     </div>
+
+    <div class="card tabs-card mb-4 mt-4">
+      <div class="card-body">
+        <ul
+          class="nav nav-pills reports-tabs mb-3"
+          role="tablist"
+        >
+          <li
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="nav-item"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="nav-link"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              <i :class="[tab.icon, 'me-2']" />{{ tab.label }}
+            </button>
+          </li>
+        </ul>
+        <LoadingState v-if="loading && activeTab === 'list'" />
+        <ErrorState
+          v-else-if="error && activeTab === 'list'"
+          :message="error"
+          @retry="fetchData"
+        />
+        <div
+          v-else
+          class="tab-content"
+        >
+          <ShiftReportDetailTab
+            v-if="activeTab === 'detail'"
+            :report="report"
+            :loading="loading"
+            :error-message="errorMessage"
+            :event-log="eventLog"
+            :connection-state="connectionState"
+            :connection-status-label="connectionStatusLabel"
+            :connection-error="connectionError"
+            :connecting-realtime="connectingRealtime"
+            @fetch="handleFetchReport"
+            @regenerate="handleRegenerate"
+            @reconnect="handleReconnect"
+          />
+          <ShiftReportListTab
+            v-else-if="activeTab === 'list'"
+            :reports="workShiftReports"
+            :loading="workShiftLoading"
+            :error="workShiftError"
+            @fetch="handleFetchWorkShiftReports"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -106,7 +133,7 @@ const handleFetchReport = async ({ sessionId, refresh = false }) => {
         toast.success('Đã tải báo cáo ca làm.')
     } catch (error) {
         report.value = null
-        errorMessage.value = error.message || 'Không thể tải báo cáo ca làm.'
+        errorMessage.value = error.value.message || 'Không thể tải báo cáo ca làm.'
         toast.error(errorMessage.value)
     } finally {
         loading.value = false
@@ -121,7 +148,7 @@ const handleRegenerate = async () => {
         report.value = regenerated
         toast.success('Đã tái tổng hợp báo cáo ca làm.')
     } catch (error) {
-        toast.error(error.message || 'Tái tổng hợp thất bại.')
+        toast.error(error.value.message || 'Tái tổng hợp thất bại.')
     } finally {
         loading.value = false
     }
@@ -144,7 +171,7 @@ const handleFetchWorkShiftReports = async (workShiftId) => {
         }
     } catch (error) {
         workShiftReports.value = []
-        workShiftError.value = error.message || 'Không thể tải danh sách báo cáo.'
+        workShiftError.value = error.value.message || 'Không thể tải danh sách báo cáo.'
         toast.error(workShiftError.value)
     } finally {
         workShiftLoading.value = false

@@ -1,18 +1,18 @@
 <template>
-    <div class="trend-chart">
-        <apexchart
-            v-if="isMounted && dailyData.length > 0"
-            type="line"
-            height="400"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-        <EmptyState
-            v-else
-            title="Chưa có dữ liệu"
-            message="Không có dữ liệu xu hướng"
-        />
-    </div>
+  <div class="trend-chart">
+    <apexchart
+      v-if="isMounted && dailyData.length > 0"
+      type="line"
+      height="400"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Không có dữ liệu xu hướng"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -40,17 +40,15 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Doanh thu',
-            data: props.dailyData.map(d => ({
-                x: d.date,
-                y: d.value
-            }))
-        }
-    ]
-})
+const chartSeries = computed(() => [
+    {
+        name: 'Doanh thu',
+        data: props.dailyData.map(d => ({
+            x: d.date,
+            y: d.value
+        }))
+    }
+])
 
 const chartOptions = computed(() => {
     const anomalyAnnotations = props.anomalies.slice(0, 10).map(anomaly => ({
@@ -67,7 +65,7 @@ const chartOptions = computed(() => {
             }
         }
     }))
-    
+
     return {
         chart: {
             type: 'line',
@@ -113,8 +111,8 @@ const chartOptions = computed(() => {
         yaxis: {
             labels: {
                 formatter: (value) => {
-                    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
-                    if (value >= 1000) return (value / 1000).toFixed(1) + 'K'
+                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)  }M`
+                    if (value >= 1000) return `${(value / 1000).toFixed(1)  }K`
                     return value.toFixed(0)
                 },
                 style: {
@@ -137,12 +135,10 @@ const chartOptions = computed(() => {
             shared: true,
             intersect: false,
             y: {
-                formatter: (value) => {
-                    return new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND'
-                    }).format(value)
-                }
+                formatter: (value) => new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(value)
             },
             x: {
                 format: 'dd/MM/yyyy'
@@ -153,7 +149,13 @@ const chartOptions = computed(() => {
         },
         grid: {
             borderColor: 'var(--color-border)',
-            strokeDashArray: 4
+            strokeDashArray: 4,
+            padding: {
+                top: 8,
+                bottom: 20,
+                left: 12,
+                right: 12
+            }
         },
         colors: ['var(--color-primary)'],
         annotations: {

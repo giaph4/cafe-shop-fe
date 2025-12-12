@@ -70,6 +70,24 @@ const routes = [
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
+                path: 'notifications',
+                name: 'Trung tâm thông báo',
+                component: () => import(/* webpackChunkName: "notifications" */ '../pages/NotificationCenter.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
+            },
+            {
+                path: 'notifications/settings',
+                name: 'Cài đặt thông báo',
+                component: () => import(/* webpackChunkName: "notification-settings" */ '../pages/NotificationSettings.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
+            },
+            {
+                path: 'chart-builder',
+                name: 'Chart Builder',
+                component: () => import(/* webpackChunkName: "chart-builder" */ '../pages/ChartBuilder.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
                 path: 'chat',
                 name: 'Trò chuyện nội bộ',
                 component: () => import(/* webpackChunkName: "chat" */ '../pages/Chat.vue'),
@@ -170,12 +188,6 @@ const routes = [
                 meta: { requiresAuth: true }
             },
             {
-                path: 'settings',
-                name: 'Cài đặt hệ thống',
-                component: () => import(/* webpackChunkName: "settings" */ '../pages/Settings.vue'),
-                meta: { allowedRoles: [ROLES.ADMIN] }
-            },
-            {
                 path: 'login-history',
                 name: 'Lịch sử đăng nhập',
                 component: () => import(/* webpackChunkName: "login-history" */ '../pages/LoginHistory.vue'),
@@ -206,9 +218,27 @@ const routes = [
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
             },
             {
+                path: 'performance',
+                name: 'Performance Dashboard',
+                component: () => import(/* webpackChunkName: "performance" */ '../pages/PerformanceDashboard.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'custom-dashboard',
+                name: 'Dashboard Tùy chỉnh',
+                component: () => import(/* webpackChunkName: "custom-dashboard" */ '../pages/CustomDashboard.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF] }
+            },
+            {
                 path: 'revenue-forecast',
                 name: 'Dự báo Doanh thu',
                 component: () => import(/* webpackChunkName: "revenue-forecast" */ '../pages/RevenueForecast.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'stakeholder-report',
+                name: 'Báo cáo Stakeholders',
+                component: () => import(/* webpackChunkName: "stakeholder-report" */ '../pages/StakeholderReport.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
@@ -245,6 +275,12 @@ const routes = [
                 path: 'ingredient-demand-forecast',
                 name: 'Dự báo Nhu cầu Nguyên liệu',
                 component: () => import(/* webpackChunkName: "ingredient-demand-forecast" */ '../pages/IngredientDemandForecast.vue'),
+                meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
+            },
+            {
+                path: 'inventory-adjustment-history',
+                name: 'Lịch sử điều chỉnh tồn kho',
+                component: () => import(/* webpackChunkName: "inventory-adjustment-history" */ '../pages/InventoryAdjustmentHistory.vue'),
                 meta: { allowedRoles: [ROLES.ADMIN, ROLES.MANAGER] }
             },
             {
@@ -289,25 +325,25 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: () => import(/* webpackChunkName: "login" */ '../pages/Login.vue'),
-        meta: { requiresGuest: true },
+        meta: { requiresGuest: true }
     },
     {
         path: '/portfolio',
         name: 'Portfolio',
         component: () => import(/* webpackChunkName: "portfolio" */ '../pages/Portfolio.vue'),
-        meta: { requiresAuth: false },
+        meta: { requiresAuth: false }
     },
-   {
-       path: '/:pathMatch(.*)*',
-       name: 'NotFound',
-       component: () => import(/* webpackChunkName: "not-found" */ '../pages/NotFound.vue')
-   }
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: () => import(/* webpackChunkName: "not-found" */ '../pages/NotFound.vue')
+    }
 ]
 
 const router = createRouter({
     history: createWebHistory(),
     routes,
-    linkActiveClass: 'active',
+    linkActiveClass: 'active'
 })
 
 router.beforeEach((to, from, next) => {

@@ -1,23 +1,50 @@
 <template>
-    <nav v-if="totalPages > 1" class="pagination-wrapper" aria-label="Pagination">
-        <ul class="pagination justify-content-center mb-0">
-            <li class="page-item" :class="{ disabled: normalizedCurrent === 0 }">
-                <button class="page-link" type="button" @click="changePage(normalizedCurrent - 1)">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-            </li>
-            <li v-for="page in pages" :key="page" class="page-item" :class="{ active: page === normalizedCurrent }">
-                <button class="page-link" type="button" @click="changePage(page)">
-                    {{ displayLabel(page) }}
-                </button>
-            </li>
-            <li class="page-item" :class="{ disabled: normalizedCurrent === totalPages - 1 }">
-                <button class="page-link" type="button" @click="changePage(normalizedCurrent + 1)">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
-            </li>
-        </ul>
-    </nav>
+  <nav
+    v-if="totalPages > 1"
+    class="pagination-wrapper"
+    aria-label="Pagination"
+  >
+    <ul class="pagination justify-content-center mb-0">
+      <li
+        class="page-item"
+        :class="{ disabled: normalizedCurrent === 0 }"
+      >
+        <button
+          class="page-link"
+          type="button"
+          @click="changePage(normalizedCurrent - 1)"
+        >
+          <i class="bi bi-chevron-left" />
+        </button>
+      </li>
+      <li
+        v-for="page in pages"
+        :key="page"
+        class="page-item"
+        :class="{ active: page === normalizedCurrent }"
+      >
+        <button
+          class="page-link"
+          type="button"
+          @click="changePage(page)"
+        >
+          {{ displayLabel(page) }}
+        </button>
+      </li>
+      <li
+        class="page-item"
+        :class="{ disabled: normalizedCurrent === totalPages - 1 }"
+      >
+        <button
+          class="page-link"
+          type="button"
+          @click="changePage(normalizedCurrent + 1)"
+        >
+          <i class="bi bi-chevron-right" />
+        </button>
+      </li>
+    </ul>
+  </nav>
 </template>
 
 <script setup>
@@ -60,7 +87,7 @@ const pages = computed(() => {
         }
     } else {
         let startPage = Math.max(0, current - Math.floor(pagesToShow / 2))
-        let endPage = Math.min(pageCount - 1, startPage + pagesToShow - 1)
+        const endPage = Math.min(pageCount - 1, startPage + pagesToShow - 1)
 
         if (endPage - startPage + 1 < pagesToShow) {
             startPage = Math.max(0, endPage - pagesToShow + 1)

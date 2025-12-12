@@ -73,38 +73,32 @@ export const emailSchema = yup
  * @param {string} fieldName - Field name for error message
  * @returns {yup.StringSchema}
  */
-export const requiredStringSchema = (maxLength = 255, fieldName = 'Trường này') => {
-    return yup
-        .string()
-        .trim()
-        .required(`${fieldName} là bắt buộc.`)
-        .max(maxLength, `${fieldName} tối đa ${maxLength} ký tự.`)
-}
+export const requiredStringSchema = (maxLength = 255, fieldName = 'Trường này') => yup
+    .string()
+    .trim()
+    .required(`${fieldName} là bắt buộc.`)
+    .max(maxLength, `${fieldName} tối đa ${maxLength} ký tự.`)
 
 /**
  * Yup schema for optional string
  * @param {number} maxLength - Maximum length
  * @returns {yup.StringSchema}
  */
-export const optionalStringSchema = (maxLength = 255) => {
-    return yup
-        .string()
-        .trim()
-        .nullable()
-        .transform((value) => (value === '' ? null : value))
-        .max(maxLength, `Tối đa ${maxLength} ký tự.`)
-}
+export const optionalStringSchema = (maxLength = 255) => yup
+    .string()
+    .trim()
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
+    .max(maxLength, `Tối đa ${maxLength} ký tự.`)
 
 /**
  * Yup schema for positive number
  * @param {string} fieldName - Field name for error message
  * @returns {yup.NumberSchema}
  */
-export const positiveNumberSchema = (fieldName = 'Giá trị') => {
-    return yup
-        .number()
-        .typeError(`${fieldName} phải là số.`)
-        .positive(`${fieldName} phải lớn hơn 0.`)
-        .required(`${fieldName} là bắt buộc.`)
-}
+export const positiveNumberSchema = (fieldName = 'Giá trị') => yup
+    .number()
+    .typeError(`${fieldName} phải là số.`)
+    .positive(`${fieldName} phải lớn hơn 0.`)
+    .required(`${fieldName} là bắt buộc.`)
 

@@ -1,73 +1,96 @@
 <template>
-    <div class="product-list">
-        <div v-if="products.length === 0" class="empty-list">
-            <EmptyState
-                title="Không có dữ liệu"
-                message="Không tìm thấy sản phẩm nào phù hợp với bộ lọc"
-            />
-        </div>
-        <div v-else class="table-responsive">
-            <table class="table table-minimal">
-                <thead>
-                    <tr>
-                        <th>Sản phẩm</th>
-                        <th>Giá</th>
-                        <th>Chi phí</th>
-                        <th>Doanh thu</th>
-                        <th>Lợi nhuận</th>
-                        <th>Margin</th>
-                        <th>Số lượng</th>
-                        <th>Phân loại</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="product in products" :key="product.productId">
-                        <td>
-                            <div>
-                                <div class="fw-semibold product-name">{{ product.name }}</div>
-                                <small class="text-muted">{{ product.categoryName }}</small>
-                            </div>
-                        </td>
-                        <td>{{ formatCurrency(product.price) }}</td>
-                        <td class="cost-cell">{{ formatCurrency(product.costPerUnit) }}</td>
-                        <td class="revenue-cell">{{ formatCurrency(product.totalRevenue) }}</td>
-                        <td class="profit-cell">{{ formatCurrency(product.profit) }}</td>
-                        <td>
-                            <span class="margin-badge" :class="getMarginClass(product.margin)">
-                                {{ product.margin.toFixed(1) }}%
-                            </span>
-                        </td>
-                        <td>{{ formatNumber(product.totalQuantity) }}</td>
-                        <td>
-                            <span class="badge badge-soft" :class="getClassificationClass(product.classification)">
-                                {{ product.classification }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button
-                                    class="btn btn-flat btn-flat--outline btn-sm"
-                                    @click="$emit('view', product)"
-                                    title="Xem chi tiết"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button
-                                    v-if="product.margin < 20"
-                                    class="btn btn-flat btn-flat--primary btn-sm"
-                                    @click="$emit('pricing', product)"
-                                    title="Đề xuất giá"
-                                >
-                                    <i class="bi bi-tag"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="product-list">
+    <div
+      v-if="products.length === 0"
+      class="empty-list"
+    >
+      <EmptyState
+        title="Không có dữ liệu"
+        message="Không tìm thấy sản phẩm nào phù hợp với bộ lọc"
+      />
     </div>
+    <div
+      v-else
+      class="table-responsive"
+    >
+      <table class="table table-minimal">
+        <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Giá</th>
+            <th>Chi phí</th>
+            <th>Doanh thu</th>
+            <th>Lợi nhuận</th>
+            <th>Margin</th>
+            <th>Số lượng</th>
+            <th>Phân loại</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="product in products"
+            :key="product.productId"
+          >
+            <td>
+              <div>
+                <div class="fw-semibold product-name">
+                  {{ product.name }}
+                </div>
+                <small class="text-muted">{{ product.categoryName }}</small>
+              </div>
+            </td>
+            <td>{{ formatCurrency(product.price) }}</td>
+            <td class="cost-cell">
+              {{ formatCurrency(product.costPerUnit) }}
+            </td>
+            <td class="revenue-cell">
+              {{ formatCurrency(product.totalRevenue) }}
+            </td>
+            <td class="profit-cell">
+              {{ formatCurrency(product.profit) }}
+            </td>
+            <td>
+              <span
+                class="margin-badge"
+                :class="getMarginClass(product.margin)"
+              >
+                {{ product.margin.toFixed(1) }}%
+              </span>
+            </td>
+            <td>{{ formatNumber(product.totalQuantity) }}</td>
+            <td>
+              <span
+                class="badge badge-soft"
+                :class="getClassificationClass(product.classification)"
+              >
+                {{ product.classification }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-flat btn-flat--outline btn-sm"
+                  title="Xem chi tiết"
+                  @click="$emit('view', product)"
+                >
+                  <i class="bi bi-eye" />
+                </button>
+                <button
+                  v-if="product.margin < 20"
+                  class="btn btn-flat btn-flat--primary btn-sm"
+                  title="Đề xuất giá"
+                  @click="$emit('pricing', product)"
+                >
+                  <i class="bi bi-tag" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>

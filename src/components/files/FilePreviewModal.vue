@@ -1,86 +1,166 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="d-flex align-items-center gap-2">
-                            <i :class="getFileIcon(file?.fileType)" class="fs-4"></i>
-                            <div>
-                                <h5 class="modal-title mb-0">{{ file?.fileName || 'Preview File' }}</h5>
-                                <small class="text-muted">{{ formatFileSize(file?.fileSize) }} • {{ file?.fileType || 'Unknown' }}</small>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
-                    </div>
-
-                    <div class="modal-body modal-body-scroll">
-                        <LoadingState v-if="loading" message="Đang tải file..." />
-                        <ErrorState 
-                            v-else-if="error" 
-                            :message="error"
-                        />
-                        <div v-else-if="file" class="file-preview-container">
-                            <!-- Image Preview -->
-                            <div v-if="isImage" class="preview-image">
-                                <img :src="previewUrl" :alt="file.fileName" class="img-fluid" />
-                            </div>
-
-                            <!-- PDF Preview -->
-                            <div v-else-if="isPdf" class="preview-pdf">
-                                <iframe :src="previewUrl" class="w-100" style="min-height: 600px; border: none;"></iframe>
-                            </div>
-
-                            <!-- Video Preview -->
-                            <div v-else-if="isVideo" class="preview-video">
-                                <video :src="previewUrl" controls class="w-100" style="max-height: 600px;"></video>
-                            </div>
-
-                            <!-- Audio Preview -->
-                            <div v-else-if="isAudio" class="preview-audio text-center py-5">
-                                <i class="bi bi-music-note-beamed display-1 text-primary mb-3"></i>
-                                <audio :src="previewUrl" controls class="w-100"></audio>
-                            </div>
-
-                            <!-- Text Preview -->
-                            <div v-else-if="isText" class="preview-text">
-                                <pre class="bg-light p-3 rounded" style="max-height: 500px; overflow: auto;">{{ textContent }}</pre>
-                            </div>
-
-                            <!-- Unsupported Preview -->
-                            <div v-else class="preview-unsupported text-center py-5">
-                                <i class="bi bi-file-earmark display-1 text-muted mb-3"></i>
-                                <p class="text-muted">Không thể preview loại file này</p>
-                                <a :href="file.fileUrl" target="_blank" class="btn btn-primary">
-                                    <i class="bi bi-download me-2"></i>Tải xuống để xem
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <div class="d-flex justify-content-between align-items-center w-100">
-                            <div class="file-metadata">
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar3 me-1"></i>
-                                    Upload: {{ formatDateTime(file?.uploadedAt) || 'N/A' }}
-                                </small>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-secondary" @click="copyUrl">
-                                    <i class="bi bi-clipboard me-2"></i>Copy URL
-                                </button>
-                                <a :href="file?.fileUrl" target="_blank" class="btn btn-primary" download>
-                                    <i class="bi bi-download me-2"></i>Tải xuống
-                                </a>
-                                <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="d-flex align-items-center gap-2">
+              <i
+                :class="getFileIcon(file?.fileType)"
+                class="fs-4"
+              />
+              <div>
+                <h5 class="modal-title mb-0">
+                  {{ file?.fileName || 'Preview File' }}
+                </h5>
+                <small class="text-muted">{{ formatFileSize(file?.fileSize) }} • {{ file?.fileType || 'Unknown' }}</small>
+              </div>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="hide"
+            />
+          </div>
+
+          <div class="modal-body modal-body-scroll">
+            <LoadingState
+              v-if="loading"
+              message="Đang tải file..."
+            />
+            <ErrorState
+              v-else-if="error"
+              :message="error"
+            />
+            <div
+              v-else-if="file"
+              class="file-preview-container"
+            >
+              <!-- Image Preview -->
+              <div
+                v-if="isImage"
+                class="preview-image"
+              >
+                <img
+                  :src="previewUrl"
+                  :alt="file.fileName"
+                  class="img-fluid"
+                >
+              </div>
+
+              <!-- PDF Preview -->
+              <div
+                v-else-if="isPdf"
+                class="preview-pdf"
+              >
+                <iframe
+                  :src="previewUrl"
+                  class="w-100"
+                  style="min-height: 600px; border: none;"
+                />
+              </div>
+
+              <!-- Video Preview -->
+              <div
+                v-else-if="isVideo"
+                class="preview-video"
+              >
+                <video
+                  :src="previewUrl"
+                  controls
+                  class="w-100"
+                  style="max-height: 600px;"
+                />
+              </div>
+
+              <!-- Audio Preview -->
+              <div
+                v-else-if="isAudio"
+                class="preview-audio text-center py-5"
+              >
+                <i class="bi bi-music-note-beamed display-1 text-primary mb-3" />
+                <audio
+                  :src="previewUrl"
+                  controls
+                  class="w-100"
+                />
+              </div>
+
+              <!-- Text Preview -->
+              <div
+                v-else-if="isText"
+                class="preview-text"
+              >
+                <pre
+                  class="bg-light p-3 rounded"
+                  style="max-height: 500px; overflow: auto;"
+                >{{ textContent }}</pre>
+              </div>
+
+              <!-- Unsupported Preview -->
+              <div
+                v-else
+                class="preview-unsupported text-center py-5"
+              >
+                <i class="bi bi-file-earmark display-1 text-muted mb-3" />
+                <p class="text-muted">
+                  Không thể preview loại file này
+                </p>
+                <a
+                  :href="file.fileUrl"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <i class="bi bi-download me-2" />Tải xuống để xem
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="d-flex justify-content-between align-items-center w-100">
+              <div class="file-metadata">
+                <small class="text-muted">
+                  <i class="bi bi-calendar3 me-1" />
+                  Upload: {{ formatDateTime(file?.uploadedAt) || 'N/A' }}
+                </small>
+              </div>
+              <div class="d-flex gap-2">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  @click="copyUrl"
+                >
+                  <i class="bi bi-clipboard me-2" />Copy URL
+                </button>
+                <a
+                  :href="file?.fileUrl"
+                  target="_blank"
+                  class="btn btn-primary"
+                  download
+                >
+                  <i class="bi bi-download me-2" />Tải xuống
+                </a>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  @click="hide"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -129,7 +209,7 @@ const isAudio = computed(() => {
 
 const isText = computed(() => {
     const type = props.file?.fileType || ''
-    return type.startsWith('text/') || 
+    return type.startsWith('text/') ||
            type === 'application/json' ||
            type === 'application/xml' ||
            type === 'application/javascript'
@@ -152,7 +232,7 @@ const formatFileSize = (bytes) => {
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+    return `${Math.round(bytes / Math.pow(k, i) * 100) / 100  } ${  sizes[i]}`
 }
 
 const loadPreview = async () => {

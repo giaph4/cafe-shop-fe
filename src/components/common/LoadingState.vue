@@ -1,12 +1,24 @@
 <template>
-    <div class="loading-state" :class="containerClass">
-        <div class="loading-state__spinner">
-            <div class="spinner-border" :class="spinnerClass" role="status">
-                <span class="visually-hidden">{{ loadingText }}</span>
-            </div>
-        </div>
-        <p v-if="showText" class="loading-state__text">{{ loadingText }}</p>
+  <div
+    class="loading-state"
+    :class="containerClass"
+  >
+    <div class="loading-state__spinner">
+      <div
+        class="spinner-border"
+        :class="spinnerClass"
+        role="status"
+      >
+        <span class="visually-hidden">{{ loadingText }}</span>
+      </div>
     </div>
+    <p
+      v-if="showText"
+      class="loading-state__text"
+    >
+      {{ loadingText }}
+    </p>
+  </div>
 </template>
 
 <script setup>
@@ -56,13 +68,13 @@ const loadingText = computed(() => props.text)
 
 const spinnerClass = computed(() => {
     const classes = []
-    
+
     if (props.size === 'sm') {
         classes.push('spinner-border-sm')
     }
-    
+
     classes.push(`text-${props.variant}`)
-    
+
     return classes.join(' ')
 })
 </script>

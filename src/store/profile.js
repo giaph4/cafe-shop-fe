@@ -1,6 +1,6 @@
-import {defineStore} from 'pinia'
-import {ref, computed} from 'vue'
-import {useAuthStore} from '@/store/auth'
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { useAuthStore } from '@/store/auth'
 import * as userService from '@/api/userService'
 import logger from '@/utils/logger'
 

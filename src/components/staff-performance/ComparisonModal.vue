@@ -1,95 +1,128 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="comparison-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="comparison-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">So sánh nhân viên</h5>
-                            <p class="modal-subtitle mb-0">So sánh hiệu suất giữa các nhân viên đã chọn</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <LoadingState v-if="loading" text="Đang tải dữ liệu so sánh..." />
-                        <ErrorState
-                            v-else-if="error"
-                            :message="error"
-                            @retry="loadComparison"
-                        />
-                        <div v-else-if="comparisonData && comparisonData.staff.length > 0">
-                            <ComparisonChart :staff-list="comparisonData.staff" />
-                            <div class="table-responsive mt-4">
-                                <table class="table table-minimal">
-                                    <thead>
-                                        <tr>
-                                            <th>Nhân viên</th>
-                                            <th>Điểm hiệu suất</th>
-                                            <th>Doanh thu</th>
-                                            <th>Số đơn</th>
-                                            <th>Chuyên cần</th>
-                                            <th>Đúng giờ</th>
-                                            <th>Tips</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="staff in comparisonData.staff" :key="staff.userId">
-                                            <td>
-                                                <div class="fw-semibold staff-name">{{ staff.fullName }}</div>
-                                            </td>
-                                            <td>
-                                                <span class="score-badge" :class="getScoreClass(staff.metrics.performanceScore)">
-                                                    {{ staff.metrics.performanceScore.toFixed(1) }}
-                                                </span>
-                                            </td>
-                                            <td class="revenue-cell">{{ formatCurrency(staff.metrics.revenue) }}</td>
-                                            <td>{{ formatNumber(staff.metrics.ordersCount) }}</td>
-                                            <td>
-                                                <span class="rate-badge">{{ (staff.metrics.attendanceRate * 100).toFixed(1) }}%</span>
-                                            </td>
-                                            <td>
-                                                <span class="rate-badge">{{ (staff.metrics.onTimeRate * 100).toFixed(1) }}%</span>
-                                            </td>
-                                            <td class="tips-cell">{{ formatCurrency(staff.metrics.tipsEarned) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <EmptyState
-                            v-else
-                            title="Không có dữ liệu"
-                            message="Không có dữ liệu để so sánh"
-                        >
-                            <template #icon>
-                                <i class="bi bi-bar-chart"></i>
-                            </template>
-                        </EmptyState>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Đóng
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                So sánh nhân viên
+              </h5>
+              <p class="modal-subtitle mb-0">
+                So sánh hiệu suất giữa các nhân viên đã chọn
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <LoadingState
+              v-if="loading"
+              text="Đang tải dữ liệu so sánh..."
+            />
+            <ErrorState
+              v-else-if="error"
+              :message="error"
+              @retry="loadComparison"
+            />
+            <div v-else-if="comparisonData && comparisonData.staff.length > 0">
+              <ComparisonChart :staff-list="comparisonData.staff" />
+              <div class="table-responsive mt-4">
+                <table class="table table-minimal">
+                  <thead>
+                    <tr>
+                      <th>Nhân viên</th>
+                      <th>Điểm hiệu suất</th>
+                      <th>Doanh thu</th>
+                      <th>Số đơn</th>
+                      <th>Chuyên cần</th>
+                      <th>Đúng giờ</th>
+                      <th>Tips</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="staff in comparisonData.staff"
+                      :key="staff.userId"
+                    >
+                      <td>
+                        <div class="fw-semibold staff-name">
+                          {{ staff.fullName }}
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          class="score-badge"
+                          :class="getScoreClass(staff.metrics.performanceScore)"
+                        >
+                          {{ staff.metrics.performanceScore.toFixed(1) }}
+                        </span>
+                      </td>
+                      <td class="revenue-cell">
+                        {{ formatCurrency(staff.metrics.revenue) }}
+                      </td>
+                      <td>{{ formatNumber(staff.metrics.ordersCount) }}</td>
+                      <td>
+                        <span class="rate-badge">{{ (staff.metrics.attendanceRate * 100).toFixed(1) }}%</span>
+                      </td>
+                      <td>
+                        <span class="rate-badge">{{ (staff.metrics.onTimeRate * 100).toFixed(1) }}%</span>
+                      </td>
+                      <td class="tips-cell">
+                        {{ formatCurrency(staff.metrics.tipsEarned) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <EmptyState
+              v-else
+              title="Không có dữ liệu"
+              message="Không có dữ liệu để so sánh"
+            >
+              <template #icon>
+                <i class="bi bi-bar-chart" />
+              </template>
+            </EmptyState>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Đóng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useStaffPerformanceStore } from '@/store/staffPerformance'
 import ComparisonChart from './ComparisonChart.vue'
 import LoadingState from '@/components/common/LoadingState.vue'

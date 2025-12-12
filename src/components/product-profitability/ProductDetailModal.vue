@@ -1,166 +1,207 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="product-detail-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="product-detail-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Chi tiết sản phẩm: <strong>{{ product.name }}</strong></h5>
-                            <p class="modal-subtitle mb-0">Xem thông tin chi tiết về lợi nhuận và hiệu suất</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-box me-2"></i>
-                                        Thông tin sản phẩm
-                                    </h6>
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <span class="info-label">Tên:</span>
-                                            <span class="info-value fw-semibold">{{ product.name }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Danh mục:</span>
-                                            <span class="info-value">{{ product.categoryName }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Phân loại:</span>
-                                            <span class="info-value">
-                                                <span class="badge badge-soft" :class="getClassificationClass(product.classification)">
-                                                    {{ product.classification }}
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-graph-up me-2"></i>
-                                        Chỉ số tài chính
-                                    </h6>
-                                    <div class="row g-3">
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--primary">
-                                                    <i class="bi bi-cash-stack"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Doanh thu</div>
-                                                    <div class="stat-value">{{ formatCurrency(product.totalRevenue) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--danger">
-                                                    <i class="bi bi-cart-x"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Chi phí</div>
-                                                    <div class="stat-value">{{ formatCurrency(product.totalCost) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--success">
-                                                    <i class="bi bi-graph-up"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Lợi nhuận</div>
-                                                    <div class="stat-value">{{ formatCurrency(product.profit) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--info">
-                                                    <i class="bi bi-percent"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Margin</div>
-                                                    <div class="stat-value">{{ product.margin.toFixed(1) }}%</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-4 mt-2">
-                            <div class="col-12">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-list-check me-2"></i>
-                                        Chi tiết metrics
-                                    </h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-minimal">
-                                            <thead>
-                                                <tr>
-                                                    <th>Chỉ số</th>
-                                                    <th>Giá trị</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Giá bán</td>
-                                                    <td class="revenue-cell">{{ formatCurrency(product.price) }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Chi phí đơn vị</td>
-                                                    <td class="cost-cell">{{ formatCurrency(product.costPerUnit) }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Tổng số lượng bán</td>
-                                                    <td>{{ formatNumber(product.totalQuantity) }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Xếp hạng volume</td>
-                                                    <td>{{ product.volumeRank || 'N/A' }}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Đóng
-                        </button>
-                        <button
-                            v-if="product.margin < 20"
-                            type="button"
-                            class="btn btn-flat btn-flat--primary"
-                            @click="handlePricing"
-                        >
-                            <i class="bi bi-tag me-2"></i>
-                            Đề xuất giá
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Chi tiết sản phẩm: <strong>{{ product.name }}</strong>
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Xem thông tin chi tiết về lợi nhuận và hiệu suất
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-box me-2" />
+                    Thông tin sản phẩm
+                  </h6>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Tên:</span>
+                      <span class="info-value fw-semibold">{{ product.name }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Danh mục:</span>
+                      <span class="info-value">{{ product.categoryName }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Phân loại:</span>
+                      <span class="info-value">
+                        <span
+                          class="badge badge-soft"
+                          :class="getClassificationClass(product.classification)"
+                        >
+                          {{ product.classification }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-graph-up me-2" />
+                    Chỉ số tài chính
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--primary">
+                          <i class="bi bi-cash-stack" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Doanh thu
+                          </div>
+                          <div class="stat-value">
+                            {{ formatCurrency(product.totalRevenue) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--danger">
+                          <i class="bi bi-cart-x" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Chi phí
+                          </div>
+                          <div class="stat-value">
+                            {{ formatCurrency(product.totalCost) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--success">
+                          <i class="bi bi-graph-up" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Lợi nhuận
+                          </div>
+                          <div class="stat-value">
+                            {{ formatCurrency(product.profit) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--info">
+                          <i class="bi bi-percent" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Margin
+                          </div>
+                          <div class="stat-value">
+                            {{ product.margin.toFixed(1) }}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row g-4 mt-2">
+              <div class="col-12">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-list-check me-2" />
+                    Chi tiết metrics
+                  </h6>
+                  <div class="table-responsive">
+                    <table class="table table-minimal">
+                      <thead>
+                        <tr>
+                          <th>Chỉ số</th>
+                          <th>Giá trị</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Giá bán</td>
+                          <td class="revenue-cell">
+                            {{ formatCurrency(product.price) }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Chi phí đơn vị</td>
+                          <td class="cost-cell">
+                            {{ formatCurrency(product.costPerUnit) }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Tổng số lượng bán</td>
+                          <td>{{ formatNumber(product.totalQuantity) }}</td>
+                        </tr>
+                        <tr>
+                          <td>Xếp hạng volume</td>
+                          <td>{{ product.volumeRank || 'N/A' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Đóng
+            </button>
+            <button
+              v-if="product.margin < 20"
+              type="button"
+              class="btn btn-flat btn-flat--primary"
+              @click="handlePricing"
+            >
+              <i class="bi bi-tag me-2" />
+              Đề xuất giá
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>

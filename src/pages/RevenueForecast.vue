@@ -1,196 +1,276 @@
 <template>
-    <div class="revenue-forecast-page page-container container-fluid" data-aos="fade-up">
-        <PageHeader
-            title="Dự báo doanh thu thông minh"
-            subtitle="Phân tích xu hướng và dự báo doanh thu dựa trên dữ liệu lịch sử"
-        />
+  <div class="revenue-forecast-page page-container container-fluid">
+    <PageHeader
+      title="Dự báo doanh thu thông minh"
+      subtitle="Phân tích xu hướng và dự báo doanh thu dựa trên dữ liệu lịch sử"
+    />
 
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Khoảng thời gian lịch sử</label>
-                        <div class="btn-group w-100" role="group">
-                            <button
-                                v-for="preset in historyPresets"
-                                :key="preset.value"
-                                type="button"
-                                class="btn btn-flat"
-                                :class="selectedHistoryPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
-                                @click="applyHistoryPreset(preset.value)"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.startDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.endDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Dự báo (ngày)</label>
-                        <select class="form-select clean-input" v-model="filters.forecastDays">
-                            <option :value="7">7 ngày</option>
-                            <option :value="30">30 ngày</option>
-                            <option :value="90">90 ngày</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <button
-                            class="btn btn-flat btn-flat--primary w-100"
-                            @click="handleGenerateForecast"
-                            :disabled="loading || !canGenerate"
-                        >
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-graph-up-arrow me-2"></i>
-                            Tạo dự báo
-                        </button>
-                    </div>
-                </div>
-                <div v-if="validationError" class="alert alert-warning mt-3 mb-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    {{ validationError }}
-                </div>
+    <div class="card standard-card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Khoảng thời gian lịch sử</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in historyPresets"
+                :key="preset.value"
+                type="button"
+                class="btn btn-flat"
+                :class="selectedHistoryPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
+                @click="applyHistoryPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
             </div>
+          </div>
+          <div class="col-lg-2 col-md-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-6">
+            <label class="form-label">Dự báo (ngày)</label>
+            <select
+              v-model="filters.forecastDays"
+              class="form-select clean-input"
+            >
+              <option :value="7">
+                7 ngày
+              </option>
+              <option :value="30">
+                30 ngày
+              </option>
+              <option :value="90">
+                90 ngày
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <button
+              class="btn btn-flat btn-flat--primary w-100"
+              :disabled="loading || !canGenerate"
+              @click="handleGenerateForecast"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-graph-up-arrow me-2"
+              />
+              Tạo dự báo
+            </button>
+          </div>
         </div>
-
-        <LoadingState v-if="loading" text="Đang phân tích dữ liệu và tạo dự báo..." />
-        <ErrorState
-            v-else-if="error"
-            :message="error"
-            @retry="handleGenerateForecast"
-        />
-
-        <div v-else-if="forecastData" class="forecast-content">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--primary">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-graph-up-arrow"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng dự báo</div>
-                            <div class="kpi-card__value">{{ formatCurrency(totalForecast) }}</div>
-                            <div class="kpi-card__subtitle">{{ filters.forecastDays }} ngày tới</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--success">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-calendar-day"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Trung bình/ngày</div>
-                            <div class="kpi-card__value">{{ formatCurrency(avgForecast) }}</div>
-                            <div class="kpi-card__subtitle">Dự kiến</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card" :class="growthRate >= 0 ? 'kpi-card--success' : 'kpi-card--danger'">
-                        <div class="kpi-card__icon">
-                            <i class="bi" :class="growthRate >= 0 ? 'bi-arrow-up-circle' : 'bi-arrow-down-circle'"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tỷ lệ tăng trưởng</div>
-                            <div class="kpi-card__value">{{ growthRate >= 0 ? '+' : '' }}{{ growthRate.toFixed(2) }}%</div>
-                            <div class="kpi-card__subtitle">So với 7 ngày trước</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--info">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Độ tin cậy</div>
-                            <div class="kpi-card__value">{{ forecastData.metrics?.confidenceLevel || 95 }}%</div>
-                            <div class="kpi-card__subtitle">Confidence interval</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card standard-card mb-4">
-                <div class="card-header standard-card-header">
-                    <h5 class="card-title">Biểu đồ dự báo</h5>
-                    <button
-                        class="btn btn-flat btn-flat--outline btn-sm"
-                        @click="handleExport"
-                        :disabled="exporting"
-                    >
-                        <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-download me-2"></i>
-                        Xuất Excel
-                    </button>
-                </div>
-                <div class="card-body">
-                    <ForecastChart
-                        :historical="forecastData.historical"
-                        :forecasts="forecastData.forecasts"
-                    />
-                </div>
-            </div>
-
-            <div class="card standard-card">
-                <div class="card-header standard-card-header">
-                    <h5 class="card-title">Chi tiết dự báo</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-minimal">
-                            <thead>
-                                <tr>
-                                    <th>Ngày</th>
-                                    <th>Thứ</th>
-                                    <th>Dự báo</th>
-                                    <th>Giới hạn dưới</th>
-                                    <th>Giới hạn trên</th>
-                                    <th>Khoảng tin cậy</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="forecast in forecastData.forecasts" :key="forecast.date">
-                                    <td class="forecast-date">{{ formatDate(forecast.date) }}</td>
-                                    <td class="forecast-day">{{ forecast.dayOfWeek }}</td>
-                                    <td class="forecast-value fw-semibold">{{ formatCurrency(forecast.forecast) }}</td>
-                                    <td class="forecast-lower text-muted">{{ formatCurrency(forecast.confidenceLower) }}</td>
-                                    <td class="forecast-upper text-muted">{{ formatCurrency(forecast.confidenceUpper) }}</td>
-                                    <td>
-                                        <span class="badge badge-soft badge-info">
-                                            ±{{ formatCurrency((forecast.confidenceUpper - forecast.confidenceLower) / 2) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <div
+          v-if="validationError"
+          class="alert alert-warning mt-3 mb-0"
+        >
+          <i class="bi bi-exclamation-triangle me-2" />
+          {{ validationError }}
         </div>
-
-        <EmptyState
-            v-else
-            message="Chọn khoảng thời gian và nhấn 'Tạo dự báo' để bắt đầu"
-            icon="bi-graph-up-arrow"
-        />
+      </div>
     </div>
+
+    <LoadingState
+      v-if="loading"
+      text="Đang phân tích dữ liệu và tạo dự báo..."
+    />
+    <ErrorState
+      v-else-if="error"
+      :message="error"
+      @retry="handleGenerateForecast"
+    />
+
+    <div
+      v-else-if="forecastData"
+      class="forecast-content"
+    >
+      <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--primary">
+            <div class="kpi-card__icon">
+              <i class="bi bi-graph-up-arrow" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng dự báo
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(totalForecast) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                {{ filters.forecastDays }} ngày tới
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+              <i class="bi bi-calendar-day" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Trung bình/ngày
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(avgForecast) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Dự kiến
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div
+            class="kpi-card"
+            :class="growthRate >= 0 ? 'kpi-card--success' : 'kpi-card--danger'"
+          >
+            <div class="kpi-card__icon">
+              <i
+                class="bi"
+                :class="growthRate >= 0 ? 'bi-arrow-up-circle' : 'bi-arrow-down-circle'"
+              />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tỷ lệ tăng trưởng
+              </div>
+              <div class="kpi-card__value">
+                {{ growthRate >= 0 ? '+' : '' }}{{ growthRate.toFixed(2) }}%
+              </div>
+              <div class="kpi-card__subtitle">
+                So với 7 ngày trước
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <i class="bi bi-shield-check" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Độ tin cậy
+              </div>
+              <div class="kpi-card__value">
+                {{ forecastData.metrics?.confidenceLevel || 95 }}%
+              </div>
+              <div class="kpi-card__subtitle">
+                Confidence interval
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card standard-card mb-4">
+        <div class="card-header standard-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5 class="card-title mb-0">
+            Biểu đồ dự báo
+          </h5>
+          <button
+            class="btn btn-flat btn-flat--outline btn-sm"
+            :disabled="exporting"
+            @click="handleExport"
+          >
+            <span
+              v-if="exporting"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-download me-2"
+            />
+            Xuất Excel
+          </button>
+        </div>
+        <div class="card-body">
+          <ForecastChart
+            :historical="forecastData.historical"
+            :forecasts="forecastData.forecasts"
+          />
+        </div>
+      </div>
+
+      <div class="card standard-card">
+        <div class="card-header standard-card-header">
+          <h5 class="card-title">
+            Chi tiết dự báo
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-minimal">
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>Thứ</th>
+                  <th>Dự báo</th>
+                  <th>Giới hạn dưới</th>
+                  <th>Giới hạn trên</th>
+                  <th>Khoảng tin cậy</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="forecast in forecastData.forecasts"
+                  :key="forecast.date"
+                >
+                  <td class="forecast-date">
+                    {{ formatDate(forecast.date) }}
+                  </td>
+                  <td class="forecast-day">
+                    {{ forecast.dayOfWeek }}
+                  </td>
+                  <td class="forecast-value">
+                    {{ formatCurrency(forecast.forecast) }}
+                  </td>
+                  <td class="forecast-lower">
+                    {{ formatCurrency(forecast.confidenceLower) }}
+                  </td>
+                  <td class="forecast-upper">
+                    {{ formatCurrency(forecast.confidenceUpper) }}
+                  </td>
+                  <td>
+                    <span class="badge badge-soft badge-info">
+                      ±{{ formatCurrency((forecast.confidenceUpper - forecast.confidenceLower) / 2) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <EmptyState
+      v-else
+      message="Chọn khoảng thời gian và nhấn 'Tạo dự báo' để bắt đầu"
+      icon="bi-graph-up-arrow"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -203,6 +283,7 @@ import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import * as XLSX from 'xlsx'
+import logger from '@/utils/logger'
 
 const store = useRevenueForecastStore()
 
@@ -230,19 +311,17 @@ const historyPresets = [
     { value: '180d', label: '6 tháng', days: 180 }
 ]
 
-const canGenerate = computed(() => {
-    return filters.value.startDate && filters.value.endDate && !validationError.value
-})
+const canGenerate = computed(() => filters.value.startDate && filters.value.endDate && !validationError.value)
 
 const applyHistoryPreset = (preset) => {
     selectedHistoryPreset.value = preset
     const presetConfig = historyPresets.find(p => p.value === preset)
     if (!presetConfig) return
-    
+
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - presetConfig.days)
-    
+
     filters.value.endDate = endDate.toISOString().split('T')[0]
     filters.value.startDate = startDate.toISOString().split('T')[0]
     validateDates()
@@ -250,41 +329,40 @@ const applyHistoryPreset = (preset) => {
 
 const validateDates = () => {
     validationError.value = ''
-    
+
     if (!filters.value.startDate || !filters.value.endDate) {
         return
     }
-    
+
     const start = new Date(filters.value.startDate)
     const end = new Date(filters.value.endDate)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     if (start > end) {
         validationError.value = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
         return
     }
-    
+
     if (end > today) {
         validationError.value = 'Ngày kết thúc không được vượt quá hôm nay'
         return
     }
-    
+
     const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24))
     if (daysDiff < 7) {
         validationError.value = 'Cần ít nhất 7 ngày dữ liệu lịch sử'
         return
     }
-    
+
     if (daysDiff > 365) {
         validationError.value = 'Khoảng thời gian không được vượt quá 365 ngày'
-        return
     }
 }
 
 const handleGenerateForecast = async () => {
     if (!canGenerate.value || validationError.value) return
-    
+
     try {
         await store.generateForecast({
             startDate: filters.value.startDate,
@@ -292,24 +370,24 @@ const handleGenerateForecast = async () => {
             forecastDays: filters.value.forecastDays
         })
     } catch (err) {
-        console.error('Failed to generate forecast', err)
+        logger.error('Không thể tạo dự báo doanh thu:', err)
     }
 }
 
 const handleExport = async () => {
     if (!forecastData.value) return
-    
+
     exporting.value = true
     try {
         const exportData = await store.exportForecast()
-        
+
         const ws = XLSX.utils.aoa_to_sheet(exportData.data)
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, exportData.sheetName)
-        
+
         XLSX.writeFile(wb, exportData.filename)
     } catch (err) {
-        console.error('Failed to export', err)
+        logger.error('Không thể xuất dự báo doanh thu:', err)
         alert('Không thể xuất file. Vui lòng thử lại.')
     } finally {
         exporting.value = false
@@ -322,14 +400,32 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Page Container */
+/* ============================================
+   PAGE CONTAINER - Chuẩn hóa theo Design System
+   ============================================ */
 .revenue-forecast-page {
     background: var(--color-body-bg);
     padding: var(--spacing-4);
     min-height: 100vh;
 }
 
-/* KPI Cards - Chuẩn hóa theo Global Design System */
+/* ============================================
+   FILTER CARD - Chuẩn hóa
+   ============================================ */
+.filter-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+    box-shadow: none;
+}
+
+.filter-card :deep(.card-body) {
+    padding: var(--spacing-5);
+}
+
+/* ============================================
+   KPI CARDS - Chuẩn hóa theo Global Design System
+   ============================================ */
 .kpi-card {
     background: var(--color-card);
     border: 1px solid var(--color-border);
@@ -338,7 +434,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    transition: all var(--transition-base);
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
     min-height: 120px;
     height: 100%;
 }
@@ -357,7 +453,7 @@ onMounted(() => {
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    transition: all var(--transition-base);
+    transition: background-color var(--transition-fast);
 }
 
 /* KPI Card Variants - Màu icon theo design system */
@@ -411,19 +507,9 @@ onMounted(() => {
     line-height: var(--line-height-normal);
 }
 
-/* Filter Card - Chuẩn hóa */
-.filter-card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-card);
-    box-shadow: none;
-}
-
-.filter-card :global(.card-body) {
-    padding: var(--spacing-5);
-}
-
-/* Form Labels - Chuẩn hóa */
+/* ============================================
+   FORM LABELS - Chuẩn hóa
+   ============================================ */
 :deep(.form-label) {
     font-family: var(--font-family-sans);
     font-size: var(--font-size-sm);
@@ -432,7 +518,9 @@ onMounted(() => {
     margin-bottom: var(--spacing-2);
 }
 
-/* Button Group - Chuẩn hóa */
+/* ============================================
+   BUTTON GROUP - Chuẩn hóa
+   ============================================ */
 .btn-group {
     display: flex;
     gap: var(--spacing-1);
@@ -444,7 +532,9 @@ onMounted(() => {
     min-width: 0;
 }
 
-/* Alert Styles - Chuẩn hóa */
+/* ============================================
+   ALERT STYLES - Chuẩn hóa
+   ============================================ */
 .alert {
     font-family: var(--font-family-sans);
     border-radius: var(--radius-sm);
@@ -462,7 +552,9 @@ onMounted(() => {
     color: var(--color-warning);
 }
 
-/* Typography chuẩn hóa */
+/* ============================================
+   TYPOGRAPHY - Chuẩn hóa
+   ============================================ */
 :deep(.card-title) {
     font-family: var(--font-family-sans);
     font-weight: var(--font-weight-semibold);
@@ -471,25 +563,32 @@ onMounted(() => {
     margin: 0;
 }
 
-/* Table Content Styles */
+/* ============================================
+   TABLE CONTENT STYLES - Chuẩn hóa
+   ============================================ */
 .forecast-date,
 .forecast-day {
     font-family: var(--font-family-sans);
     color: var(--color-text);
+    font-size: var(--font-size-base);
 }
 
 .forecast-value {
     color: var(--color-primary);
     font-family: var(--font-family-sans);
+    font-weight: var(--font-weight-semibold);
 }
 
 .forecast-lower,
 .forecast-upper {
     font-family: var(--font-family-sans);
     color: var(--color-text-muted);
+    font-size: var(--font-size-base);
 }
 
-/* Badge Styles */
+/* ============================================
+   BADGE STYLES - Chuẩn hóa
+   ============================================ */
 .badge-soft {
     padding: var(--spacing-1) var(--spacing-2);
     border-radius: var(--radius-sm);
@@ -505,7 +604,9 @@ onMounted(() => {
     color: var(--color-info);
 }
 
-/* Content Animation */
+/* ============================================
+   CONTENT ANIMATION - Minimal
+   ============================================ */
 .forecast-content {
     animation: fadeIn 0.3s ease-in;
 }
@@ -513,19 +614,35 @@ onMounted(() => {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
-/* Responsive improvements */
+/* ============================================
+   SPINNER - Chuẩn hóa
+   ============================================ */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+    border-color: currentColor;
+    border-right-color: transparent;
+}
+
+/* ============================================
+   RESPONSIVE - Chuẩn hóa
+   ============================================ */
 @media (max-width: 768px) {
+    .revenue-forecast-page {
+        padding: var(--spacing-3);
+    }
+
     .kpi-card {
         min-height: 100px;
         padding: var(--spacing-3);
+        gap: var(--spacing-3);
     }
 
     .kpi-card__icon {
@@ -544,6 +661,10 @@ onMounted(() => {
 
     .btn-group .btn-flat {
         width: 100%;
+    }
+
+    .filter-card :deep(.card-body) {
+        padding: var(--spacing-4);
     }
 }
 </style>

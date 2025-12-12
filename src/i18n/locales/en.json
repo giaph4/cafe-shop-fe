@@ -1,0 +1,176 @@
+{
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "view": "View",
+      "add": "Add",
+      "update": "Update",
+      "refresh": "Refresh",
+      "export": "Export Excel",
+      "search": "Search",
+      "filter": "Filter",
+      "close": "Close",
+      "confirm": "Confirm",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "submit": "Submit",
+      "reset": "Reset"
+    },
+    "status": {
+      "loading": "Loading...",
+      "error": "An error occurred",
+      "success": "Success",
+      "noData": "No data",
+      "empty": "Empty"
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalid": "Invalid value",
+      "minLength": "Minimum {min} characters",
+      "maxLength": "Maximum {max} characters",
+      "email": "Invalid email",
+      "phone": "Invalid phone number"
+    },
+    "date": {
+      "from": "From date",
+      "to": "To date",
+      "dateRange": "Date range",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "thisYear": "This year"
+    },
+    "presets": {
+      "30d": "30 days",
+      "90d": "90 days",
+      "180d": "180 days",
+      "365d": "1 year"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Activity overview",
+    "tabs": {
+      "overview": "Overview",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "products": "Products",
+      "customers": "Customers",
+      "realtime": "Real-time"
+    },
+    "filters": {
+      "dateRange": "Date range",
+      "update": "Update"
+    },
+    "kpi": {
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "profit": "Profit",
+      "customers": "Customers"
+    }
+  },
+  "costAnalysis": {
+    "title": "Cost Analysis and Budget Optimization",
+    "subtitle": "Comprehensive cost analysis and budget optimization recommendations",
+    "kpi": {
+      "totalCost": "Total Cost",
+      "totalRevenue": "Total Revenue",
+      "costRevenueRatio": "Cost/Revenue Ratio",
+      "costPerOrder": "Cost per Order"
+    },
+    "charts": {
+      "breakdown": "Cost Breakdown",
+      "trend": "Cost Trend"
+    },
+    "tables": {
+      "topCategories": "Top Cost Categories"
+    },
+    "recommendations": {
+      "title": "Optimization Recommendations"
+    },
+    "empty": {
+      "title": "No data",
+      "message": "Select date range and click 'Analyze' to start"
+    }
+  },
+  "menuOptimization": {
+    "title": "Menu and Product Mix Optimization",
+    "subtitle": "Menu analysis and product mix optimization recommendations",
+    "kpi": {
+      "totalProducts": "Total Products",
+      "totalRevenue": "Total Revenue",
+      "totalProfit": "Total Profit",
+      "avgMargin": "Avg Margin"
+    },
+    "charts": {
+      "portfolio": "Product Portfolio Matrix",
+      "category": "Category Performance"
+    },
+    "classifications": {
+      "star": "Star",
+      "cashCow": "Cash Cow",
+      "questionMark": "Question Mark",
+      "dog": "Dog"
+    },
+    "empty": {
+      "title": "No data",
+      "message": "Select date range and click 'Analyze' to start"
+    }
+  },
+  "staffPerformance": {
+    "title": "Staff Performance Analysis",
+    "subtitle": "Comprehensive staff performance evaluation",
+    "tabs": {
+      "overview": "Overview",
+      "performance": "Performance",
+      "attendance": "Attendance",
+      "financial": "Financial",
+      "trends": "Trends"
+    }
+  },
+  "customerAnalytics": {
+    "title": "Customer Analytics",
+    "subtitle": "Customer behavior analysis and loyalty strategy"
+  },
+  "productProfitability": {
+    "title": "Product Profitability Analysis",
+    "subtitle": "Profitability analysis by product and category"
+  },
+  "inventory": {
+    "title": "Smart Inventory Management",
+    "subtitle": "Track and optimize inventory"
+  },
+  "revenueForecast": {
+    "title": "Revenue Forecast",
+    "subtitle": "Revenue forecasting based on historical data"
+  },
+  "voucherAnalytics": {
+    "title": "Voucher Analytics",
+    "subtitle": "Track voucher and promotion effectiveness"
+  },
+  "shiftEfficiency": {
+    "title": "Shift Efficiency Analysis",
+    "subtitle": "Optimize scheduling and workforce allocation"
+  },
+  "cancellationAnalysis": {
+    "title": "Cancellation Rate Analysis",
+    "subtitle": "Analyze and improve cancellation rates"
+  },
+  "trendAnalysis": {
+    "title": "Trend Analysis",
+    "subtitle": "Trend analysis and seasonal patterns"
+  },
+  "realtimeDashboard": {
+    "title": "Real-time Dashboard",
+    "subtitle": "Monitor real-time activity and performance",
+    "autoRefresh": "Auto refresh",
+    "lastRefresh": "Last refresh",
+    "refreshNow": "Refresh now"
+  }
+}
+

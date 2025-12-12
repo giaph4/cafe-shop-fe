@@ -1,134 +1,237 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade order-detail-modal" ref="modal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng #{{ order?.id }}</h5>
-                            <p class="modal-subtitle">Xem thông tin chi tiết và in hóa đơn cho đơn hàng.</p>
-                        </div>
-                        <div class="modal-header__actions">
-                            <button
-                                v-if="order?.status === 'PAID'"
-                                class="btn btn-outline-primary btn-sm"
-                                type="button"
-                                :disabled="printing"
-                                @click="printInvoice"
-                            >
-                                <span v-if="printing" class="spinner-border spinner-border-sm me-2"></span>
-                                <i v-else class="bi bi-printer me-2"></i>
-                                In hóa đơn
-                            </button>
-                            <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
-                        </div>
-                    </div>
-                    <div class="modal-body">
-                    <LoadingState v-if="loading" />
-                    <ErrorState v-else-if="error" :message="error" :show-retry="false" />
-                    <template v-else-if="order">
-                        <div class="order-detail__info-grid">
-                            <div class="order-detail__info-card">
-                                <h6 class="order-detail__info-title">Thông tin đơn hàng</h6>
-                                <div class="order-detail__info-list">
-                                    <div class="order-detail__info-item">
-                                        <span class="order-detail__info-label">Bàn:</span>
-                                        <span class="order-detail__info-value">{{ order.tableName || 'Mang về' }}</span>
-                                    </div>
-                                    <div class="order-detail__info-item">
-                                        <span class="order-detail__info-label">Nhân viên:</span>
-                                        <span class="order-detail__info-value">{{ order.staffUsername || '—' }}</span>
-                                    </div>
-                                    <div class="order-detail__info-item">
-                                        <span class="order-detail__info-label">Khách hàng:</span>
-                                        <span class="order-detail__info-value">{{ order.customerName || 'Khách lẻ' }}</span>
-                                    </div>
-                                    <div class="order-detail__info-item">
-                                        <span class="order-detail__info-label">Điện thoại:</span>
-                                        <span class="order-detail__info-value">{{ order.customerPhone || '—' }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="order-detail__info-card">
-                                <h6 class="order-detail__info-title">Thông tin thanh toán</h6>
-                                <div class="order-detail__info-list">
-                                    <div class="order-detail__info-item">
-                                        <span class="order-detail__info-label">Trạng thái:</span>
-                                        <span :class="['badge', getStatusClass(order.status)]" :style="getStatusStyle(order.status)">{{ getStatusLabel(order.status) }}</span>
-                                    </div>
-                                    <div class="order-detail__info-item">
-                                        <span class="order-detail__info-label">Ngày tạo:</span>
-                                        <span class="order-detail__info-value">{{ formatDateTime(order.createdAt) }}</span>
-                                    </div>
-                                    <div class="order-detail__info-item">
-                                        <span class="order-detail__info-label">Phương thức:</span>
-                                        <span class="order-detail__info-value">{{ order.paymentMethod || '—' }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="order-detail__products-section">
-                            <h6 class="order-detail__section-title">Chi tiết sản phẩm</h6>
-                            <div class="table-responsive">
-                                <table class="table order-detail__table">
-                                    <thead>
-                                        <tr>
-                                            <th>Sản phẩm</th>
-                                            <th class="text-center">Số lượng</th>
-                                            <th class="text-end">Đơn giá</th>
-                                            <th>Ghi chú</th>
-                                            <th class="text-end">Thành tiền</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="item in order.orderDetails" :key="item.id">
-                                            <td>{{ item.productName }}</td>
-                                            <td class="text-center">{{ item.quantity }}</td>
-                                            <td class="text-end">{{ formatCurrency(item.priceAtOrder) }}</td>
-                                            <td class="text-muted">{{ item.notes || '—' }}</td>
-                                            <td class="text-end fw-semibold">{{ formatCurrency(item.quantity * item.priceAtOrder) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="order-detail__summary">
-                            <div class="order-detail__summary-item">
-                                <span class="order-detail__summary-label">Tổng phụ:</span>
-                                <span class="order-detail__summary-value">{{ formatCurrency(order.subTotal) }}</span>
-                            </div>
-                            <div class="order-detail__summary-item">
-                                <span class="order-detail__summary-label">Giảm giá:</span>
-                                <span class="order-detail__summary-value text-danger">-{{ formatCurrency(order.discountAmount) }}</span>
-                            </div>
-                            <div v-if="order.tipAmount && order.tipAmount > 0" class="order-detail__summary-item">
-                                <span class="order-detail__summary-label">Tiền típ:</span>
-                                <span class="order-detail__summary-value">{{ formatCurrency(order.tipAmount) }}</span>
-                            </div>
-                            <div class="order-detail__summary-divider"></div>
-                            <div class="order-detail__summary-item order-detail__summary-item--total">
-                                <span class="order-detail__summary-label">Tổng cộng:</span>
-                                <span class="order-detail__summary-value order-detail__summary-value--total">{{ formatCurrency(order.totalAmount) }}</span>
-                            </div>
-                        </div>
-                    </template>
-                    <EmptyState
-                        v-else
-                        title="Không tìm thấy đơn hàng"
-                        message="Không tìm thấy thông tin đơn hàng."
-                    >
-                        <template #icon>
-                            <i class="bi bi-receipt-cutoff"></i>
-                        </template>
-                    </EmptyState>
-                </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade order-detail-modal"
+      tabindex="-1"
+      aria-labelledby="orderDetailModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5
+                id="orderDetailModalLabel"
+                class="modal-title"
+              >
+                Chi tiết đơn hàng #{{ order?.id }}
+              </h5>
+              <p class="modal-subtitle">
+                Xem thông tin chi tiết và in hóa đơn cho đơn hàng.
+              </p>
             </div>
+            <div class="modal-header__actions">
+              <button
+                v-if="order?.status === 'PAID'"
+                class="btn btn-outline-primary btn-sm"
+                type="button"
+                :disabled="printing"
+                @click="printInvoice"
+              >
+                <span
+                  v-if="printing"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                <i
+                  v-else
+                  class="bi bi-printer me-2"
+                />
+                In hóa đơn
+              </button>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Đóng"
+                @click="hide"
+              />
+            </div>
+          </div>
+          <div class="modal-body">
+            <LoadingState v-if="loading" />
+            <ErrorState
+              v-else-if="error"
+              :message="error"
+              :show-retry="false"
+            />
+            <template v-else-if="order">
+              <div class="order-detail__info-grid">
+                <div class="order-detail__info-card">
+                  <h6 class="order-detail__info-title">
+                    Thông tin đơn hàng
+                  </h6>
+                  <div class="order-detail__info-list">
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Loại:</span>
+                      <span class="order-detail__info-value">
+                        <span
+                          class="badge"
+                          :class="order.type === 'TAKE_AWAY' ? 'bg-info' : 'bg-primary'"
+                        >
+                          {{ order.type === 'TAKE_AWAY' ? 'Mang về' : 'Tại quán' }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Bàn:</span>
+                      <span class="order-detail__info-value">{{ order.tableName || (order.type === 'TAKE_AWAY' ? 'Mang về' : '—') }}</span>
+                    </div>
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Nhân viên:</span>
+                      <span class="order-detail__info-value">{{ order.staffUsername || '—' }}</span>
+                    </div>
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Khách hàng:</span>
+                      <span class="order-detail__info-value">{{ order.customerName || 'Khách lẻ' }}</span>
+                    </div>
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Điện thoại:</span>
+                      <span class="order-detail__info-value">{{ order.customerPhone || '—' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="order-detail__info-card">
+                  <h6 class="order-detail__info-title">
+                    Thông tin thanh toán
+                  </h6>
+                  <div class="order-detail__info-list">
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Trạng thái:</span>
+                      <span
+                        :class="['badge', getStatusClass(order.status)]"
+                        :style="getStatusStyle(order.status)"
+                      >{{ getStatusLabel(order.status) }}</span>
+                    </div>
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Ngày tạo:</span>
+                      <span class="order-detail__info-value">{{ formatDateTime(order.createdAt) }}</span>
+                    </div>
+                    <div
+                      v-if="order.paidAt"
+                      class="order-detail__info-item"
+                    >
+                      <span class="order-detail__info-label">Ngày thanh toán:</span>
+                      <span class="order-detail__info-value">{{ formatDateTime(order.paidAt) }}</span>
+                    </div>
+                    <div class="order-detail__info-item">
+                      <span class="order-detail__info-label">Phương thức:</span>
+                      <span class="order-detail__info-value">{{ order.paymentMethod || '—' }}</span>
+                    </div>
+                    <div
+                      v-if="order.voucherCode"
+                      class="order-detail__info-item"
+                    >
+                      <span class="order-detail__info-label">Voucher:</span>
+                      <span class="order-detail__info-value">{{ order.voucherCode }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="order-detail__products-section">
+                <h6 class="order-detail__section-title">
+                  Chi tiết sản phẩm
+                </h6>
+                <EmptyState
+                  v-if="!order.orderDetails || order.orderDetails.length === 0"
+                  title="Không có sản phẩm"
+                  message="Đơn hàng này không có sản phẩm nào."
+                >
+                  <template #icon>
+                    <i class="bi bi-basket" />
+                  </template>
+                </EmptyState>
+                <div
+                  v-else
+                  class="table-responsive"
+                >
+                  <table class="table order-detail__table">
+                    <thead>
+                      <tr>
+                        <th>Sản phẩm</th>
+                        <th class="text-center">
+                          Số lượng
+                        </th>
+                        <th class="text-end">
+                          Đơn giá
+                        </th>
+                        <th>Ghi chú</th>
+                        <th class="text-end">
+                          Thành tiền
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="item in (order.orderDetails || [])"
+                        :key="item.id"
+                      >
+                        <td>{{ item.productName }}</td>
+                        <td class="text-center">
+                          {{ item.quantity }}
+                        </td>
+                        <td class="text-end">
+                          {{ formatCurrency(item.priceAtOrder || 0) }}
+                        </td>
+                        <td class="text-muted">
+                          {{ item.notes || '—' }}
+                        </td>
+                        <td class="text-end fw-semibold">
+                          {{ formatCurrency((item.quantity || 0) * (item.priceAtOrder || 0)) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="order-detail__summary">
+                <div class="order-detail__summary-item">
+                  <span class="order-detail__summary-label">Tổng phụ:</span>
+                  <span class="order-detail__summary-value">{{ formatCurrency(order.subTotal || 0) }}</span>
+                </div>
+                <div
+                  v-if="order.discountAmount && order.discountAmount > 0"
+                  class="order-detail__summary-item"
+                >
+                  <span class="order-detail__summary-label">Giảm giá:</span>
+                  <span class="order-detail__summary-value text-danger">-{{ formatCurrency(order.discountAmount) }}</span>
+                </div>
+                <div
+                  v-if="order.tipAmount && order.tipAmount > 0"
+                  class="order-detail__summary-item"
+                >
+                  <span class="order-detail__summary-label">Tiền típ:</span>
+                  <span class="order-detail__summary-value">{{ formatCurrency(order.tipAmount) }}</span>
+                </div>
+                <div class="order-detail__summary-divider" />
+                <div class="order-detail__summary-item order-detail__summary-item--total">
+                  <span class="order-detail__summary-label">Tổng cộng:</span>
+                  <span class="order-detail__summary-value order-detail__summary-value--total">{{ formatCurrency(order.totalAmount || 0) }}</span>
+                </div>
+              </div>
+            </template>
+            <EmptyState
+              v-else
+              title="Không tìm thấy đơn hàng"
+              message="Không tìm thấy thông tin đơn hàng."
+            >
+              <template #icon>
+                <i class="bi bi-receipt-cutoff" />
+              </template>
+            </EmptyState>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="hide"
+            >
+              Đóng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -143,7 +246,7 @@ import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 
 const props = defineProps({
-    orderId: Number,
+    orderId: Number
 })
 
 const modal = ref(null)
@@ -165,16 +268,14 @@ const fetchOrderDetail = async (id) => {
     error.value = null
     try {
         order.value = await orderService.getOrderById(id)
-    } catch (err) {
+    } catch (error) {
         error.value = 'Không thể tải chi tiết đơn hàng.'
     } finally {
         loading.value = false
     }
 }
 
-const getStatusClass = (status) => {
-    return 'badge'
-}
+const getStatusClass = () => 'badge'
 
 const getStatusStyle = (status) => {
     const styles = {
@@ -228,7 +329,7 @@ onMounted(() => {
     modalInstance = new Modal(modal.value)
 })
 
-const printInvoice = async () => {
+const printInvoice = () => {
     if (!order.value) {
         toast.warning('Không có dữ liệu đơn hàng để in.')
         return
@@ -241,7 +342,7 @@ const printInvoice = async () => {
             return
         }
         toast.success('Đã gửi lệnh in hóa đơn.')
-    } catch (err) {
+    } catch {
         toast.error('Không thể in hóa đơn. Vui lòng thử lại.')
     } finally {
         printing.value = false

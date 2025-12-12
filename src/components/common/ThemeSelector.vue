@@ -1,160 +1,171 @@
 <template>
-    <div class="theme-selector">
-        <!-- Header với Search -->
-        <div class="theme-selector__header">
-            <div class="theme-selector__header-top">
-                <h5 class="theme-selector__title">
-                    <i class="bi bi-palette-fill"></i>
-                    Chọn giao diện
-                </h5>
-                <div class="theme-selector__count">
-                    {{ filteredThemes.length }} theme
-                </div>
-            </div>
-            
-            <div class="theme-selector__search-wrapper">
-                <i class="bi bi-search theme-selector__search-icon"></i>
-                <input
-                    v-model="searchQuery"
-                    type="text"
-                    class="theme-selector__search"
-                    placeholder="Tìm kiếm theme..."
-                />
-                <button
-                    v-if="searchQuery"
-                    class="theme-selector__search-clear"
-                    @click="searchQuery = ''"
-                >
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-
-            <!-- Category Filter Pills -->
-            <div class="theme-selector__filters">
-                <button
-                    v-for="category in allCategories"
-                    :key="category"
-                    class="theme-selector__filter-pill"
-                    :class="{ 'theme-selector__filter-pill--active': selectedCategory === category }"
-                    @click="selectedCategory = selectedCategory === category ? null : category"
-                >
-                    {{ category }}
-                    <span class="theme-selector__filter-count">
-                        {{ getCategoryCount(category) }}
-                    </span>
-                </button>
-            </div>
+  <div class="theme-selector">
+    <!-- Header với Search -->
+    <div class="theme-selector__header">
+      <div class="theme-selector__header-top">
+        <h5 class="theme-selector__title">
+          <i class="bi bi-palette-fill" />
+          Chọn giao diện
+        </h5>
+        <div class="theme-selector__count">
+          {{ filteredThemes.length }} theme
         </div>
+      </div>
 
-        <!-- Preview Panel (hiện khi hover) -->
-        <Transition name="preview">
-            <div
-                v-if="previewTheme"
-                class="theme-selector__preview-panel"
-                :style="previewStyle"
-            >
-                <div class="theme-selector__preview-header">
-                    <div class="theme-selector__preview-title">
-                        <i :class="`bi ${previewTheme.icon}`"></i>
-                        {{ previewTheme.name }}
-                    </div>
-                    <div class="theme-selector__preview-category">
-                        {{ previewTheme.category }}
-                    </div>
-                </div>
-                <div class="theme-selector__preview-colors">
-                    <div
-                        v-for="(color, index) in previewTheme.colors"
-                        :key="index"
-                        class="theme-selector__preview-color-item"
-                    >
-                        <div
-                            class="theme-selector__preview-color-swatch"
-                            :style="{ backgroundColor: color }"
-                        ></div>
-                        <div class="theme-selector__preview-color-code">{{ color }}</div>
-                    </div>
-                </div>
-                <div class="theme-selector__preview-description">
-                    {{ previewTheme.description }}
-                </div>
-            </div>
-        </Transition>
+      <div class="theme-selector__search-wrapper">
+        <i class="bi bi-search theme-selector__search-icon" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          class="theme-selector__search"
+          placeholder="Tìm kiếm theme..."
+        >
+        <button
+          v-if="searchQuery"
+          class="theme-selector__search-clear"
+          @click="searchQuery = ''"
+        >
+          <i class="bi bi-x-lg" />
+        </button>
+      </div>
 
-        <!-- Themes Grid -->
-        <div class="theme-selector__content">
-            <div
-                v-for="(themes, category) in filteredCategories"
-                :key="category"
-                class="theme-selector__category"
-            >
-                <div class="theme-selector__category-header">
-                    <h6 class="theme-selector__category-title">
-                        <i class="bi bi-folder-fill"></i>
-                        {{ category }}
-                    </h6>
-                    <span class="theme-selector__category-count">{{ themes.length }}</span>
-                </div>
-                <div class="theme-selector__grid">
-                    <button
-                        v-for="themeData in themes"
-                        :key="themeData.theme"
-                        class="theme-selector__item"
-                        :class="{ 'theme-selector__item--active': currentTheme === themeData.theme }"
-                        @click="selectTheme(themeData.theme)"
-                        @mouseenter="showPreview(themeData, $event)"
-                        @mouseleave="hidePreview"
-                        @mousemove="updatePreviewPosition($event)"
-                    >
-                        <div class="theme-selector__item-header">
-                            <div class="theme-selector__item-icon">
-                                <i :class="`bi ${themeData.icon}`"></i>
-                            </div>
-                            <div
-                                v-if="currentTheme === themeData.theme"
-                                class="theme-selector__item-badge"
-                            >
-                                <i class="bi bi-check-circle-fill"></i>
-                                Đang dùng
-                            </div>
-                        </div>
-                        
-                        <div class="theme-selector__item-preview">
-                            <div
-                                v-for="(color, index) in themeData.colors"
-                                :key="index"
-                                class="theme-selector__item-color"
-                                :style="{ backgroundColor: color }"
-                            ></div>
-                        </div>
-                        
-                        <div class="theme-selector__item-info">
-                            <div class="theme-selector__item-name">{{ themeData.name }}</div>
-                            <div class="theme-selector__item-category">{{ themeData.category }}</div>
-                        </div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Empty State -->
-            <div v-if="filteredThemes.length === 0" class="theme-selector__empty">
-                <i class="bi bi-search theme-selector__empty-icon"></i>
-                <p class="theme-selector__empty-text">Không tìm thấy theme nào</p>
-                <button
-                    class="theme-selector__empty-reset"
-                    @click="resetFilters"
-                >
-                    Xóa bộ lọc
-                </button>
-            </div>
-        </div>
+      <!-- Category Filter Pills -->
+      <div class="theme-selector__filters">
+        <button
+          v-for="category in allCategories"
+          :key="category"
+          class="theme-selector__filter-pill"
+          :class="{ 'theme-selector__filter-pill--active': selectedCategory === category }"
+          @click="selectedCategory = selectedCategory === category ? null : category"
+        >
+          {{ category }}
+          <span class="theme-selector__filter-count">
+            {{ getCategoryCount(category) }}
+          </span>
+        </button>
+      </div>
     </div>
+
+    <!-- Preview Panel (hiện khi hover) -->
+    <Transition name="preview">
+      <div
+        v-if="previewTheme"
+        class="theme-selector__preview-panel"
+        :style="previewStyle"
+      >
+        <div class="theme-selector__preview-header">
+          <div class="theme-selector__preview-title">
+            <i :class="`bi ${previewTheme.icon}`" />
+            {{ previewTheme.name }}
+          </div>
+          <div class="theme-selector__preview-category">
+            {{ previewTheme.category }}
+          </div>
+        </div>
+        <div class="theme-selector__preview-colors">
+          <div
+            v-for="(color, index) in previewTheme.colors"
+            :key="index"
+            class="theme-selector__preview-color-item"
+          >
+            <div
+              class="theme-selector__preview-color-swatch"
+              :style="{ backgroundColor: color }"
+            />
+            <div class="theme-selector__preview-color-code">
+              {{ color }}
+            </div>
+          </div>
+        </div>
+        <div class="theme-selector__preview-description">
+          {{ previewTheme.description }}
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Themes Grid -->
+    <div class="theme-selector__content">
+      <div
+        v-for="(themes, category) in filteredCategories"
+        :key="category"
+        class="theme-selector__category"
+      >
+        <div class="theme-selector__category-header">
+          <h6 class="theme-selector__category-title">
+            <i class="bi bi-folder-fill" />
+            {{ category }}
+          </h6>
+          <span class="theme-selector__category-count">{{ themes.length }}</span>
+        </div>
+        <div class="theme-selector__grid">
+          <button
+            v-for="themeData in themes"
+            :key="themeData.theme"
+            class="theme-selector__item"
+            :class="{ 'theme-selector__item--active': currentTheme === themeData.theme }"
+            @click="selectTheme(themeData.theme)"
+            @mouseenter="showPreview(themeData, $event)"
+            @mouseleave="hidePreview"
+            @mousemove="updatePreviewPosition($event)"
+          >
+            <div class="theme-selector__item-header">
+              <div class="theme-selector__item-icon">
+                <i :class="`bi ${themeData.icon}`" />
+              </div>
+              <div
+                v-if="currentTheme === themeData.theme"
+                class="theme-selector__item-badge"
+              >
+                <i class="bi bi-check-circle-fill" />
+                Đang dùng
+              </div>
+            </div>
+
+            <div class="theme-selector__item-preview">
+              <div
+                v-for="(color, index) in themeData.colors"
+                :key="index"
+                class="theme-selector__item-color"
+                :style="{ backgroundColor: color }"
+              />
+            </div>
+
+            <div class="theme-selector__item-info">
+              <div class="theme-selector__item-name">
+                {{ themeData.name }}
+              </div>
+              <div class="theme-selector__item-category">
+                {{ themeData.category }}
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        v-if="filteredThemes.length === 0"
+        class="theme-selector__empty"
+      >
+        <i class="bi bi-search theme-selector__empty-icon" />
+        <p class="theme-selector__empty-text">
+          Không tìm thấy theme nào
+        </p>
+        <button
+          class="theme-selector__empty-reset"
+          @click="resetFilters"
+        >
+          Xóa bộ lọc
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useSettingsStore } from '@/store/settings'
-import { getThemesByCategory, THEME_METADATA } from '@/utils/theme'
+import { getThemesByCategory } from '@/utils/theme'
 
 const settingsStore = useSettingsStore()
 const currentTheme = computed(() => settingsStore.currentTheme)
@@ -166,9 +177,7 @@ const previewTheme = ref(null)
 const previewPosition = ref({ x: 0, y: 0 })
 
 // Get all categories
-const allCategories = computed(() => {
-    return Object.keys(allThemesByCategory.value)
-})
+const allCategories = computed(() => Object.keys(allThemesByCategory.value))
 
 // Flatten all themes for search
 const allThemes = computed(() => {
@@ -216,9 +225,7 @@ const filteredCategories = computed(() => {
 })
 
 // Get category count
-const getCategoryCount = (category) => {
-    return allThemes.value.filter(t => t.category === category).length
-}
+const getCategoryCount = (category) => allThemes.value.filter(t => t.category === category).length
 
 // Preview functions
 const showPreview = (theme, event) => {
@@ -240,21 +247,21 @@ const updatePreviewPosition = (event) => {
 
 const previewStyle = computed(() => {
     if (!previewPosition.value.x || !previewPosition.value.y) return {}
-    
+
     const offset = 20
     let left = previewPosition.value.x + offset
     let top = previewPosition.value.y + offset
-    
+
     // Adjust if too close to right edge
     if (left + 320 > window.innerWidth) {
         left = previewPosition.value.x - 340
     }
-    
+
     // Adjust if too close to bottom edge
     if (top + 200 > window.innerHeight) {
         top = previewPosition.value.y - 220
     }
-    
+
     return {
         left: `${left}px`,
         top: `${top}px`
@@ -750,26 +757,26 @@ onBeforeUnmount(() => {
     .theme-selector {
         padding: var(--spacing-3);
     }
-    
+
     .theme-selector__grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: var(--spacing-2);
     }
-    
+
     .theme-selector__item {
         min-height: 160px;
         padding: var(--spacing-3);
     }
-    
+
     .theme-selector__item-preview {
         height: 48px;
     }
-    
+
     .theme-selector__preview-panel {
         width: 280px;
         padding: var(--spacing-3);
     }
-    
+
     .theme-selector__header-top {
         flex-direction: column;
         align-items: flex-start;
@@ -781,11 +788,11 @@ onBeforeUnmount(() => {
     .theme-selector__grid {
         grid-template-columns: 1fr;
     }
-    
+
     .theme-selector__filters {
         gap: var(--spacing-1);
     }
-    
+
     .theme-selector__filter-pill {
         font-size: var(--font-size-xs);
         padding: var(--spacing-1) var(--spacing-2);

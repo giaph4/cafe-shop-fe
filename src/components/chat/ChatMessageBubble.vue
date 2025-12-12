@@ -1,100 +1,150 @@
 <template>
+  <div
+    class="message-bubble"
+    :class="{
+      'message-bubble--own': isOwn,
+      'message-bubble--recalled': message.status === 'RECALLED'
+    }"
+  >
     <div
-        class="message-bubble"
-        :class="{
-            'message-bubble--own': isOwn,
-            'message-bubble--recalled': message.status === 'RECALLED'
-        }"
+      v-if="!isOwn && showAvatar"
+      class="message-bubble__avatar"
     >
-        <div class="message-bubble__avatar" v-if="!isOwn && showAvatar">
-            <img v-if="senderAvatar" :src="senderAvatar" :alt="senderName" />
-            <div v-else class="message-bubble__avatar-placeholder">
-                {{ senderInitials }}
-            </div>
-        </div>
-        <div class="message-bubble__content">
-            <div class="message-bubble__header" v-if="!isOwn && showAvatar">
-                <span class="message-bubble__sender">{{ senderName }}</span>
-            </div>
-            <div class="message-bubble__body">
-                <div v-if="message.status === 'RECALLED'" class="message-bubble__recalled">
-                    <i class="bi bi-x-circle me-1"></i>
-                    Tin nhắn đã được thu hồi
-                </div>
-                <div v-else-if="message.contentType === 'TEXT'" class="message-bubble__text">
-                    {{ message.content }}
-                </div>
-                <div v-else-if="message.contentType === 'EMOJI'" class="message-bubble__emoji">
-                    {{ message.metadata || message.content }}
-                </div>
-                <div v-else-if="message.contentType === 'IMAGE' || message.contentType === 'VIDEO' || message.contentType === 'AUDIO' || message.contentType === 'FILE'" class="message-bubble__attachment">
-                    <div v-if="message.content" class="message-bubble__text mb-2">
-                        {{ message.content }}
-                    </div>
-                    <div class="message-bubble__files">
-                        <div
-                            v-for="(file, index) in message.attachments"
-                            :key="file.id || index"
-                            class="message-bubble__file"
-                        >
-                            <div v-if="message.contentType === 'IMAGE' && file.previewUrl" class="message-bubble__image-preview">
-                                <img
-                                    :src="file.previewUrl || file.storedUrl"
-                                    :alt="file.originalName"
-                                    @click="handleFileClick(file)"
-                                    class="message-bubble__image"
-                                />
-                            </div>
-                            <div v-else class="message-bubble__file-item" @click="handleFileClick(file)">
-                                <i v-if="message.contentType === 'IMAGE'" class="bi bi-image me-2"></i>
-                                <i v-else-if="message.contentType === 'VIDEO'" class="bi bi-play-circle me-2"></i>
-                                <i v-else-if="message.contentType === 'AUDIO'" class="bi bi-music-note me-2"></i>
-                                <i v-else class="bi bi-file-earmark me-2"></i>
-                                <span>{{ file.originalName }}</span>
-                                <a
-                                    :href="file.storedUrl"
-                                    target="_blank"
-                                    class="ms-2"
-                                    @click.stop
-                                >
-                                    <i class="bi bi-download"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="message-bubble__footer">
-                <span class="message-bubble__time">{{ formatTime(message.createdAt) }}</span>
-                <i
-                    v-if="isOwn && message.seenByUserIds && message.seenByUserIds.length > 0"
-                    class="bi bi-check2-all ms-1"
-                    :style="{ color: 'var(--color-primary)' }"
-                    :title="`Đã xem bởi ${message.seenByUserIds.length} người`"
-                ></i>
-                <i
-                    v-else-if="isOwn"
-                    class="bi bi-check2 text-muted ms-1"
-                ></i>
-            </div>
-        </div>
-        <div class="message-bubble__actions" v-if="message.status !== 'RECALLED' && isOwn">
-            <button
-                class="btn btn-sm btn-link text-muted p-0"
-                @click="$emit('recall')"
-                :title="'Thu hồi tin nhắn'"
-            >
-                <i class="bi bi-x-circle"></i>
-            </button>
-            <button
-                class="btn btn-sm btn-link text-muted p-0"
-                @click="$emit('delete')"
-                :title="'Xóa tin nhắn'"
-            >
-                <i class="bi bi-trash"></i>
-            </button>
-        </div>
+      <img
+        v-if="senderAvatar"
+        :src="senderAvatar"
+        :alt="senderName"
+      >
+      <div
+        v-else
+        class="message-bubble__avatar-placeholder"
+      >
+        {{ senderInitials }}
+      </div>
     </div>
+    <div class="message-bubble__content">
+      <div
+        v-if="!isOwn && showAvatar"
+        class="message-bubble__header"
+      >
+        <span class="message-bubble__sender">{{ senderName }}</span>
+      </div>
+      <div class="message-bubble__body">
+        <div
+          v-if="message.status === 'RECALLED'"
+          class="message-bubble__recalled"
+        >
+          <i class="bi bi-x-circle me-1" />
+          Tin nhắn đã được thu hồi
+        </div>
+        <div
+          v-else-if="message.contentType === 'TEXT'"
+          class="message-bubble__text"
+        >
+          {{ message.content }}
+        </div>
+        <div
+          v-else-if="message.contentType === 'EMOJI'"
+          class="message-bubble__emoji"
+        >
+          {{ message.metadata || message.content }}
+        </div>
+        <div
+          v-else-if="message.contentType === 'IMAGE' || message.contentType === 'VIDEO' || message.contentType === 'AUDIO' || message.contentType === 'FILE'"
+          class="message-bubble__attachment"
+        >
+          <div
+            v-if="message.content"
+            class="message-bubble__text mb-2"
+          >
+            {{ message.content }}
+          </div>
+          <div class="message-bubble__files">
+            <div
+              v-for="(file, index) in message.attachments"
+              :key="file.id || index"
+              class="message-bubble__file"
+            >
+              <div
+                v-if="message.contentType === 'IMAGE' && file.previewUrl"
+                class="message-bubble__image-preview"
+              >
+                <img
+                  :src="file.previewUrl || file.storedUrl"
+                  :alt="file.originalName"
+                  class="message-bubble__image"
+                  @click="handleFileClick(file)"
+                >
+              </div>
+              <div
+                v-else
+                class="message-bubble__file-item"
+                @click="handleFileClick(file)"
+              >
+                <i
+                  v-if="message.contentType === 'IMAGE'"
+                  class="bi bi-image me-2"
+                />
+                <i
+                  v-else-if="message.contentType === 'VIDEO'"
+                  class="bi bi-play-circle me-2"
+                />
+                <i
+                  v-else-if="message.contentType === 'AUDIO'"
+                  class="bi bi-music-note me-2"
+                />
+                <i
+                  v-else
+                  class="bi bi-file-earmark me-2"
+                />
+                <span>{{ file.originalName }}</span>
+                <a
+                  :href="file.storedUrl"
+                  target="_blank"
+                  class="ms-2"
+                  @click.stop
+                >
+                  <i class="bi bi-download" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="message-bubble__footer">
+        <span class="message-bubble__time">{{ formatTime(message.createdAt) }}</span>
+        <i
+          v-if="isOwn && message.seenByUserIds && message.seenByUserIds.length > 0"
+          class="bi bi-check2-all ms-1"
+          :style="{ color: 'var(--color-primary)' }"
+          :title="`Đã xem bởi ${message.seenByUserIds.length} người`"
+        />
+        <i
+          v-else-if="isOwn"
+          class="bi bi-check2 text-muted ms-1"
+        />
+      </div>
+    </div>
+    <div
+      v-if="message.status !== 'RECALLED' && isOwn"
+      class="message-bubble__actions"
+    >
+      <button
+        class="btn btn-sm btn-link text-muted p-0"
+        :title="'Thu hồi tin nhắn'"
+        @click="$emit('recall')"
+      >
+        <i class="bi bi-x-circle" />
+      </button>
+      <button
+        class="btn btn-sm btn-link text-muted p-0"
+        :title="'Xóa tin nhắn'"
+        @click="$emit('delete')"
+      >
+        <i class="bi bi-trash" />
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>

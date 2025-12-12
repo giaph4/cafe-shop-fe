@@ -1,60 +1,75 @@
 <template>
-    <section id="projects" class="portfolio-projects">
-        <div class="portfolio-projects__container">
-            <h2 class="portfolio-projects__title">
-                <span class="portfolio-projects__number">03.</span>
-                DEPLOYED PROTOCOLS
-            </h2>
+  <section
+    id="projects"
+    class="portfolio-projects"
+  >
+    <div class="portfolio-projects__container">
+      <h2 class="portfolio-projects__title">
+        <span class="portfolio-projects__number">03.</span>
+        DEPLOYED PROTOCOLS
+      </h2>
 
-            <div class="portfolio-projects__list">
-                <div 
-                    v-for="(project, index) in projects" 
-                    :key="index"
-                    class="portfolio-projects__item"
-                    :class="{ 'portfolio-projects__item--reverse': index % 2 !== 0 }"
-                    :ref="el => projectRefs[index] = el"
+      <div class="portfolio-projects__list">
+        <div
+          v-for="(project, index) in projects"
+          :key="index"
+          :ref="el => projectRefs[index] = el"
+          class="portfolio-projects__item"
+          :class="{ 'portfolio-projects__item--reverse': index % 2 !== 0 }"
+        >
+          <!-- Mockup Visual -->
+          <div
+            ref="visualRef"
+            class="portfolio-projects__visual"
+          >
+            <div class="portfolio-projects__mockup">
+              <div class="portfolio-projects__mockup-header">
+                <div class="portfolio-projects__mockup-dot portfolio-projects__mockup-dot--red" />
+                <div class="portfolio-projects__mockup-dot portfolio-projects__mockup-dot--yellow" />
+                <div class="portfolio-projects__mockup-dot portfolio-projects__mockup-dot--green" />
+              </div>
+              <div class="portfolio-projects__mockup-content">
+                <code class="portfolio-projects__code">
+                  <span class="portfolio-projects__code-annotation">@Service</span><br>
+                  public class <span class="portfolio-projects__code-class">{{ project.title.replace(/\s/g, '') }}</span> &#123;<br>
+                  &nbsp;&nbsp;<span class="portfolio-projects__code-annotation">@Autowired</span><br>
+                  &nbsp;&nbsp;private KafkaTemplate template;<br>
+                  &nbsp;&nbsp;<span class="portfolio-projects__code-comment">// Core logic optimized for high throughput</span><br>
+                  &#125;
+                </code>
+              </div>
+              <div class="portfolio-projects__mockup-overlay">
+                <button
+                  class="portfolio-projects__view-btn"
+                  @click="viewArchitecture(project)"
                 >
-                    <!-- Mockup Visual -->
-                    <div class="portfolio-projects__visual" ref="visualRef">
-                        <div class="portfolio-projects__mockup">
-                            <div class="portfolio-projects__mockup-header">
-                                <div class="portfolio-projects__mockup-dot portfolio-projects__mockup-dot--red"></div>
-                                <div class="portfolio-projects__mockup-dot portfolio-projects__mockup-dot--yellow"></div>
-                                <div class="portfolio-projects__mockup-dot portfolio-projects__mockup-dot--green"></div>
-                            </div>
-                            <div class="portfolio-projects__mockup-content">
-                                <code class="portfolio-projects__code">
-                                    <span class="portfolio-projects__code-annotation">@Service</span><br/>
-                                    public class <span class="portfolio-projects__code-class">{{ project.title.replace(/\s/g, '') }}</span> &#123;<br/>
-                                    &nbsp;&nbsp;<span class="portfolio-projects__code-annotation">@Autowired</span><br/>
-                                    &nbsp;&nbsp;private KafkaTemplate template;<br/>
-                                    &nbsp;&nbsp;<span class="portfolio-projects__code-comment">// Core logic optimized for high throughput</span><br/>
-                                    &#125;
-                                </code>
-                            </div>
-                            <div class="portfolio-projects__mockup-overlay">
-                                <button class="portfolio-projects__view-btn" @click="viewArchitecture(project)">
-                                    View Architecture
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="portfolio-projects__content">
-                        <span class="portfolio-projects__type">{{ project.type }}</span>
-                        <h3 class="portfolio-projects__name">{{ project.title }}</h3>
-                        <div class="portfolio-projects__description">
-                            {{ project.description }}
-                        </div>
-                        <div class="portfolio-projects__tags">
-                            <span v-for="tag in project.tags" :key="tag" class="portfolio-projects__tag">#{{ tag }}</span>
-                        </div>
-                    </div>
-                </div>
+                  View Architecture
+                </button>
+              </div>
             </div>
+          </div>
+
+          <!-- Content -->
+          <div class="portfolio-projects__content">
+            <span class="portfolio-projects__type">{{ project.type }}</span>
+            <h3 class="portfolio-projects__name">
+              {{ project.title }}
+            </h3>
+            <div class="portfolio-projects__description">
+              {{ project.description }}
+            </div>
+            <div class="portfolio-projects__tags">
+              <span
+                v-for="tag in project.tags"
+                :key="tag"
+                class="portfolio-projects__tag"
+              >#{{ tag }}</span>
+            </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -99,13 +114,13 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(projectRef, {
                         initial: { opacity: 0, x: index % 2 === 0 ? -100 : 100 },
-                        enter: { 
-                            opacity: 1, 
+                        enter: {
+                            opacity: 1,
                             x: 0,
-                            transition: { 
+                            transition: {
                                 delay: index * 0.2,
-                                duration: 0.8 
-                            } 
+                                duration: 0.8
+                            }
                         }
                     })
                 }

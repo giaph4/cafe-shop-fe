@@ -4,7 +4,7 @@
  * PERFORMANCE FIX: Sử dụng unified error handler từ utils
  */
 
-import { 
+import {
     handleError as handleErrorUtil,
     handleApiError as handleApiErrorUtil,
     extractErrorMessage,
@@ -18,7 +18,7 @@ import {
  * @param {boolean} options.showToast - Show toast on error (default: true)
  * @returns {Object} Error handling utilities
  */
-export function useErrorHandler(options = {}) {
+export function useErrorHandler (options = {}) {
     const {
         context = 'Component',
         showToast = true
@@ -30,24 +30,20 @@ export function useErrorHandler(options = {}) {
      * @param {string} [overrideContext] - Override context cho lần gọi này
      * @returns {string} Error message
      */
-    const handleError = (error, overrideContext) => {
-        return handleErrorUtil(error, {
-            context: overrideContext || context,
-            showToast
-        })
-    }
+    const handleError = (error, overrideContext) => handleErrorUtil(error, {
+        context: overrideContext || context,
+        showToast
+    })
 
     /**
      * Handle API error
      * @param {Error|AxiosError} error - Error object
      * @returns {string} Error message
      */
-    const handleApiError = (error) => {
-        return handleApiErrorUtil(error, {
-            context,
-            showToast
-        })
-    }
+    const handleApiError = (error) => handleApiErrorUtil(error, {
+        context,
+        showToast
+    })
 
     return {
         handleError,

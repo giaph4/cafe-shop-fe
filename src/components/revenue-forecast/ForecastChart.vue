@@ -1,21 +1,23 @@
 <template>
-    <div class="forecast-chart">
-        <apexchart
-            v-if="isMounted"
-            type="line"
-            height="400"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="forecast-chart">
+    <apexchart
+      v-if="isMounted"
+      type="line"
+      height="400"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
 import { computed, ref, onMounted, nextTick } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
+import { useChartOptions } from '@/composables/useChartOptions'
 
 const apexchart = VueApexCharts
 const isMounted = ref(false)
+const { createComputedChartOptions } = useChartOptions()
 
 onMounted(async () => {
     await nextTick()
@@ -40,22 +42,22 @@ const chartSeries = computed(() => {
         x: item.date,
         y: item.value
     }))
-    
+
     const forecastData = props.forecasts.map(item => ({
         x: item.date,
         y: item.forecast
     }))
-    
+
     const confidenceUpper = props.forecasts.map(item => ({
         x: item.date,
         y: item.confidenceUpper
     }))
-    
+
     const confidenceLower = props.forecasts.map(item => ({
         x: item.date,
         y: item.confidenceLower
     }))
-    
+
     return [
         {
             name: 'Lịch sử',
@@ -84,10 +86,12 @@ const chartSeries = computed(() => {
     ]
 })
 
-const chartOptions = computed(() => ({
+const baseChartOptions = createComputedChartOptions({
+    type: 'line',
+    height: 400,
+    colors: ['var(--color-text-muted)', 'var(--color-primary)', 'var(--color-info)', 'var(--color-info)'],
+    hasLegend: true,
     chart: {
-        type: 'line',
-        height: 400,
         toolbar: {
             show: true,
             tools: {
@@ -104,9 +108,6 @@ const chartOptions = computed(() => ({
             enabled: true,
             type: 'x'
         }
-    },
-    dataLabels: {
-        enabled: false
     },
     stroke: {
         curve: 'smooth',
@@ -130,35 +131,19 @@ const chartOptions = computed(() => ({
     xaxis: {
         type: 'datetime',
         labels: {
-            format: 'dd/MM/yyyy',
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
-            }
-        },
-        axisBorder: {
-            color: 'var(--color-border)'
-        },
-        axisTicks: {
-            color: 'var(--color-border)'
+            format: 'dd/MM/yyyy'
         }
     },
     yaxis: {
         labels: {
             formatter: (value) => {
                 if (value >= 1000000) {
-                    return (value / 1000000).toFixed(1) + 'M'
+                    return `${(value / 1000000).toFixed(1)}M`
                 }
                 if (value >= 1000) {
-                    return (value / 1000).toFixed(1) + 'K'
+                    return `${(value / 1000).toFixed(1)}K`
                 }
                 return value.toFixed(0)
-            },
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
             }
         },
         title: {
@@ -172,34 +157,20 @@ const chartOptions = computed(() => ({
         }
     },
     tooltip: {
-        shared: true,
-        intersect: false,
         y: {
-            formatter: (value) => {
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(value)
-            }
+            formatter: (value) => new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(value)
         },
         x: {
             format: 'dd/MM/yyyy'
         }
-    },
-    legend: {
-        position: 'top',
-        horizontalAlign: 'right',
-        fontFamily: 'var(--font-family-sans)',
-        fontSize: '12px',
-        labels: {
-            colors: 'var(--color-text)'
-        }
-    },
-    grid: {
-        borderColor: 'var(--color-border)',
-        strokeDashArray: 4
-    },
-    colors: ['var(--color-text-muted)', 'var(--color-primary)', 'var(--color-info)', 'var(--color-info)'],
+    }
+})
+
+const chartOptions = computed(() => ({
+    ...baseChartOptions.value,
     annotations: {
         xaxis: props.historical.length > 0 ? [{
             x: new Date(props.historical[props.historical.length - 1].date).getTime(),
@@ -215,9 +186,6 @@ const chartOptions = computed(() => ({
                 }
             }
         }] : []
-    },
-    theme: {
-        mode: 'light'
     }
 }))
 </script>

@@ -11,5 +11,20 @@ export default defineConfig({
   },
   define: {
     global: 'window'
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'chart-vendor': ['vue3-apexcharts'],
+          'ui-vendor': ['primevue', 'bootstrap'],
+          'form-vendor': ['vee-validate', 'yup'],
+          'query-vendor': ['@tanstack/vue-query'],
+          'utils-vendor': ['axios', 'dompurify']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   }
 })

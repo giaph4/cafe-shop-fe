@@ -1,206 +1,319 @@
 <template>
-    <div class="staff-dashboard-tab">
-        <!-- Top Row: KPI Cards -->
-        <div class="row g-4 mb-4" v-if="dashboardData">
-            <!-- DOANH THU CỦA TÔI -->
-            <div class="col-md-3 col-sm-6" v-if="dashboardData.performance">
-                <div class="kpi-card kpi-card--revenue">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-cash-stack"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Doanh thu của tôi:</div>
-                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.performance.totalRevenue || 0) }}</div>
-                        <div class="kpi-card__detail">{{ formatNumber(dashboardData.performance.totalOrders || 0) }} đơn hàng</div>
-                    </div>
-                </div>
+  <div class="staff-dashboard-tab">
+    <!-- Top Row: KPI Cards -->
+    <div
+      v-if="dashboardData"
+      class="row g-4 mb-4"
+    >
+      <!-- DOANH THU CỦA TÔI -->
+      <div
+        v-if="dashboardData.performance"
+        class="col-md-3 col-sm-6"
+      >
+        <div class="kpi-card kpi-card--revenue">
+          <div class="kpi-card__icon">
+            <i class="bi bi-cash-stack" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Doanh thu của tôi:
             </div>
-
-            <!-- GIÁ TRỊ ĐƠN TRUNG BÌNH -->
-            <div class="col-md-3 col-sm-6" v-if="dashboardData.performance">
-                <div class="kpi-card kpi-card--average">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-tag"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Giá trị đơn trung bình:</div>
-                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.performance.averageOrderValue || 0) }}</div>
-                    </div>
-                </div>
+            <div class="kpi-card__value">
+              {{ formatCurrency(dashboardData.performance.totalRevenue || 0) }}
             </div>
-
-            <!-- CA TRONG TUẦN -->
-            <div class="col-md-3 col-sm-6" v-if="dashboardData.shiftSummary">
-                <div class="kpi-card kpi-card--shifts">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-calendar-week"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Ca trong tuần:</div>
-                        <div class="kpi-card__value">{{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek || 0) }}</div>
-                        <div class="kpi-card__detail">{{ formatNumber(dashboardData.shiftSummary.completedShifts || 0) }} đã hoàn thành</div>
-                    </div>
-                </div>
+            <div class="kpi-card__detail">
+              {{ formatNumber(dashboardData.performance.totalOrders || 0) }} đơn hàng
             </div>
-
-            <!-- LƯƠNG ƯỚC TÍNH -->
-            <div class="col-md-3 col-sm-6" v-if="dashboardData.payroll">
-                <div class="kpi-card kpi-card--salary">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-coin"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Lương ước tính:</div>
-                        <div class="kpi-card__value">{{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle || 0) }}</div>
-                        <div class="kpi-card__detail">Đã nhận: {{ formatCurrency(dashboardData.payroll.lastCyclePaid || 0) }}</div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Middle Row: Attendance & Shift Summary -->
-        <div class="row g-4 mb-4">
-            <!-- Trạng thái Chấm công -->
-            <div class="col-lg-6" v-if="dashboardData?.attendance">
-                <div class="card info-card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="info-card__icon">
-                                <i class="bi bi-clock-history"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Trạng thái Chấm công</h5>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="attendance-status">
-                            <div class="attendance-status__indicator" :class="dashboardData.attendance.currentlyCheckedIn ? 'attendance-status__indicator--active' : 'attendance-status__indicator--inactive'">
-                                <i :class="dashboardData.attendance.currentlyCheckedIn ? 'bi bi-check-circle' : 'bi bi-clock'"></i>
-                            </div>
-                            <div class="attendance-status__info">
-                                <div class="attendance-status__label">
-                                    {{ dashboardData.attendance.currentlyCheckedIn ? 'Đang làm việc' : 'Chưa check-in' }}
-                                </div>
-                                <div class="attendance-status__detail">
-                                    Đúng giờ liên tiếp: {{ formatNumber(dashboardData.attendance.consecutiveOnTimeDays || 0) }} ngày
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <!-- GIÁ TRỊ ĐƠN TRUNG BÌNH -->
+      <div
+        v-if="dashboardData.performance"
+        class="col-md-3 col-sm-6"
+      >
+        <div class="kpi-card kpi-card--average">
+          <div class="kpi-card__icon">
+            <i class="bi bi-tag" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Giá trị đơn trung bình:
             </div>
-
-            <!-- Tóm tắt Ca làm -->
-            <div class="col-lg-6" v-if="dashboardData?.shiftSummary">
-                <div class="card info-card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="info-card__icon">
-                                <i class="bi bi-calendar-week"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Tóm tắt Ca làm</h5>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="shift-summary">
-                            <div class="shift-summary__item">
-                                <div class="shift-summary__label">CA TRONG TUẦN</div>
-                                <div class="shift-summary__value">{{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek || 0) }}</div>
-                            </div>
-                            <div class="shift-summary__item">
-                                <div class="shift-summary__label">ĐÃ HOÀN THÀNH</div>
-                                <div class="shift-summary__value shift-summary__value--success">{{ formatNumber(dashboardData.shiftSummary.completedShifts || 0) }}</div>
-                            </div>
-                            <div class="shift-summary__item">
-                                <div class="shift-summary__label">CHỜ XỬ LÝ</div>
-                                <div class="shift-summary__value shift-summary__value--warning">{{ formatNumber(dashboardData.shiftSummary.pendingShifts || 0) }}</div>
-                            </div>
-                            <div class="shift-summary__item">
-                                <div class="shift-summary__label">ĐI MUỘN</div>
-                                <div class="shift-summary__value shift-summary__value--danger">{{ formatNumber(dashboardData.shiftSummary.lateCheckIns || 0) }}</div>
-                            </div>
-                            <div class="shift-summary__item">
-                                <div class="shift-summary__label">VỀ SỚM</div>
-                                <div class="shift-summary__value shift-summary__value--info">{{ formatNumber(dashboardData.shiftSummary.earlyCheckOuts || 0) }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="kpi-card__value">
+              {{ formatCurrency(dashboardData.performance.averageOrderValue || 0) }}
             </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Bottom Row: Performance & Payroll Details -->
-        <div class="row g-4">
-            <!-- Hiệu suất của tôi -->
-            <div class="col-lg-6" v-if="dashboardData?.performance">
-                <div class="card info-card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="info-card__icon">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Hiệu suất của tôi</h5>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="performance-metrics">
-                            <div class="performance-metrics__item">
-                                <div class="performance-metrics__label">TỔNG ĐƠN HÀNG</div>
-                                <div class="performance-metrics__value">{{ formatNumber(dashboardData.performance.totalOrders || 0) }}</div>
-                            </div>
-                            <div class="performance-metrics__item">
-                                <div class="performance-metrics__label">PHẢN HỒI TÍCH CỰC</div>
-                                <div class="performance-metrics__value performance-metrics__value--success">{{ formatNumber(dashboardData.performance.positiveFeedbacks || 0) }}</div>
-                            </div>
-                            <div class="performance-metrics__item">
-                                <div class="performance-metrics__label">PHẢN HỒI TIÊU CỰC</div>
-                                <div class="performance-metrics__value performance-metrics__value--danger">{{ formatNumber(dashboardData.performance.negativeFeedbacks || 0) }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <!-- CA TRONG TUẦN -->
+      <div
+        v-if="dashboardData.shiftSummary"
+        class="col-md-3 col-sm-6"
+      >
+        <div class="kpi-card kpi-card--shifts">
+          <div class="kpi-card__icon">
+            <i class="bi bi-calendar-week" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Ca trong tuần:
             </div>
-
-            <!-- Chi tiết Lương -->
-            <div class="col-lg-6" v-if="dashboardData?.payroll">
-                <div class="card info-card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="info-card__icon">
-                                <i class="bi bi-cash-coin"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Chi tiết Lương</h5>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="payroll-details">
-                            <div class="payroll-details__item">
-                                <div class="payroll-details__label">LƯƠNG ƯỚC TÍNH</div>
-                                <div class="payroll-details__value">{{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle || 0) }}</div>
-                            </div>
-                            <div class="payroll-details__item">
-                                <div class="payroll-details__label">ĐÃ NHẬN KỲ TRƯỚC</div>
-                                <div class="payroll-details__value">{{ formatCurrency(dashboardData.payroll.lastCyclePaid || 0) }}</div>
-                            </div>
-                            <div class="payroll-details__item">
-                                <div class="payroll-details__label">TỔNG THƯỞNG</div>
-                                <div class="payroll-details__value payroll-details__value--success">{{ formatCurrency(dashboardData.payroll.bonusTotal || 0) }}</div>
-                            </div>
-                            <div class="payroll-details__item">
-                                <div class="payroll-details__label">TỔNG PHẠT</div>
-                                <div class="payroll-details__value payroll-details__value--danger">{{ formatCurrency(dashboardData.payroll.penaltyTotal || 0) }}</div>
-                            </div>
-                            <div class="payroll-details__item">
-                                <div class="payroll-details__label">ĐIỀU CHỈNH BỔ SUNG</div>
-                                <div class="payroll-details__value" :class="(dashboardData.payroll.adjustmentNet || 0) >= 0 ? 'payroll-details__value--success' : 'payroll-details__value--danger'">
-                                    {{ formatCurrency(dashboardData.payroll.adjustmentNet || 0) }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek || 0) }}
             </div>
+            <div class="kpi-card__detail">
+              {{ formatNumber(dashboardData.shiftSummary.completedShifts || 0) }} đã hoàn thành
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- LƯƠNG ƯỚC TÍNH -->
+      <div
+        v-if="dashboardData.payroll"
+        class="col-md-3 col-sm-6"
+      >
+        <div class="kpi-card kpi-card--salary">
+          <div class="kpi-card__icon">
+            <i class="bi bi-coin" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Lương ước tính:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle || 0) }}
+            </div>
+            <div class="kpi-card__detail">
+              Đã nhận: {{ formatCurrency(dashboardData.payroll.lastCyclePaid || 0) }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Middle Row: Attendance & Shift Summary -->
+    <div class="row g-4 mb-4">
+      <!-- Trạng thái Chấm công -->
+      <div
+        v-if="dashboardData?.attendance"
+        class="col-lg-6"
+      >
+        <div class="card info-card">
+          <div class="card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="info-card__icon">
+                <i class="bi bi-clock-history" />
+              </div>
+              <h5 class="card-title mb-0">
+                Trạng thái Chấm công
+              </h5>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="attendance-status">
+              <div
+                class="attendance-status__indicator"
+                :class="dashboardData.attendance.currentlyCheckedIn ? 'attendance-status__indicator--active' : 'attendance-status__indicator--inactive'"
+              >
+                <i :class="dashboardData.attendance.currentlyCheckedIn ? 'bi bi-check-circle' : 'bi bi-clock'" />
+              </div>
+              <div class="attendance-status__info">
+                <div class="attendance-status__label">
+                  {{ dashboardData.attendance.currentlyCheckedIn ? 'Đang làm việc' : 'Chưa check-in' }}
+                </div>
+                <div class="attendance-status__detail">
+                  Đúng giờ liên tiếp: {{ formatNumber(dashboardData.attendance.consecutiveOnTimeDays || 0) }} ngày
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tóm tắt Ca làm -->
+      <div
+        v-if="dashboardData?.shiftSummary"
+        class="col-lg-6"
+      >
+        <div class="card info-card">
+          <div class="card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="info-card__icon">
+                <i class="bi bi-calendar-week" />
+              </div>
+              <h5 class="card-title mb-0">
+                Tóm tắt Ca làm
+              </h5>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="shift-summary">
+              <div class="shift-summary__item">
+                <div class="shift-summary__label">
+                  CA TRONG TUẦN
+                </div>
+                <div class="shift-summary__value">
+                  {{ formatNumber(dashboardData.shiftSummary.shiftsThisWeek || 0) }}
+                </div>
+              </div>
+              <div class="shift-summary__item">
+                <div class="shift-summary__label">
+                  ĐÃ HOÀN THÀNH
+                </div>
+                <div class="shift-summary__value shift-summary__value--success">
+                  {{ formatNumber(dashboardData.shiftSummary.completedShifts || 0) }}
+                </div>
+              </div>
+              <div class="shift-summary__item">
+                <div class="shift-summary__label">
+                  CHỜ XỬ LÝ
+                </div>
+                <div class="shift-summary__value shift-summary__value--warning">
+                  {{ formatNumber(dashboardData.shiftSummary.pendingShifts || 0) }}
+                </div>
+              </div>
+              <div class="shift-summary__item">
+                <div class="shift-summary__label">
+                  ĐI MUỘN
+                </div>
+                <div class="shift-summary__value shift-summary__value--danger">
+                  {{ formatNumber(dashboardData.shiftSummary.lateCheckIns || 0) }}
+                </div>
+              </div>
+              <div class="shift-summary__item">
+                <div class="shift-summary__label">
+                  VỀ SỚM
+                </div>
+                <div class="shift-summary__value shift-summary__value--info">
+                  {{ formatNumber(dashboardData.shiftSummary.earlyCheckOuts || 0) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Performance & Payroll Details -->
+    <div class="row g-4">
+      <!-- Hiệu suất của tôi -->
+      <div
+        v-if="dashboardData?.performance"
+        class="col-lg-6"
+      >
+        <div class="card info-card">
+          <div class="card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="info-card__icon">
+                <i class="bi bi-graph-up" />
+              </div>
+              <h5 class="card-title mb-0">
+                Hiệu suất của tôi
+              </h5>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="performance-metrics">
+              <div class="performance-metrics__item">
+                <div class="performance-metrics__label">
+                  TỔNG ĐƠN HÀNG
+                </div>
+                <div class="performance-metrics__value">
+                  {{ formatNumber(dashboardData.performance.totalOrders || 0) }}
+                </div>
+              </div>
+              <div class="performance-metrics__item">
+                <div class="performance-metrics__label">
+                  PHẢN HỒI TÍCH CỰC
+                </div>
+                <div class="performance-metrics__value performance-metrics__value--success">
+                  {{ formatNumber(dashboardData.performance.positiveFeedbacks || 0) }}
+                </div>
+              </div>
+              <div class="performance-metrics__item">
+                <div class="performance-metrics__label">
+                  PHẢN HỒI TIÊU CỰC
+                </div>
+                <div class="performance-metrics__value performance-metrics__value--danger">
+                  {{ formatNumber(dashboardData.performance.negativeFeedbacks || 0) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chi tiết Lương -->
+      <div
+        v-if="dashboardData?.payroll"
+        class="col-lg-6"
+      >
+        <div class="card info-card">
+          <div class="card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="info-card__icon">
+                <i class="bi bi-cash-coin" />
+              </div>
+              <h5 class="card-title mb-0">
+                Chi tiết Lương
+              </h5>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="payroll-details">
+              <div class="payroll-details__item">
+                <div class="payroll-details__label">
+                  LƯƠNG ƯỚC TÍNH
+                </div>
+                <div class="payroll-details__value">
+                  {{ formatCurrency(dashboardData.payroll.estimatedCurrentCycle || 0) }}
+                </div>
+              </div>
+              <div class="payroll-details__item">
+                <div class="payroll-details__label">
+                  ĐÃ NHẬN KỲ TRƯỚC
+                </div>
+                <div class="payroll-details__value">
+                  {{ formatCurrency(dashboardData.payroll.lastCyclePaid || 0) }}
+                </div>
+              </div>
+              <div class="payroll-details__item">
+                <div class="payroll-details__label">
+                  TỔNG THƯỞNG
+                </div>
+                <div class="payroll-details__value payroll-details__value--success">
+                  {{ formatCurrency(dashboardData.payroll.bonusTotal || 0) }}
+                </div>
+              </div>
+              <div class="payroll-details__item">
+                <div class="payroll-details__label">
+                  TỔNG PHẠT
+                </div>
+                <div class="payroll-details__value payroll-details__value--danger">
+                  {{ formatCurrency(dashboardData.payroll.penaltyTotal || 0) }}
+                </div>
+              </div>
+              <div class="payroll-details__item">
+                <div class="payroll-details__label">
+                  ĐIỀU CHỈNH BỔ SUNG
+                </div>
+                <div
+                  class="payroll-details__value"
+                  :class="(dashboardData.payroll.adjustmentNet || 0) >= 0 ? 'payroll-details__value--success' : 'payroll-details__value--danger'"
+                >
+                  {{ formatCurrency(dashboardData.payroll.adjustmentNet || 0) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -483,7 +596,7 @@ defineProps({
         text-align: center;
         min-height: auto;
     }
-    
+
     .kpi-card__icon {
         width: 48px;
         height: 48px;
@@ -493,12 +606,12 @@ defineProps({
     .shift-summary {
         grid-template-columns: 1fr;
     }
-    
+
     .attendance-status {
         flex-direction: column;
         text-align: center;
     }
-    
+
     .attendance-status__indicator {
         width: 56px;
         height: 56px;

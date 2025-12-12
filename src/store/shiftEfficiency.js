@@ -7,53 +7,53 @@ export const useShiftEfficiencyStore = defineStore('shiftEfficiency', () => {
     const loading = ref(false)
     const error = ref(null)
     const efficiencyData = ref(null)
-    
-    const hasData = computed(() => !!efficiencyData.value)
-    
+
+    const hasData = computed(() => Boolean(efficiencyData.value))
+
     const shifts = computed(() => {
         if (!efficiencyData.value) return []
         return efficiencyData.value.shifts || []
     })
-    
+
     const hourlyAnalysis = computed(() => {
         if (!efficiencyData.value) return []
         return efficiencyData.value.hourlyAnalysis || []
     })
-    
+
     const topShifts = computed(() => {
         if (!efficiencyData.value) return []
         return efficiencyData.value.topShifts || []
     })
-    
+
     const lowEfficiencyShifts = computed(() => {
         if (!efficiencyData.value) return []
         return efficiencyData.value.lowEfficiencyShifts || []
     })
-    
+
     const recommendations = computed(() => {
         if (!efficiencyData.value) return []
         return efficiencyData.value.recommendations || []
     })
-    
+
     const summary = computed(() => {
         if (!efficiencyData.value) return null
         return efficiencyData.value.summary || null
     })
-    
+
     const analyzeEfficiency = async ({ startDate, endDate } = {}) => {
         loading.value = true
         error.value = null
-        
+
         try {
             const data = await shiftEfficiencyService.analyzeShiftEfficiency({
                 startDate,
                 endDate
             })
-            
+
             efficiencyData.value = data
-            logger.log('[ShiftEfficiency] Analysis completed', { 
+            logger.log('[ShiftEfficiency] Analysis completed', {
                 shiftCount: data.shifts.length,
-                period: data.period 
+                period: data.period
             })
             return data
         } catch (err) {
@@ -64,12 +64,12 @@ export const useShiftEfficiencyStore = defineStore('shiftEfficiency', () => {
             loading.value = false
         }
     }
-    
+
     const exportReport = async () => {
         if (!efficiencyData.value) {
             throw new Error('Chưa có dữ liệu để xuất')
         }
-        
+
         try {
             const exportData = await shiftEfficiencyService.exportEfficiencyReport(efficiencyData.value)
             return exportData
@@ -78,12 +78,12 @@ export const useShiftEfficiencyStore = defineStore('shiftEfficiency', () => {
             throw err
         }
     }
-    
+
     const reset = () => {
         efficiencyData.value = null
         error.value = null
     }
-    
+
     return {
         loading,
         error,

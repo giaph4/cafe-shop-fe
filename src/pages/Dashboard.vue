@@ -1,115 +1,135 @@
 <template>
-    <div class="dashboard" data-aos="fade-up">
-        <section class="dashboard__header">
-            <div class="filter-card">
-                <div class="filter-card__body">
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label class="filter-label">Khoảng thời gian</label>
-                            <div class="preset-buttons">
-                                <button
-                                    v-for="preset in presets"
-                                    :key="preset.value"
-                                    class="preset-btn"
-                                    :class="{ 'is-active': rangePreset === preset.value }"
-                                    @click="handlePresetClick(preset.value)"
-                                >
-                                    {{ preset.label }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="filter-group">
-                            <label class="filter-label">Từ ngày</label>
-                            <input 
-                                type="date" 
-                                class="filter-input" 
-                                v-model="filters.startDate" 
-                                @change="fetchData"
-                            />
-                        </div>
-
-                        <div class="filter-group">
-                            <label class="filter-label">Đến ngày</label>
-                            <input 
-                                type="date" 
-                                class="filter-input" 
-                                v-model="filters.endDate" 
-                                @change="fetchData"
-                            />
-                        </div>
-
-                        <div class="filter-group">
-                            <button class="filter-btn" @click="fetchData">
-                                <i class="bi bi-arrow-clockwise me-2"></i>
-                                Cập nhật
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="dashboard__tabs">
-            <div class="tabs">
+  <div
+    class="dashboard"
+    data-aos="fade-up"
+  >
+    <section class="dashboard__header">
+      <div class="filter-card">
+        <div class="filter-card__body">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label class="filter-label">Khoảng thời gian</label>
+              <div class="preset-buttons">
                 <button
-                    v-for="tab in tabs"
-                    :key="tab.key"
-                    class="tab"
-                    :class="{ active: activeTab === tab.key }"
-                    @click="activeTab = tab.key"
+                  v-for="preset in presets"
+                  :key="preset.value"
+                  class="preset-btn"
+                  :class="{ 'is-active': rangePreset === preset.value }"
+                  @click="handlePresetClick(preset.value)"
                 >
-                    <i :class="tab.icon"></i>
-                    <span>{{ tab.label }}</span>
+                  {{ preset.label }}
                 </button>
-                <router-link to="/realtime-dashboard" class="tab tab-realtime">
-                    <i class="bi bi-activity"></i>
-                    <span>Thời gian Thực</span>
-                </router-link>
+              </div>
             </div>
-        </section>
 
-        <section class="dashboard__content">
-            <LoadingState v-if="loading" />
-            <ErrorState 
-                v-else-if="error" 
-                :message="typeof error === 'string' ? error : 'Đã xảy ra lỗi khi tải dữ liệu'" 
-                @retry="fetchData"
-            />
+            <div class="filter-group">
+              <label class="filter-label">Từ ngày</label>
+              <input
+                v-model="filters.startDate"
+                type="date"
+                class="filter-input"
+                @change="fetchData"
+              >
+            </div>
 
-            <Transition v-else name="fade" mode="out-in">
-                <div :key="activeTab">
-                    <OverviewTab
-                        v-if="activeTab === 'overview'"
-                        :stats="stats"
-                        :revenue-series="revenueSeries"
-                        :revenue-options="revenueOptions"
-                        :payment-stats="paymentStats"
-                        :sales-comparison="salesComparison"
-                    />
+            <div class="filter-group">
+              <label class="filter-label">Đến ngày</label>
+              <input
+                v-model="filters.endDate"
+                type="date"
+                class="filter-input"
+                @change="fetchData"
+              >
+            </div>
 
-                    <RevenueTab
-                        v-else-if="activeTab === 'revenue'"
-                        :revenue-series="revenueSeries"
-                        :revenue-options="revenueOptions"
-                        :profit-series="profitSeries"
-                        :profit-options="profitOptions"
-                        :category-sales="categorySales"
-                        :hourly-sales="hourlySales"
-                        :product-summary="productSummary"
-                    />
+            <div class="filter-group">
+              <button
+                class="filter-btn"
+                @click="fetchData"
+              >
+                <i class="bi bi-arrow-clockwise me-2" />
+                Cập nhật
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-                    <CustomersTab
-                        v-else-if="activeTab === 'customers'"
-                        :top-customers="topCustomers"
-                        :staff-performance="staffPerformance"
-                        :total-expenses="totalExpenses"
-                        :total-imported-cost="totalImportedCost"
-                    />
-                </div>
-            </Transition>
-        </section>
-    </div>
+    <section class="dashboard__tabs">
+      <div class="tabs">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          class="tab"
+          :class="{ active: activeTab === tab.key }"
+          @click="activeTab = tab.key"
+        >
+          <i :class="tab.icon" />
+          <span>{{ tab.label }}</span>
+        </button>
+        <router-link
+          to="/realtime-dashboard"
+          class="tab tab-realtime"
+        >
+          <i class="bi bi-activity" />
+          <span>Thời gian Thực</span>
+        </router-link>
+        <router-link
+          to="/custom-dashboard"
+          class="tab tab-custom"
+        >
+          <i class="bi bi-grid-3x3-gap" />
+          <span>Dashboard Tùy chỉnh</span>
+        </router-link>
+      </div>
+    </section>
+
+    <section class="dashboard__content">
+      <LoadingState v-if="loading" />
+      <ErrorState
+        v-else-if="error"
+        :message="typeof error === 'string' ? error : 'Đã xảy ra lỗi khi tải dữ liệu'"
+        @retry="fetchData"
+      />
+
+      <Transition
+        v-else
+        name="fade"
+        mode="out-in"
+      >
+        <div :key="activeTab">
+          <OverviewTab
+            v-if="activeTab === 'overview'"
+            :stats="stats"
+            :revenue-series="revenueSeries"
+            :revenue-options="revenueOptions"
+            :payment-stats="paymentStats"
+            :sales-comparison="salesComparison"
+          />
+
+          <RevenueTab
+            v-else-if="activeTab === 'revenue'"
+            :revenue-series="revenueSeries"
+            :revenue-options="revenueOptions"
+            :profit-series="profitSeries"
+            :profit-options="profitOptions"
+            :category-sales="categorySales"
+            :hourly-sales="hourlySales"
+            :product-summary="productSummary"
+          />
+
+          <CustomersTab
+            v-else-if="activeTab === 'customers'"
+            :top-customers="topCustomers"
+            :staff-performance="staffPerformance"
+            :total-expenses="totalExpenses"
+            :total-imported-cost="totalImportedCost"
+          />
+        </div>
+      </Transition>
+    </section>
+  </div>
 </template>
 
 <script setup>
@@ -137,6 +157,7 @@ import { formatCurrency } from '@/utils/formatters'
 import { useDashboardEvents } from '@/composables/useWebSocketEvents'
 import { useAsyncOperation } from '@/composables/useAsyncOperation'
 import { useDateRangeFilter } from '@/composables/useDateRangeFilter'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 const { filters, presets, applyPreset, computePreviousRange, validate } = useDateRangeFilter(7)
 
@@ -151,15 +172,15 @@ const handlePresetClick = (presetValue) => {
 }
 
 const tabs = [
-    {key: 'overview', label: 'Tổng quan', icon: 'bi bi-speedometer2'},
-    {key: 'revenue', label: 'Doanh thu', icon: 'bi bi-cash-coin'},
-    {key: 'customers', label: 'Khách hàng & Nhân sự', icon: 'bi bi-people'}
+    { key: 'overview', label: 'Tổng quan', icon: 'bi bi-speedometer2' },
+    { key: 'revenue', label: 'Doanh thu', icon: 'bi bi-cash-coin' },
+    { key: 'customers', label: 'Khách hàng & Nhân sự', icon: 'bi bi-people' }
 ]
 
 const stats = ref(null)
-const revenueSeries = ref([{name: 'Doanh thu', data: []}])
+const revenueSeries = ref([{ name: 'Doanh thu', data: [] }])
 const revenueOptions = ref({})
-const profitSeries = ref([{name: 'Doanh thu', data: []}, {name: 'Lợi nhuận', data: []}])
+const profitSeries = ref([{ name: 'Doanh thu', data: [] }, { name: 'Lợi nhuận', data: [] }])
 const profitOptions = ref({})
 const categorySales = ref([])
 const hourlySales = ref([])
@@ -178,9 +199,9 @@ const handleDashboardEvent = (payload) => {
     // Xử lý các loại events từ backend
     // Ví dụ: ORDER_CREATED, ORDER_PAID, EXPENSE_ADDED, etc.
     const eventType = payload?.eventType || payload?.type
-    
+
     if (!eventType) return
-    
+
     // Nếu có event mới, refresh data (có thể chỉ refresh một phần để tối ưu)
     // Hoặc update trực tiếp data dựa trên event type
     switch (eventType) {
@@ -286,7 +307,7 @@ const buildRevenueOptions = (categories) => {
     // Sử dụng CSS variables thông qua computed style
     const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#2C3E50'
     const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280'
-    
+
     return {
         chart: { type: 'area', toolbar: { show: false } },
         xaxis: {
@@ -301,7 +322,7 @@ const buildRevenueOptions = (categories) => {
         colors: [primaryColor],
         fill: {
             type: 'solid',
-            opacity: 0.15,
+            opacity: 0.15
         }
     }
 }
@@ -310,16 +331,37 @@ const buildProfitOptions = () => {
     // Sử dụng CSS variables thông qua computed style
     const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#2C3E50'
     const successColor = getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim() || '#27ae60'
-    
+
     return {
-        chart: {type: 'bar', toolbar: {show: false}},
-        plotOptions: {bar: {columnWidth: '45%', borderRadius: 6}},
-        dataLabels: {enabled: false},
-        xaxis: {categories: ['Kỳ hiện tại']},
-        yaxis: {labels: {formatter: (val) => formatCurrency(val)}},
+        chart: { type: 'bar', toolbar: { show: false } },
+        plotOptions: { bar: { columnWidth: '45%', borderRadius: 6 } },
+        dataLabels: { enabled: false },
+        xaxis: { categories: ['Kỳ hiện tại'] },
+        yaxis: { labels: { formatter: (val) => formatCurrency(val) } },
         colors: [primaryColor, successColor]
     }
 }
+
+// Setup keyboard shortcuts
+useKeyboardShortcuts({
+    page: 'dashboard',
+    shortcuts: {
+        'refresh': {
+            handler: () => {
+                fetchData()
+            }
+        },
+        'fullscreen': {
+            handler: () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen()
+                } else {
+                    document.exitFullscreen()
+                }
+            }
+        }
+    }
+})
 
 onMounted(() => {
     fetchData()
@@ -511,6 +553,18 @@ onBeforeUnmount(() => {
 
 .tab-realtime:hover {
     background: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.tab-custom {
+    background: var(--color-soft-secondary);
+    color: var(--color-secondary);
+    border: 1px solid var(--color-secondary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.tab-custom:hover {
+    background: var(--color-secondary);
     color: var(--color-text-inverse);
 }
 

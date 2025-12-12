@@ -1,192 +1,251 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="customer-detail-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="customer-detail-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Chi tiết khách hàng: <strong>{{ customer.fullName }}</strong></h5>
-                            <p class="modal-subtitle mb-0">Xem thông tin chi tiết và phân tích hành vi</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <LoadingState v-if="loadingInsights" text="Đang tải insights..." />
-                        <div v-else-if="insights">
-                            <div class="row g-4 mb-4">
-                                <div class="col-md-6">
-                                    <div class="info-section">
-                                        <h6 class="section-title mb-3">
-                                            <i class="bi bi-person me-2"></i>
-                                            Thông tin khách hàng
-                                        </h6>
-                                        <div class="info-grid">
-                                            <div class="info-item">
-                                                <span class="info-label">Họ tên:</span>
-                                                <span class="info-value fw-semibold">{{ customer.fullName }}</span>
-                                            </div>
-                                            <div class="info-item">
-                                                <span class="info-label">SĐT:</span>
-                                                <span class="info-value">{{ customer.phone || 'N/A' }}</span>
-                                            </div>
-                                            <div class="info-item">
-                                                <span class="info-label">Email:</span>
-                                                <span class="info-value">{{ customer.email || 'N/A' }}</span>
-                                            </div>
-                                            <div class="info-item">
-                                                <span class="info-label">Phân loại:</span>
-                                                <span class="info-value">
-                                                    <span class="badge badge-soft" :class="getSegmentClass(customer.segment)">
-                                                        {{ customer.segment }}
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="info-section">
-                                        <h6 class="section-title mb-3">
-                                            <i class="bi bi-graph-up me-2"></i>
-                                            Chỉ số RFM
-                                        </h6>
-                                        <div class="row g-3">
-                                            <div class="col-6">
-                                                <div class="stat-box">
-                                                    <div class="stat-icon stat-icon--primary">
-                                                        <i class="bi bi-clock-history"></i>
-                                                    </div>
-                                                    <div class="stat-content">
-                                                        <div class="stat-label">Recency</div>
-                                                        <div class="stat-value">{{ customer.metrics.recency }} ngày</div>
-                                                        <div class="stat-subtitle">Score: {{ customer.metrics.rScore }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="stat-box">
-                                                    <div class="stat-icon stat-icon--success">
-                                                        <i class="bi bi-repeat"></i>
-                                                    </div>
-                                                    <div class="stat-content">
-                                                        <div class="stat-label">Frequency</div>
-                                                        <div class="stat-value">{{ customer.metrics.frequency }}</div>
-                                                        <div class="stat-subtitle">Score: {{ customer.metrics.fScore }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="stat-box">
-                                                    <div class="stat-icon stat-icon--warning">
-                                                        <i class="bi bi-cash-stack"></i>
-                                                    </div>
-                                                    <div class="stat-content">
-                                                        <div class="stat-label">Monetary</div>
-                                                        <div class="stat-value">{{ formatCurrency(customer.metrics.monetary) }}</div>
-                                                        <div class="stat-subtitle">Score: {{ customer.metrics.mScore }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="stat-box">
-                                                    <div class="stat-icon stat-icon--info">
-                                                        <i class="bi bi-star"></i>
-                                                    </div>
-                                                    <div class="stat-content">
-                                                        <div class="stat-label">RFM Score</div>
-                                                        <div class="stat-value">{{ customer.metrics.rfmScore }}</div>
-                                                        <div class="stat-subtitle">Tổng điểm</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row g-4 mb-4">
-                                <div class="col-12">
-                                    <div class="info-section">
-                                        <h6 class="section-title mb-3">
-                                            <i class="bi bi-lightbulb me-2"></i>
-                                            Đề xuất
-                                        </h6>
-                                        <div v-if="insights.recommendations && insights.recommendations.length > 0" class="recommendations-list">
-                                            <div
-                                                v-for="(rec, index) in insights.recommendations"
-                                                :key="index"
-                                                class="recommendation-item"
-                                                :class="getRecommendationClass(rec.type)"
-                                            >
-                                                <i :class="getRecommendationIcon(rec.type)" class="me-2"></i>
-                                                <span>{{ rec.message }}</span>
-                                            </div>
-                                        </div>
-                                        <div v-else class="text-muted">
-                                            Không có đề xuất nào tại thời điểm này
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row g-4">
-                                <div class="col-12">
-                                    <div class="info-section">
-                                        <h6 class="section-title mb-3">
-                                            <i class="bi bi-list-check me-2"></i>
-                                            Chi tiết metrics
-                                        </h6>
-                                        <div class="table-responsive">
-                                            <table class="table table-minimal">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Chỉ số</th>
-                                                        <th>Giá trị</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Tổng chi tiêu</td>
-                                                        <td class="revenue-cell">{{ formatCurrency(customer.metrics.totalSpend) }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Số đơn hàng</td>
-                                                        <td>{{ formatNumber(customer.metrics.orderCount) }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Đơn hàng trung bình</td>
-                                                        <td>{{ formatCurrency(customer.metrics.avgOrderValue) }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Lần mua cuối</td>
-                                                        <td>{{ customer.metrics.lastVisit ? `${customer.metrics.lastVisit} ngày trước` : 'N/A' }}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Đóng
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Chi tiết khách hàng: <strong>{{ customer.fullName }}</strong>
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Xem thông tin chi tiết và phân tích hành vi
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <LoadingState
+              v-if="loadingInsights"
+              text="Đang tải insights..."
+            />
+            <div v-else-if="insights">
+              <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                  <div class="info-section">
+                    <h6 class="section-title mb-3">
+                      <i class="bi bi-person me-2" />
+                      Thông tin khách hàng
+                    </h6>
+                    <div class="info-grid">
+                      <div class="info-item">
+                        <span class="info-label">Họ tên:</span>
+                        <span class="info-value fw-semibold">{{ customer.fullName }}</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">SĐT:</span>
+                        <span class="info-value">{{ customer.phone || 'N/A' }}</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ customer.email || 'N/A' }}</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">Phân loại:</span>
+                        <span class="info-value">
+                          <span
+                            class="badge badge-soft"
+                            :class="getSegmentClass(customer.segment)"
+                          >
+                            {{ customer.segment }}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-section">
+                    <h6 class="section-title mb-3">
+                      <i class="bi bi-graph-up me-2" />
+                      Chỉ số RFM
+                    </h6>
+                    <div class="row g-3">
+                      <div class="col-6">
+                        <div class="stat-box">
+                          <div class="stat-icon stat-icon--primary">
+                            <i class="bi bi-clock-history" />
+                          </div>
+                          <div class="stat-content">
+                            <div class="stat-label">
+                              Recency
+                            </div>
+                            <div class="stat-value">
+                              {{ customer.metrics.recency }} ngày
+                            </div>
+                            <div class="stat-subtitle">
+                              Score: {{ customer.metrics.rScore }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="stat-box">
+                          <div class="stat-icon stat-icon--success">
+                            <i class="bi bi-repeat" />
+                          </div>
+                          <div class="stat-content">
+                            <div class="stat-label">
+                              Frequency
+                            </div>
+                            <div class="stat-value">
+                              {{ customer.metrics.frequency }}
+                            </div>
+                            <div class="stat-subtitle">
+                              Score: {{ customer.metrics.fScore }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="stat-box">
+                          <div class="stat-icon stat-icon--warning">
+                            <i class="bi bi-cash-stack" />
+                          </div>
+                          <div class="stat-content">
+                            <div class="stat-label">
+                              Monetary
+                            </div>
+                            <div class="stat-value">
+                              {{ formatCurrency(customer.metrics.monetary) }}
+                            </div>
+                            <div class="stat-subtitle">
+                              Score: {{ customer.metrics.mScore }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="stat-box">
+                          <div class="stat-icon stat-icon--info">
+                            <i class="bi bi-star" />
+                          </div>
+                          <div class="stat-content">
+                            <div class="stat-label">
+                              RFM Score
+                            </div>
+                            <div class="stat-value">
+                              {{ customer.metrics.rfmScore }}
+                            </div>
+                            <div class="stat-subtitle">
+                              Tổng điểm
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-4 mb-4">
+                <div class="col-12">
+                  <div class="info-section">
+                    <h6 class="section-title mb-3">
+                      <i class="bi bi-lightbulb me-2" />
+                      Đề xuất
+                    </h6>
+                    <div
+                      v-if="insights.recommendations && insights.recommendations.length > 0"
+                      class="recommendations-list"
+                    >
+                      <div
+                        v-for="(rec, index) in insights.recommendations"
+                        :key="index"
+                        class="recommendation-item"
+                        :class="getRecommendationClass(rec.type)"
+                      >
+                        <i
+                          :class="getRecommendationIcon(rec.type)"
+                          class="me-2"
+                        />
+                        <span>{{ rec.message }}</span>
+                      </div>
+                    </div>
+                    <div
+                      v-else
+                      class="text-muted"
+                    >
+                      Không có đề xuất nào tại thời điểm này
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-4">
+                <div class="col-12">
+                  <div class="info-section">
+                    <h6 class="section-title mb-3">
+                      <i class="bi bi-list-check me-2" />
+                      Chi tiết metrics
+                    </h6>
+                    <div class="table-responsive">
+                      <table class="table table-minimal">
+                        <thead>
+                          <tr>
+                            <th>Chỉ số</th>
+                            <th>Giá trị</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Tổng chi tiêu</td>
+                            <td class="revenue-cell">
+                              {{ formatCurrency(customer.metrics.totalSpend) }}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Số đơn hàng</td>
+                            <td>{{ formatNumber(customer.metrics.orderCount) }}</td>
+                          </tr>
+                          <tr>
+                            <td>Đơn hàng trung bình</td>
+                            <td>{{ formatCurrency(customer.metrics.avgOrderValue) }}</td>
+                          </tr>
+                          <tr>
+                            <td>Lần mua cuối</td>
+                            <td>{{ customer.metrics.lastVisit ? `${customer.metrics.lastVisit} ngày trước` : 'N/A' }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Đóng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>

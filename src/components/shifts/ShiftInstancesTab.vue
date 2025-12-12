@@ -1,138 +1,195 @@
 <template>
-    <div class="shift-instances-tab">
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="filters.from" />
-                    </div>
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="filters.to" />
-                    </div>
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" v-model="filters.status">
-                            <option value="">Tất cả</option>
-                            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-4 text-lg-end text-md-start">
-                        <button class="btn btn-primary me-2" type="button" @click="handleFilter">
-                            <i class="bi bi-funnel me-1"></i>Lọc
-                        </button>
-                        <button class="btn btn-outline-secondary" type="button" @click="handleResetFilters">Xóa bộ lọc</button>
-                    </div>
-                </div>
-            </div>
+  <div class="shift-instances-tab">
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="from"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="to"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Trạng thái</label>
+            <select
+              v-model="status"
+              class="form-select"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option
+                v-for="option in statusOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-4 text-lg-end text-md-start">
+            <button
+              class="btn btn-primary me-2"
+              type="button"
+              @click="handleFilter"
+            >
+              <i class="bi bi-funnel me-1" />Lọc
+            </button>
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              @click="handleResetFilters"
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
         </div>
-
-        <div class="card table-card">
-            <div class="card-body">
-                <LoadingState v-if="loading" />
-                <ErrorState 
-                    v-else-if="error" 
-                    :message="error"
-                />
-                <EmptyState
-                    v-else-if="!instances.length"
-                    title="Chưa có ca làm nào"
-                    message="Tạo ca mới bằng nút ở góc trên bên phải."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Ngày</th>
-                            <th>Giờ</th>
-                            <th>Template</th>
-                            <th>Trạng thái</th>
-                            <th>Phân công</th>
-                            <th class="text-end">Hành động</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="instance in instances" :key="instance.id">
-                            <td>
-                                <div class="fw-semibold">{{ formatDate(instance.shiftDate) }}</div>
-                                <div class="text-muted small">Tạo bởi {{ instance.createdBy || 'Hệ thống' }}</div>
-                            </td>
-                            <td>
-                                {{ formatTime(instance.startTime) }} - {{ formatTime(instance.endTime) }}
-                                <div class="text-muted small" v-if="instance.notes">{{ instance.notes }}</div>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ instance.templateName }}</div>
-                                <div class="text-muted small">ID: {{ instance.templateId }}</div>
-                            </td>
-                            <td>
-                                <span class="badge" :class="statusClass(instance.status)">
-                                    {{ translateStatus(instance.status) }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ instance.assignments?.length || 0 }} nhân viên</div>
-                                <div class="text-muted small">
-                                    {{ summarizeAssignments(instance.assignments) }}
-                                </div>
-                            </td>
-                            <td class="text-end">
-                                <div class="action-buttons">
-                                    <button
-                                        class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
-                                        @click="handleViewDetail(instance)"
-                                        title="Xem chi tiết"
-                                    >
-                                        <i class="bi bi-eye"></i>
-                                        <span>Chi tiết</span>
-                                    </button>
-                                    <button
-                                        class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
-                                        @click="handleEdit(instance)"
-                                        title="Chỉnh sửa"
-                                    >
-                                        <i class="bi bi-pencil"></i>
-                                        <span>Chỉnh sửa</span>
-                                    </button>
-                                    <button
-                                        class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-2"
-                                        @click="handleUpdateStatus(instance)"
-                                        title="Cập nhật trạng thái"
-                                    >
-                                        <i class="bi bi-arrow-repeat"></i>
-                                        <span>Trạng thái</span>
-                                    </button>
-                                    <button
-                                        class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
-                                        @click="handleRemove(instance)"
-                                        title="Xóa"
-                                    >
-                                        <i class="bi bi-trash"></i>
-                                        <span>Xóa</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-end" v-if="pagination.totalPages > 1">
-                <Pagination
-                    mode="zero-based"
-                    :current-page="pagination.number"
-                    :total-pages="pagination.totalPages"
-                    @page-change="handlePageChange"
-                />
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="card table-card">
+      <div class="card-body">
+        <LoadingState v-if="loading" />
+        <ErrorState
+          v-else-if="error"
+          :message="error"
+        />
+        <EmptyState
+          v-else-if="!instances.length"
+          title="Chưa có ca làm nào"
+          message="Tạo ca mới bằng nút ở góc trên bên phải."
+        />
+        <div
+          v-else
+          class="table-responsive"
+        >
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Ngày</th>
+                <th>Giờ</th>
+                <th>Template</th>
+                <th>Trạng thái</th>
+                <th>Phân công</th>
+                <th class="text-end">
+                  Hành động
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="instance in instances"
+                :key="instance.id"
+              >
+                <td>
+                  <div class="fw-semibold">
+                    {{ formatDate(instance.shiftDate) }}
+                  </div>
+                  <div class="text-muted small">
+                    Tạo bởi {{ instance.createdBy || 'Hệ thống' }}
+                  </div>
+                </td>
+                <td>
+                  {{ formatTime(instance.startTime) }} - {{ formatTime(instance.endTime) }}
+                  <div
+                    v-if="instance.notes"
+                    class="text-muted small"
+                  >
+                    {{ instance.notes }}
+                  </div>
+                </td>
+                <td>
+                  <div class="fw-semibold">
+                    {{ instance.templateName }}
+                  </div>
+                  <div class="text-muted small">
+                    ID: {{ instance.templateId }}
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    :class="statusClass(instance.status)"
+                  >
+                    {{ translateStatus(instance.status) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="fw-semibold">
+                    {{ instance.assignments?.length || 0 }} nhân viên
+                  </div>
+                  <div class="text-muted small">
+                    {{ summarizeAssignments(instance.assignments) }}
+                  </div>
+                </td>
+                <td class="text-end">
+                  <div class="action-buttons">
+                    <button
+                      class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
+                      title="Xem chi tiết"
+                      @click="handleViewDetail(instance)"
+                    >
+                      <i class="bi bi-eye" />
+                      <span>Chi tiết</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
+                      title="Chỉnh sửa"
+                      @click="handleEdit(instance)"
+                    >
+                      <i class="bi bi-pencil" />
+                      <span>Chỉnh sửa</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-2"
+                      title="Cập nhật trạng thái"
+                      @click="handleUpdateStatus(instance)"
+                    >
+                      <i class="bi bi-arrow-repeat" />
+                      <span>Trạng thái</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
+                      title="Xóa"
+                      @click="handleRemove(instance)"
+                    >
+                      <i class="bi bi-trash" />
+                      <span>Xóa</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div
+        v-if="pagination.totalPages > 1"
+        class="card-footer d-flex justify-content-end"
+      >
+        <Pagination
+          mode="zero-based"
+          :current-page="pagination.number"
+          :total-pages="pagination.totalPages"
+          @page-change="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -155,8 +212,33 @@ const emit = defineEmits([
     'edit',
     'update-status',
     'remove',
-    'page-change'
+    'page-change',
+    'update:filters'
 ])
+
+const from = computed({
+    get: () => props.filters.from,
+    set: (value) => {
+        emit('update:filters', { ...props.filters, from: value })
+        emit('filter')
+    }
+})
+
+const to = computed({
+    get: () => props.filters.to,
+    set: (value) => {
+        emit('update:filters', { ...props.filters, to: value })
+        emit('filter')
+    }
+})
+
+const status = computed({
+    get: () => props.filters.status,
+    set: (value) => {
+        emit('update:filters', { ...props.filters, status: value })
+        emit('filter')
+    }
+})
 
 const formatTime = (time) => {
     if (!time) return '--:--'

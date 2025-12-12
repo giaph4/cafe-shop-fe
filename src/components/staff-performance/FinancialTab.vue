@@ -1,78 +1,105 @@
 <template>
-    <div class="financial-tab">
-        <div class="row g-4 mb-4">
-            <div class="col-lg-4">
-                <div class="stat-card stat-card--revenue">
-                    <div class="stat-card__icon">
-                        <i class="bi bi-cash-stack"></i>
-                    </div>
-                    <div class="stat-card__content">
-                        <div class="stat-card__label">Tổng doanh thu</div>
-                        <div class="stat-card__value">{{ formatCurrency(totalRevenue) }}</div>
-                    </div>
-                </div>
+  <div class="financial-tab">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4">
+        <div class="stat-card stat-card--revenue">
+          <div class="stat-card__icon">
+            <i class="bi bi-cash-stack" />
+          </div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">
+              Tổng doanh thu
             </div>
-            <div class="col-lg-4">
-                <div class="stat-card stat-card--tips">
-                    <div class="stat-card__icon">
-                        <i class="bi bi-gift"></i>
-                    </div>
-                    <div class="stat-card__content">
-                        <div class="stat-card__label">Tổng tips</div>
-                        <div class="stat-card__value">{{ formatCurrency(totalTips) }}</div>
-                    </div>
-                </div>
+            <div class="stat-card__value">
+              {{ formatCurrency(totalRevenue) }}
             </div>
-            <div class="col-lg-4">
-                <div class="stat-card stat-card--adjustments">
-                    <div class="stat-card__icon">
-                        <i class="bi bi-piggy-bank"></i>
-                    </div>
-                    <div class="stat-card__content">
-                        <div class="stat-card__label">Thưởng - Phạt</div>
-                        <div class="stat-card__value">{{ formatCurrency(netAdjustments) }}</div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-        <div class="card standard-card">
-            <div class="card-header standard-card-header">
-                <h6 class="card-title mb-0">Chi tiết tài chính</h6>
+      </div>
+      <div class="col-lg-4">
+        <div class="stat-card stat-card--tips">
+          <div class="stat-card__icon">
+            <i class="bi bi-gift" />
+          </div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">
+              Tổng tips
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-minimal">
-                        <thead>
-                            <tr>
-                                <th>Nhân viên</th>
-                                <th>Doanh thu</th>
-                                <th>Đơn TB</th>
-                                <th>Tips</th>
-                                <th>Thưởng</th>
-                                <th>Phạt</th>
-                                <th>Tổng thu nhập</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="staff in staffList" :key="staff.userId">
-                                <td>
-                                    <div class="fw-semibold staff-name">{{ staff.fullName }}</div>
-                                </td>
-                                <td class="revenue-cell">{{ formatCurrency(staff.metrics.revenue) }}</td>
-                                <td>{{ formatCurrency(staff.metrics.avgOrderValue) }}</td>
-                                <td class="tips-cell">{{ formatCurrency(staff.metrics.tipsEarned) }}</td>
-                                <td class="bonus-cell">{{ formatCurrency(staff.metrics.bonuses) }}</td>
-                                <td class="penalty-cell">{{ formatCurrency(staff.metrics.penalties) }}</td>
-                                <td class="total-income-cell fw-semibold">
-                                    {{ formatCurrency(staff.metrics.revenue + staff.metrics.tipsEarned + staff.metrics.bonuses - staff.metrics.penalties) }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="stat-card__value">
+              {{ formatCurrency(totalTips) }}
             </div>
+          </div>
         </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="stat-card stat-card--adjustments">
+          <div class="stat-card__icon">
+            <i class="bi bi-piggy-bank" />
+          </div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">
+              Thưởng - Phạt
+            </div>
+            <div class="stat-card__value">
+              {{ formatCurrency(netAdjustments) }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    <div class="card standard-card">
+      <div class="card-header standard-card-header">
+        <h6 class="card-title mb-0">
+          Chi tiết tài chính
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-minimal">
+            <thead>
+              <tr>
+                <th>Nhân viên</th>
+                <th>Doanh thu</th>
+                <th>Đơn TB</th>
+                <th>Tips</th>
+                <th>Thưởng</th>
+                <th>Phạt</th>
+                <th>Tổng thu nhập</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="staff in staffList"
+                :key="staff.userId"
+              >
+                <td>
+                  <div class="fw-semibold staff-name">
+                    {{ staff.fullName }}
+                  </div>
+                </td>
+                <td class="revenue-cell">
+                  {{ formatCurrency(staff.metrics.revenue) }}
+                </td>
+                <td>{{ formatCurrency(staff.metrics.avgOrderValue) }}</td>
+                <td class="tips-cell">
+                  {{ formatCurrency(staff.metrics.tipsEarned) }}
+                </td>
+                <td class="bonus-cell">
+                  {{ formatCurrency(staff.metrics.bonuses) }}
+                </td>
+                <td class="penalty-cell">
+                  {{ formatCurrency(staff.metrics.penalties) }}
+                </td>
+                <td class="total-income-cell fw-semibold">
+                  {{ formatCurrency(staff.metrics.revenue + staff.metrics.tipsEarned + staff.metrics.bonuses - staff.metrics.penalties) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -86,19 +113,11 @@ const props = defineProps({
     }
 })
 
-const totalRevenue = computed(() => {
-    return props.staffList.reduce((sum, s) => sum + (s.metrics?.revenue || 0), 0)
-})
+const totalRevenue = computed(() => props.staffList.reduce((sum, s) => sum + (s.metrics?.revenue || 0), 0))
 
-const totalTips = computed(() => {
-    return props.staffList.reduce((sum, s) => sum + (s.metrics?.tipsEarned || 0), 0)
-})
+const totalTips = computed(() => props.staffList.reduce((sum, s) => sum + (s.metrics?.tipsEarned || 0), 0))
 
-const netAdjustments = computed(() => {
-    return props.staffList.reduce((sum, s) => {
-        return sum + (s.metrics?.bonuses || 0) - (s.metrics?.penalties || 0)
-    }, 0)
-})
+const netAdjustments = computed(() => props.staffList.reduce((sum, s) => sum + (s.metrics?.bonuses || 0) - (s.metrics?.penalties || 0), 0))
 </script>
 
 <style scoped>

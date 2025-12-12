@@ -11,6 +11,13 @@ export const navigationSections = [
                 roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
             },
             {
+                id: 'custom-dashboard',
+                label: 'Dashboard Tùy chỉnh',
+                icon: 'bi bi-grid-3x3-gap',
+                to: '/custom-dashboard',
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+            },
+            {
                 id: 'chat',
                 label: 'Trò chuyện',
                 icon: 'bi bi-chat-dots',
@@ -63,8 +70,16 @@ export const navigationSections = [
                 id: 'sales-analytics',
                 label: 'Báo cáo tổng hợp',
                 icon: 'bi bi-graph-up',
-                to: '/reports',
-                roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                children: [
+                    {
+                        id: 'reports',
+                        label: 'Báo cáo',
+                        icon: 'bi bi-file-earmark-text',
+                        to: '/reports',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    }
+                ]
             }
         ]
     },

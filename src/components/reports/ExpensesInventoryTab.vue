@@ -1,109 +1,188 @@
 <template>
-    <div class="expenses-inventory">
-        <div class="export-row d-flex flex-wrap gap-2 justify-content-end">
-            <button class="btn btn-outline-primary" type="button" @click="handleExportExpenses" :disabled="expensesExporting">
-                <span v-if="expensesExporting" class="spinner-border spinner-border-sm me-2"></span>
-                Xuất chi phí
-            </button>
-            <button class="btn btn-outline-secondary" type="button" @click="handleExportInventory" :disabled="inventoryExporting">
-                <span v-if="inventoryExporting" class="spinner-border spinner-border-sm me-2"></span>
-                Xuất tồn kho
-            </button>
-        </div>
-
-        <div class="grid">
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Chi phí theo ngày</h5>
-                        <p class="text-muted mb-0">Tổng: {{ formatCurrency(expensesTotals.overall) }}</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart type="area" height="320" :series="expensesSeries" :options="expensesOptions" />
-                </div>
-            </div>
-
-            <div class="card summary-card">
-                <div class="summary-card__grid">
-                    <div class="summary-card__item">
-                        <span>Tổng chi phí</span>
-                        <strong>{{ formatCurrency(totalExpenses?.totalExpenses ?? 0) }}</strong>
-                        <small v-if="totalExpenses?.startDate || totalExpenses?.endDate">{{ buildRange(totalExpenses?.startDate, totalExpenses?.endDate) }}</small>
-                    </div>
-                    <div class="summary-card__item">
-                        <span>Chi phí nhập nguyên liệu</span>
-                        <strong>{{ formatCurrency(totalImportedCost?.totalImportedIngredientCost ?? 0) }}</strong>
-                        <small v-if="totalImportedCost?.startDate || totalImportedCost?.endDate">{{ buildRange(totalImportedCost?.startDate, totalImportedCost?.endDate) }}</small>
-                    </div>
-                    <div class="summary-card__item">
-                        <span>Ngày chi cao nhất</span>
-                        <strong>{{ heaviestExpense?.date || '—' }}</strong>
-                        <small v-if="heaviestExpense">{{ formatCurrency(heaviestExpense.total) }}</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="inventory-card card">
-            <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-1">Tồn kho & cảnh báo thiếu hụt</h5>
-                    <p class="text-muted mb-0">Tổng {{ formatNumber(inventorySummary.totalItems) }} nguyên liệu · Thiếu hụt {{ formatNumber(inventorySummary.lowStockCount) }}</p>
-                </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="lowStockToggle" :checked="lowStockOnly" :disabled="inventoryLoading" @change="emit('update:lowStockOnly', $event.target.checked)">
-                    <label class="form-check-label" for="lowStockToggle">Chỉ hiển thị thiếu hụt</label>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="inventory-grid">
-                    <div class="card mini-card" v-for="stat in inventoryStats" :key="stat.label">
-                        <div class="mini-card__icon" :class="stat.variant">
-                            <i :class="stat.icon"></i>
-                        </div>
-                        <div class="mini-card__meta">
-                            <span>{{ stat.label }}</span>
-                            <strong>{{ stat.display }}</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="inventoryLoading" class="state-block py-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div v-else class="table-responsive mt-4">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Nguyên liệu</th>
-                                <th>Đơn vị</th>
-                                <th class="text-end">Tồn kho</th>
-                                <th class="text-end">Mức đặt lại</th>
-                                <th class="text-center">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="item in displayedInventory" :key="item.id">
-                                <td class="fw-semibold">{{ item.name }}</td>
-                                <td>{{ item.unit || '—' }}</td>
-                                <td class="text-end">{{ formatNumber(item.quantityOnHand) }}</td>
-                                <td class="text-end">{{ item.reorderLevel != null ? formatNumber(item.reorderLevel) : '—' }}</td>
-                                <td class="text-center">
-                                    <span class="badge" :class="item.status === 'LOW_STOCK' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'">
-                                        {{ item.status === 'LOW_STOCK' ? 'Thiếu hụt' : 'Ổn định' }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr v-if="!displayedInventory.length">
-                                <td colspan="5" class="text-center text-muted py-4">Không có nguyên liệu phù hợp.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+  <div class="expenses-inventory">
+    <div class="export-row d-flex flex-wrap gap-2 justify-content-end">
+      <button
+        class="btn btn-outline-primary"
+        type="button"
+        :disabled="expensesExporting"
+        @click="handleExportExpenses"
+      >
+        <span
+          v-if="expensesExporting"
+          class="spinner-border spinner-border-sm me-2"
+        />
+        Xuất chi phí
+      </button>
+      <button
+        class="btn btn-outline-secondary"
+        type="button"
+        :disabled="inventoryExporting"
+        @click="handleExportInventory"
+      >
+        <span
+          v-if="inventoryExporting"
+          class="spinner-border spinner-border-sm me-2"
+        />
+        Xuất tồn kho
+      </button>
     </div>
+
+    <div class="grid">
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Chi phí theo ngày
+            </h5>
+            <p class="text-muted mb-0">
+              Tổng: {{ formatCurrency(expensesTotals.overall) }}
+            </p>
+          </div>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            type="area"
+            height="320"
+            :series="expensesSeries"
+            :options="expensesOptions"
+          />
+        </div>
+      </div>
+
+      <div class="card summary-card">
+        <div class="summary-card__grid">
+          <div class="summary-card__item">
+            <span>Tổng chi phí</span>
+            <strong>{{ formatCurrency(totalExpenses?.totalExpenses ?? 0) }}</strong>
+            <small v-if="totalExpenses?.startDate || totalExpenses?.endDate">{{ buildRange(totalExpenses?.startDate, totalExpenses?.endDate) }}</small>
+          </div>
+          <div class="summary-card__item">
+            <span>Chi phí nhập nguyên liệu</span>
+            <strong>{{ formatCurrency(totalImportedCost?.totalImportedIngredientCost ?? 0) }}</strong>
+            <small v-if="totalImportedCost?.startDate || totalImportedCost?.endDate">{{ buildRange(totalImportedCost?.startDate, totalImportedCost?.endDate) }}</small>
+          </div>
+          <div class="summary-card__item">
+            <span>Ngày chi cao nhất</span>
+            <strong>{{ heaviestExpense?.date || '—' }}</strong>
+            <small v-if="heaviestExpense">{{ formatCurrency(heaviestExpense.total) }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="inventory-card card">
+      <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-1">
+            Tồn kho & cảnh báo thiếu hụt
+          </h5>
+          <p class="text-muted mb-0">
+            Tổng {{ formatNumber(inventorySummary.totalItems) }} nguyên liệu · Thiếu hụt {{ formatNumber(inventorySummary.lowStockCount) }}
+          </p>
+        </div>
+        <div class="form-check form-switch">
+          <input
+            id="lowStockToggle"
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            :checked="lowStockOnly"
+            :disabled="inventoryLoading"
+            @change="emit('update:lowStockOnly', $event.target.checked)"
+          >
+          <label
+            class="form-check-label"
+            for="lowStockToggle"
+          >Chỉ hiển thị thiếu hụt</label>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="inventory-grid">
+          <div
+            v-for="stat in inventoryStats"
+            :key="stat.label"
+            class="card mini-card"
+          >
+            <div
+              class="mini-card__icon"
+              :class="stat.variant"
+            >
+              <i :class="stat.icon" />
+            </div>
+            <div class="mini-card__meta">
+              <span>{{ stat.label }}</span>
+              <strong>{{ stat.display }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="inventoryLoading"
+          class="state-block py-4"
+        >
+          <div
+            class="spinner-border text-primary"
+            role="status"
+          />
+        </div>
+        <div
+          v-else
+          class="table-responsive mt-4"
+        >
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Nguyên liệu</th>
+                <th>Đơn vị</th>
+                <th class="text-end">
+                  Tồn kho
+                </th>
+                <th class="text-end">
+                  Mức đặt lại
+                </th>
+                <th class="text-center">
+                  Trạng thái
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="item in displayedInventory"
+                :key="item.id"
+              >
+                <td class="fw-semibold">
+                  {{ item.name }}
+                </td>
+                <td>{{ item.unit || '—' }}</td>
+                <td class="text-end">
+                  {{ formatNumber(item.quantityOnHand) }}
+                </td>
+                <td class="text-end">
+                  {{ item.reorderLevel !== null ? formatNumber(item.reorderLevel) : '—' }}
+                </td>
+                <td class="text-center">
+                  <span
+                    class="badge"
+                    :class="item.status === 'LOW_STOCK' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
+                  >
+                    {{ item.status === 'LOW_STOCK' ? 'Thiếu hụt' : 'Ổn định' }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="!displayedInventory.length">
+                <td
+                  colspan="5"
+                  class="text-center text-muted py-4"
+                >
+                  Không có nguyên liệu phù hợp.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

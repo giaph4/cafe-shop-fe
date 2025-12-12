@@ -1,13 +1,13 @@
 <template>
-    <div class="stock-level-chart">
-        <apexchart
-            v-if="isMounted"
-            type="area"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="stock-level-chart">
+    <apexchart
+      v-if="isMounted"
+      type="area"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -35,12 +35,12 @@ const chartSeries = computed(() => {
         x: item.date,
         y: item.stock
     }))
-    
+
     const reorderLevelData = props.history.map(item => ({
         x: item.date,
         y: item.reorderLevel
     }))
-    
+
     return [
         {
             name: 'Tồn kho',

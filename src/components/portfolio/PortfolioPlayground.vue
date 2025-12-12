@@ -1,36 +1,46 @@
 <template>
-    <section id="playground" class="portfolio-playground">
-        <div class="portfolio-playground__container">
-            <h2 class="portfolio-playground__title">
-                <span class="portfolio-playground__number">08.</span>
-                CREATIVE PLAYGROUND
-            </h2>
+  <section
+    id="playground"
+    class="portfolio-playground"
+  >
+    <div class="portfolio-playground__container">
+      <h2 class="portfolio-playground__title">
+        <span class="portfolio-playground__number">08.</span>
+        CREATIVE PLAYGROUND
+      </h2>
 
-            <p class="portfolio-playground__subtitle">
-                Ngoài code, tôi còn có những sở thích và đam mê khác giúp tôi cân bằng cuộc sống và tăng cường sự sáng tạo.
-            </p>
+      <p class="portfolio-playground__subtitle">
+        Ngoài code, tôi còn có những sở thích và đam mê khác giúp tôi cân bằng cuộc sống và tăng cường sự sáng tạo.
+      </p>
 
-            <div class="portfolio-playground__grid" ref="gridRef">
-                <div 
-                    v-for="(item, index) in playgroundItems" 
-                    :key="index"
-                    class="portfolio-playground__item"
-                    :ref="el => itemRefs[index] = el"
-                    @mouseenter="hoveredIndex = index"
-                    @mouseleave="hoveredIndex = null"
-                    :style="{ 
-                        transform: `rotate(${hoveredIndex === index ? '5deg' : '0deg'}) translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`
-                    }"
-                >
-                    <div class="portfolio-playground__item-icon">
-                        <i :class="item.icon"></i>
-                    </div>
-                    <h3 class="portfolio-playground__item-title">{{ item.title }}</h3>
-                    <p class="portfolio-playground__item-description">{{ item.description }}</p>
-                </div>
-            </div>
+      <div
+        ref="gridRef"
+        class="portfolio-playground__grid"
+      >
+        <div
+          v-for="(item, index) in playgroundItems"
+          :key="index"
+          :ref="el => itemRefs[index] = el"
+          class="portfolio-playground__item"
+          :style="{
+            transform: `rotate(${hoveredIndex === index ? '5deg' : '0deg'}) translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`
+          }"
+          @mouseenter="hoveredIndex = index"
+          @mouseleave="hoveredIndex = null"
+        >
+          <div class="portfolio-playground__item-icon">
+            <i :class="item.icon" />
+          </div>
+          <h3 class="portfolio-playground__item-title">
+            {{ item.title }}
+          </h3>
+          <p class="portfolio-playground__item-description">
+            {{ item.description }}
+          </p>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -82,16 +92,16 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(itemRef, {
                         initial: { opacity: 0, scale: 0.8, rotate: -10 },
-                        enter: { 
-                            opacity: 1, 
+                        enter: {
+                            opacity: 1,
                             scale: 1,
                             rotate: 0,
-                            transition: { 
+                            transition: {
                                 delay: index * 0.1,
                                 duration: 0.5,
                                 type: 'spring',
                                 stiffness: 100
-                            } 
+                            }
                         }
                     })
                 }

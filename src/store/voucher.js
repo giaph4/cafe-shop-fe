@@ -1,5 +1,5 @@
-import {defineStore} from 'pinia'
-import {computed, reactive, ref} from 'vue'
+import { defineStore } from 'pinia'
+import { computed, reactive, ref } from 'vue'
 import {
     buildVoucherPayload,
     createVoucher,
@@ -175,7 +175,7 @@ export const useVoucherStore = defineStore('voucher', () => {
         errorMessage.value = ''
         try {
             const body = buildVoucherPayload(payload)
-            const updated = await updateVoucher({id, data: body})
+            const updated = await updateVoucher({ id, data: body })
             await loadVouchers()
             await loadSummary()
             return updated

@@ -1,178 +1,257 @@
 <template>
-    <div class="performance-adjustment-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="performance-adjustment-header">
-            <div class="performance-adjustment-header__content">
-                <div class="performance-adjustment-header__title-section">
-                    <h2 class="performance-adjustment-header__title">Quản lý Điều chỉnh Hiệu suất</h2>
-                    <p class="performance-adjustment-header__subtitle">Thưởng và phạt nhân viên dựa trên hiệu suất làm việc trong ca.</p>
-                </div>
-                <div class="performance-adjustment-header__actions">
-                    <button 
-                        class="btn btn-primary" 
-                        type="button" 
-                        @click="openCreateModal" 
-                        v-if="activeTab === 'list'"
-                    >
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Tạo điều chỉnh mới
-                    </button>
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button" 
-                        @click="fetchData" 
-                        :disabled="loading"
-                    >
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="performance-adjustment-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="performance-adjustment-header">
+      <div class="performance-adjustment-header__content">
+        <div class="performance-adjustment-header__title-section">
+          <h2 class="performance-adjustment-header__title">
+            Quản lý Điều chỉnh Hiệu suất
+          </h2>
+          <p class="performance-adjustment-header__subtitle">
+            Thưởng và phạt nhân viên dựa trên hiệu suất làm việc trong ca.
+          </p>
         </div>
-
-        <div class="card tabs-card mb-4">
-            <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
-                <LoadingState v-if="loading && activeTab === 'list'" />
-                <ErrorState 
-                    v-else-if="error && activeTab === 'list'" 
-                    :message="error"
-                    @retry="fetchData"
-                />
-                <div v-else class="tab-content">
-                    <PerformanceAdjustmentListTab
-                        v-if="activeTab === 'list'"
-                        :adjustments="adjustments"
-                        :loading="loading"
-                        :error="error"
-                        :filters="filters"
-                        :type-options="ADJUSTMENT_TYPES"
-                        :assignment-options="assignmentOptions"
-                        @filter="fetchAdjustments"
-                        @reset-filters="resetFilters"
-                        @edit="openEdit"
-                        @revoke="handleRevoke"
-                        @remove="handleRemove"
-                    />
-                    <PerformanceAdjustmentStatsTab
-                        v-else-if="activeTab === 'statistics'"
-                        :adjustments="adjustments"
-                        :loading="loading"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <Teleport to="body">
-            <PerformanceAdjustmentFormModal
-                ref="formModal"
-                :adjustment="editingAdjustment"
-                :assignment-options="assignmentOptions"
-                :type-options="ADJUSTMENT_TYPES"
-                :submitting="formSubmitting"
-                @submit="handleFormSubmit"
+        <div class="performance-adjustment-header__actions">
+          <button
+            v-if="activeTab === 'list'"
+            class="btn btn-primary"
+            type="button"
+            @click="openCreateModal"
+          >
+            <i class="bi bi-plus-lg me-2" />
+            Tạo điều chỉnh mới
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchData"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
             />
-
-            <!-- Revoke Adjustment Confirmation Modal -->
-            <div 
-                class="modal fade performance-adjustment-revoke-modal" 
-                id="revokeAdjustmentModal" 
-                tabindex="-1" 
-                ref="revokeAdjustmentModalElement" 
-                aria-labelledby="revokeAdjustmentModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="revokeAdjustmentModalLabel">Thu hồi điều chỉnh</h5>
-                            <button type="button" class="btn-close" @click="revokeAdjustmentBsModal?.hide()" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Nhập lý do thu hồi điều chỉnh này:</p>
-                            <div v-if="adjustmentToRevoke" class="card mt-3 mb-3">
-                                <div class="card-body">
-                                    <p class="mb-2"><strong>Loại:</strong> {{ adjustmentToRevoke.type === 'BONUS' ? 'Thưởng' : 'Phạt' }}</p>
-                                    <p class="mb-2"><strong>Số tiền:</strong> {{ formatCurrency(adjustmentToRevoke.amount) }}</p>
-                                    <p class="mb-0"><strong>Lý do:</strong> {{ adjustmentToRevoke.reason || 'N/A' }}</p>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Lý do thu hồi</label>
-                                <textarea 
-                                    class="form-control" 
-                                    rows="3" 
-                                    v-model="revokeReason"
-                                    placeholder="Nhập lý do thu hồi..."
-                                    maxlength="500"
-                                ></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="revokeAdjustmentBsModal?.hide()">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-warning" @click="confirmRevokeAdjustment">
-                                Thu hồi
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Delete Adjustment Confirmation Modal -->
-            <div 
-                class="modal fade performance-adjustment-delete-modal" 
-                id="deleteAdjustmentModal" 
-                tabindex="-1" 
-                ref="deleteAdjustmentModalElement" 
-                aria-labelledby="deleteAdjustmentModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteAdjustmentModalLabel">Xác nhận xóa</h5>
-                            <button type="button" class="btn-close" @click="deleteAdjustmentBsModal?.hide()" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa điều chỉnh này không?</p>
-                            <div class="alert alert-warning mt-3">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                Hành động này không thể hoàn tác.
-                            </div>
-                            <div v-if="adjustmentToDelete" class="card mt-3">
-                                <div class="card-body">
-                                    <p class="mb-2"><strong>Loại:</strong> {{ adjustmentToDelete.type === 'BONUS' ? 'Thưởng' : 'Phạt' }}</p>
-                                    <p class="mb-2"><strong>Số tiền:</strong> {{ formatCurrency(adjustmentToDelete.amount) }}</p>
-                                    <p class="mb-0"><strong>Lý do:</strong> {{ adjustmentToDelete.reason || 'N/A' }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="deleteAdjustmentBsModal?.hide()">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="confirmDeleteAdjustment">
-                                Xóa
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
+        </div>
+      </div>
     </div>
+
+    <div class="card tabs-card mb-4">
+      <div class="card-body">
+        <ul
+          class="nav nav-pills reports-tabs mb-3"
+          role="tablist"
+        >
+          <li
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="nav-item"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="nav-link"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              <i :class="[tab.icon, 'me-2']" />{{ tab.label }}
+            </button>
+          </li>
+        </ul>
+        <LoadingState v-if="loading && activeTab === 'list'" />
+        <ErrorState
+          v-else-if="error && activeTab === 'list'"
+          :message="error"
+          @retry="fetchData"
+        />
+        <div
+          v-else
+          class="tab-content"
+        >
+          <PerformanceAdjustmentListTab
+            v-if="activeTab === 'list'"
+            :adjustments="adjustments"
+            :loading="loading"
+            :error="error"
+            :filters="filters"
+            :type-options="ADJUSTMENT_TYPES"
+            :assignment-options="assignmentOptions"
+            @filter="fetchAdjustments"
+            @reset-filters="resetFilters"
+            @edit="openEdit"
+            @revoke="handleRevoke"
+            @remove="handleRemove"
+          />
+          <PerformanceAdjustmentStatsTab
+            v-else-if="activeTab === 'statistics'"
+            :adjustments="adjustments"
+            :loading="loading"
+          />
+        </div>
+      </div>
+    </div>
+
+    <Teleport to="body">
+      <PerformanceAdjustmentFormModal
+        ref="formModal"
+        :adjustment="editingAdjustment"
+        :assignment-options="assignmentOptions"
+        :type-options="ADJUSTMENT_TYPES"
+        :submitting="formSubmitting"
+        @submit="handleFormSubmit"
+      />
+
+      <!-- Revoke Adjustment Confirmation Modal -->
+      <div
+        id="revokeAdjustmentModal"
+        ref="revokeAdjustmentModalElement"
+        class="modal fade performance-adjustment-revoke-modal"
+        tabindex="-1"
+        aria-labelledby="revokeAdjustmentModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="revokeAdjustmentModalLabel"
+                class="modal-title"
+              >
+                Thu hồi điều chỉnh
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="revokeAdjustmentBsModal?.hide()"
+              />
+            </div>
+            <div class="modal-body">
+              <p>Nhập lý do thu hồi điều chỉnh này:</p>
+              <div
+                v-if="adjustmentToRevoke"
+                class="card mt-3 mb-3"
+              >
+                <div class="card-body">
+                  <p class="mb-2">
+                    <strong>Loại:</strong> {{ adjustmentToRevoke.type === 'BONUS' ? 'Thưởng' : 'Phạt' }}
+                  </p>
+                  <p class="mb-2">
+                    <strong>Số tiền:</strong> {{ formatCurrency(adjustmentToRevoke.amount) }}
+                  </p>
+                  <p class="mb-0">
+                    <strong>Lý do:</strong> {{ adjustmentToRevoke.reason || 'N/A' }}
+                  </p>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Lý do thu hồi</label>
+                <textarea
+                  v-model="revokeReason"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Nhập lý do thu hồi..."
+                  maxlength="500"
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="revokeAdjustmentBsModal?.hide()"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-warning"
+                @click="confirmRevokeAdjustment"
+              >
+                Thu hồi
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Adjustment Confirmation Modal -->
+      <div
+        id="deleteAdjustmentModal"
+        ref="deleteAdjustmentModalElement"
+        class="modal fade performance-adjustment-delete-modal"
+        tabindex="-1"
+        aria-labelledby="deleteAdjustmentModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="deleteAdjustmentModalLabel"
+                class="modal-title"
+              >
+                Xác nhận xóa
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="deleteAdjustmentBsModal?.hide()"
+              />
+            </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa điều chỉnh này không?</p>
+              <div class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle me-2" />
+                Hành động này không thể hoàn tác.
+              </div>
+              <div
+                v-if="adjustmentToDelete"
+                class="card mt-3"
+              >
+                <div class="card-body">
+                  <p class="mb-2">
+                    <strong>Loại:</strong> {{ adjustmentToDelete.type === 'BONUS' ? 'Thưởng' : 'Phạt' }}
+                  </p>
+                  <p class="mb-2">
+                    <strong>Số tiền:</strong> {{ formatCurrency(adjustmentToDelete.amount) }}
+                  </p>
+                  <p class="mb-0">
+                    <strong>Lý do:</strong> {{ adjustmentToDelete.reason || 'N/A' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="deleteAdjustmentBsModal?.hide()"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="confirmDeleteAdjustment"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -230,7 +309,7 @@ const fetchAssignmentOptions = async () => {
         // Lấy các ca làm gần đây
         const shiftsData = await listShiftInstances({ page: 0, size: 50, sort: 'shiftDate,desc' })
         const shifts = shiftsData?.content || []
-        
+
         // Lấy assignments từ các ca
         const allAssignments = []
         for (const shift of shifts.slice(0, 10)) {
@@ -244,13 +323,13 @@ const fetchAssignmentOptions = async () => {
                         })
                     })
                 }
-            } catch (err) {
+            } catch {
                 // Bỏ qua lỗi khi fetch assignments cho shift đơn lẻ
             }
         }
-        
+
         assignmentOptions.value = allAssignments
-    } catch (err) {
+    } catch {
         assignmentOptions.value = []
     }
 }
@@ -266,24 +345,24 @@ const fetchAdjustments = async () => {
     try {
         const data = await getAdjustmentsByAssignment(filters.assignmentId)
         let fetched = Array.isArray(data) ? data : []
-        
+
         // Filter by type if selected
         if (filters.type) {
             fetched = fetched.filter(a => a.type === filters.type)
         }
-        
+
         // Filter by revoked status if selected
         if (filters.revoked !== null) {
             fetched = fetched.filter(a => a.revoked === filters.revoked)
         }
-        
+
         // Sort by created date desc
         fetched.sort((a, b) => {
             const dateA = new Date(a.createdAt || 0)
             const dateB = new Date(b.createdAt || 0)
             return dateB - dateA
         })
-        
+
         adjustments.value = fetched
     } catch (err) {
         error.value = err.response?.data?.message || 'Không thể tải danh sách điều chỉnh.'
@@ -686,5 +765,4 @@ onMounted(() => {
     }
 }
 </style>
-
 

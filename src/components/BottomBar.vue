@@ -1,63 +1,63 @@
 <template>
-    <footer class="neo-bottom-bar">
-        <!-- Trái: Thông tin hệ thống / môi trường -->
-        <div class="neo-bottom-bar__section neo-bottom-bar__section--left">
-            <div class="neo-bottom-bar__info">
-                <div class="neo-bottom-bar__app-name">
-                    <strong>Coffee GP</strong>
-                    <span class="neo-bottom-bar__env-badge">POS • Production</span>
-                </div>
-                <div class="neo-bottom-bar__status">
-                    <span class="neo-bottom-bar__status-dot"></span>
-                    <span class="neo-bottom-bar__status-text">Hệ thống hoạt động ổn định</span>
-                </div>
-            </div>
+  <footer class="neo-bottom-bar">
+    <!-- Trái: Thông tin hệ thống / môi trường -->
+    <div class="neo-bottom-bar__section neo-bottom-bar__section--left">
+      <div class="neo-bottom-bar__info">
+        <div class="neo-bottom-bar__app-name">
+          <strong>Coffee GP</strong>
+          <span class="neo-bottom-bar__env-badge">POS • Production</span>
         </div>
+        <div class="neo-bottom-bar__status">
+          <span class="neo-bottom-bar__status-dot" />
+          <span class="neo-bottom-bar__status-text">Hệ thống hoạt động ổn định</span>
+        </div>
+      </div>
+    </div>
 
-        <!-- Giữa: Actions nhanh / phím tắt -->
-        <div class="neo-bottom-bar__section neo-bottom-bar__section--center">
-            <div class="neo-bottom-bar__actions">
-                <button
-                    class="neo-bottom-bar__action"
-                    type="button"
-                    title="Trợ giúp"
-                    @click="handleHelp"
-                >
-                    <i class="bi bi-question-circle"></i>
-                    <span class="neo-bottom-bar__action-label">Trợ giúp</span>
-                </button>
-                <button
-                    class="neo-bottom-bar__action"
-                    type="button"
-                    title="Gửi phản hồi"
-                    @click="handleFeedback"
-                >
-                    <i class="bi bi-chat-dots"></i>
-                    <span class="neo-bottom-bar__action-label">Phản hồi</span>
-                </button>
-                <div class="neo-bottom-bar__shortcuts">
-                    <span class="neo-bottom-bar__shortcut">
-                        <kbd>Ctrl</kbd> + <kbd>M</kbd> <span>Máy tính</span>
-                    </span>
-                </div>
-            </div>
+    <!-- Giữa: Actions nhanh / phím tắt -->
+    <div class="neo-bottom-bar__section neo-bottom-bar__section--center">
+      <div class="neo-bottom-bar__actions">
+        <button
+          class="neo-bottom-bar__action"
+          type="button"
+          title="Trợ giúp"
+          @click="handleHelp"
+        >
+          <i class="bi bi-question-circle" />
+          <span class="neo-bottom-bar__action-label">Trợ giúp</span>
+        </button>
+        <button
+          class="neo-bottom-bar__action"
+          type="button"
+          title="Gửi phản hồi"
+          @click="handleFeedback"
+        >
+          <i class="bi bi-chat-dots" />
+          <span class="neo-bottom-bar__action-label">Phản hồi</span>
+        </button>
+        <div class="neo-bottom-bar__shortcuts">
+          <span class="neo-bottom-bar__shortcut">
+            <kbd>Ctrl</kbd> + <kbd>M</kbd> <span>Máy tính</span>
+          </span>
         </div>
+      </div>
+    </div>
 
-        <!-- Phải: Thời gian / ngày tháng -->
-        <div class="neo-bottom-bar__section neo-bottom-bar__section--right">
-            <div class="neo-bottom-bar__meta">
-                <span class="neo-bottom-bar__meta-text">
-                    <i class="bi bi-clock me-1"></i>
-                    {{ currentTime }}
-                </span>
-                <span class="neo-bottom-bar__meta-divider">•</span>
-                <span class="neo-bottom-bar__meta-text">
-                    <i class="bi bi-calendar3 me-1"></i>
-                    {{ currentDate }}
-                </span>
-            </div>
-        </div>
-    </footer>
+    <!-- Phải: Thời gian / ngày tháng -->
+    <div class="neo-bottom-bar__section neo-bottom-bar__section--right">
+      <div class="neo-bottom-bar__meta">
+        <span class="neo-bottom-bar__meta-text">
+          <i class="bi bi-clock me-1" />
+          {{ currentTime }}
+        </span>
+        <span class="neo-bottom-bar__meta-divider">•</span>
+        <span class="neo-bottom-bar__meta-text">
+          <i class="bi bi-calendar3 me-1" />
+          {{ currentDate }}
+        </span>
+      </div>
+    </div>
+  </footer>
 </template>
 
 <script setup>
@@ -69,8 +69,8 @@ const currentDate = ref('')
 
 const updateDateTime = () => {
     const now = new Date()
-    currentTime.value = now.toLocaleTimeString('vi-VN', { 
-        hour: '2-digit', 
+    currentTime.value = now.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     })

@@ -1,7 +1,6 @@
 import { buildApiError } from '@/utils/errorHandler'
 import * as customerService from './customerService'
 import * as orderService from './orderService'
-import * as reportService from './reportService'
 
 const toNumber = (value) => {
     if (value === null || value === undefined) return 0
@@ -12,15 +11,15 @@ const toNumber = (value) => {
 const calculateRFM = (customer, orders) => {
     const now = new Date()
     const lastOrder = orders.length > 0 ? new Date(orders[0].createdAt || orders[0].orderDate) : null
-    
-    const recency = lastOrder 
+
+    const recency = lastOrder
         ? Math.floor((now - lastOrder) / (1000 * 60 * 60 * 24))
         : 999
-    
+
     const frequency = orders.length
-    
+
     const monetary = orders.reduce((sum, o) => sum + toNumber(o.totalAmount), 0)
-    
+
     const rfmScore = {
         recency,
         frequency,
@@ -29,13 +28,13 @@ const calculateRFM = (customer, orders) => {
         fScore: frequency >= 20 ? 5 : frequency >= 10 ? 4 : frequency >= 5 ? 3 : frequency >= 2 ? 2 : 1,
         mScore: monetary >= 5000000 ? 5 : monetary >= 2000000 ? 4 : monetary >= 1000000 ? 3 : monetary >= 500000 ? 2 : 1
     }
-    
+
     rfmScore.totalScore = rfmScore.rScore + rfmScore.fScore + rfmScore.mScore
-    
+
     return rfmScore
 }
 
-const classifyCustomer = (rfmScore, orders) => {
+const classifyCustomer = (rfmScore, _orders) => {
     if (rfmScore.totalScore >= 13) return 'VIP'
     if (rfmScore.totalScore >= 10) return 'Regular'
     if (rfmScore.totalScore >= 7) return 'Occasional'
@@ -47,41 +46,41 @@ export const analyzeCustomers = async ({ startDate, endDate } = {}) => {
     try {
         const customers = await customerService.getCustomers({ page: 0, size: 1000 })
         const customersList = Array.isArray(customers) ? customers : (customers?.content || [])
-        
+
         const orders = await orderService.getOrdersByDateRange(startDate, endDate, 0, 1000)
         const ordersList = Array.isArray(orders) ? orders : (orders?.content || [])
-        
+
         const customerAnalytics = await Promise.all(
             customersList.map(async (customer) => {
-                const customerOrders = ordersList.filter(o => 
+                const customerOrders = ordersList.filter(o =>
                     o.customerId === customer.id || o.customer?.id === customer.id
                 )
-                
+
                 const purchaseHistory = await customerService.getCustomerPurchaseHistory({
                     id: customer.id,
                     startDate,
                     endDate
                 }).catch(() => ({ content: customerOrders }))
-                
-                const historyList = Array.isArray(purchaseHistory) 
-                    ? purchaseHistory 
+
+                const historyList = Array.isArray(purchaseHistory)
+                    ? purchaseHistory
                     : (purchaseHistory?.content || customerOrders)
-                
+
                 const rfm = calculateRFM(customer, historyList)
                 const segment = classifyCustomer(rfm, historyList)
-                
+
                 const totalSpend = historyList.reduce((sum, o) => sum + toNumber(o.totalAmount), 0)
                 const orderCount = historyList.length
                 const avgOrderValue = orderCount > 0 ? totalSpend / orderCount : 0
-                
-                const lastOrder = historyList.length > 0 
+
+                const lastOrder = historyList.length > 0
                     ? new Date(historyList[0].createdAt || historyList[0].orderDate)
                     : null
                 const lastVisit = lastOrder ? Math.floor((new Date() - lastOrder) / (1000 * 60 * 60 * 24)) : null
-                
+
                 const productCounts = new Map()
                 const categoryCounts = new Map()
-                
+
                 historyList.forEach(order => {
                     if (order.orderDetails) {
                         order.orderDetails.forEach(detail => {
@@ -100,13 +99,13 @@ export const analyzeCustomers = async ({ startDate, endDate } = {}) => {
                         })
                     }
                 })
-                
+
                 const favoriteProduct = Array.from(productCounts.entries())
                     .sort((a, b) => b[1] - a[1])[0]?.[0] || null
-                
+
                 const favoriteCategory = Array.from(categoryCounts.entries())
                     .sort((a, b) => b[1] - a[1])[0]?.[0] || null
-                
+
                 return {
                     customerId: customer.id,
                     fullName: customer.fullName,
@@ -132,7 +131,7 @@ export const analyzeCustomers = async ({ startDate, endDate } = {}) => {
                 }
             })
         )
-        
+
         const segments = {
             VIP: customerAnalytics.filter(c => c.segment === 'VIP'),
             Regular: customerAnalytics.filter(c => c.segment === 'Regular'),
@@ -140,11 +139,11 @@ export const analyzeCustomers = async ({ startDate, endDate } = {}) => {
             'At-risk': customerAnalytics.filter(c => c.segment === 'At-risk'),
             New: customerAnalytics.filter(c => c.segment === 'New')
         }
-        
+
         const topCustomers = customerAnalytics
             .sort((a, b) => b.metrics.totalSpend - a.metrics.totalSpend)
             .slice(0, 10)
-        
+
         return {
             customers: customerAnalytics.sort((a, b) => b.metrics.totalSpend - a.metrics.totalSpend),
             segments,
@@ -165,27 +164,27 @@ export const getCustomerInsights = async ({ customerId, startDate, endDate } = {
             startDate,
             endDate
         })
-        
-        const historyList = Array.isArray(purchaseHistory) 
-            ? purchaseHistory 
+
+        const historyList = Array.isArray(purchaseHistory)
+            ? purchaseHistory
             : (purchaseHistory?.content || [])
-        
+
         const timePatterns = {
             hour: new Array(24).fill(0),
             dayOfWeek: new Array(7).fill(0)
         }
-        
+
         historyList.forEach(order => {
             const orderDate = new Date(order.createdAt || order.orderDate)
             timePatterns.hour[orderDate.getHours()]++
             timePatterns.dayOfWeek[orderDate.getDay()]++
         })
-        
+
         const favoriteHour = timePatterns.hour.indexOf(Math.max(...timePatterns.hour))
         const favoriteDay = timePatterns.dayOfWeek.indexOf(Math.max(...timePatterns.dayOfWeek))
-        
+
         const recommendations = []
-        
+
         if (historyList.length === 0) {
             recommendations.push({
                 type: 'welcome',
@@ -195,7 +194,7 @@ export const getCustomerInsights = async ({ customerId, startDate, endDate } = {
         } else {
             const lastOrder = new Date(historyList[0].createdAt || historyList[0].orderDate)
             const daysSinceLastOrder = Math.floor((new Date() - lastOrder) / (1000 * 60 * 60 * 24))
-            
+
             if (daysSinceLastOrder > 90) {
                 recommendations.push({
                     type: 're-engagement',
@@ -203,7 +202,7 @@ export const getCustomerInsights = async ({ customerId, startDate, endDate } = {
                     action: 'create_reengagement_campaign'
                 })
             }
-            
+
             if (historyList.length >= 5 && daysSinceLastOrder < 30) {
                 recommendations.push({
                     type: 'loyalty',
@@ -212,7 +211,7 @@ export const getCustomerInsights = async ({ customerId, startDate, endDate } = {
                 })
             }
         }
-        
+
         return {
             customer,
             timePatterns,
@@ -226,7 +225,7 @@ export const getCustomerInsights = async ({ customerId, startDate, endDate } = {
     }
 }
 
-export const exportCustomerList = async (analyticsData) => {
+export const exportCustomerList = (analyticsData) => {
     const data = [
         ['BÁO CÁO PHÂN TÍCH KHÁCH HÀNG'],
         ['Thời gian:', `${analyticsData.period.startDate} - ${analyticsData.period.endDate}`],
@@ -234,7 +233,7 @@ export const exportCustomerList = async (analyticsData) => {
         [],
         ['Họ tên', 'SĐT', 'Email', 'Phân loại', 'Tổng chi tiêu', 'Số đơn', 'Đơn TB', 'Lần cuối', 'RFM Score']
     ]
-    
+
     analyticsData.customers.forEach(customer => {
         data.push([
             customer.fullName,
@@ -248,7 +247,7 @@ export const exportCustomerList = async (analyticsData) => {
             customer.metrics.rfmScore
         ])
     })
-    
+
     return {
         data,
         sheetName: 'Phân tích khách hàng',

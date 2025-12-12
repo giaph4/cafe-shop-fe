@@ -1,438 +1,646 @@
 <template>
-        <Teleport to="body">
-        <div class="modal fade shift-instance-detail-modal" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">Chi tiết ca làm</h5>
-                            <p class="text-muted mb-0" v-if="currentInstance">
-                                {{ formatDate(currentInstance.shiftDate) }} • {{ formatTime(currentInstance.startTime) }} -
-                                {{ formatTime(currentInstance.endTime) }} • {{ currentInstance.templateName }}
-                            </p>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade shift-instance-detail-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title">
+                Chi tiết ca làm
+              </h5>
+              <p
+                v-if="currentInstance"
+                class="text-muted mb-0"
+              >
+                {{ formatDate(currentInstance.shiftDate) }} • {{ formatTime(currentInstance.startTime) }} -
+                {{ formatTime(currentInstance.endTime) }} • {{ currentInstance.templateName }}
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
 
-                    <div class="modal-body" v-if="currentInstance">
-                        <div class="instance-summary mb-4">
-                            <div class="d-flex align-items-center gap-3 flex-wrap">
-                                <span class="badge bg-primary-subtle text-primary">Trạng thái: {{ translateStatus(currentInstance.status) }}</span>
-                                <span class="badge bg-info-subtle text-info" v-if="currentInstance.lockedAt">
-                                    Khóa lúc: {{ formatDateTime(currentInstance.lockedAt) }}
-                                </span>
-                                <span class="badge bg-light text-muted">Tạo bởi: {{ currentInstance.createdBy || 'Hệ thống' }}</span>
-                            </div>
-                            <p class="mt-3 mb-0" v-if="currentInstance.notes">Ghi chú: {{ currentInstance.notes }}</p>
-                        </div>
+          <div
+            v-if="currentInstance"
+            class="modal-body"
+          >
+            <div class="instance-summary mb-4">
+              <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="badge bg-primary-subtle text-primary">Trạng thái: {{ translateStatus(currentInstance.status) }}</span>
+                <span
+                  v-if="currentInstance.lockedAt"
+                  class="badge bg-info-subtle text-info"
+                >
+                  Khóa lúc: {{ formatDateTime(currentInstance.lockedAt) }}
+                </span>
+                <span class="badge bg-light text-muted">Tạo bởi: {{ currentInstance.createdBy || 'Hệ thống' }}</span>
+              </div>
+              <p
+                v-if="currentInstance.notes"
+                class="mt-3 mb-0"
+              >
+                Ghi chú: {{ currentInstance.notes }}
+              </p>
+            </div>
 
-                        <!-- 
+            <!--
                             Lưu ý: ShiftInstance không có workShiftId, nên không thể lấy active sessions.
                             Active sessions chỉ có thể lấy từ WorkShift, không phải ShiftInstance.
                             Phần này đã được ẩn để tránh lỗi API.
                         -->
 
-                        <section class="assignment-form card mb-4">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <h6 class="mb-1">{{ assignmentForm.assignmentId ? 'Cập nhật phân công' : 'Thêm phân công mới' }}</h6>
-                                        <p class="text-muted mb-0">Phân công nhân viên vào ca làm này.</p>
-                                    </div>
-                                    <button
-                                        v-if="assignmentForm.assignmentId"
-                                        type="button"
-                                        class="btn btn-outline-secondary btn-sm"
-                                        @click="resetAssignmentForm"
-                                    >
-                                        Huỷ chỉnh sửa
-                                    </button>
-                                </div>
-
-                                <div class="row g-3">
-                                    <div class="col-lg-4 col-md-6">
-                                        <label class="form-label">Nhân viên <span class="text-danger">*</span></label>
-                                        <select class="form-select" v-model.number="assignmentForm.userId" :disabled="assignmentFormLoading">
-                                            <option :value="null">Chọn nhân viên</option>
-                                            <option v-for="staff in staffOptions" :key="staff.id" :value="staff.id">
-                                                {{ staff.fullName || staff.username }} ({{ staff.username }})
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6">
-                                        <label class="form-label">Vai trò</label>
-                                        <input class="form-control" v-model.trim="assignmentForm.roleName" maxlength="50" />
-                                    </div>
-                                    <div class="col-lg-2 col-md-6">
-                                        <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
-                                        <input type="time" class="form-control" v-model="assignmentForm.plannedStart" @change="recomputePlannedMinutes" />
-                                    </div>
-                                    <div class="col-lg-2 col-md-6">
-                                        <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
-                                        <input type="time" class="form-control" v-model="assignmentForm.plannedEnd" @change="recomputePlannedMinutes" />
-                                    </div>
-                                    <div class="col-lg-1 col-md-6">
-                                        <label class="form-label">Phút</label>
-                                        <input type="number" class="form-control" min="15" step="5" v-model.number="assignmentForm.plannedMinutes" />
-                                    </div>
-                                </div>
-
-                                <div class="row g-3 mt-1">
-                                    <div class="col-lg-3 col-md-6">
-                                        <label class="form-label">Lương giờ</label>
-                                        <input type="number" class="form-control" min="0" step="1000" v-model.number="assignmentForm.hourlyRate" />
-                                    </div>
-                                    <div class="col-lg-3 col-md-6">
-                                        <label class="form-label">Phụ cấp cố định</label>
-                                        <input type="number" class="form-control" min="0" step="1000" v-model.number="assignmentForm.fixedAllowance" />
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label">Ghi chú</label>
-                                        <textarea class="form-control" rows="2" v-model.trim="assignmentForm.notes" maxlength="255"></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="mt-3 d-flex justify-content-end">
-                                    <button type="button" class="btn btn-primary" :disabled="assignmentFormLoading" @click="submitAssignment">
-                                        <span v-if="assignmentFormLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                        {{ assignmentForm.assignmentId ? 'Cập nhật' : 'Thêm phân công' }}
-                                    </button>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="assignment-table card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="mb-0">Danh sách phân công</h6>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" @click="fetchAssignments(true)" :disabled="assignmentsLoading">
-                                        <span v-if="assignmentsLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                        Làm mới
-                                    </button>
-                                </div>
-
-                                <div v-if="assignmentsLoading" class="text-center py-4">
-                                    <div class="spinner-border text-primary"></div>
-                                </div>
-                                <ErrorState
-                                    v-else-if="assignmentsError"
-                                    :message="assignmentsError"
-                                    @retry="fetchAssignments"
-                                />
-                                <EmptyState
-                                    v-else-if="!assignments.length"
-                                    title="Chưa có phân công"
-                                    message="Thêm nhân viên để bắt đầu ca làm này."
-                                />
-                                <div v-else class="table-responsive">
-                                    <table class="table align-middle">
-                                        <thead class="table-light">
-                                        <tr>
-                                            <th>Nhân viên</th>
-                                            <th>Thời gian</th>
-                                            <th>Doanh thu</th>
-                                            <th>Thưởng/Phạt</th>
-                                            <th>Trạng thái</th>
-                                            <th class="text-end">Hành động</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <template v-for="assignment in visibleAssignments" :key="assignment.id">
-                                            <tr>
-                                                <td>
-                                                    <div class="fw-semibold">{{ assignment.fullName || assignment.username }}</div>
-                                                    <div class="text-muted small">{{ assignment.username }}</div>
-                                                </td>
-                                                <td>
-                                                    <div>{{ formatTime(assignment.plannedStart) }} - {{ formatTime(assignment.plannedEnd) }} ({{ assignment.plannedMinutes }} phút)</div>
-                                                    <div class="text-muted small" v-if="assignment.actualMinutes">
-                                                        Thực tế: {{ assignment.actualMinutes }} phút
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div>{{ formatCurrency(assignment.totalRevenue ?? 0) }}</div>
-                                                    <div class="text-muted small">Lương: {{ formatCurrency(assignment.basePayroll ?? 0) }}</div>
-                                                </td>
-                                                <td>
-                                                    <div class="text-success">+ {{ formatCurrency(assignment.bonusAmount ?? 0) }}</div>
-                                                    <div class="text-danger">- {{ formatCurrency(assignment.penaltyAmount ?? 0) }}</div>
-                                                </td>
-                                                <td>
-                                                    <span class="badge" :class="statusClass(assignment.status)">{{ translateAssignmentStatus(assignment.status) }}</span>
-                                                </td>
-                                                <td class="text-end">
-                                                    <div class="action-buttons">
-                                                        <button
-                                                            class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
-                                                            @click="toggleAssignmentDetails(assignment)"
-                                                            :title="expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng'"
-                                                        >
-                                                            <i class="bi" :class="expandedAssignmentId === assignment.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                                                            <span>{{ expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng' }}</span>
-                                                        </button>
-                                                        <button
-                                                            class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
-                                                            @click="editAssignment(assignment)"
-                                                            title="Chỉnh sửa"
-                                                        >
-                                                            <i class="bi bi-pencil"></i>
-                                                            <span>Chỉnh sửa</span>
-                                                        </button>
-                                                        <button
-                                                            class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-2"
-                                                            @click="openStatusModal(assignment)"
-                                                            title="Cập nhật trạng thái"
-                                                        >
-                                                            <i class="bi bi-arrow-repeat"></i>
-                                                            <span>Trạng thái</span>
-                                                        </button>
-                                                        <button
-                                                            class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
-                                                            @click="removeAssignment(assignment)"
-                                                            title="Xóa"
-                                                        >
-                                                            <i class="bi bi-trash"></i>
-                                                            <span>Xóa</span>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr v-if="expandedAssignmentId === assignment.id">
-                                                <td colspan="6">
-                                                <div class="assignment-detail">
-                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                        <h6 class="mb-0">Chi tiết phân công: {{ assignment.fullName || assignment.username }}</h6>
-                                                        <span class="text-muted small">Cập nhật lúc: {{ formatDateTime(assignment.updatedAt) }}</span>
-                                                    </div>
-
-                                                    <ul class="nav nav-pills nav-pills-sm mb-3">
-                                                        <li class="nav-item">
-                                                            <button
-                                                                type="button"
-                                                                class="nav-link"
-                                                                :class="{active: detailTab === 'adjustments'}"
-                                                                @click="switchDetailTab('adjustments')"
-                                                            >
-                                                                Điều chỉnh hiệu suất
-                                                            </button>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                            <button
-                                                                type="button"
-                                                                class="nav-link"
-                                                                :class="{active: detailTab === 'attendance'}"
-                                                                @click="switchDetailTab('attendance')"
-                                                            >
-                                                                Chấm công
-                                                            </button>
-                                                        </li>
-                                                    </ul>
-
-                                                    <div v-if="detailTab === 'adjustments'">
-                                                        <div class="row g-3 align-items-end mb-3">
-                                                            <div class="col-lg-4">
-                                                                <label class="form-label">Loại điều chỉnh</label>
-                                                                <select class="form-select" v-model="adjustmentState.form.type">
-                                                                    <option v-for="opt in adjustmentTypeOptions" :key="opt.value" :value="opt.value">
-                                                                        {{ opt.label }}
-                                                                    </option>
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-lg-4">
-                                                                <label class="form-label">Số tiền <span class="text-danger">*</span></label>
-                                                                <input type="number" class="form-control" min="0" step="1000" v-model="adjustmentState.form.amount" placeholder="VD: 50000" />
-                                                            </div>
-                                                            <div class="col-lg-4">
-                                                                <label class="form-label">Lý do</label>
-                                                                <input type="text" class="form-control" maxlength="255" v-model="adjustmentState.form.reason" placeholder="Ghi chú (tuỳ chọn)" />
-                                                            </div>
-                                                            <div class="col-12 text-end">
-                                                                <button
-                                                                    type="button"
-                                                                    class="btn btn-primary"
-                                                                    :disabled="adjustmentState.submitting"
-                                                                    @click="submitAdjustment()"
-                                                                >
-                                                                    <span v-if="adjustmentState.submitting" class="spinner-border spinner-border-sm me-2"></span>
-                                                                    Thêm điều chỉnh
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        <div v-if="adjustmentState.loading" class="text-center py-3">
-                                                            <div class="spinner-border text-primary"></div>
-                                                        </div>
-                                                        <div v-else>
-                                                            <ErrorState
-                                                                v-if="adjustmentState.error"
-                                                                :message="adjustmentState.error"
-                                                                @retry="() => loadAdjustmentData(expandedAssignment.value?.id)"
-                                                            />
-                                                            <EmptyState
-                                                                v-else-if="!adjustmentState.list.length"
-                                                                title="Chưa có điều chỉnh"
-                                                                message="Thêm thưởng/phạt để cập nhật bảng lương."
-                                                            />
-                                                            <div v-else class="table-responsive">
-                                                                <table class="table table-sm align-middle">
-                                                                    <thead class="table-light">
-                                                                        <tr>
-                                                                            <th>Loại</th>
-                                                                            <th>Số tiền</th>
-                                                                            <th>Ghi chú</th>
-                                                                            <th>Trạng thái</th>
-                                                                            <th>Thời gian</th>
-                                                                            <th class="text-end">Hành động</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <tr v-for="adj in adjustmentState.list" :key="adj.id">
-                                                                            <td>{{ formatAdjustmentType(adj.type) }}</td>
-                                                                            <td>{{ formatCurrency(adj.amount ?? 0) }}</td>
-                                                                            <td>{{ adj.reason || '-' }}</td>
-                                                                            <td>
-                                                                                <span class="badge" :class="adj.revoked ? 'bg-secondary' : 'bg-success'">
-                                                                                    {{ adj.revoked ? 'Đã thu hồi' : 'Hiệu lực' }}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td>
-                                                                                <div class="small text-muted">Tạo: {{ formatDateTime(adj.createdAt) }}</div>
-                                                                                <div class="small text-muted" v-if="adj.revokedAt">Thu hồi: {{ formatDateTime(adj.revokedAt) }}</div>
-                                                                            </td>
-                                                                            <td class="text-end">
-                                                                                <div class="btn-group btn-group-sm">
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        class="btn btn-outline-warning"
-                                                                                        v-if="!adj.revoked"
-                                                                                        @click="revokeAdjustmentRecord(adj)"
-                                                                                    >
-                                                                                        Thu hồi
-                                                                                    </button>
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        class="btn btn-outline-danger"
-                                                                                        @click="deleteAdjustmentRecord(adj)"
-                                                                                    >
-                                                                                        Xoá
-                                                                                    </button>
-                                                                                </div>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div v-else>
-                                                        <div class="row g-3 align-items-end mb-3">
-                                                            <div class="col-lg-4">
-                                                                <label class="form-label">Nguồn chấm công</label>
-                                                                <select class="form-select" v-model="attendanceState.form.source">
-                                                                    <option v-for="opt in attendanceSourceOptions" :key="opt.value" :value="opt.value">
-                                                                        {{ opt.label }}
-                                                                    </option>
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-lg-8">
-                                                                <label class="form-label">Ghi chú</label>
-                                                                <input type="text" class="form-control" maxlength="255" v-model="attendanceState.form.note" placeholder="Ghi chú (tuỳ chọn)" />
-                                                            </div>
-                                                            <div class="col-12 d-flex gap-2 justify-content-end">
-                                                                <button
-                                                                    type="button"
-                                                                    class="btn btn-outline-success"
-                                                                    :disabled="attendanceState.submitting"
-                                                                    @click="submitAttendance('check-in')"
-                                                                >
-                                                                    <span v-if="attendanceState.submitting && attendanceState.action === 'check-in'" class="spinner-border spinner-border-sm me-2"></span>
-                                                                    Check-in
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    class="btn btn-outline-danger"
-                                                                    :disabled="attendanceState.submitting"
-                                                                    @click="submitAttendance('check-out')"
-                                                                >
-                                                                    <span v-if="attendanceState.submitting && attendanceState.action === 'check-out'" class="spinner-border spinner-border-sm me-2"></span>
-                                                                    Check-out
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        <div v-if="attendanceState.loading" class="text-center py-3">
-                                                            <div class="spinner-border text-primary"></div>
-                                                        </div>
-                                                        <div v-else>
-                                                            <ErrorState
-                                                                v-if="attendanceState.error"
-                                                                :message="attendanceState.error"
-                                                                @retry="() => loadAttendanceData(expandedAssignment.value?.id)"
-                                                            />
-                                                            <EmptyState
-                                                                v-else-if="!attendanceState.list.length"
-                                                                title="Chưa có chấm công"
-                                                                message="Thực hiện check-in để bắt đầu theo dõi thời gian."
-                                                            />
-                                                            <div v-else class="table-responsive">
-                                                                <table class="table table-sm align-middle">
-                                                                    <thead class="table-light">
-                                                                        <tr>
-                                                                            <th>Check-in</th>
-                                                                            <th>Check-out</th>
-                                                                            <th>Trễ / về sớm</th>
-                                                                            <th>Nguồn</th>
-                                                                            <th>Ghi chú</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <tr v-for="record in attendanceState.list" :key="record.id">
-                                                                            <td>{{ formatDateTime(record.checkInAt) }}</td>
-                                                                            <td>{{ record.checkOutAt ? formatDateTime(record.checkOutAt) : '-' }}</td>
-                                                                            <td>
-                                                                                <div class="small">Trễ: {{ record.lateMinutes ?? 0 }} phút</div>
-                                                                                <div class="small">Về sớm: {{ record.earlyLeaveMinutes ?? 0 }} phút</div>
-                                                                            </td>
-                                                                            <td>{{ formatAttendanceSource(record.source) }}</td>
-                                                                            <td>{{ record.note || '-' }}</td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                </td>
-                                            </tr>
-                                        </template>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                    </div>
-                    </div>
+            <section class="assignment-form card mb-4">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h6 class="mb-1">
+                      {{ assignmentForm.assignmentId ? 'Cập nhật phân công' : 'Thêm phân công mới' }}
+                    </h6>
+                    <p class="text-muted mb-0">
+                      Phân công nhân viên vào ca làm này.
+                    </p>
+                  </div>
+                  <button
+                    v-if="assignmentForm.assignmentId"
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    @click="resetAssignmentForm"
+                  >
+                    Huỷ chỉnh sửa
+                  </button>
                 </div>
-            </div>
-        </Teleport>
 
-        <ShiftAssignmentStatusUpdateModal
-            ref="statusUpdateModalRef"
-            :status-options="ASSIGNMENT_STATUSES"
-            @submit="handleAssignmentStatusUpdate"
-        />
-    </template>
+                <div class="row g-3">
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Nhân viên <span class="text-danger">*</span></label>
+                    <select
+                      v-model.number="assignmentForm.userId"
+                      class="form-select"
+                      :disabled="assignmentFormLoading"
+                    >
+                      <option :value="null">
+                        Chọn nhân viên
+                      </option>
+                      <option
+                        v-for="staff in staffOptions"
+                        :key="staff.id"
+                        :value="staff.id"
+                      >
+                        {{ staff.fullName || staff.username }} ({{ staff.username }})
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Vai trò</label>
+                    <input
+                      v-model.trim="assignmentForm.roleName"
+                      class="form-control"
+                      maxlength="50"
+                    >
+                  </div>
+                  <div class="col-lg-2 col-md-6">
+                    <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                    <input
+                      v-model="assignmentForm.plannedStart"
+                      type="time"
+                      class="form-control"
+                      @change="recomputePlannedMinutes"
+                    >
+                  </div>
+                  <div class="col-lg-2 col-md-6">
+                    <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                    <input
+                      v-model="assignmentForm.plannedEnd"
+                      type="time"
+                      class="form-control"
+                      @change="recomputePlannedMinutes"
+                    >
+                  </div>
+                  <div class="col-lg-1 col-md-6">
+                    <label class="form-label">Phút</label>
+                    <input
+                      v-model.number="assignmentForm.plannedMinutes"
+                      type="number"
+                      class="form-control"
+                      min="15"
+                      step="5"
+                    >
+                  </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Lương giờ</label>
+                    <input
+                      v-model.number="assignmentForm.hourlyRate"
+                      type="number"
+                      class="form-control"
+                      min="0"
+                      step="1000"
+                    >
+                  </div>
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Phụ cấp cố định</label>
+                    <input
+                      v-model.number="assignmentForm.fixedAllowance"
+                      type="number"
+                      class="form-control"
+                      min="0"
+                      step="1000"
+                    >
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Ghi chú</label>
+                    <textarea
+                      v-model.trim="assignmentForm.notes"
+                      class="form-control"
+                      rows="2"
+                      maxlength="255"
+                    />
+                  </div>
+                </div>
+
+                <div class="mt-3 d-flex justify-content-end">
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    :disabled="assignmentFormLoading"
+                    @click="submitAssignment"
+                  >
+                    <span
+                      v-if="assignmentFormLoading"
+                      class="spinner-border spinner-border-sm me-2"
+                    />
+                    {{ assignmentForm.assignmentId ? 'Cập nhật' : 'Thêm phân công' }}
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="assignment-table card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="mb-0">
+                    Danh sách phân công
+                  </h6>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    :disabled="assignmentsLoading"
+                    @click="fetchAssignments(true)"
+                  >
+                    <span
+                      v-if="assignmentsLoading"
+                      class="spinner-border spinner-border-sm me-2"
+                    />
+                    Làm mới
+                  </button>
+                </div>
+
+                <div
+                  v-if="assignmentsLoading"
+                  class="text-center py-4"
+                >
+                  <div class="spinner-border text-primary" />
+                </div>
+                <ErrorState
+                  v-else-if="assignmentsError"
+                  :message="assignmentsError"
+                  @retry="fetchAssignments"
+                />
+                <EmptyState
+                  v-else-if="!assignments.length"
+                  title="Chưa có phân công"
+                  message="Thêm nhân viên để bắt đầu ca làm này."
+                />
+                <div
+                  v-else
+                  class="table-responsive"
+                >
+                  <table class="table align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Nhân viên</th>
+                        <th>Thời gian</th>
+                        <th>Doanh thu</th>
+                        <th>Thưởng/Phạt</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">
+                          Hành động
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template
+                        v-for="assignment in visibleAssignments"
+                        :key="assignment.id"
+                      >
+                        <tr>
+                          <td>
+                            <div class="fw-semibold">
+                              {{ assignment.fullName || assignment.username }}
+                            </div>
+                            <div class="text-muted small">
+                              {{ assignment.username }}
+                            </div>
+                          </td>
+                          <td>
+                            <div>{{ formatTime(assignment.plannedStart) }} - {{ formatTime(assignment.plannedEnd) }} ({{ assignment.plannedMinutes }} phút)</div>
+                            <div
+                              v-if="assignment.actualMinutes"
+                              class="text-muted small"
+                            >
+                              Thực tế: {{ assignment.actualMinutes }} phút
+                            </div>
+                          </td>
+                          <td>
+                            <div>{{ formatCurrency(assignment.totalRevenue ?? 0) }}</div>
+                            <div class="text-muted small">
+                              Lương: {{ formatCurrency(assignment.basePayroll ?? 0) }}
+                            </div>
+                          </td>
+                          <td>
+                            <div class="text-success">
+                              + {{ formatCurrency(assignment.bonusAmount ?? 0) }}
+                            </div>
+                            <div class="text-danger">
+                              - {{ formatCurrency(assignment.penaltyAmount ?? 0) }}
+                            </div>
+                          </td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="statusClass(assignment.status)"
+                            >{{ translateAssignmentStatus(assignment.status) }}</span>
+                          </td>
+                          <td class="text-end">
+                            <div class="action-buttons">
+                              <button
+                                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
+                                :title="expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng'"
+                                @click="toggleAssignmentDetails(assignment)"
+                              >
+                                <i
+                                  class="bi"
+                                  :class="expandedAssignmentId === assignment.id ? 'bi-chevron-up' : 'bi-chevron-down'"
+                                />
+                                <span>{{ expandedAssignmentId === assignment.id ? 'Thu gọn' : 'Mở rộng' }}</span>
+                              </button>
+                              <button
+                                class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2"
+                                title="Chỉnh sửa"
+                                @click="editAssignment(assignment)"
+                              >
+                                <i class="bi bi-pencil" />
+                                <span>Chỉnh sửa</span>
+                              </button>
+                              <button
+                                class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-2"
+                                title="Cập nhật trạng thái"
+                                @click="openStatusModal(assignment)"
+                              >
+                                <i class="bi bi-arrow-repeat" />
+                                <span>Trạng thái</span>
+                              </button>
+                              <button
+                                class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
+                                title="Xóa"
+                                @click="removeAssignment(assignment)"
+                              >
+                                <i class="bi bi-trash" />
+                                <span>Xóa</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="expandedAssignmentId === assignment.id">
+                          <td colspan="6">
+                            <div class="assignment-detail">
+                              <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">
+                                  Chi tiết phân công: {{ assignment.fullName || assignment.username }}
+                                </h6>
+                                <span class="text-muted small">Cập nhật lúc: {{ formatDateTime(assignment.updatedAt) }}</span>
+                              </div>
+
+                              <ul class="nav nav-pills nav-pills-sm mb-3">
+                                <li class="nav-item">
+                                  <button
+                                    type="button"
+                                    class="nav-link"
+                                    :class="{active: detailTab === 'adjustments'}"
+                                    @click="switchDetailTab('adjustments')"
+                                  >
+                                    Điều chỉnh hiệu suất
+                                  </button>
+                                </li>
+                                <li class="nav-item">
+                                  <button
+                                    type="button"
+                                    class="nav-link"
+                                    :class="{active: detailTab === 'attendance'}"
+                                    @click="switchDetailTab('attendance')"
+                                  >
+                                    Chấm công
+                                  </button>
+                                </li>
+                              </ul>
+
+                              <div v-if="detailTab === 'adjustments'">
+                                <div class="row g-3 align-items-end mb-3">
+                                  <div class="col-lg-4">
+                                    <label class="form-label">Loại điều chỉnh</label>
+                                    <select
+                                      v-model="adjustmentState.form.type"
+                                      class="form-select"
+                                    >
+                                      <option
+                                        v-for="opt in adjustmentTypeOptions"
+                                        :key="opt.value"
+                                        :value="opt.value"
+                                      >
+                                        {{ opt.label }}
+                                      </option>
+                                    </select>
+                                  </div>
+                                  <div class="col-lg-4">
+                                    <label class="form-label">Số tiền <span class="text-danger">*</span></label>
+                                    <input
+                                      v-model="adjustmentState.form.amount"
+                                      type="number"
+                                      class="form-control"
+                                      min="0"
+                                      step="1000"
+                                      placeholder="VD: 50000"
+                                    >
+                                  </div>
+                                  <div class="col-lg-4">
+                                    <label class="form-label">Lý do</label>
+                                    <input
+                                      v-model="adjustmentState.form.reason"
+                                      type="text"
+                                      class="form-control"
+                                      maxlength="255"
+                                      placeholder="Ghi chú (tuỳ chọn)"
+                                    >
+                                  </div>
+                                  <div class="col-12 text-end">
+                                    <button
+                                      type="button"
+                                      class="btn btn-primary"
+                                      :disabled="adjustmentState.submitting"
+                                      @click="submitAdjustment()"
+                                    >
+                                      <span
+                                        v-if="adjustmentState.submitting"
+                                        class="spinner-border spinner-border-sm me-2"
+                                      />
+                                      Thêm điều chỉnh
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div
+                                  v-if="adjustmentState.loading"
+                                  class="text-center py-3"
+                                >
+                                  <div class="spinner-border text-primary" />
+                                </div>
+                                <div v-else>
+                                  <ErrorState
+                                    v-if="adjustmentState.error"
+                                    :message="adjustmentState.error"
+                                    @retry="() => loadAdjustmentData(expandedAssignment.value?.id)"
+                                  />
+                                  <EmptyState
+                                    v-else-if="!adjustmentState.list.length"
+                                    title="Chưa có điều chỉnh"
+                                    message="Thêm thưởng/phạt để cập nhật bảng lương."
+                                  />
+                                  <div
+                                    v-else
+                                    class="table-responsive"
+                                  >
+                                    <table class="table table-sm align-middle">
+                                      <thead class="table-light">
+                                        <tr>
+                                          <th>Loại</th>
+                                          <th>Số tiền</th>
+                                          <th>Ghi chú</th>
+                                          <th>Trạng thái</th>
+                                          <th>Thời gian</th>
+                                          <th class="text-end">
+                                            Hành động
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr
+                                          v-for="adj in adjustmentState.list"
+                                          :key="adj.id"
+                                        >
+                                          <td>{{ formatAdjustmentType(adj.type) }}</td>
+                                          <td>{{ formatCurrency(adj.amount ?? 0) }}</td>
+                                          <td>{{ adj.reason || '-' }}</td>
+                                          <td>
+                                            <span
+                                              class="badge"
+                                              :class="adj.revoked ? 'bg-secondary' : 'bg-success'"
+                                            >
+                                              {{ adj.revoked ? 'Đã thu hồi' : 'Hiệu lực' }}
+                                            </span>
+                                          </td>
+                                          <td>
+                                            <div class="small text-muted">
+                                              Tạo: {{ formatDateTime(adj.createdAt) }}
+                                            </div>
+                                            <div
+                                              v-if="adj.revokedAt"
+                                              class="small text-muted"
+                                            >
+                                              Thu hồi: {{ formatDateTime(adj.revokedAt) }}
+                                            </div>
+                                          </td>
+                                          <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                              <button
+                                                v-if="!adj.revoked"
+                                                type="button"
+                                                class="btn btn-outline-warning"
+                                                @click="revokeAdjustmentRecord(adj)"
+                                              >
+                                                Thu hồi
+                                              </button>
+                                              <button
+                                                type="button"
+                                                class="btn btn-outline-danger"
+                                                @click="deleteAdjustmentRecord(adj)"
+                                              >
+                                                Xoá
+                                              </button>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div v-else>
+                                <div class="row g-3 align-items-end mb-3">
+                                  <div class="col-lg-4">
+                                    <label class="form-label">Nguồn chấm công</label>
+                                    <select
+                                      v-model="attendanceState.form.source"
+                                      class="form-select"
+                                    >
+                                      <option
+                                        v-for="opt in attendanceSourceOptions"
+                                        :key="opt.value"
+                                        :value="opt.value"
+                                      >
+                                        {{ opt.label }}
+                                      </option>
+                                    </select>
+                                  </div>
+                                  <div class="col-lg-8">
+                                    <label class="form-label">Ghi chú</label>
+                                    <input
+                                      v-model="attendanceState.form.note"
+                                      type="text"
+                                      class="form-control"
+                                      maxlength="255"
+                                      placeholder="Ghi chú (tuỳ chọn)"
+                                    >
+                                  </div>
+                                  <div class="col-12 d-flex gap-2 justify-content-end">
+                                    <button
+                                      type="button"
+                                      class="btn btn-outline-success"
+                                      :disabled="attendanceState.submitting"
+                                      @click="submitAttendance('check-in')"
+                                    >
+                                      <span
+                                        v-if="attendanceState.submitting && attendanceState.action === 'check-in'"
+                                        class="spinner-border spinner-border-sm me-2"
+                                      />
+                                      Check-in
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-outline-danger"
+                                      :disabled="attendanceState.submitting"
+                                      @click="submitAttendance('check-out')"
+                                    >
+                                      <span
+                                        v-if="attendanceState.submitting && attendanceState.action === 'check-out'"
+                                        class="spinner-border spinner-border-sm me-2"
+                                      />
+                                      Check-out
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div
+                                  v-if="attendanceState.loading"
+                                  class="text-center py-3"
+                                >
+                                  <div class="spinner-border text-primary" />
+                                </div>
+                                <div v-else>
+                                  <ErrorState
+                                    v-if="attendanceState.error"
+                                    :message="attendanceState.error"
+                                    @retry="() => loadAttendanceData(expandedAssignment.value?.id)"
+                                  />
+                                  <EmptyState
+                                    v-else-if="!attendanceState.list.length"
+                                    title="Chưa có chấm công"
+                                    message="Thực hiện check-in để bắt đầu theo dõi thời gian."
+                                  />
+                                  <div
+                                    v-else
+                                    class="table-responsive"
+                                  >
+                                    <table class="table table-sm align-middle">
+                                      <thead class="table-light">
+                                        <tr>
+                                          <th>Check-in</th>
+                                          <th>Check-out</th>
+                                          <th>Trễ / về sớm</th>
+                                          <th>Nguồn</th>
+                                          <th>Ghi chú</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr
+                                          v-for="record in attendanceState.list"
+                                          :key="record.id"
+                                        >
+                                          <td>{{ formatDateTime(record.checkInAt) }}</td>
+                                          <td>{{ record.checkOutAt ? formatDateTime(record.checkOutAt) : '-' }}</td>
+                                          <td>
+                                            <div class="small">
+                                              Trễ: {{ record.lateMinutes ?? 0 }} phút
+                                            </div>
+                                            <div class="small">
+                                              Về sớm: {{ record.earlyLeaveMinutes ?? 0 }} phút
+                                            </div>
+                                          </td>
+                                          <td>{{ formatAttendanceSource(record.source) }}</td>
+                                          <td>{{ record.note || '-' }}</td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="hide"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
+  <ShiftAssignmentStatusUpdateModal
+    ref="statusUpdateModalRef"
+    :status-options="ASSIGNMENT_STATUSES"
+    @submit="handleAssignmentStatusUpdate"
+  />
+</template>
 
 <script setup>
-import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue'
-import {storeToRefs} from 'pinia'
-import {Modal} from 'bootstrap'
-import {toast} from 'vue3-toastify'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { Modal } from 'bootstrap'
+import { toast } from 'vue3-toastify'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import ShiftAssignmentStatusUpdateModal from '@/components/shifts/ShiftAssignmentStatusUpdateModal.vue'
@@ -454,9 +662,9 @@ import {
     checkInAttendance,
     checkOutAttendance
 } from '@/api/shiftService'
-import {getUsers} from '@/api/userService'
-import {formatCurrency, formatDate, formatDateTime} from '@/utils/formatters'
-import {useShiftSessionStore} from '@/store/shiftSession'
+import { getUsers } from '@/api/userService'
+import { formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
+import { useShiftSessionStore } from '@/store/shiftSession'
 import logger from '@/utils/logger'
 
 const modal = ref(null)
@@ -471,23 +679,23 @@ const assignmentFormLoading = ref(false)
 const staffOptions = ref([])
 
 const shiftSessionStore = useShiftSessionStore()
-const {lastEvent, realtimeConnected, realtimeConnecting, realtimeError} = storeToRefs(shiftSessionStore)
+const { lastEvent, realtimeConnected, realtimeConnecting, realtimeError } = storeToRefs(shiftSessionStore)
 
 // ShiftInstance không có workShiftId, nên không thể lấy active sessions
 // Active sessions chỉ có thể lấy từ WorkShift, không phải ShiftInstance
-const activeSessions = computed(() => [])
+const _activeSessions = computed(() => [])
 
-const sessionListLoading = computed(() => false)
+const _sessionListLoading = computed(() => false)
 
-const sessionListError = computed(() => null)
+const _sessionListError = computed(() => null)
 
-const realtimeStatus = computed(() => {
-    if (realtimeConnecting.value) return {label: 'Đang kết nối…', variant: 'bg-warning text-dark'}
-    if (realtimeConnected.value) return {label: 'Realtime đã kết nối', variant: 'bg-success'}
-    return {label: 'Chưa kết nối realtime', variant: 'bg-secondary'}
+const _realtimeStatus = computed(() => {
+    if (realtimeConnecting.value) return { label: 'Đang kết nối…', variant: 'bg-warning text-dark' }
+    if (realtimeConnected.value) return { label: 'Realtime đã kết nối', variant: 'bg-success' }
+    return { label: 'Chưa kết nối realtime', variant: 'bg-secondary' }
 })
 
-const realtimeErrorMessage = computed(() => {
+const _realtimeErrorMessage = computed(() => {
     const error = realtimeError.value
     if (!error) return ''
     if (typeof error === 'string') return error
@@ -496,7 +704,7 @@ const realtimeErrorMessage = computed(() => {
         try {
             const parsed = JSON.parse(error.body)
             if (parsed?.message) return parsed.message
-        } catch (parseError) {
+        } catch {
             return String(error.body)
         }
     }
@@ -558,7 +766,7 @@ const attendanceState = reactive({
     action: null
 })
 
-const forceSubmitting = (sessionId) => shiftSessionStore.isForceSubmitting(sessionId)
+const _forceSubmitting = (sessionId) => shiftSessionStore.isForceSubmitting(sessionId)
 
 // ShiftInstance không có workShiftId, nên không thể lấy active sessions
 const loadActiveSessions = async () => {
@@ -566,7 +774,7 @@ const loadActiveSessions = async () => {
     // Active sessions chỉ có thể lấy từ WorkShift
 }
 
-const promptForceEndSession = async (session) => {
+const _promptForceEndSession = async (session) => {
     if (!session?.id) return
     const reason = window.prompt('Nhập lý do kết thúc ca cưỡng bức (bắt buộc):')
     if (!reason) {
@@ -591,15 +799,15 @@ watch(
 )
 
 watch(lastEvent, (event) => {
-        if (!event?.session?.workShiftId || !currentInstance.value?.id) return
-        if (event.session.workShiftId !== currentInstance.value.id) return
-        if (event.type === 'SESSION_STARTED') {
-            toast.info(`Nhân viên ${event.session.fullName || event.session.username || '#'+event.session.userId} đã bắt đầu ca.`)
-        }
-        if (event.type === 'SESSION_ENDED' || event.type === 'SESSION_FORCED') {
-            const verb = event.type === 'SESSION_FORCED' ? 'kết thúc cưỡng bức' : 'kết thúc'
-            toast.info(`Ca của ${event.session.fullName || event.session.username || '#'+event.session.userId} đã ${verb}.`)
-        }
+    if (!event?.session?.workShiftId || !currentInstance.value?.id) return
+    if (event.session.workShiftId !== currentInstance.value.id) return
+    if (event.type === 'SESSION_STARTED') {
+        toast.info(`Nhân viên ${event.session.fullName || event.session.username || `#${event.session.userId}`} đã bắt đầu ca.`)
+    }
+    if (event.type === 'SESSION_ENDED' || event.type === 'SESSION_FORCED') {
+        const verb = event.type === 'SESSION_FORCED' ? 'kết thúc cưỡng bức' : 'kết thúc'
+        toast.info(`Ca của ${event.session.fullName || event.session.username || `#${event.session.userId}`} đã ${verb}.`)
+    }
 })
 
 const resetDetailStates = () => {
@@ -691,7 +899,7 @@ const revokeAdjustmentRecord = async (adjustment) => {
     }
     adjustmentState.processingId = adjustment.id
     try {
-        await revokeAdjustment(adjustment.id, {reason})
+        await revokeAdjustment(adjustment.id, { reason })
         toast.success('Đã thu hồi điều chỉnh.')
         await Promise.all([loadAdjustmentData(adjustment.assignmentId), fetchAssignments(true)])
     } catch (err) {
@@ -778,7 +986,7 @@ const fetchStaffOptions = async () => {
 }
 
 const refreshCurrentInstance = async (options = {}) => {
-    const {showErrorToast = false} = options
+    const { showErrorToast = false } = options
     if (!currentInstance.value?.id) return
     try {
         const data = await getShiftInstance(currentInstance.value.id)
@@ -794,7 +1002,7 @@ const refreshCurrentInstance = async (options = {}) => {
 const open = async (instance) => {
     currentInstance.value = instance
     resetDetailStates()
-    await refreshCurrentInstance({showErrorToast: true})
+    await refreshCurrentInstance({ showErrorToast: true })
     resetAssignmentForm()
     await fetchStaffOptions()
     await fetchAssignments()
@@ -963,7 +1171,7 @@ const editAssignment = (assignment) => {
     assignmentForm.notes = assignment.notes || ''
 }
 
-const promptStatusChange = async (assignment) => {
+const _promptStatusChange = async (assignment) => {
     if (statusUpdateModalRef.value) {
         statusUpdateModalRef.value.show(assignment)
     }
@@ -1041,10 +1249,10 @@ const formatTime = (time) => {
     return time.length === 5 ? time : time.slice(0, 5)
 }
 
-defineExpose({open, hide})
+defineExpose({ open, hide })
 
 onMounted(() => {
-    modalInstance = new Modal(modal.value, {backdrop: 'static'})
+    modalInstance = new Modal(modal.value, { backdrop: 'static' })
 })
 
 onBeforeUnmount(() => modalInstance?.dispose())

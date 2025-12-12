@@ -1,23 +1,37 @@
 <template>
-    <LoadingState v-if="isLoading" text="Đang tải sơ đồ bàn..." />
-    <ErrorState
-        v-else-if="isError"
-        message="Không thể tải sơ đồ bàn. Vui lòng thử lại."
-        :show-retry="true"
-        :retry-handler="() => tableStore.loadTables()"
-    />
-    <div v-else class="pos-table-map__grid">
-        <button v-for="table in tables" :key="table.id" type="button"
-                class="table-chip" :class="getStatusVariant(table.status)"
-                @click="selectT(table)">
-            <span class="table-chip__name">{{ table.name }}</span>
-            <span class="table-chip__status">
-                <i class="bi" :class="getStatusMeta(table.status).icon"></i>
-                {{ getStatusMeta(table.status).label }}
-            </span>
-            <span class="table-chip__capacity"><i class="bi bi-people-fill"></i>{{ table.capacity }}</span>
-        </button>
-    </div>
+  <LoadingState
+    v-if="isLoading"
+    text="Đang tải sơ đồ bàn..."
+  />
+  <ErrorState
+    v-else-if="isError"
+    message="Không thể tải sơ đồ bàn. Vui lòng thử lại."
+    :show-retry="true"
+    :retry-handler="() => tableStore.loadTables()"
+  />
+  <div
+    v-else
+    class="pos-table-map__grid"
+  >
+    <button
+      v-for="table in tables"
+      :key="table.id"
+      type="button"
+      class="table-chip"
+      :class="getStatusVariant(table.status)"
+      @click="selectT(table)"
+    >
+      <span class="table-chip__name">{{ table.name }}</span>
+      <span class="table-chip__status">
+        <i
+          class="bi"
+          :class="getStatusMeta(table.status).icon"
+        />
+        {{ getStatusMeta(table.status).label }}
+      </span>
+      <span class="table-chip__capacity"><i class="bi bi-people-fill" />{{ table.capacity }}</span>
+    </button>
+  </div>
 </template>
 
 <script setup>
@@ -33,7 +47,7 @@ const tableStore = useTableStore()
 // Use tables from store (with real-time updates)
 const tables = computed(() => tableStore.tables)
 const isLoading = computed(() => tableStore.loading)
-const isError = computed(() => !!tableStore.error)
+const isError = computed(() => Boolean(tableStore.error))
 
 onMounted(async () => {
     // Load tables if not already loaded

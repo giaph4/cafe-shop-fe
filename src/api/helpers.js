@@ -14,12 +14,12 @@
  */
 export const createFormData = (jsonData, jsonFieldName = 'data', files = null, fileFieldName = 'file') => {
     const formData = new FormData()
-    
+
     // Append JSON data
     if (jsonData) {
         formData.append(jsonFieldName, new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
     }
-    
+
     // Append file(s)
     if (files) {
         if (Array.isArray(files)) {
@@ -32,7 +32,7 @@ export const createFormData = (jsonData, jsonFieldName = 'data', files = null, f
             formData.append(fileFieldName, files)
         }
     }
-    
+
     return formData
 }
 
@@ -44,7 +44,7 @@ export const createFormData = (jsonData, jsonFieldName = 'data', files = null, f
  */
 export const createFileFormData = (files, fieldName = 'file') => {
     const formData = new FormData()
-    
+
     if (Array.isArray(files)) {
         files.forEach((file) => {
             if (file) {
@@ -54,7 +54,7 @@ export const createFileFormData = (files, fieldName = 'file') => {
     } else if (files) {
         formData.append(fieldName, files)
     }
-    
+
     return formData
 }
 

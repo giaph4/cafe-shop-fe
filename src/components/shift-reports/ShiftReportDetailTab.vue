@@ -1,229 +1,330 @@
 <template>
-    <div class="shift-report-detail-tab">
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label">Session ID <span class="text-danger">*</span></label>
-                        <input
-                            type="number"
-                            class="form-control"
-                            v-model.number="sessionIdInput"
-                            min="1"
-                            placeholder="Nhập ID phiên"
-                            required
-                        />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Tùy chọn</label>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="refreshData" v-model="refresh" />
-                            <label class="form-check-label" for="refreshData">Lấy mới dữ liệu</label>
-                        </div>
-                    </div>
-                    <div class="col-lg-5 col-md-12 text-lg-end text-md-start">
-                        <button class="btn btn-primary me-2" type="button" @click="handleFetch" :disabled="loading">
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i class="bi bi-search me-2"></i>Lấy báo cáo
-                        </button>
-                        <button
-                            class="btn btn-outline-success"
-                            type="button"
-                            :disabled="loading || !report"
-                            @click="handleRegenerate"
-                        >
-                            <i class="bi bi-arrow-clockwise me-2"></i>Tái tổng hợp
-                        </button>
-                    </div>
-                </div>
+  <div class="shift-report-detail-tab">
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label">Session ID <span class="text-danger">*</span></label>
+            <input
+              v-model.number="sessionIdInput"
+              type="number"
+              class="form-control"
+              min="1"
+              placeholder="Nhập ID phiên"
+              required
+            >
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Tùy chọn</label>
+            <div class="form-check form-switch">
+              <input
+                id="refreshData"
+                v-model="refresh"
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+              >
+              <label
+                class="form-check-label"
+                for="refreshData"
+              >Lấy mới dữ liệu</label>
             </div>
+          </div>
+          <div class="col-lg-5 col-md-12 text-lg-end text-md-start">
+            <button
+              class="btn btn-primary me-2"
+              type="button"
+              :disabled="loading"
+              @click="handleFetch"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i class="bi bi-search me-2" />Lấy báo cáo
+            </button>
+            <button
+              class="btn btn-outline-success"
+              type="button"
+              :disabled="loading || !report"
+              @click="handleRegenerate"
+            >
+              <i class="bi bi-arrow-clockwise me-2" />Tái tổng hợp
+            </button>
+          </div>
         </div>
-
-        <div v-if="errorMessage" class="alert alert-danger mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
-        </div>
-
-        <div v-if="report" class="report-content">
-            <div class="card info-card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
-                        <div>
-                            <h5 class="card-title mb-2">Thông tin phiên ca</h5>
-                            <p class="text-muted mb-0">Chi tiết về phiên ca làm việc và thời gian thực hiện.</p>
-                        </div>
-                        <div class="connection-status" :data-state="connectionState">
-                            <span class="connection-indicator"></span>
-                            <span class="connection-text">{{ connectionStatusLabel }}</span>
-                            <button
-                                v-if="connectionState !== 'online'"
-                                type="button"
-                                class="btn btn-sm btn-outline-primary ms-2"
-                                :disabled="connectingRealtime"
-                                @click="handleReconnect"
-                            >
-                                {{ connectingRealtime ? 'Đang kết nối...' : 'Kết nối lại' }}
-                            </button>
-                        </div>
-                    </div>
-                    <div v-if="connectionError" class="text-danger small mb-2">{{ connectionError }}</div>
-
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="info-item">
-                                <span class="info-label">Trạng thái phiên</span>
-                                <span class="badge" :class="statusClass(report.status)">{{ statusLabel }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-item">
-                                <span class="info-label">Nhân viên phụ trách</span>
-                                <span class="info-value">#{{ report.userId }} — {{ report.username || 'Không rõ' }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-item">
-                                <span class="info-label">Ca mẫu</span>
-                                <span class="info-value">{{ report.workShiftId ? `#${report.workShiftId}` : 'Không xác định' }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-item">
-                                <span class="info-label">Bắt đầu</span>
-                                <span class="info-value">{{ formatDateTime(report.startAt) }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-item">
-                                <span class="info-label">Kết thúc</span>
-                                <span class="info-value">{{ report.endAt ? formatDateTime(report.endAt) : 'Chưa kết thúc' }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-item">
-                                <span class="info-label">Tổng hợp lúc</span>
-                                <span class="info-value">{{ formatDateTime(report.generatedAt) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-md-3 col-sm-6 d-flex">
-                    <div class="metric-card w-100">
-                        <div class="metric-label">Tổng đơn</div>
-                        <div class="metric-value">{{ formatNumber(report.totalOrders) }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 d-flex">
-                    <div class="metric-card metric-card--success w-100">
-                        <div class="metric-label">Doanh thu đã thanh toán</div>
-                        <div class="metric-value">{{ formatCurrency(report.totalPaidAmount) }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 d-flex">
-                    <div class="metric-card metric-card--warning w-100">
-                        <div class="metric-label">Giá trị chưa thanh toán</div>
-                        <div class="metric-value">{{ formatCurrency(report.totalUnpaidAmount) }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 d-flex">
-                    <div class="metric-card w-100">
-                        <div class="metric-label">Đơn chuyển giao</div>
-                        <div class="metric-value">{{ formatNumber(report.transferredOrders) }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="card table-card">
-                        <div class="card-body">
-                            <h6 class="card-title mb-3">Phân bổ theo phương thức thanh toán</h6>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Phương thức</th>
-                                            <th>Đơn hàng</th>
-                                            <th class="text-end">Doanh thu</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-if="!report.paymentBreakdown.length">
-                                            <td colspan="3" class="text-center text-muted py-4">Không có dữ liệu</td>
-                                        </tr>
-                                        <tr v-for="method in report.paymentBreakdown" :key="method.paymentMethod">
-                                            <td>{{ paymentMethodLabel(method.paymentMethod) }}</td>
-                                            <td>{{ formatNumber(method.orderCount) }}</td>
-                                            <td class="text-end">{{ formatCurrency(method.totalAmount) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card table-card">
-                        <div class="card-body">
-                            <h6 class="card-title mb-3">Top sản phẩm theo số lượng</h6>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Sản phẩm</th>
-                                            <th>Số lượng</th>
-                                            <th class="text-end">Doanh thu</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-if="!report.topProducts.length">
-                                            <td colspan="3" class="text-center text-muted py-4">Không có dữ liệu</td>
-                                        </tr>
-                                        <tr v-for="product in report.topProducts" :key="product.productId || product.productName">
-                                            <td>
-                                                <strong>{{ product.productName || 'Không rõ' }}</strong>
-                                                <small v-if="product.productId" class="text-muted d-block">#{{ product.productId }}</small>
-                                            </td>
-                                            <td>{{ formatNumber(product.quantity) }}</td>
-                                            <td class="text-end">{{ formatCurrency(product.totalAmount) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card event-log-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <h6 class="card-title mb-1">Nhật ký sự kiện mới nhất</h6>
-                            <small class="text-muted">Tự động cập nhật từ realtime events</small>
-                        </div>
-                    </div>
-                    <div v-if="!eventLog.length" class="text-center text-muted py-4">
-                        Chưa có sự kiện nào.
-                    </div>
-                    <div v-else class="event-log">
-                        <div v-for="(event, index) in eventLog" :key="index" class="event-item">
-                            <div class="event-meta">
-                                <span class="badge" :class="eventStatusClass(event.eventType)">{{ event.eventType }}</span>
-                                <span class="text-muted small">{{ formatDateTime(event.receivedAt) }}</span>
-                            </div>
-                            <div class="event-body">
-                                Session #{{ event.session?.id ?? 'N/A' }} — {{ event.session?.status ?? 'UNKNOWN' }}
-                                <span v-if="event.report"> | Báo cáo #{{ event.report.reportId }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div
+      v-if="errorMessage"
+      class="alert alert-danger mb-4"
+      role="alert"
+    >
+      <i class="bi bi-exclamation-triangle me-2" />{{ errorMessage }}
+    </div>
+
+    <div
+      v-if="report"
+      class="report-content"
+    >
+      <div class="card info-card mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+            <div>
+              <h5 class="card-title mb-2">
+                Thông tin phiên ca
+              </h5>
+              <p class="text-muted mb-0">
+                Chi tiết về phiên ca làm việc và thời gian thực hiện.
+              </p>
+            </div>
+            <div
+              class="connection-status"
+              :data-state="connectionState"
+            >
+              <span class="connection-indicator" />
+              <span class="connection-text">{{ connectionStatusLabel }}</span>
+              <button
+                v-if="connectionState !== 'online'"
+                type="button"
+                class="btn btn-sm btn-outline-primary ms-2"
+                :disabled="connectingRealtime"
+                @click="handleReconnect"
+              >
+                {{ connectingRealtime ? 'Đang kết nối...' : 'Kết nối lại' }}
+              </button>
+            </div>
+          </div>
+          <div
+            v-if="connectionError"
+            class="text-danger small mb-2"
+          >
+            {{ connectionError }}
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="info-item">
+                <span class="info-label">Trạng thái phiên</span>
+                <span
+                  class="badge"
+                  :class="statusClass(report.status)"
+                >{{ statusLabel }}</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="info-item">
+                <span class="info-label">Nhân viên phụ trách</span>
+                <span class="info-value">#{{ report.userId }} — {{ report.username || 'Không rõ' }}</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="info-item">
+                <span class="info-label">Ca mẫu</span>
+                <span class="info-value">{{ report.workShiftId ? `#${report.workShiftId}` : 'Không xác định' }}</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="info-item">
+                <span class="info-label">Bắt đầu</span>
+                <span class="info-value">{{ formatDateTime(report.startAt) }}</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="info-item">
+                <span class="info-label">Kết thúc</span>
+                <span class="info-value">{{ report.endAt ? formatDateTime(report.endAt) : 'Chưa kết thúc' }}</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="info-item">
+                <span class="info-label">Tổng hợp lúc</span>
+                <span class="info-value">{{ formatDateTime(report.generatedAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-3 col-sm-6 d-flex">
+          <div class="metric-card w-100">
+            <div class="metric-label">
+              Tổng đơn
+            </div>
+            <div class="metric-value">
+              {{ formatNumber(report.totalOrders) }}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 d-flex">
+          <div class="metric-card metric-card--success w-100">
+            <div class="metric-label">
+              Doanh thu đã thanh toán
+            </div>
+            <div class="metric-value">
+              {{ formatCurrency(report.totalPaidAmount) }}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 d-flex">
+          <div class="metric-card metric-card--warning w-100">
+            <div class="metric-label">
+              Giá trị chưa thanh toán
+            </div>
+            <div class="metric-value">
+              {{ formatCurrency(report.totalUnpaidAmount) }}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 d-flex">
+          <div class="metric-card w-100">
+            <div class="metric-label">
+              Đơn chuyển giao
+            </div>
+            <div class="metric-value">
+              {{ formatNumber(report.transferredOrders) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <div class="card table-card">
+            <div class="card-body">
+              <h6 class="card-title mb-3">
+                Phân bổ theo phương thức thanh toán
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Phương thức</th>
+                      <th>Đơn hàng</th>
+                      <th class="text-end">
+                        Doanh thu
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="!report.paymentBreakdown.length">
+                      <td
+                        colspan="3"
+                        class="text-center text-muted py-4"
+                      >
+                        Không có dữ liệu
+                      </td>
+                    </tr>
+                    <tr
+                      v-for="method in report.paymentBreakdown"
+                      :key="method.paymentMethod"
+                    >
+                      <td>{{ paymentMethodLabel(method.paymentMethod) }}</td>
+                      <td>{{ formatNumber(method.orderCount) }}</td>
+                      <td class="text-end">
+                        {{ formatCurrency(method.totalAmount) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card table-card">
+            <div class="card-body">
+              <h6 class="card-title mb-3">
+                Top sản phẩm theo số lượng
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Sản phẩm</th>
+                      <th>Số lượng</th>
+                      <th class="text-end">
+                        Doanh thu
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="!report.topProducts.length">
+                      <td
+                        colspan="3"
+                        class="text-center text-muted py-4"
+                      >
+                        Không có dữ liệu
+                      </td>
+                    </tr>
+                    <tr
+                      v-for="product in report.topProducts"
+                      :key="product.productId || product.productName"
+                    >
+                      <td>
+                        <strong>{{ product.productName || 'Không rõ' }}</strong>
+                        <small
+                          v-if="product.productId"
+                          class="text-muted d-block"
+                        >#{{ product.productId }}</small>
+                      </td>
+                      <td>{{ formatNumber(product.quantity) }}</td>
+                      <td class="text-end">
+                        {{ formatCurrency(product.totalAmount) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card event-log-card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h6 class="card-title mb-1">
+                Nhật ký sự kiện mới nhất
+              </h6>
+              <small class="text-muted">Tự động cập nhật từ realtime events</small>
+            </div>
+          </div>
+          <div
+            v-if="!eventLog.length"
+            class="text-center text-muted py-4"
+          >
+            Chưa có sự kiện nào.
+          </div>
+          <div
+            v-else
+            class="event-log"
+          >
+            <div
+              v-for="(event, index) in eventLog"
+              :key="index"
+              class="event-item"
+            >
+              <div class="event-meta">
+                <span
+                  class="badge"
+                  :class="eventStatusClass(event.eventType)"
+                >{{ event.eventType }}</span>
+                <span class="text-muted small">{{ formatDateTime(event.receivedAt) }}</span>
+              </div>
+              <div class="event-body">
+                Session #{{ event.session?.id ?? 'N/A' }} — {{ event.session?.status ?? 'UNKNOWN' }}
+                <span v-if="event.report"> | Báo cáo #{{ event.report.reportId }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

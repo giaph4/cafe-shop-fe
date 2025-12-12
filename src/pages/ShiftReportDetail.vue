@@ -1,124 +1,179 @@
 <template>
-    <div class="shift-report-detail-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="shift-report-detail-header">
-            <div class="shift-report-detail-header__content">
-                <div class="shift-report-detail-header__title-section">
-                    <h2 class="shift-report-detail-header__title">Chi tiết Báo cáo Ca làm</h2>
-                    <p class="shift-report-detail-header__subtitle">Xem chi tiết báo cáo ca làm #{{ reportId }}</p>
-                </div>
-                <div class="shift-report-detail-header__actions">
-                    <router-link to="/shift-report" class="action-button action-button--secondary">
-                        <i class="bi bi-arrow-left"></i>
-                        Quay lại
-                    </router-link>
-                </div>
-            </div>
+  <div
+    class="shift-report-detail-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="shift-report-detail-header">
+      <div class="shift-report-detail-header__content">
+        <div class="shift-report-detail-header__title-section">
+          <h2 class="shift-report-detail-header__title">
+            Chi tiết Báo cáo Ca làm
+          </h2>
+          <p class="shift-report-detail-header__subtitle">
+            Xem chi tiết báo cáo ca làm #{{ reportId }}
+          </p>
         </div>
-
-        <div v-if="loading" class="card loading-card">
-            <div class="card-body">
-                <div class="loading-state">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="loading-state__text">Đang tải dữ liệu...</p>
-                </div>
-            </div>
+        <div class="shift-report-detail-header__actions">
+          <router-link
+            to="/shift-report"
+            class="action-button action-button--secondary"
+          >
+            <i class="bi bi-arrow-left" />
+            Quay lại
+          </router-link>
         </div>
-
-        <div v-else-if="error" class="card error-card">
-            <div class="card-body">
-                <div class="error-banner">
-                    <span class="error-banner__icon">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                    </span>
-                    <div class="error-banner__content">
-                        <p class="error-banner__title">Không thể tải dữ liệu</p>
-                        <p class="error-banner__message mb-0">{{ error }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div v-else-if="report" class="card detail-card">
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <h5 class="info-section__title">Thông tin cơ bản</h5>
-                        <table class="table info-table">
-                            <tr>
-                                <th width="40%">ID Báo cáo:</th>
-                                <td>#{{ report.id }}</td>
-                            </tr>
-                            <tr>
-                                <th>Ca làm việc:</th>
-                                <td>{{ report.workShiftName || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Nhân viên:</th>
-                                <td>{{ report.staffName || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Ngày bắt đầu:</th>
-                                <td>{{ formatDateTime(report.startTime) || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Ngày kết thúc:</th>
-                                <td>{{ formatDateTime(report.endTime) || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Trạng thái:</th>
-                                <td>
-                                    <span :class="['badge', getStatusClass(report.status)]">
-                                        {{ getStatusLabel(report.status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 class="info-section__title">Thống kê</h5>
-                        <table class="table info-table">
-                            <tr>
-                                <th width="40%">Tổng đơn hàng:</th>
-                                <td class="fw-semibold">{{ report.totalOrders || 0 }}</td>
-                            </tr>
-                            <tr>
-                                <th>Tổng doanh thu:</th>
-                                <td class="fw-semibold text-success">{{ formatCurrency(report.totalRevenue || 0) }}</td>
-                            </tr>
-                            <tr>
-                                <th>Tổng chi phí:</th>
-                                <td class="fw-semibold text-danger">{{ formatCurrency(report.totalCost || 0) }}</td>
-                            </tr>
-                            <tr>
-                                <th>Lợi nhuận:</th>
-                                <td class="fw-semibold text-primary">{{ formatCurrency(report.totalProfit || 0) }}</td>
-                            </tr>
-                            <tr>
-                                <th>Thời gian làm việc:</th>
-                                <td>{{ formatDuration(report.duration) || 'N/A' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <div v-if="report.notes" class="notes-section">
-                    <h5 class="info-section__title">Ghi chú</h5>
-                    <div class="notes-content">
-                        {{ report.notes }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div v-else class="card empty-card">
-            <div class="card-body">
-                <div class="empty-state">
-                    <i class="bi bi-inbox empty-state__icon"></i>
-                    <p class="empty-state__text">Không tìm thấy báo cáo với ID này.</p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div
+      v-if="loading"
+      class="card loading-card"
+    >
+      <div class="card-body">
+        <div class="loading-state">
+          <div
+            class="spinner-border text-primary"
+            role="status"
+          />
+          <p class="loading-state__text">
+            Đang tải dữ liệu...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-else-if="error"
+      class="card error-card"
+    >
+      <div class="card-body">
+        <div class="error-banner">
+          <span class="error-banner__icon">
+            <i class="bi bi-exclamation-triangle-fill" />
+          </span>
+          <div class="error-banner__content">
+            <p class="error-banner__title">
+              Không thể tải dữ liệu
+            </p>
+            <p class="error-banner__message mb-0">
+              {{ error }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-else-if="report"
+      class="card detail-card"
+    >
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <h5 class="info-section__title">
+              Thông tin cơ bản
+            </h5>
+            <table class="table info-table">
+              <tr>
+                <th width="40%">
+                  ID Báo cáo:
+                </th>
+                <td>#{{ report.id }}</td>
+              </tr>
+              <tr>
+                <th>Ca làm việc:</th>
+                <td>{{ report.workShiftName || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Nhân viên:</th>
+                <td>{{ report.staffName || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Ngày bắt đầu:</th>
+                <td>{{ formatDateTime(report.startTime) || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Ngày kết thúc:</th>
+                <td>{{ formatDateTime(report.endTime) || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Trạng thái:</th>
+                <td>
+                  <span :class="['badge', getStatusClass(report.status)]">
+                    {{ getStatusLabel(report.status) }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h5 class="info-section__title">
+              Thống kê
+            </h5>
+            <table class="table info-table">
+              <tr>
+                <th width="40%">
+                  Tổng đơn hàng:
+                </th>
+                <td class="fw-semibold">
+                  {{ report.totalOrders || 0 }}
+                </td>
+              </tr>
+              <tr>
+                <th>Tổng doanh thu:</th>
+                <td class="fw-semibold text-success">
+                  {{ formatCurrency(report.totalRevenue || 0) }}
+                </td>
+              </tr>
+              <tr>
+                <th>Tổng chi phí:</th>
+                <td class="fw-semibold text-danger">
+                  {{ formatCurrency(report.totalCost || 0) }}
+                </td>
+              </tr>
+              <tr>
+                <th>Lợi nhuận:</th>
+                <td class="fw-semibold text-primary">
+                  {{ formatCurrency(report.totalProfit || 0) }}
+                </td>
+              </tr>
+              <tr>
+                <th>Thời gian làm việc:</th>
+                <td>{{ formatDuration(report.duration) || 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div
+          v-if="report.notes"
+          class="notes-section"
+        >
+          <h5 class="info-section__title">
+            Ghi chú
+          </h5>
+          <div class="notes-content">
+            {{ report.notes }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-else
+      class="card empty-card"
+    >
+      <div class="card-body">
+        <div class="empty-state">
+          <i class="bi bi-inbox empty-state__icon" />
+          <p class="empty-state__text">
+            Không tìm thấy báo cáo với ID này.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

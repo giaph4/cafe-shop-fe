@@ -1,7 +1,7 @@
 /**
  * Composable for file upload functionality
  * MAINTAINABILITY FIX: Tách file upload logic ra khỏi component để dễ maintain và reuse
- * 
+ *
  * Usage:
  * const { fileItems, selectedFiles, handleFileSelect, handleUpload, removeFile, ... } = useFileUpload()
  */
@@ -18,46 +18,46 @@ const PROGRESS_UPDATE_THROTTLE_MS = 100
 
 /**
  * File upload composable
- * 
+ *
  * @param {Object} options - Configuration options
  * @param {Function} options.onUploadSuccess - Callback khi upload thành công
  * @param {Function} options.onUploadError - Callback khi upload lỗi
  * @returns {Object} - File upload state và methods
  */
-export function useFileUpload(options = {}) {
+export function useFileUpload (options = {}) {
     const { onUploadSuccess, onUploadError } = options
-    
+
     const selectedFiles = ref([])
     const fileItems = ref([])
     const uploading = ref(false)
     const uploadError = ref('')
     const uploadSuccess = ref([])
-    
+
     // UI JANK FIX: Throttle progress updates
     const throttledProgressUpdates = new Map()
-    
+
     /**
      * Update file progress với throttle
      * UI JANK FIX: Throttle progress updates để giảm số lượng re-renders
      */
     const updateFileProgress = (fileItem, progress) => {
         if (!fileItem || !fileItem.id) return
-        
+
         const now = Date.now()
         const lastUpdate = throttledProgressUpdates.get(fileItem.id) || 0
-        
+
         // Chỉ update nếu đã qua throttle interval hoặc là final update (100%)
         if (progress === 100 || now - lastUpdate >= PROGRESS_UPDATE_THROTTLE_MS) {
             fileItem.progress = progress
             throttledProgressUpdates.set(fileItem.id, now)
-            
+
             // Cleanup throttle map entry khi upload complete
             if (progress === 100) {
                 throttledProgressUpdates.delete(fileItem.id)
             }
         }
     }
-    
+
     /**
      * Add files và generate preview
      * MEMORY LEAK FIX: Sử dụng FileReader.readAsDataURL thay vì URL.createObjectURL
@@ -73,7 +73,7 @@ export function useFileUpload(options = {}) {
                 progress: 0,
                 error: null
             }
-            
+
             // Generate preview for images
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader()
@@ -85,21 +85,21 @@ export function useFileUpload(options = {}) {
                 }
                 reader.readAsDataURL(file)
             }
-            
+
             fileItems.value.push(fileItem)
             selectedFiles.value.push(file)
         })
     }
-    
+
     /**
      * Remove file và cleanup preview URL
      * MEMORY LEAK FIX: Cleanup preview URL khi remove file
      */
     const removeFile = (index) => {
         if (fileItems.value[index]?.uploading) return
-        
+
         const fileItem = fileItems.value[index]
-        
+
         // Cleanup preview URL nếu có
         if (fileItem?.previewUrl && fileItem.previewUrl.startsWith('blob:')) {
             URL.revokeObjectURL(fileItem.previewUrl)
@@ -107,16 +107,16 @@ export function useFileUpload(options = {}) {
         if (fileItem?.preview) {
             fileItem.preview = null
         }
-        
+
         // Cleanup throttle entry
         if (fileItem?.id) {
             throttledProgressUpdates.delete(fileItem.id)
         }
-        
+
         fileItems.value.splice(index, 1)
         selectedFiles.value.splice(index, 1)
     }
-    
+
     /**
      * Handle file upload
      * MAINTAINABILITY FIX: Tách logic upload ra khỏi component
@@ -140,7 +140,7 @@ export function useFileUpload(options = {}) {
 
         try {
             let results = []
-            
+
             if (selectedFiles.value.length === 1) {
                 // Single file upload with progress simulation
                 const fileItem = fileItems.value[0]
@@ -163,15 +163,15 @@ export function useFileUpload(options = {}) {
                         throw err
                     }
                 })
-                
+
                 await Promise.all(uploadPromises)
-                
+
                 // Update all progress to 90% before actual upload
                 fileItems.value.forEach(item => updateFileProgress(item, 90))
-                
+
                 // Actual upload
                 results = await uploadMultipleFiles(selectedFiles.value)
-                
+
                 // Mark all as complete
                 fileItems.value.forEach(item => {
                     updateFileProgress(item, 100)
@@ -187,12 +187,12 @@ export function useFileUpload(options = {}) {
             }))
 
             uploadSuccess.value = results
-            
+
             // Call success callback if provided
             if (onUploadSuccess) {
                 onUploadSuccess(results)
             }
-            
+
             // Clear selected files after a short delay
             setTimeout(() => {
                 // Cleanup preview URLs
@@ -204,17 +204,17 @@ export function useFileUpload(options = {}) {
                         fileItem.preview = null
                     }
                 })
-                
+
                 selectedFiles.value = []
                 fileItems.value = []
             }, 1000)
-            
+
             toast.success(`Đã upload thành công ${results.length} file(s).`)
         } catch (err) {
             logger.error('Upload error:', err)
             uploadError.value = err.response?.data?.message || 'Không thể upload file. Vui lòng thử lại.'
             toast.error(uploadError.value)
-            
+
             // Mark failed files
             fileItems.value.forEach(item => {
                 item.uploading = false
@@ -224,7 +224,7 @@ export function useFileUpload(options = {}) {
                 // Cleanup throttle entry on error
                 throttledProgressUpdates.delete(item.id)
             })
-            
+
             // Call error callback if provided
             if (onUploadError) {
                 onUploadError(err)
@@ -233,7 +233,7 @@ export function useFileUpload(options = {}) {
             uploading.value = false
         }
     }
-    
+
     /**
      * Reset file upload state
      */
@@ -247,14 +247,14 @@ export function useFileUpload(options = {}) {
                 fileItem.preview = null
             }
         })
-        
+
         selectedFiles.value = []
         fileItems.value = []
         uploadError.value = ''
         uploadSuccess.value = []
         throttledProgressUpdates.clear()
     }
-    
+
     /**
      * Cleanup khi component unmount
      */
@@ -269,7 +269,7 @@ export function useFileUpload(options = {}) {
         uploading,
         uploadError,
         uploadSuccess,
-        
+
         // Methods
         addFiles,
         removeFile,

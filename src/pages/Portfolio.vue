@@ -1,42 +1,46 @@
 <template>
-    <div class="portfolio-page">
-        <!-- Scroll Progress Bar -->
-        <div class="scroll-progress" :style="{ width: `${scrollProgress}%` }"></div>
+  <div class="portfolio-page">
+    <!-- Scroll Progress Bar -->
+    <div
+      class="scroll-progress"
+      :style="{ width: `${scrollProgress}%` }"
+    />
 
-        <!-- Navigation -->
-        <PortfolioNavbar />
+    <!-- Navigation -->
+    <PortfolioNavbar />
 
-        <!-- Hero Section - Màn 1: The Initialization -->
-        <PortfolioHero />
+    <!-- Hero Section - Màn 1: The Initialization -->
+    <PortfolioHero />
 
-        <!-- About Section - Màn 2: The Core Identity -->
-        <PortfolioAbout />
+    <!-- About Section - Màn 2: The Core Identity -->
+    <PortfolioAbout />
 
-        <!-- Skills Section - Màn 3: The Tech Stack Orbit -->
-        <PortfolioSkills />
+    <!-- Skills Section - Màn 3: The Tech Stack Orbit -->
+    <PortfolioSkills />
 
-        <!-- Experience Timeline - Màn 4 -->
-        <PortfolioExperience />
+    <!-- Experience Timeline - Màn 4 -->
+    <PortfolioExperience />
 
-        <!-- Projects Section - Màn 5-6 -->
-        <PortfolioProjects />
+    <!-- Projects Section - Màn 5-6 -->
+    <PortfolioProjects />
 
-        <!-- Code Philosophy - Màn 7 -->
-        <PortfolioPhilosophy />
+    <!-- Code Philosophy - Màn 7 -->
+    <PortfolioPhilosophy />
 
-        <!-- Creative Playground - Màn 8 -->
-        <PortfolioPlayground />
+    <!-- Creative Playground - Màn 8 -->
+    <PortfolioPlayground />
 
-        <!-- Testimonials/Github Stats - Màn 9 -->
-        <PortfolioStats />
+    <!-- Testimonials/Github Stats - Màn 9 -->
+    <PortfolioStats />
 
-        <!-- Contact Section - Màn 10 -->
-        <PortfolioContact />
-    </div>
+    <!-- Contact Section - Màn 10 -->
+    <PortfolioContact />
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useScroll } from '@vueuse/core'
 import PortfolioNavbar from '@/components/portfolio/PortfolioNavbar.vue'
 import PortfolioHero from '@/components/portfolio/PortfolioHero.vue'
 import PortfolioAbout from '@/components/portfolio/PortfolioAbout.vue'
@@ -50,7 +54,7 @@ import PortfolioContact from '@/components/portfolio/PortfolioContact.vue'
 
 const scrollProgress = ref(0)
 
-const { y } = useScroll(window)
+const { y } = useScroll(window, { behavior: 'smooth' })
 
 const updateScrollProgress = () => {
     const windowHeight = window.innerHeight

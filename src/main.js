@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 import { useAuthStore } from './store/auth'
 import { resolveInitialTheme, applyThemeClass, persistTheme } from '@/utils/theme'
 
@@ -12,13 +13,15 @@ import 'aos/dist/aos.css'
 import 'vue3-toastify/dist/index.css'
 import './assets/styles/base.css'
 import './assets/styles/standardized-components.css'
+import './assets/styles/custom-theme.css'
 
-// PrimeVue
+// Cấu hình PrimeVue
 import PrimeVue from 'primevue/config'
 
 import Toast from 'vue3-toastify'
 import AOS from 'aos'
 import christmasDirective from '@/directives/christmas'
+import christmasAutoApply from '@/plugins/christmasAutoApply'
 
 const initialTheme = resolveInitialTheme()
 applyThemeClass(initialTheme)
@@ -30,6 +33,7 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(VueQueryPlugin)
 app.use(router)
+app.use(i18n)
 app.use(PrimeVue)
 
 app.use(Toast, {
@@ -45,25 +49,20 @@ app.use(Toast, {
     maxToasts: 2,
     newestOnTop: true,
     toastClassName: 'di-toast',
-    bodyClassName: 'di-body',
+    bodyClassName: 'di-body'
 })
-
 
 
 AOS.init({
     duration: 800,
-    once: true,
+    once: true
 })
 
-// Đăng ký directive Christmas
+// Đăng ký directive hiệu ứng Giáng Sinh
 app.directive('christmas', christmasDirective.default || christmasDirective)
-
-// Import và sử dụng plugin tự động áp dụng Christmas effect
-import christmasAutoApply from '@/plugins/christmasAutoApply'
 
 const authStore = useAuthStore(pinia)
 authStore.checkAuth().then(() => {
-    app.mount('#app')
-    // Áp dụng plugin sau khi app đã mount
     app.use(christmasAutoApply)
+    app.mount('#app')
 })

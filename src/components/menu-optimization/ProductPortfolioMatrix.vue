@@ -1,84 +1,100 @@
 <template>
-    <div class="product-portfolio-matrix">
-        <div class="matrix-container">
-            <div class="matrix-axis">
-                <div class="axis-label axis-label--vertical">Margin cao</div>
-                <div class="axis-label axis-label--vertical axis-label--bottom">Margin thấp</div>
-            </div>
-            <div class="matrix-grid">
-                <div class="matrix-quadrant matrix-quadrant--star">
-                    <div class="quadrant-label">Ngôi sao</div>
-                    <div class="quadrant-products">
-                        <div
-                            v-for="product in starProducts"
-                            :key="product.productId"
-                            class="product-dot"
-                            :title="product.productName"
-                            @click="$emit('select', product)"
-                        ></div>
-                    </div>
-                </div>
-                <div class="matrix-quadrant matrix-quadrant--cash-cow">
-                    <div class="quadrant-label">Bò sữa</div>
-                    <div class="quadrant-products">
-                        <div
-                            v-for="product in cashCowProducts"
-                            :key="product.productId"
-                            class="product-dot"
-                            :title="product.productName"
-                            @click="$emit('select', product)"
-                        ></div>
-                    </div>
-                </div>
-                <div class="matrix-quadrant matrix-quadrant--question-mark">
-                    <div class="quadrant-label">Dấu hỏi</div>
-                    <div class="quadrant-products">
-                        <div
-                            v-for="product in questionMarkProducts"
-                            :key="product.productId"
-                            class="product-dot"
-                            :title="product.productName"
-                            @click="$emit('select', product)"
-                        ></div>
-                    </div>
-                </div>
-                <div class="matrix-quadrant matrix-quadrant--dog">
-                    <div class="quadrant-label">Chó</div>
-                    <div class="quadrant-products">
-                        <div
-                            v-for="product in dogProducts"
-                            :key="product.productId"
-                            class="product-dot"
-                            :title="product.productName"
-                            @click="$emit('select', product)"
-                        ></div>
-                    </div>
-                </div>
-            </div>
-            <div class="matrix-axis matrix-axis--horizontal">
-                <div class="axis-label">Volume thấp</div>
-                <div class="axis-label axis-label--right">Volume cao</div>
-            </div>
+  <div class="product-portfolio-matrix">
+    <div class="matrix-container">
+      <div class="matrix-axis">
+        <div class="axis-label axis-label--vertical">
+          Margin cao
         </div>
-        <div class="matrix-legend">
-            <div class="legend-item">
-                <div class="legend-dot legend-dot--star"></div>
-                <span>Ngôi sao: {{ starProducts.length }} sản phẩm</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot legend-dot--cash-cow"></div>
-                <span>Bò sữa: {{ cashCowProducts.length }} sản phẩm</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot legend-dot--question-mark"></div>
-                <span>Dấu hỏi: {{ questionMarkProducts.length }} sản phẩm</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot legend-dot--dog"></div>
-                <span>Chó: {{ dogProducts.length }} sản phẩm</span>
-            </div>
+        <div class="axis-label axis-label--vertical axis-label--bottom">
+          Margin thấp
         </div>
+      </div>
+      <div class="matrix-grid">
+        <div class="matrix-quadrant matrix-quadrant--star">
+          <div class="quadrant-label">
+            Ngôi sao
+          </div>
+          <div class="quadrant-products">
+            <div
+              v-for="product in starProducts"
+              :key="product.productId"
+              class="product-dot"
+              :title="product.productName"
+              @click="$emit('select', product)"
+            />
+          </div>
+        </div>
+        <div class="matrix-quadrant matrix-quadrant--cash-cow">
+          <div class="quadrant-label">
+            Bò sữa
+          </div>
+          <div class="quadrant-products">
+            <div
+              v-for="product in cashCowProducts"
+              :key="product.productId"
+              class="product-dot"
+              :title="product.productName"
+              @click="$emit('select', product)"
+            />
+          </div>
+        </div>
+        <div class="matrix-quadrant matrix-quadrant--question-mark">
+          <div class="quadrant-label">
+            Dấu hỏi
+          </div>
+          <div class="quadrant-products">
+            <div
+              v-for="product in questionMarkProducts"
+              :key="product.productId"
+              class="product-dot"
+              :title="product.productName"
+              @click="$emit('select', product)"
+            />
+          </div>
+        </div>
+        <div class="matrix-quadrant matrix-quadrant--dog">
+          <div class="quadrant-label">
+            Chó
+          </div>
+          <div class="quadrant-products">
+            <div
+              v-for="product in dogProducts"
+              :key="product.productId"
+              class="product-dot"
+              :title="product.productName"
+              @click="$emit('select', product)"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="matrix-axis matrix-axis--horizontal">
+        <div class="axis-label">
+          Volume thấp
+        </div>
+        <div class="axis-label axis-label--right">
+          Volume cao
+        </div>
+      </div>
     </div>
+    <div class="matrix-legend">
+      <div class="legend-item">
+        <div class="legend-dot legend-dot--star" />
+        <span>Ngôi sao: {{ starProducts.length }} sản phẩm</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot legend-dot--cash-cow" />
+        <span>Bò sữa: {{ cashCowProducts.length }} sản phẩm</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot legend-dot--question-mark" />
+        <span>Dấu hỏi: {{ questionMarkProducts.length }} sản phẩm</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot legend-dot--dog" />
+        <span>Chó: {{ dogProducts.length }} sản phẩm</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -94,21 +110,13 @@ const props = defineProps({
 
 defineEmits(['select'])
 
-const starProducts = computed(() => {
-    return props.products.filter(p => p.classification === 'STAR')
-})
+const starProducts = computed(() => props.products.filter(p => p.classification === 'STAR'))
 
-const cashCowProducts = computed(() => {
-    return props.products.filter(p => p.classification === 'CASH_COW')
-})
+const cashCowProducts = computed(() => props.products.filter(p => p.classification === 'CASH_COW'))
 
-const questionMarkProducts = computed(() => {
-    return props.products.filter(p => p.classification === 'QUESTION_MARK')
-})
+const questionMarkProducts = computed(() => props.products.filter(p => p.classification === 'QUESTION_MARK'))
 
-const dogProducts = computed(() => {
-    return props.products.filter(p => p.classification === 'DOG')
-})
+const dogProducts = computed(() => props.products.filter(p => p.classification === 'DOG'))
 </script>
 
 <style scoped>

@@ -1,8 +1,7 @@
 import { buildApiError } from '@/utils/errorHandler'
+import logger from '@/utils/logger'
 import * as shiftService from './shiftService'
 import * as orderService from './orderService'
-import * as reportService from './reportService'
-import * as staffPerformanceService from './staffPerformanceService'
 
 const toNumber = (value) => {
     if (value === null || value === undefined) return 0
@@ -12,13 +11,13 @@ const toNumber = (value) => {
 
 const calculateEfficiencyScore = (revenue, staffCount, ordersCount, targetRevenuePerStaff = 500000, targetOrdersPerStaff = 20) => {
     if (staffCount === 0) return 0
-    
+
     const revenuePerStaff = revenue / staffCount
     const ordersPerStaff = ordersCount / staffCount
-    
+
     const revenueScore = Math.min(revenuePerStaff / targetRevenuePerStaff, 1.5) * 50
     const ordersScore = Math.min(ordersPerStaff / targetOrdersPerStaff, 1.5) * 50
-    
+
     return Math.min(100, revenueScore + ordersScore)
 }
 
@@ -28,42 +27,42 @@ export const analyzeShiftEfficiency = async ({ startDate, endDate } = {}) => {
             shiftService.listShiftInstances({ startDate, endDate }),
             orderService.getOrdersByDateRange(startDate, endDate, 0, 1000)
         ])
-        
+
         const shiftsList = Array.isArray(shiftInstances) ? shiftInstances : (shiftInstances?.content || [])
         const ordersList = Array.isArray(orders) ? orders : (orders?.content || [])
-        
+
         const shiftAnalysisResults = await Promise.all(
             shiftsList.map(async (shift) => {
                 try {
                     if (!shift.startTime || !shift.endTime) {
                         return null
                     }
-                    
+
                     const startTime = new Date(shift.startTime)
                     const endTime = new Date(shift.endTime)
-                    
+
                     if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
                         return null
                     }
-                    
+
                     const assignments = await shiftService.getAssignmentsForShift(shift.id).catch(() => [])
                     const assignmentsList = Array.isArray(assignments) ? assignments : (assignments?.content || [])
                     const staffCount = assignmentsList.length
-                    
+
                     const shiftOrders = ordersList.filter(o => {
                         if (o.shiftSessionId === shift.id) return true
                         if (!o.createdAt) return false
                         const orderDate = new Date(o.createdAt)
                         return !isNaN(orderDate.getTime()) && orderDate >= startTime && orderDate <= endTime
                     })
-                    
+
                     const revenue = shiftOrders.reduce((sum, o) => sum + toNumber(o.totalAmount), 0)
                     const ordersCount = shiftOrders.length
                     const avgOrderValue = ordersCount > 0 ? revenue / ordersCount : 0
-                    
+
                     const efficiencyScore = calculateEfficiencyScore(revenue, staffCount, ordersCount)
                     const duration = (endTime - startTime) / (1000 * 60 * 60)
-                    
+
                     return {
                         shiftId: shift.id,
                         shiftName: shift.name || `Ca ${startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`,
@@ -82,14 +81,14 @@ export const analyzeShiftEfficiency = async ({ startDate, endDate } = {}) => {
                         assignments: assignmentsList
                     }
                 } catch (error) {
-                    console.warn('[ShiftEfficiency] Skipping invalid shift:', shift.id, error)
+                    logger.warn('[ShiftEfficiency] Bỏ qua ca làm việc không hợp lệ:', shift.id, error)
                     return null
                 }
             })
         )
-        
+
         const shiftAnalysis = shiftAnalysisResults.filter(s => s !== null)
-        
+
         const hourlyAnalysis = {}
         shiftAnalysis.forEach(shift => {
             const hour = new Date(shift.startTime).getHours()
@@ -108,29 +107,29 @@ export const analyzeShiftEfficiency = async ({ startDate, endDate } = {}) => {
             hourlyAnalysis[hour].totalOrders += shift.ordersCount
             hourlyAnalysis[hour].totalStaff += shift.staffCount
         })
-        
+
         Object.keys(hourlyAnalysis).forEach(hour => {
             const data = hourlyAnalysis[hour]
             data.avgEfficiency = data.shifts.length > 0
                 ? data.shifts.reduce((sum, s) => sum + s.efficiencyScore, 0) / data.shifts.length
                 : 0
         })
-        
+
         const avgEfficiency = shiftAnalysis.length > 0
             ? shiftAnalysis.reduce((sum, s) => sum + s.efficiencyScore, 0) / shiftAnalysis.length
             : 0
-        
+
         const topShifts = shiftAnalysis
             .sort((a, b) => b.efficiencyScore - a.efficiencyScore)
             .slice(0, 5)
-        
+
         const lowEfficiencyShifts = shiftAnalysis
             .filter(s => s.efficiencyScore < 60)
             .sort((a, b) => a.efficiencyScore - b.efficiencyScore)
             .slice(0, 5)
-        
+
         const recommendations = generateRecommendations(shiftAnalysis, hourlyAnalysis)
-        
+
         return {
             shifts: shiftAnalysis.sort((a, b) => new Date(b.startTime) - new Date(a.startTime)),
             hourlyAnalysis: Object.values(hourlyAnalysis).sort((a, b) => a.hour - b.hour),
@@ -154,17 +153,17 @@ export const analyzeShiftEfficiency = async ({ startDate, endDate } = {}) => {
 
 const generateRecommendations = (shifts, hourlyAnalysis) => {
     const recommendations = []
-    
+
     const peakHours = Object.values(hourlyAnalysis)
         .sort((a, b) => b.totalRevenue - a.totalRevenue)
         .slice(0, 3)
         .map(h => h.hour)
-    
+
     const lowHours = Object.values(hourlyAnalysis)
         .sort((a, b) => a.totalRevenue - b.totalRevenue)
         .slice(0, 3)
         .map(h => h.hour)
-    
+
     if (peakHours.length > 0) {
         recommendations.push({
             type: 'increase_staffing',
@@ -174,7 +173,7 @@ const generateRecommendations = (shifts, hourlyAnalysis) => {
             affectedHours: peakHours
         })
     }
-    
+
     if (lowHours.length > 0) {
         recommendations.push({
             type: 'decrease_staffing',
@@ -184,7 +183,7 @@ const generateRecommendations = (shifts, hourlyAnalysis) => {
             affectedHours: lowHours
         })
     }
-    
+
     const lowEfficiencyShifts = shifts.filter(s => s.efficiencyScore < 60)
     if (lowEfficiencyShifts.length > 0) {
         recommendations.push({
@@ -195,11 +194,11 @@ const generateRecommendations = (shifts, hourlyAnalysis) => {
             affectedShifts: lowEfficiencyShifts.map(s => s.shiftId)
         })
     }
-    
+
     return recommendations
 }
 
-export const exportEfficiencyReport = async (efficiencyData) => {
+export const exportEfficiencyReport = (efficiencyData) => {
     const data = [
         ['BÁO CÁO PHÂN TÍCH HIỆU QUẢ CA LÀM VIỆC'],
         ['Thời gian:', `${efficiencyData.period.startDate} - ${efficiencyData.period.endDate}`],
@@ -207,7 +206,7 @@ export const exportEfficiencyReport = async (efficiencyData) => {
         [],
         ['Ca', 'Ngày', 'Giờ bắt đầu', 'Số nhân viên', 'Doanh thu', 'Số đơn', 'Đơn TB', 'Doanh thu/NV', 'Đơn/NV', 'Điểm hiệu quả']
     ]
-    
+
     efficiencyData.shifts.forEach(shift => {
         const startTime = new Date(shift.startTime)
         data.push([
@@ -223,7 +222,7 @@ export const exportEfficiencyReport = async (efficiencyData) => {
             shift.efficiencyScore.toFixed(1)
         ])
     })
-    
+
     return {
         data,
         sheetName: 'Hiệu quả ca làm việc',

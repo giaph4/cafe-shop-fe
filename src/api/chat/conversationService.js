@@ -112,6 +112,14 @@ export const pinConversation = async (conversationId, pinned) => {
  * @param {number} beforeMessageId - ID tin nhắn để lấy tin nhắn trước đó (optional)
  * @returns {Promise<Object>} Page<MessageDTO>
  */
+/**
+ * Lấy danh sách tin nhắn của hội thoại (phân trang)
+ * @param {number} conversationId - ID hội thoại
+ * @param {number} page - Trang hiện tại, mặc định 0
+ * @param {number} size - Số lượng tin nhắn trên mỗi trang, mặc định 20, giới hạn 1-100
+ * @param {number} beforeMessageId - ID tin nhắn để lấy tin nhắn trước đó (optional)
+ * @returns {Promise<Object>} Page<MessageDTO>
+ */
 export const listMessages = async (conversationId, page = 0, size = 20, beforeMessageId = null) => {
     const params = { page, size }
     if (beforeMessageId) {

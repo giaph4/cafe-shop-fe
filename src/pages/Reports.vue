@@ -1,188 +1,275 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Báo cáo tổng hợp</h2>
-                <p class="page-subtitle">Theo dõi hiệu quả kinh doanh, khách hàng, nhân sự và vận hành trong một nơi duy nhất.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <div class="form-check form-switch align-self-center">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id="autoRefreshSwitch"
-                        v-model="autoRefresh"
-                    >
-                    <label class="form-check-label" for="autoRefreshSwitch">Tự động làm mới</label>
-                </div>
-                <button class="btn btn-outline-secondary" type="button" @click="fetchReports" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    Làm mới
-                </button>
-                <button 
-                    class="btn btn-primary" 
-                    type="button" 
-                    @click="handleExportAll" 
-                    :disabled="loading || exportingAll"
-                >
-                    <span v-if="exportingAll" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-download me-2"></i>
-                    Xuất tất cả báo cáo
-                </button>
-            </div>
+  <div
+    class="page-container container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="page-header card-shadow">
+      <div>
+        <h2 class="page-title">
+          Báo cáo tổng hợp
+        </h2>
+        <p class="page-subtitle">
+          Theo dõi hiệu quả kinh doanh, khách hàng, nhân sự và vận hành trong một nơi duy nhất.
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <div class="form-check form-switch align-self-center">
+          <input
+            id="autoRefreshSwitch"
+            v-model="autoRefresh"
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+          >
+          <label
+            class="form-check-label"
+            for="autoRefreshSwitch"
+          >Tự động làm mới</label>
         </div>
-
-        <div class="card filter-card">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="filters.startDate" />
-                    </div>
-                    <div class="col-lg-3 col-md-4">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="filters.endDate" />
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label">Khoảng thời gian</label>
-                        <div class="btn-group w-100" role="group">
-                            <button
-                                v-for="preset in presets"
-                                :key="preset.value"
-                                type="button"
-                                class="btn"
-                                :class="preset.value === selectedPreset ? 'btn-primary' : 'btn-outline-primary'"
-                                @click="applyPreset(preset.value)"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-4">
-                        <label class="form-label">Top sản phẩm</label>
-                        <select class="form-select" v-model="topLimit">
-                            <option
-                                v-for="size in topOptions"
-                                :key="size"
-                                :value="size"
-                            >
-                                {{ size === 'all' ? 'Tất cả sản phẩm' : `Top ${size}` }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-12">
-                        <div v-if="validationError" class="alert alert-warning mb-0">
-                            {{ validationError }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card tabs-card mb-4">
-            <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
-                <LoadingState v-if="loading" text="Đang tải dữ liệu báo cáo..." />
-                <ErrorState
-                    v-else-if="error"
-                    :message="error"
-                    :show-retry="true"
-                    :retry-handler="fetchReports"
-                />
-                <div v-else class="tab-content">
-                    <SummaryTab
-                        v-if="activeTab === 'summary'"
-                        :stats="dashboardStats"
-                        :revenue-series="revenueSeries"
-                        :revenue-options="revenueOptions"
-                        :revenue-summary="revenueSummary"
-                        :payment-stats="paymentStats"
-                        :payment-totals="paymentTotals"
-                        :sales-comparison="salesComparison"
-                        :profit="profitReport"
-                        :daily-revenue="dailyRevenue"
-                        :best-sellers="bestSellers"
-                        :top-customers="topCustomers"
-                        :product-summary="productSummary"
-                        :insights="insights"
-                        :inventory-summary="inventorySummary"
-                    />
-                    <RevenueProfitTab
-                        v-else-if="activeTab === 'revenue'"
-                        :revenue-series="revenueSeries"
-                        :revenue-options="revenueOptions"
-                        :revenue-summary="revenueSummary"
-                        :profit-series="profitSeries"
-                        :profit-options="profitOptions"
-                        :profit="profitReport"
-                        :payment-stats="paymentStats"
-                        :payment-totals="paymentTotals"
-                        :hourly-sales="hourlySales"
-                        :sales-comparison="salesComparison"
-                        :category-sales="categorySales"
-                        :orders-exporting="exporting.orders"
-                        :on-export-orders="handleExportOrders"
-                    />
-                    <SalesAnalysisTab
-                        v-else-if="activeTab === 'sales-analysis'"
-                        :best-sellers="bestSellers"
-                        :product-summary="productSummary"
-                        :category-sales="categorySales"
-                        :sort-by="bestSellerSort"
-                        :top-limit="topLimit"
-                        :table-sort="bestSellerTableSort"
-                        :product-chart-type="productChartType"
-                        :category-chart-type="categoryChartType"
-                        :hourly-sales="hourlySales"
-                        @update:sortBy="handleBestSellerSortChange"
-                        @update:topLimit="handleBestSellerTopChange"
-                        @update:tableSort="bestSellerTableSort = $event"
-                        @update:productChartType="productChartType = $event"
-                        @update:categoryChartType="categoryChartType = $event"
-                    />
-                    <CustomersStaffTab
-                        v-else-if="activeTab === 'customers-staff'"
-                        :top-customers="topCustomers"
-                        :staff-performance="staffPerformance"
-                        :total-expenses="totalExpenses"
-                        :total-imported-cost="totalImportedCost"
-                        :revenue-summary="revenueSummary"
-                    />
-                    <ExpensesInventoryTab
-                        v-else
-                        :expenses-entries="expensesEntries"
-                        :total-expenses="totalExpenses"
-                        :total-imported-cost="totalImportedCost"
-                        :inventory-items="inventoryItems"
-                        :inventory-summary="inventorySummary"
-                        :low-stock-only="inventoryLowStockOnly"
-                        :expenses-exporting="exporting.expenses"
-                        :inventory-exporting="exporting.inventory"
-                        :inventory-loading="inventoryLoading"
-                        :revenue-summary="revenueSummary"
-                        @export:expenses="handleExportExpenses"
-                        @export:inventory="handleExportInventory"
-                    />
-                </div>
-            </div>
-        </div>
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          :disabled="loading"
+          @click="fetchReports"
+        >
+          <span
+            v-if="loading"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          Làm mới
+        </button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          :disabled="loading || exportingAll"
+          @click="handleExportAll"
+        >
+          <span
+            v-if="exportingAll"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
+            v-else
+            class="bi bi-download me-2"
+          />
+          Xuất tất cả báo cáo
+        </button>
+      </div>
     </div>
+
+    <div class="card filter-card">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-4">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label">Khoảng thời gian</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in presets"
+                :key="preset.value"
+                type="button"
+                class="btn"
+                :class="preset.value === selectedPreset ? 'btn-primary' : 'btn-outline-primary'"
+                @click="applyPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-2 col-md-4">
+            <label class="form-label">Top sản phẩm</label>
+            <select
+              v-model="topLimit"
+              class="form-select"
+            >
+              <option
+                v-for="size in topOptions"
+                :key="size"
+                :value="size"
+              >
+                {{ size === 'all' ? 'Tất cả sản phẩm' : `Top ${size}` }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-12">
+            <div
+              v-if="validationError"
+              class="alert alert-warning mb-0"
+            >
+              {{ validationError }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu for Report Pages -->
+    <div class="card navigation-menu-card mb-4">
+      <div class="card-body">
+        <h3 class="navigation-menu-title mb-4">
+          <i class="bi bi-graph-up-arrow me-2" />
+          Báo cáo & Phân tích
+          <span class="demo-badge ms-2">DEMO</span>
+        </h3>
+        <div class="report-navigation-grid">
+          <button
+            v-for="item in reportMenuItems"
+            :key="item.id"
+            type="button"
+            class="report-nav-card"
+            @click="navigateToReport(item.route)"
+          >
+            <div class="report-nav-card__icon">
+              <i :class="item.icon" />
+            </div>
+            <div class="report-nav-card__label">
+              {{ item.label }}
+            </div>
+            <div class="report-nav-card__badge">
+              DEMO
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card tabs-card mb-4">
+      <div class="card-body">
+        <ul
+          class="nav nav-pills reports-tabs mb-3"
+          role="tablist"
+        >
+          <li
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="nav-item"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="nav-link"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              <i :class="[tab.icon, 'me-2']" />{{ tab.label }}
+            </button>
+          </li>
+        </ul>
+        <LoadingState
+          v-if="loading"
+          text="Đang tải dữ liệu báo cáo..."
+        />
+        <ErrorState
+          v-else-if="error"
+          :message="error"
+          :show-retry="true"
+          :retry-handler="fetchReports"
+        />
+        <div
+          v-else
+          class="tab-content"
+        >
+          <SummaryTab
+            v-if="activeTab === 'summary'"
+            :stats="dashboardStats"
+            :revenue-series="revenueSeries"
+            :revenue-options="revenueOptions"
+            :revenue-summary="revenueSummary"
+            :payment-stats="paymentStats"
+            :payment-totals="paymentTotals"
+            :sales-comparison="salesComparison"
+            :profit="profitReport"
+            :daily-revenue="dailyRevenue"
+            :best-sellers="bestSellers"
+            :top-customers="topCustomers"
+            :product-summary="productSummary"
+            :insights="insights"
+            :inventory-summary="inventorySummary"
+          />
+          <RevenueProfitTab
+            v-else-if="activeTab === 'revenue'"
+            :revenue-series="revenueSeries"
+            :revenue-options="revenueOptions"
+            :revenue-summary="revenueSummary"
+            :profit-series="profitSeries"
+            :profit-options="profitOptions"
+            :profit="profitReport"
+            :payment-stats="paymentStats"
+            :payment-totals="paymentTotals"
+            :hourly-sales="hourlySales"
+            :sales-comparison="salesComparison"
+            :category-sales="categorySales"
+            :orders-exporting="exporting.orders"
+            :on-export-orders="handleExportOrders"
+          />
+          <SalesAnalysisTab
+            v-else-if="activeTab === 'sales-analysis'"
+            :best-sellers="bestSellers"
+            :product-summary="productSummary"
+            :category-sales="categorySales"
+            :sort-by="bestSellerSort"
+            :top-limit="topLimit"
+            :table-sort="bestSellerTableSort"
+            :product-chart-type="productChartType"
+            :category-chart-type="categoryChartType"
+            :hourly-sales="hourlySales"
+            @update:sortBy="handleBestSellerSortChange"
+            @update:topLimit="handleBestSellerTopChange"
+            @update:tableSort="bestSellerTableSort = $event"
+            @update:productChartType="productChartType = $event"
+            @update:categoryChartType="categoryChartType = $event"
+          />
+          <CustomersStaffTab
+            v-else-if="activeTab === 'customers-staff'"
+            :top-customers="topCustomers"
+            :staff-performance="staffPerformance"
+            :total-expenses="totalExpenses"
+            :total-imported-cost="totalImportedCost"
+            :revenue-summary="revenueSummary"
+          />
+          <ExpensesInventoryTab
+            v-else
+            :expenses-entries="expensesEntries"
+            :total-expenses="totalExpenses"
+            :total-imported-cost="totalImportedCost"
+            :inventory-items="inventoryItems"
+            :inventory-summary="inventorySummary"
+            :low-stock-only="inventoryLowStockOnly"
+            :expenses-exporting="exporting.expenses"
+            :inventory-exporting="exporting.inventory"
+            :inventory-loading="inventoryLoading"
+            :revenue-summary="revenueSummary"
+            @export:expenses="handleExportExpenses"
+            @export:inventory="handleExportInventory"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import SummaryTab from '@/components/reports/SummaryTab.vue'
 import RevenueProfitTab from '@/components/reports/RevenueProfitTab.vue'
 import SalesAnalysisTab from '@/components/reports/SalesAnalysisTab.vue'
@@ -227,6 +314,75 @@ const presets = [
     { value: '30', label: '30 ngày' },
     { value: '90', label: '90 ngày' }
 ]
+
+const router = useRouter()
+
+const reportMenuItems = [
+    {
+        id: 'revenue-forecast',
+        label: 'Dự báo Doanh thu',
+        icon: 'bi bi-graph-up-arrow',
+        route: '/revenue-forecast'
+    },
+    {
+        id: 'stakeholder-report',
+        label: 'Báo cáo Stakeholders',
+        icon: 'bi bi-file-earmark-text',
+        route: '/stakeholder-report'
+    },
+    {
+        id: 'voucher-analytics',
+        label: 'Phân tích Voucher',
+        icon: 'bi bi-ticket-perforated',
+        route: '/voucher-analytics'
+    },
+    {
+        id: 'cancellation-analysis',
+        label: 'Phân tích Hủy Đơn',
+        icon: 'bi bi-x-circle-fill',
+        route: '/cancellation-analysis'
+    },
+    {
+        id: 'trend-analysis',
+        label: 'Phân tích Xu hướng',
+        icon: 'bi bi-graph-up-arrow',
+        route: '/trend-analysis'
+    },
+    {
+        id: 'menu-optimization',
+        label: 'Tối ưu Menu',
+        icon: 'bi bi-box-seam',
+        route: '/menu-optimization'
+    },
+    {
+        id: 'cost-analysis',
+        label: 'Phân tích Chi phí',
+        icon: 'bi bi-cash-stack',
+        route: '/cost-analysis'
+    },
+    {
+        id: 'customer-analytics',
+        label: 'Phân tích Khách hàng',
+        icon: 'bi bi-people-fill',
+        route: '/customer-analytics'
+    },
+    {
+        id: 'product-profitability',
+        label: 'Phân tích Lợi nhuận',
+        icon: 'bi bi-cash-coin',
+        route: '/product-profitability'
+    },
+    {
+        id: 'chart-builder',
+        label: 'Chart Builder',
+        icon: 'bi bi-graph-up-arrow',
+        route: '/chart-builder'
+    }
+]
+
+const navigateToReport = (route) => {
+    router.push(route)
+}
 
 const tabs = [
     { key: 'summary', label: 'Tổng quan', icon: 'bi bi-speedometer2' },
@@ -866,7 +1022,8 @@ onBeforeUnmount(() => {
 }
 
 .filter-card,
-.tabs-card {
+.tabs-card,
+.navigation-menu-card {
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
@@ -878,6 +1035,140 @@ onBeforeUnmount(() => {
 
 .tabs-card .card-body {
     background: var(--color-card);
+}
+
+.navigation-menu-card .card-body {
+    background: var(--color-card);
+    padding: var(--spacing-4);
+}
+
+.navigation-menu-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-4);
+    font-family: var(--font-family-sans);
+    display: flex;
+    align-items: center;
+}
+
+.report-navigation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-3);
+}
+
+.report-nav-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    min-height: 120px;
+    font-family: var(--font-family-sans);
+}
+
+.report-nav-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+    background: var(--color-card-accent);
+}
+
+.report-nav-card:active {
+    transform: translateY(-2px);
+}
+
+.report-nav-card__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-2xl);
+    color: var(--color-primary);
+    background: rgba(79, 70, 229, 0.1);
+    transition: all var(--transition-base);
+}
+
+.report-nav-card:hover .report-nav-card__icon {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    transform: scale(1.1);
+}
+
+.report-nav-card__label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    text-align: center;
+    line-height: var(--line-height-tight);
+}
+
+.report-nav-card__badge {
+    position: absolute;
+    top: var(--spacing-2);
+    right: var(--spacing-2);
+    background: var(--color-warning);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-family-sans);
+    box-shadow: var(--shadow-sm);
+}
+
+.demo-badge {
+    display: inline-block;
+    background: var(--color-warning);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-family-sans);
+    box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 992px) {
+    .report-navigation-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: var(--spacing-2);
+    }
+
+    .report-nav-card {
+        min-height: 100px;
+        padding: var(--spacing-3);
+    }
+
+    .report-nav-card__icon {
+        width: 48px;
+        height: 48px;
+        font-size: var(--font-size-xl);
+    }
+
+    .report-nav-card__label {
+        font-size: var(--font-size-xs);
+    }
+}
+
+@media (max-width: 768px) {
+    .report-navigation-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .insights-card {

@@ -21,7 +21,8 @@ export const sidebarMenu = [
                 label: 'Trò chuyện',
                 icon: 'chat',
                 to: '/chat',
-                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'],
+                status: 'development'
             }
         ]
     },
@@ -82,62 +83,6 @@ export const sidebarMenu = [
                         label: 'Báo cáo tổng hợp',
                         icon: 'reports',
                         to: '/reports',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'revenue-forecast',
-                        label: 'Dự báo Doanh thu',
-                        icon: 'revenueForecast',
-                        to: '/revenue-forecast',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'voucher-analytics',
-                        label: 'Phân tích Voucher',
-                        icon: 'voucherAnalytics',
-                        to: '/voucher-analytics',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'cancellation-analysis',
-                        label: 'Phân tích Hủy Đơn',
-                        icon: 'cancellationAnalysis',
-                        to: '/cancellation-analysis',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'trend-analysis',
-                        label: 'Phân tích Xu hướng',
-                        icon: 'trendAnalysis',
-                        to: '/trend-analysis',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'menu-optimization',
-                        label: 'Tối ưu Menu',
-                        icon: 'menuOptimization',
-                        to: '/menu-optimization',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'cost-analysis',
-                        label: 'Phân tích Chi phí',
-                        icon: 'costAnalysis',
-                        to: '/cost-analysis',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'customer-analytics',
-                        label: 'Phân tích Khách hàng',
-                        icon: 'customerAnalytics',
-                        to: '/customer-analytics',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'product-profitability',
-                        label: 'Phân tích Lợi nhuận',
-                        icon: 'productProfitability',
-                        to: '/product-profitability',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     },
                     {
@@ -223,6 +168,13 @@ export const sidebarMenu = [
                         icon: 'ingredientDemandForecast',
                         to: '/ingredient-demand-forecast',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                    },
+                    {
+                        id: 'inventory-adjustment-history',
+                        label: 'Lịch sử điều chỉnh',
+                        icon: 'inventoryAdjustmentHistory',
+                        to: '/inventory-adjustment-history',
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     }
                 ]
             }
@@ -249,49 +201,56 @@ export const sidebarMenu = [
                         label: 'Ca làm',
                         icon: 'shifts',
                         to: '/shifts',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                        status: 'development'
                     },
                     {
                         id: 'attendance',
                         label: 'Chấm công',
                         icon: 'attendance',
                         to: '/attendance',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'],
+                        status: 'development'
                     },
                     {
                         id: 'shift-report',
                         label: 'Báo cáo ca làm',
                         icon: 'shiftReport',
                         to: '/shift-report',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                        status: 'development'
                     },
                     {
                         id: 'shift-assignment',
                         label: 'Phân công ca làm',
                         icon: 'shiftAssignment',
                         to: '/shift-assignment',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'],
+                        status: 'development'
                     },
                     {
                         id: 'shift-efficiency',
                         label: 'Hiệu quả Ca làm',
                         icon: 'shiftEfficiency',
                         to: '/shift-efficiency',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                        status: 'development'
                     },
                     {
                         id: 'performance-adjustment',
                         label: 'Điều chỉnh hiệu suất',
                         icon: 'performanceAdjustment',
                         to: '/performance-adjustment',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                        status: 'development'
                     },
                     {
                         id: 'staff-performance',
                         label: 'Phân tích Hiệu suất',
                         icon: 'staffPerformance',
                         to: '/staff-performance',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                        status: 'development'
                     }
                 ]
             },
@@ -313,7 +272,8 @@ export const sidebarMenu = [
                         label: 'Lương',
                         icon: 'payroll',
                         to: '/payroll',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
+                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                        status: 'development'
                     }
                 ]
             }
@@ -328,13 +288,6 @@ export const sidebarMenu = [
                 icon: 'profile',
                 to: '/profile',
                 roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
-            },
-            {
-                id: 'settings',
-                label: 'Cài đặt hệ thống',
-                icon: 'settings',
-                to: '/settings',
-                roles: ['ROLE_ADMIN']
             },
             {
                 id: 'login-history',

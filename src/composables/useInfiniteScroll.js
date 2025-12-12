@@ -9,7 +9,7 @@ import logger from '@/utils/logger'
  * @param {Boolean} options.enabled - Bật/tắt infinite scroll, mặc định true
  * @param {Number} options.pageSize - Số lượng items mỗi lần load, mặc định 20
  */
-export function useInfiniteScroll(loadMore, options = {}) {
+export function useInfiniteScroll (loadMore, options = {}) {
     const {
         threshold = 200,
         enabled = true,
@@ -43,7 +43,7 @@ export function useInfiniteScroll(loadMore, options = {}) {
         try {
             const size = getPageSize()
             const response = await loadMore(page.value, size)
-            
+
             // Xử lý response - có thể là array hoặc object có content
             let newItems = []
             let isLast = false

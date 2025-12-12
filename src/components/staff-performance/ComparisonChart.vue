@@ -1,13 +1,13 @@
 <template>
-    <div class="comparison-chart">
-        <apexchart
-            v-if="isMounted"
-            type="bar"
-            height="400"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="comparison-chart">
+    <apexchart
+      v-if="isMounted"
+      type="bar"
+      height="400"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -30,22 +30,20 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Điểm hiệu suất',
-            data: props.staffList.map(s => s.metrics.performanceScore)
-        },
-        {
-            name: 'Doanh thu (x1000)',
-            data: props.staffList.map(s => s.metrics.revenue / 1000)
-        },
-        {
-            name: 'Số đơn',
-            data: props.staffList.map(s => s.metrics.ordersCount)
-        }
-    ]
-})
+const chartSeries = computed(() => [
+    {
+        name: 'Điểm hiệu suất',
+        data: props.staffList.map(s => s.metrics.performanceScore)
+    },
+    {
+        name: 'Doanh thu (x1000)',
+        data: props.staffList.map(s => s.metrics.revenue / 1000)
+    },
+    {
+        name: 'Số đơn',
+        data: props.staffList.map(s => s.metrics.ordersCount)
+    }
+])
 
 const chartOptions = computed(() => ({
     chart: {

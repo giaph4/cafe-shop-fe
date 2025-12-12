@@ -1,13 +1,13 @@
 <template>
-    <div class="revenue-chart">
-        <apexchart
-            v-if="isMounted"
-            type="bar"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="revenue-chart">
+    <apexchart
+      v-if="isMounted"
+      type="bar"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -56,8 +56,8 @@ const chartOptions = computed(() => ({
     dataLabels: {
         enabled: true,
         formatter: (val) => {
-            if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M'
-            if (val >= 1000) return (val / 1000).toFixed(1) + 'K'
+            if (val >= 1000000) return `${(val / 1000000).toFixed(1)  }M`
+            if (val >= 1000) return `${(val / 1000).toFixed(1)  }K`
             return val.toFixed(0)
         }
     },
@@ -70,7 +70,9 @@ const chartOptions = computed(() => ({
                 fontSize: '12px'
             },
             rotate: -45,
-            rotateAlways: false
+            rotateAlways: true,
+            maxHeight: 60,
+            offsetY: 5
         },
         axisBorder: {
             color: 'var(--color-border)'
@@ -96,8 +98,8 @@ const chartOptions = computed(() => ({
                 fontSize: '12px'
             },
             formatter: (val) => {
-                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M'
-                if (val >= 1000) return (val / 1000).toFixed(1) + 'K'
+                if (val >= 1000000) return `${(val / 1000000).toFixed(1)  }M`
+                if (val >= 1000) return `${(val / 1000).toFixed(1)  }K`
                 return val.toFixed(0)
             }
         }
@@ -106,12 +108,10 @@ const chartOptions = computed(() => ({
         shared: true,
         intersect: false,
         y: {
-            formatter: (val) => {
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(val)
-            }
+            formatter: (val) => new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(val)
         }
     },
     legend: {
@@ -119,7 +119,13 @@ const chartOptions = computed(() => ({
     },
     grid: {
         borderColor: 'var(--color-border)',
-        strokeDashArray: 4
+        strokeDashArray: 4,
+        padding: {
+            top: 8,
+            bottom: 40,
+            left: 12,
+            right: 12
+        }
     },
     colors: ['var(--color-success)'],
     fill: {

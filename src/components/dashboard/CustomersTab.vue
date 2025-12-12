@@ -1,122 +1,164 @@
 <template>
-    <div class="customers-tab">
-        <div class="customers-tab__summary">
-            <div class="summary-card">
-                <div class="summary-card__icon bg-emerald-light">
-                    <i class="bi bi-cash-coin"></i>
-                </div>
-                <div class="summary-card__meta">
-                    <span>Tổng chi phí</span>
-                    <strong>{{ formatCurrency(expenseSummary.total) }}</strong>
-                    <small v-if="expenseSummary.range">{{ expenseSummary.range }}</small>
-                </div>
-            </div>
-            <div class="summary-card">
-                <div class="summary-card__icon bg-amber-light">
-                    <i class="bi bi-bag-plus"></i>
-                </div>
-                <div class="summary-card__meta">
-                    <span>Chi phí nhập nguyên liệu</span>
-                    <strong>{{ formatCurrency(importSummary.total) }}</strong>
-                    <small v-if="importSummary.range">{{ importSummary.range }}</small>
-                </div>
-            </div>
+  <div class="customers-tab">
+    <div class="customers-tab__summary">
+      <div class="summary-card">
+        <div class="summary-card__icon bg-emerald-light">
+          <i class="bi bi-cash-coin" />
         </div>
-
-        <div class="customers-tab__grid">
-            <div class="card">
-                <div class="card-header">
-                    <div>
-                        <h5 class="card-title">Khách hàng tiêu biểu</h5>
-                        <p class="card-subtitle">Top khách hàng theo doanh số trong giai đoạn lọc</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>Khách hàng</th>
-                            <th>Số điện thoại</th>
-                            <th class="text-end">Số đơn</th>
-                            <th class="text-end">Tổng chi tiêu</th>
-                            <th class="text-end">Đơn TB</th>
-                            <th class="text-end">Điểm</th>
-                            <th>Đơn gần nhất</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="customer in topCustomers" :key="customer.customerId">
-                            <td>{{ customer.customerName }}</td>
-                            <td>{{ customer.phone || '—' }}</td>
-                            <td class="text-end">{{ customer.totalOrders ?? 0 }}</td>
-                            <td class="text-end">{{ formatCurrency(customer.totalSpent) }}</td>
-                            <td class="text-end">{{ formatCurrency(customer.averageOrderValue) }}</td>
-                            <td class="text-end">{{ customer.loyaltyPoints ?? 0 }}</td>
-                            <td>{{ formatDate(customer.lastOrderDate) }}</td>
-                        </tr>
-                        <tr v-if="!topCustomers?.length">
-                            <td colspan="7">
-                                <EmptyState message="Chưa có số liệu khách hàng"/>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div>
-                        <h5 class="card-title">Hiệu suất nhân viên</h5>
-                        <p class="card-subtitle">Top nhân viên theo doanh thu và số đơn</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>Nhân viên</th>
-                            <th>Vai trò</th>
-                            <th class="text-end">Số đơn</th>
-                            <th class="text-end">Doanh thu</th>
-                            <th class="text-end">Giá trị TB</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="staff in staffPerformance" :key="staff.userId">
-                            <td>{{ staff.fullName || staff.username }}</td>
-                            <td><span class="customers-tab__role-badge">{{ prettyRole(staff.role) }}</span></td>
-                            <td class="text-end">{{ staff.totalOrders ?? 0 }}</td>
-                            <td class="text-end">{{ formatCurrency(staff.totalRevenue) }}</td>
-                            <td class="text-end">{{ formatCurrency(staff.averageOrderValue) }}</td>
-                        </tr>
-                        <tr v-if="!staffPerformance?.length">
-                            <td colspan="5">
-                                <EmptyState message="Chưa có thống kê nhân viên"/>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-            </div>
+        <div class="summary-card__meta">
+          <span>Tổng chi phí</span>
+          <strong>{{ formatCurrency(expenseSummary.total) }}</strong>
+          <small v-if="expenseSummary.range">{{ expenseSummary.range }}</small>
         </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__icon bg-amber-light">
+          <i class="bi bi-bag-plus" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Chi phí nhập nguyên liệu</span>
+          <strong>{{ formatCurrency(importSummary.total) }}</strong>
+          <small v-if="importSummary.range">{{ importSummary.range }}</small>
+        </div>
+      </div>
     </div>
+
+    <div class="customers-tab__grid">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h5 class="card-title">
+              Khách hàng tiêu biểu
+            </h5>
+            <p class="card-subtitle">
+              Top khách hàng theo doanh số trong giai đoạn lọc
+            </p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Khách hàng</th>
+                  <th>Số điện thoại</th>
+                  <th class="text-end">
+                    Số đơn
+                  </th>
+                  <th class="text-end">
+                    Tổng chi tiêu
+                  </th>
+                  <th class="text-end">
+                    Đơn TB
+                  </th>
+                  <th class="text-end">
+                    Điểm
+                  </th>
+                  <th>Đơn gần nhất</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="customer in topCustomers"
+                  :key="customer.customerId"
+                >
+                  <td>{{ customer.customerName }}</td>
+                  <td>{{ customer.phone || '—' }}</td>
+                  <td class="text-end">
+                    {{ customer.totalOrders ?? 0 }}
+                  </td>
+                  <td class="text-end">
+                    {{ formatCurrency(customer.totalSpent) }}
+                  </td>
+                  <td class="text-end">
+                    {{ formatCurrency(customer.averageOrderValue) }}
+                  </td>
+                  <td class="text-end">
+                    {{ customer.loyaltyPoints ?? 0 }}
+                  </td>
+                  <td>{{ formatDate(customer.lastOrderDate) }}</td>
+                </tr>
+                <tr v-if="!topCustomers?.length">
+                  <td colspan="7">
+                    <EmptyState message="Chưa có số liệu khách hàng" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h5 class="card-title">
+              Hiệu suất nhân viên
+            </h5>
+            <p class="card-subtitle">
+              Top nhân viên theo doanh thu và số đơn
+            </p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Vai trò</th>
+                  <th class="text-end">
+                    Số đơn
+                  </th>
+                  <th class="text-end">
+                    Doanh thu
+                  </th>
+                  <th class="text-end">
+                    Giá trị TB
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="staff in staffPerformance"
+                  :key="staff.userId"
+                >
+                  <td>{{ staff.fullName || staff.username }}</td>
+                  <td><span class="customers-tab__role-badge">{{ prettyRole(staff.role) }}</span></td>
+                  <td class="text-end">
+                    {{ staff.totalOrders ?? 0 }}
+                  </td>
+                  <td class="text-end">
+                    {{ formatCurrency(staff.totalRevenue) }}
+                  </td>
+                  <td class="text-end">
+                    {{ formatCurrency(staff.averageOrderValue) }}
+                  </td>
+                </tr>
+                <tr v-if="!staffPerformance?.length">
+                  <td colspan="5">
+                    <EmptyState message="Chưa có thống kê nhân viên" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import {computed} from 'vue'
+import { computed } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
-import {formatCurrency} from '@/utils/formatters'
+import { formatCurrency } from '@/utils/formatters'
 
 const props = defineProps({
-    topCustomers: {type: Array, default: () => []},
-    staffPerformance: {type: Array, default: () => []},
-    totalExpenses: {type: Object, default: null},
-    totalImportedCost: {type: Object, default: null}
+    topCustomers: { type: Array, default: () => [] },
+    staffPerformance: { type: Array, default: () => [] },
+    totalExpenses: { type: Object, default: null },
+    totalImportedCost: { type: Object, default: null }
 })
 
 const expenseSummary = computed(() => buildFinancialSummary(props.totalExpenses, 'totalExpenses'))
@@ -124,15 +166,15 @@ const importSummary = computed(() => buildFinancialSummary(props.totalImportedCo
 
 const buildFinancialSummary = (source, key) => {
     if (!source) {
-        return {total: 0, range: ''}
+        return { total: 0, range: '' }
     }
     const total = typeof source === 'number' ? source : source?.[key] ?? 0
-    const {startDate, endDate} = source ?? {}
+    const { startDate, endDate } = source ?? {}
     let range = ''
     if (startDate || endDate) {
         range = [startDate, endDate].filter(Boolean).join(' → ')
     }
-    return {total, range}
+    return { total, range }
 }
 
 const formatDate = (value) => {

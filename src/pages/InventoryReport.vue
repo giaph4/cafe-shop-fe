@@ -1,132 +1,248 @@
 <template>
-    <div class="inventory-report-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="inventory-report-header">
-            <div class="inventory-report-header__content">
-                <div class="inventory-report-header__title-section">
-                    <h2 class="inventory-report-header__title">Báo cáo tồn kho</h2>
-                    <p class="inventory-report-header__subtitle">Theo dõi tồn kho hiện tại, điểm đặt lại và xu hướng thiếu hụt.</p>
-                </div>
-                <div class="inventory-report-header__actions">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="lowStockSwitch" v-model="filters.lowStockOnly">
-                        <label class="form-check-label" for="lowStockSwitch">Chỉ hiển thị nguyên liệu thiếu hụt</label>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-sm" type="button" @click="refetch" :disabled="isFetching">
-                        <span v-if="isFetching" class="spinner-border spinner-border-sm me-2"></span>
-                        Làm mới
-                    </button>
-                    <button class="btn btn-primary btn-sm" type="button" @click="handleExport" :disabled="isExporting">
-                        <span v-if="isExporting" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-download me-2"></i>
-                        Xuất Excel
-                    </button>
-                </div>
-            </div>
+  <div
+    class="inventory-report-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="inventory-report-header">
+      <div class="inventory-report-header__content">
+        <div class="inventory-report-header__title-section">
+          <h2 class="inventory-report-header__title">
+            Báo cáo tồn kho
+          </h2>
+          <p class="inventory-report-header__subtitle">
+            Theo dõi tồn kho hiện tại, điểm đặt lại và xu hướng thiếu hụt.
+          </p>
         </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-lg-4 col-md-4 col-sm-6" v-for="stat in stats" :key="stat.label">
-                <div class="stat-card" :class="stat.variant">
-                    <div class="stat-icon">
-                        <i :class="stat.icon"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label mb-1">{{ stat.label }}</p>
-                        <h4 class="stat-value mb-0">{{ stat.value }}</h4>
-                    </div>
-                </div>
-            </div>
+        <div class="inventory-report-header__actions">
+          <div class="form-check form-switch">
+            <input
+              id="lowStockSwitch"
+              v-model="filters.lowStockOnly"
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+            >
+            <label
+              class="form-check-label"
+              for="lowStockSwitch"
+            >Chỉ hiển thị nguyên liệu thiếu hụt</label>
+          </div>
+          <button
+            class="btn btn-outline-secondary btn-sm"
+            type="button"
+            :disabled="isFetching"
+            @click="refetch"
+          >
+            <span
+              v-if="isFetching"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            Làm mới
+          </button>
+          <button
+            class="btn btn-primary btn-sm"
+            type="button"
+            :disabled="isExporting"
+            @click="handleExport"
+          >
+            <span
+              v-if="isExporting"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-download me-2"
+            />
+            Xuất Excel
+          </button>
         </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-6 col-md-6">
-                        <label class="form-label">Tìm kiếm</label>
-                        <div class="input-group search-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Tên nguyên liệu hoặc đơn vị"
-                                v-model="searchQuery" />
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-3">
-                        <label class="form-label">Số dòng / trang</label>
-                        <select class="form-select" :value="pageSize" @change="updatePageSize($event.target.value)">
-                            <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="analytics-grid mb-4">
-            <div class="card chart-card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Tình trạng tồn kho</h5>
-                </div>
-                <div class="card-body">
-                    <ApexChart type="donut" :options="statusChartOptions" :series="statusChartSeries" height="280" />
-                </div>
-            </div>
-            <div class="card chart-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Top nguyên liệu thiếu hụt</h5>
-                    <small class="text-muted">{{ lowStockItems.length }} mục</small>
-                </div>
-                <div class="card-body">
-                    <ApexChart type="bar" :options="lowStockChartOptions" :series="lowStockChartSeries" height="280" />
-                </div>
-            </div>
-        </div>
-
-        <div class="card table-card">
-            <div class="card-body p-0">
-                <LoadingState v-if="isLoading" />
-                <ErrorState 
-                    v-else-if="isError" 
-                    :message="errorMessage"
-                    @retry="refetch"
-                />
-                <template v-else>
-                    <EmptyState
-                        v-if="!tableData.length"
-                        title="Không có nguyên liệu phù hợp"
-                        message="Không tìm thấy nguyên liệu nào phù hợp với bộ lọc hiện tại."
-                    />
-                    <div v-else class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th scope="col">Tên nguyên liệu</th>
-                                    <th scope="col">Đơn vị</th>
-                                    <th scope="col" class="text-end">Tồn kho</th>
-                                    <th scope="col" class="text-end">Mức đặt lại</th>
-                                    <th scope="col" class="text-center">Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="item in tableData" :key="item.id">
-                                    <td class="fw-semibold">{{ item.name }}</td>
-                                    <td>{{ item.unit || '—' }}</td>
-                                    <td class="text-end">{{ formatNumber(item.quantityOnHand, { maximumFractionDigits: 2 }) }}</td>
-                                    <td class="text-end">{{ item.reorderLevel != null ? formatNumber(item.reorderLevel, { maximumFractionDigits: 2 }) : '—' }}</td>
-                                    <td class="text-center">
-                                        <span class="status-badge" :class="statusBadgeClass(item.status)">
-                                            {{ statusLabel(item.status) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </template>
-            </div>
-            <div class="card-footer bg-transparent" v-if="pagination.totalPages > 1">
-                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="pagination.totalPages"
-                    @page-change="handlePageChange" />
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="row g-3 mb-4">
+      <div
+        v-for="stat in stats"
+        :key="stat.label"
+        class="col-lg-4 col-md-4 col-sm-6"
+      >
+        <div
+          class="stat-card"
+          :class="stat.variant"
+        >
+          <div class="stat-icon">
+            <i :class="stat.icon" />
+          </div>
+          <div>
+            <p class="stat-label mb-1">
+              {{ stat.label }}
+            </p>
+            <h4 class="stat-value mb-0">
+              {{ stat.value }}
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-6 col-md-6">
+            <label class="form-label">Tìm kiếm</label>
+            <div class="input-group search-group">
+              <span class="input-group-text"><i class="bi bi-search" /></span>
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="form-control"
+                placeholder="Tên nguyên liệu hoặc đơn vị"
+              >
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-3">
+            <label class="form-label">Số dòng / trang</label>
+            <select
+              class="form-select"
+              :value="pageSize"
+              @change="updatePageSize($event.target.value)"
+            >
+              <option
+                v-for="size in pageSizeOptions"
+                :key="size"
+                :value="size"
+              >
+                {{ size }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-grid mb-4">
+      <div class="card chart-card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            Tình trạng tồn kho
+          </h5>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            type="donut"
+            :options="statusChartOptions"
+            :series="statusChartSeries"
+            height="280"
+          />
+        </div>
+      </div>
+      <div class="card chart-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            Top nguyên liệu thiếu hụt
+          </h5>
+          <small class="text-muted">{{ lowStockItems.length }} mục</small>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            type="bar"
+            :options="lowStockChartOptions"
+            :series="lowStockChartSeries"
+            height="280"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <div class="card-body p-0">
+        <LoadingState v-if="isLoading" />
+        <ErrorState
+          v-else-if="isError"
+          :message="errorMessage"
+          @retry="refetch"
+        />
+        <template v-else>
+          <EmptyState
+            v-if="!tableData.length"
+            title="Không có nguyên liệu phù hợp"
+            message="Không tìm thấy nguyên liệu nào phù hợp với bộ lọc hiện tại."
+          />
+          <div
+            v-else
+            class="table-responsive"
+          >
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">
+                    Tên nguyên liệu
+                  </th>
+                  <th scope="col">
+                    Đơn vị
+                  </th>
+                  <th
+                    scope="col"
+                    class="text-end"
+                  >
+                    Tồn kho
+                  </th>
+                  <th
+                    scope="col"
+                    class="text-end"
+                  >
+                    Mức đặt lại
+                  </th>
+                  <th
+                    scope="col"
+                    class="text-center"
+                  >
+                    Trạng thái
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="item in tableData"
+                  :key="item.id"
+                >
+                  <td class="fw-semibold">
+                    {{ item.name }}
+                  </td>
+                  <td>{{ item.unit || '—' }}</td>
+                  <td class="text-end">
+                    {{ formatNumber(item.quantityOnHand, { maximumFractionDigits: 2 }) }}
+                  </td>
+                  <td class="text-end">
+                    {{ item.reorderLevel !== null ? formatNumber(item.reorderLevel, { maximumFractionDigits: 2 }) : '—' }}
+                  </td>
+                  <td class="text-center">
+                    <span
+                      class="status-badge"
+                      :class="statusBadgeClass(item.status)"
+                    >
+                      {{ statusLabel(item.status) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+      <div
+        v-if="pagination.totalPages > 1"
+        class="card-footer bg-transparent"
+      >
+        <Pagination
+          mode="zero-based"
+          :current-page="zeroBasedPage"
+          :total-pages="pagination.totalPages"
+          @page-change="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

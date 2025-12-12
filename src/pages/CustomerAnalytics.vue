@@ -1,307 +1,404 @@
 <template>
-    <div class="customer-analytics-page page-container container-fluid" data-aos="fade-up">
-        <PageHeader
-            title="Phân tích Khách hàng & Loyalty"
-            subtitle="Phân tích hành vi khách hàng và đề xuất chiến lược loyalty"
+  <div
+    class="customer-analytics-page page-container container-fluid"
+    data-aos="fade-up"
+  >
+    <PageHeader
+      title="Phân tích Khách hàng & Loyalty"
+      subtitle="Phân tích hành vi khách hàng và đề xuất chiến lược loyalty"
+    >
+      <template #actions>
+        <button
+          class="btn-flat btn-flat--outline"
+          :disabled="loading"
+          @click="handleRefresh"
         >
-            <template #actions>
-                <button
-                    class="btn-flat btn-flat--outline"
-                    @click="handleRefresh"
-                    :disabled="loading"
-                >
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                    Làm mới
-                </button>
-                <button
-                    v-if="hasData"
-                    class="btn-flat btn-flat--outline"
-                    @click="handleExport"
-                    :disabled="exporting"
-                >
-                    <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-download me-2"></i>
-                    Xuất Excel
-                </button>
-            </template>
-        </PageHeader>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.startDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.endDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Phân loại</label>
-                        <select class="form-select clean-input" v-model="filters.segment">
-                            <option value="">Tất cả</option>
-                            <option value="VIP">VIP</option>
-                            <option value="Regular">Thường xuyên</option>
-                            <option value="Occasional">Thỉnh thoảng</option>
-                            <option value="At-risk">Có nguy cơ</option>
-                            <option value="New">Mới</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Khoảng thời gian</label>
-                        <div class="btn-group w-100" role="group">
-                            <button
-                                v-for="preset in presets"
-                                :key="preset.value"
-                                type="button"
-                                class="btn btn-flat"
-                                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
-                                @click="applyPreset(preset.value)"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <button
-                            class="btn btn-flat btn-flat--primary w-100"
-                            @click="handleAnalyze"
-                            :disabled="loading || !canAnalyze"
-                        >
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-graph-up-arrow me-2"></i>
-                            Phân tích
-                        </button>
-                    </div>
-                </div>
-                <div v-if="validationError" class="alert alert-warning mt-3 mb-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    {{ validationError }}
-                </div>
-            </div>
-        </div>
-
-        <LoadingState v-if="loading" text="Đang phân tích khách hàng..." />
-        <ErrorState
-            v-else-if="error"
-            :message="error"
-            @retry="handleAnalyze"
-        />
-
-        <div v-else-if="hasData" class="analytics-content">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <div class="kpi-card kpi-card--primary">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng khách hàng</div>
-                            <div class="kpi-card__value">{{ customers.length }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <div class="kpi-card kpi-card--success">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-star"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">VIP</div>
-                            <div class="kpi-card__value">{{ segments.VIP?.length || 0 }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <div class="kpi-card kpi-card--info">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-person-check"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Thường xuyên</div>
-                            <div class="kpi-card__value">{{ segments.Regular?.length || 0 }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <div class="kpi-card kpi-card--warning">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Có nguy cơ</div>
-                            <div class="kpi-card__value">{{ segments['At-risk']?.length || 0 }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <div class="kpi-card kpi-card--danger">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-cash-stack"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng chi tiêu</div>
-                            <div class="kpi-card__value">{{ formatCurrency(totalSpend) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <div class="kpi-card kpi-card--info">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-cart"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng đơn hàng</div>
-                            <div class="kpi-card__value">{{ formatNumber(totalOrders) }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-lg-6">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Phân loại khách hàng</h5>
-                        </div>
-                        <div class="card-body">
-                            <CustomerSegments :segments="segments" />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Phân tích RFM</h5>
-                        </div>
-                        <div class="card-body">
-                            <RFMChart :customers="filteredCustomers" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card standard-card mb-4">
-                <div class="card-header standard-card-header">
-                    <h5 class="card-title">Top 10 khách hàng</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-minimal">
-                            <thead>
-                                <tr>
-                                    <th>Hạng</th>
-                                    <th>Khách hàng</th>
-                                    <th>Phân loại</th>
-                                    <th>Tổng chi tiêu</th>
-                                    <th>Số đơn</th>
-                                    <th>Đơn TB</th>
-                                    <th>RFM Score</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(customer, index) in topCustomers" :key="customer.customerId">
-                                    <td>
-                                        <span class="rank-badge" :class="getRankClass(index)">
-                                            {{ index + 1 }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <div class="fw-semibold customer-name">{{ customer.fullName }}</div>
-                                            <small class="text-muted">{{ customer.phone }}</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-soft" :class="getSegmentClass(customer.segment)">
-                                            {{ customer.segment }}
-                                        </span>
-                                    </td>
-                                    <td class="revenue-cell">{{ formatCurrency(customer.metrics.totalSpend) }}</td>
-                                    <td>{{ formatNumber(customer.metrics.orderCount) }}</td>
-                                    <td>{{ formatCurrency(customer.metrics.avgOrderValue) }}</td>
-                                    <td>
-                                        <span class="score-badge" :class="getScoreClass(customer.metrics.rfmScore)">
-                                            {{ customer.metrics.rfmScore }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            class="btn btn-flat btn-flat--outline btn-sm"
-                                            @click="showCustomerDetail(customer)"
-                                            title="Xem chi tiết"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card standard-card">
-                <div class="card-header standard-card-header">
-                    <h5 class="card-title">Danh sách khách hàng</h5>
-                    <div class="d-flex gap-2">
-                        <input
-                            type="text"
-                            class="form-control form-control-sm clean-input"
-                            style="width: 200px;"
-                            placeholder="Tìm kiếm..."
-                            v-model="searchQuery"
-                        />
-                    </div>
-                </div>
-                <div class="card-body">
-                    <CustomerList
-                        :customers="filteredCustomers"
-                        :loading="loading"
-                        @view="showCustomerDetail"
-                        @create-campaign="showCampaignBuilder"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <EmptyState
+          <span
+            v-if="loading"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
             v-else
-            title="Chưa có dữ liệu"
-            message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+            class="bi bi-arrow-clockwise me-2"
+          />
+          Làm mới
+        </button>
+        <button
+          v-if="hasData"
+          class="btn-flat btn-flat--outline"
+          :disabled="exporting"
+          @click="handleExport"
         >
-            <template #icon>
-                <i class="bi bi-graph-up-arrow"></i>
-            </template>
-        </EmptyState>
+          <span
+            v-if="exporting"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
+            v-else
+            class="bi bi-download me-2"
+          />
+          Xuất Excel
+        </button>
+      </template>
+    </PageHeader>
 
-        <CustomerDetailModal
-            v-if="selectedCustomer"
-            :customer="selectedCustomer"
-            :start-date="filters.startDate"
-            :end-date="filters.endDate"
-            @close="selectedCustomer = null"
-        />
-
-        <CampaignBuilderModal
-            v-if="showCampaign"
-            :customer-segment="campaignSegment"
-            @close="showCampaign = false"
-        />
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Phân loại</label>
+            <select
+              v-model="filters.segment"
+              class="form-select clean-input"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option value="VIP">
+                VIP
+              </option>
+              <option value="Regular">
+                Thường xuyên
+              </option>
+              <option value="Occasional">
+                Thỉnh thoảng
+              </option>
+              <option value="At-risk">
+                Có nguy cơ
+              </option>
+              <option value="New">
+                Mới
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Khoảng thời gian</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in presets"
+                :key="preset.value"
+                type="button"
+                class="btn btn-flat"
+                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
+                @click="applyPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">&nbsp;</label>
+            <button
+              class="btn btn-flat btn-flat--primary w-100"
+              :disabled="loading || !canAnalyze"
+              @click="handleAnalyze"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-graph-up-arrow me-2"
+              />
+              Phân tích
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="validationError"
+          class="alert alert-warning mt-3 mb-0"
+        >
+          <i class="bi bi-exclamation-triangle me-2" />
+          {{ validationError }}
+        </div>
+      </div>
     </div>
+
+    <LoadingState
+      v-if="loading"
+      text="Đang phân tích khách hàng..."
+    />
+    <ErrorState
+      v-else-if="error"
+      :message="error"
+      @retry="handleAnalyze"
+    />
+
+    <div
+      v-else-if="hasData"
+      class="analytics-content"
+    >
+      <div class="row g-4 mb-4">
+        <div class="col-lg-2 col-md-4 col-sm-6">
+          <div class="kpi-card kpi-card--primary">
+            <div class="kpi-card__icon">
+              <i class="bi bi-people" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng khách hàng
+              </div>
+              <div class="kpi-card__value">
+                {{ customers.length }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+          <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+              <i class="bi bi-star" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                VIP
+              </div>
+              <div class="kpi-card__value">
+                {{ segments.VIP?.length || 0 }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+          <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <i class="bi bi-person-check" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Thường xuyên
+              </div>
+              <div class="kpi-card__value">
+                {{ segments.Regular?.length || 0 }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+          <div class="kpi-card kpi-card--warning">
+            <div class="kpi-card__icon">
+              <i class="bi bi-exclamation-triangle" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Có nguy cơ
+              </div>
+              <div class="kpi-card__value">
+                {{ segments['At-risk']?.length || 0 }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+          <div class="kpi-card kpi-card--danger">
+            <div class="kpi-card__icon">
+              <i class="bi bi-cash-stack" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng chi tiêu
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(totalSpend) }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+          <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <i class="bi bi-cart" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng đơn hàng
+              </div>
+              <div class="kpi-card__value">
+                {{ formatNumber(totalOrders) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Phân loại khách hàng
+              </h5>
+            </div>
+            <div class="card-body">
+              <CustomerSegments :segments="segments" />
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Phân tích RFM
+              </h5>
+            </div>
+            <div class="card-body">
+              <RFMChart :customers="filteredCustomers" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card standard-card mb-4">
+        <div class="card-header standard-card-header">
+          <h5 class="card-title">
+            Top 10 khách hàng
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-minimal">
+              <thead>
+                <tr>
+                  <th>Hạng</th>
+                  <th>Khách hàng</th>
+                  <th>Phân loại</th>
+                  <th>Tổng chi tiêu</th>
+                  <th>Số đơn</th>
+                  <th>Đơn TB</th>
+                  <th>RFM Score</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(customer, index) in topCustomers"
+                  :key="customer.customerId"
+                >
+                  <td>
+                    <span
+                      class="rank-badge"
+                      :class="getRankClass(index)"
+                    >
+                      {{ index + 1 }}
+                    </span>
+                  </td>
+                  <td>
+                    <div>
+                      <div class="fw-semibold customer-name">
+                        {{ customer.fullName }}
+                      </div>
+                      <small class="text-muted">{{ customer.phone }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="badge badge-soft"
+                      :class="getSegmentClass(customer.segment)"
+                    >
+                      {{ customer.segment }}
+                    </span>
+                  </td>
+                  <td class="revenue-cell">
+                    {{ formatCurrency(customer.metrics.totalSpend) }}
+                  </td>
+                  <td>{{ formatNumber(customer.metrics.orderCount) }}</td>
+                  <td>{{ formatCurrency(customer.metrics.avgOrderValue) }}</td>
+                  <td>
+                    <span
+                      class="score-badge"
+                      :class="getScoreClass(customer.metrics.rfmScore)"
+                    >
+                      {{ customer.metrics.rfmScore }}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      class="btn btn-flat btn-flat--outline btn-sm"
+                      title="Xem chi tiết"
+                      @click="showCustomerDetail(customer)"
+                    >
+                      <i class="bi bi-eye" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card standard-card">
+        <div class="card-header standard-card-header">
+          <h5 class="card-title">
+            Danh sách khách hàng
+          </h5>
+          <div class="d-flex gap-2">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="form-control form-control-sm clean-input"
+              style="width: 200px;"
+              placeholder="Tìm kiếm..."
+            >
+          </div>
+        </div>
+        <div class="card-body">
+          <CustomerList
+            :customers="filteredCustomers"
+            :loading="loading"
+            @view="showCustomerDetail"
+            @create-campaign="showCampaignBuilder"
+          />
+        </div>
+      </div>
+    </div>
+
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+    >
+      <template #icon>
+        <i class="bi bi-graph-up-arrow" />
+      </template>
+    </EmptyState>
+
+    <CustomerDetailModal
+      v-if="selectedCustomer"
+      :customer="selectedCustomer"
+      :start-date="filters.startDate"
+      :end-date="filters.endDate"
+      @close="selectedCustomer = null"
+    />
+
+    <CampaignBuilderModal
+      v-if="showCampaign"
+      :customer-segment="campaignSegment"
+      @close="showCampaign = false"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -318,6 +415,7 @@ import CustomerDetailModal from '@/components/customer-analytics/CustomerDetailM
 import CampaignBuilderModal from '@/components/customer-analytics/CampaignBuilderModal.vue'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 import * as XLSX from 'xlsx'
+import logger from '@/utils/logger'
 
 const store = useCustomerAnalyticsStore()
 
@@ -349,34 +447,28 @@ const presets = [
     { value: '180d', label: '6 tháng', days: 180 }
 ]
 
-const canAnalyze = computed(() => {
-    return filters.value.startDate && filters.value.endDate && !validationError.value
-})
+const canAnalyze = computed(() => filters.value.startDate && filters.value.endDate && !validationError.value)
 
-const totalSpend = computed(() => {
-    return customers.value.reduce((sum, c) => sum + (c.metrics?.totalSpend || 0), 0)
-})
+const totalSpend = computed(() => customers.value.reduce((sum, c) => sum + (c.metrics?.totalSpend || 0), 0))
 
-const totalOrders = computed(() => {
-    return customers.value.reduce((sum, c) => sum + (c.metrics?.orderCount || 0), 0)
-})
+const totalOrders = computed(() => customers.value.reduce((sum, c) => sum + (c.metrics?.orderCount || 0), 0))
 
 const filteredCustomers = computed(() => {
     let result = customers.value
-    
+
     if (filters.value.segment) {
         result = result.filter(c => c.segment === filters.value.segment)
     }
-    
+
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
-        result = result.filter(c => 
+        result = result.filter(c =>
             c.fullName.toLowerCase().includes(query) ||
             c.phone?.toLowerCase().includes(query) ||
             c.email?.toLowerCase().includes(query)
         )
     }
-    
+
     return result
 })
 
@@ -384,11 +476,11 @@ const applyPreset = (preset) => {
     selectedPreset.value = preset
     const presetConfig = presets.find(p => p.value === preset)
     if (!presetConfig) return
-    
+
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - presetConfig.days)
-    
+
     filters.value.endDate = endDate.toISOString().split('T')[0]
     filters.value.startDate = startDate.toISOString().split('T')[0]
     validateDates()
@@ -396,37 +488,36 @@ const applyPreset = (preset) => {
 
 const validateDates = () => {
     validationError.value = ''
-    
+
     if (!filters.value.startDate || !filters.value.endDate) {
         return
     }
-    
+
     const start = new Date(filters.value.startDate)
     const end = new Date(filters.value.endDate)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     if (start > end) {
         validationError.value = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
         return
     }
-    
+
     if (end > today) {
         validationError.value = 'Ngày kết thúc không được vượt quá hôm nay'
-        return
     }
 }
 
 const handleAnalyze = async () => {
     if (!canAnalyze.value || validationError.value) return
-    
+
     try {
         await store.analyzeCustomers({
             startDate: filters.value.startDate,
             endDate: filters.value.endDate
         })
     } catch (err) {
-        console.error('Failed to analyze', err)
+        logger.error('Không thể phân tích khách hàng:', err)
     }
 }
 
@@ -436,18 +527,18 @@ const handleRefresh = () => {
 
 const handleExport = async () => {
     if (!hasData.value) return
-    
+
     exporting.value = true
     try {
         const exportData = await store.exportReport()
-        
+
         const ws = XLSX.utils.aoa_to_sheet(exportData.data)
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, exportData.sheetName)
-        
+
         XLSX.writeFile(wb, exportData.filename)
     } catch (err) {
-        console.error('Failed to export', err)
+        logger.error('Không thể xuất báo cáo khách hàng:', err)
         alert('Không thể xuất file. Vui lòng thử lại.')
     } finally {
         exporting.value = false

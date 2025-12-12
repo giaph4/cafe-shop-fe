@@ -12,60 +12,60 @@ export const API_CHAT_URL = '/api/chat'
 
 // Order Status
 export const ORDER_STATUS = Object.freeze({
-  PENDING: 'PENDING',
-  PAID: 'PAID',
-  CANCELLED: 'CANCELLED',
-  TRANSFERRED: 'TRANSFERRED'
+    PENDING: 'PENDING',
+    PAID: 'PAID',
+    CANCELLED: 'CANCELLED',
+    TRANSFERRED: 'TRANSFERRED'
 })
 
 // User Roles
 export const USER_ROLES = Object.freeze({
-  ADMIN: 'ROLE_ADMIN',
-  MANAGER: 'ROLE_MANAGER',
-  STAFF: 'ROLE_STAFF'
+    ADMIN: 'ROLE_ADMIN',
+    MANAGER: 'ROLE_MANAGER',
+    STAFF: 'ROLE_STAFF'
 })
 
 // Table Status
 export const TABLE_STATUS = Object.freeze({
-  EMPTY: 'EMPTY',
-  AVAILABLE: 'AVAILABLE',
-  SERVING: 'SERVING',
-  RESERVED: 'RESERVED',
-  PENDING: 'PENDING'
+    EMPTY: 'EMPTY',
+    AVAILABLE: 'AVAILABLE',
+    SERVING: 'SERVING',
+    RESERVED: 'RESERVED',
+    PENDING: 'PENDING'
 })
 
 // Purchase Order Status
 export const PURCHASE_ORDER_STATUS = Object.freeze({
-  PENDING: 'PENDING',
-  COMPLETED: 'COMPLETED',
-  CANCELLED: 'CANCELLED'
+    PENDING: 'PENDING',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
 })
 
 // Shift Assignment Status
 export const SHIFT_ASSIGNMENT_STATUS = Object.freeze({
-  ASSIGNED: 'ASSIGNED',
-  CONFIRMED: 'CONFIRMED',
-  COMPLETED: 'COMPLETED',
-  CANCELLED: 'CANCELLED'
+    ASSIGNED: 'ASSIGNED',
+    CONFIRMED: 'CONFIRMED',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
 })
 
 // Voucher Types
 export const VOUCHER_TYPE = Object.freeze({
-  PERCENTAGE: 'PERCENTAGE',
-  FIXED: 'FIXED'
+    PERCENTAGE: 'PERCENTAGE',
+    FIXED: 'FIXED'
 })
 
 // Payment Methods
 export const PAYMENT_METHOD = Object.freeze({
-  CASH: 'CASH',
-  CARD: 'CARD',
-  BANK_TRANSFER: 'BANK_TRANSFER'
+    CASH: 'CASH',
+    CARD: 'CARD',
+    BANK_TRANSFER: 'BANK_TRANSFER'
 })
 
 // Order Types
 export const ORDER_TYPE = Object.freeze({
-  DINE_IN: 'DINE_IN',
-  TAKE_AWAY: 'TAKE_AWAY'
+    DINE_IN: 'DINE_IN',
+    TAKE_AWAY: 'TAKE_AWAY'
 })
 
 // Timing Constants
@@ -79,9 +79,9 @@ export const PAGINATION_SIZE_OPTIONS = [10, 25, 50, 100]
 
 // Pagination Object (for Reports and other modules)
 export const PAGINATION = Object.freeze({
-  DEFAULT_SIZE: 10,
-  SIZE_OPTIONS: [10, 25, 50, 100],
-  REPORT_TOPS: [5, 10, 20, 50]
+    DEFAULT_SIZE: 10,
+    SIZE_OPTIONS: [10, 25, 50, 100],
+    REPORT_TOPS: [5, 10, 20, 50]
 })
 
 // Phone Regex
@@ -94,19 +94,19 @@ export const DATETIME_FORMAT = 'dd/MM/yyyy HH:mm'
 
 // Error Messages
 export const ERROR_MESSAGES = Object.freeze({
-  NETWORK_ERROR: 'Lỗi kết nối mạng. Vui lòng thử lại.',
-  UNAUTHORIZED: 'Bạn không có quyền truy cập.',
-  NOT_FOUND: 'Không tìm thấy dữ liệu.',
-  SERVER_ERROR: 'Lỗi máy chủ. Vui lòng thử lại sau.',
-  VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
-  UNKNOWN_ERROR: 'Đã xảy ra lỗi không xác định.'
+    NETWORK_ERROR: 'Lỗi kết nối mạng. Vui lòng thử lại.',
+    UNAUTHORIZED: 'Bạn không có quyền truy cập.',
+    NOT_FOUND: 'Không tìm thấy dữ liệu.',
+    SERVER_ERROR: 'Lỗi máy chủ. Vui lòng thử lại sau.',
+    VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
+    UNKNOWN_ERROR: 'Đã xảy ra lỗi không xác định.'
 })
 
 // Success Messages
 export const SUCCESS_MESSAGES = Object.freeze({
-  CREATE: 'Tạo mới thành công.',
-  UPDATE: 'Cập nhật thành công.',
-  DELETE: 'Xóa thành công.',
-  SAVE: 'Lưu thành công.'
+    CREATE: 'Tạo mới thành công.',
+    UPDATE: 'Cập nhật thành công.',
+    DELETE: 'Xóa thành công.',
+    SAVE: 'Lưu thành công.'
 })
 

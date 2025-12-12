@@ -1,128 +1,191 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade product-recipe-modal" ref="modalRef" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="bi bi-list-check me-2"></i>
-                            Quản lý công thức: {{ product?.name || '—' }}
-                        </h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div v-if="loading" class="text-center py-5">
-                            <div class="spinner-border text-primary"></div>
-                        </div>
-                        <div v-else-if="error" class="error-message">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            {{ error }}
-                        </div>
-                        <div v-else>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <p class="mb-0 text-muted">
-                                    Thêm nguyên liệu và số lượng cần thiết để tạo công thức cho sản phẩm này.
-                                </p>
-                                <button class="btn btn-sm btn-primary" type="button" @click="addIngredientRow" :disabled="submitting">
-                                    <i class="bi bi-plus-lg me-1"></i>
-                                    Thêm nguyên liệu
-                                </button>
-                            </div>
-
-                            <div v-if="recipeItems.length === 0" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                <p class="mb-0">Chưa có nguyên liệu nào trong công thức.</p>
-                                <p class="mb-0 small">Nhấn "Thêm nguyên liệu" để bắt đầu.</p>
-                            </div>
-
-                            <div v-else class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th width="40%">Nguyên liệu</th>
-                                            <th width="30%">Số lượng cần</th>
-                                            <th width="20%">Đơn vị</th>
-                                            <th width="10%" class="text-center">Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="(item, index) in recipeItems" :key="index">
-                                            <td>
-                                                <select 
-                                                    class="form-select form-select-sm" 
-                                                    v-model="item.ingredientId"
-                                                    :class="{'is-invalid': item.errors?.ingredientId}"
-                                                    :disabled="submitting"
-                                                >
-                                                    <option value="">Chọn nguyên liệu</option>
-                                                    <option 
-                                                        v-for="ingredient in availableIngredients" 
-                                                        :key="ingredient.id" 
-                                                        :value="ingredient.id"
-                                                        :disabled="isIngredientUsed(ingredient.id, index)"
-                                                    >
-                                                        {{ ingredient.name }}
-                                                    </option>
-                                                </select>
-                                                <div class="invalid-feedback" v-if="item.errors?.ingredientId">
-                                                    {{ item.errors.ingredientId }}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input 
-                                                    type="number" 
-                                                    step="0.01" 
-                                                    min="0.01"
-                                                    class="form-control form-control-sm" 
-                                                    v-model.number="item.quantityNeeded"
-                                                    :class="{'is-invalid': item.errors?.quantityNeeded}"
-                                                    :disabled="submitting"
-                                                    placeholder="0.00"
-                                                />
-                                                <div class="invalid-feedback" v-if="item.errors?.quantityNeeded">
-                                                    {{ item.errors.quantityNeeded }}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-secondary">
-                                                    {{ getIngredientUnit(item.ingredientId) || '—' }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <button 
-                                                    class="btn btn-sm btn-outline-danger" 
-                                                    type="button"
-                                                    @click="removeIngredientRow(index)"
-                                                    :disabled="submitting"
-                                                >
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="hide" :disabled="submitting">
-                            Hủy
-                        </button>
-                        <button 
-                            type="button" 
-                            class="btn btn-primary" 
-                            @click="handleSave"
-                            :disabled="submitting || loading || recipeItems.length === 0"
-                        >
-                            <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-check-lg me-1"></i>
-                            Lưu công thức
-                        </button>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modalRef"
+      class="modal fade product-recipe-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-list-check me-2" />
+              Quản lý công thức: {{ product?.name || '—' }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
+          <div class="modal-body">
+            <div
+              v-if="loading"
+              class="text-center py-5"
+            >
+              <div class="spinner-border text-primary" />
             </div>
+            <div
+              v-else-if="error"
+              class="error-message"
+            >
+              <i class="bi bi-exclamation-triangle me-2" />
+              {{ error }}
+            </div>
+            <div v-else>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="mb-0 text-muted">
+                  Thêm nguyên liệu và số lượng cần thiết để tạo công thức cho sản phẩm này.
+                </p>
+                <button
+                  class="btn btn-sm btn-primary"
+                  type="button"
+                  :disabled="submitting"
+                  @click="addIngredientRow"
+                >
+                  <i class="bi bi-plus-lg me-1" />
+                  Thêm nguyên liệu
+                </button>
+              </div>
+
+              <div
+                v-if="recipeItems.length === 0"
+                class="text-center py-5 text-muted"
+              >
+                <i class="bi bi-inbox fs-1 d-block mb-2" />
+                <p class="mb-0">
+                  Chưa có nguyên liệu nào trong công thức.
+                </p>
+                <p class="mb-0 small">
+                  Nhấn "Thêm nguyên liệu" để bắt đầu.
+                </p>
+              </div>
+
+              <div
+                v-else
+                class="table-responsive"
+              >
+                <table class="table table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th width="40%">
+                        Nguyên liệu
+                      </th>
+                      <th width="30%">
+                        Số lượng cần
+                      </th>
+                      <th width="20%">
+                        Đơn vị
+                      </th>
+                      <th
+                        width="10%"
+                        class="text-center"
+                      >
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(item, index) in recipeItems"
+                      :key="index"
+                    >
+                      <td>
+                        <select
+                          v-model="item.ingredientId"
+                          class="form-select form-select-sm"
+                          :class="{ 'is-invalid': item.errors?.ingredientId }"
+                          :disabled="submitting"
+                        >
+                          <option value="">
+                            Chọn nguyên liệu
+                          </option>
+                          <option
+                            v-for="ingredient in availableIngredients"
+                            :key="ingredient.id"
+                            :value="ingredient.id"
+                            :disabled="isIngredientUsed(ingredient.id, index)"
+                          >
+                            {{ ingredient.name }}
+                          </option>
+                        </select>
+                        <div
+                          v-if="item.errors?.ingredientId"
+                          class="invalid-feedback"
+                        >
+                          {{ item.errors.ingredientId }}
+                        </div>
+                      </td>
+                      <td>
+                        <input
+                          v-model.number="item.quantityNeeded"
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          class="form-control form-control-sm"
+                          :class="{ 'is-invalid': item.errors?.quantityNeeded }"
+                          :disabled="submitting"
+                          placeholder="0.00"
+                        >
+                        <div
+                          v-if="item.errors?.quantityNeeded"
+                          class="invalid-feedback"
+                        >
+                          {{ item.errors.quantityNeeded }}
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">
+                          {{ getIngredientUnit(item.ingredientId) || '—' }}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <button
+                          class="btn btn-sm btn-outline-danger"
+                          type="button"
+                          :disabled="submitting"
+                          @click="removeIngredientRow(index)"
+                        >
+                          <i class="bi bi-trash" />
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="submitting"
+              @click="hide"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              :disabled="submitting || loading || recipeItems.length === 0"
+              @click="handleSave"
+            >
+              <span
+                v-if="submitting"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-check-lg me-1"
+              />
+              Lưu công thức
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -160,7 +223,7 @@ const getIngredientUnit = (ingredientId) => {
 
 const isIngredientUsed = (ingredientId, currentIndex) => {
     if (!ingredientId) return false
-    return recipeItems.some((item, index) => 
+    return recipeItems.some((item, index) =>
         index !== currentIndex && item.ingredientId === ingredientId
     )
 }
@@ -180,10 +243,10 @@ const removeIngredientRow = (index) => {
 const validateRecipe = () => {
     let valid = true
     const usedIngredientIds = new Set()
-    
-    recipeItems.forEach((item, index) => {
+
+    recipeItems.forEach((item) => {
         item.errors = {}
-        
+
         // Validate ingredient selection
         if (!item.ingredientId) {
             item.errors.ingredientId = 'Vui lòng chọn nguyên liệu.'
@@ -194,7 +257,7 @@ const validateRecipe = () => {
         } else {
             usedIngredientIds.add(item.ingredientId)
         }
-        
+
         // Validate quantity
         const quantity = Number(item.quantityNeeded)
         if (!item.quantityNeeded || isNaN(quantity) || quantity <= 0) {
@@ -205,24 +268,24 @@ const validateRecipe = () => {
             item.errors.quantityNeeded = 'Số lượng quá lớn. Vui lòng kiểm tra lại.'
             valid = false
         }
-        
+
         // Validate unit consistency (nếu có yêu cầu)
         // Có thể thêm logic check unit consistency ở đây nếu cần
         // Ví dụ: tất cả ingredients phải cùng unit, hoặc convert unit
     })
-    
+
     // Validate tổng số lượng (nếu cần)
     // Có thể thêm validation tổng quantity không vượt quá một giá trị nào đó
     const totalQuantity = recipeItems.reduce((sum, item) => {
         const qty = Number(item.quantityNeeded) || 0
         return sum + qty
     }, 0)
-    
+
     if (totalQuantity <= 0 && recipeItems.length > 0) {
         // Nếu có items nhưng tổng quantity = 0, có lỗi
         valid = false
     }
-    
+
     return valid
 }
 
@@ -238,14 +301,14 @@ const loadIngredients = async () => {
 
 const loadRecipe = async () => {
     if (!props.product?.id) return
-    
+
     loading.value = true
     error.value = ''
-    
+
     try {
         const recipe = await getProductRecipe(props.product.id)
         recipeItems.splice(0, recipeItems.length)
-        
+
         if (recipe && recipe.length > 0) {
             recipe.forEach(item => {
                 recipeItems.push({
@@ -270,9 +333,9 @@ const handleSave = async () => {
         toast.error('Vui lòng kiểm tra lại thông tin công thức.')
         return
     }
-    
+
     submitting.value = true
-    
+
     try {
         const payload = {
             ingredients: recipeItems.map(item => ({
@@ -280,7 +343,7 @@ const handleSave = async () => {
                 quantityNeeded: Number(item.quantityNeeded)
             }))
         }
-        
+
         await updateProductRecipe(props.product.id, payload)
         toast.success('Đã lưu công thức sản phẩm thành công!')
         emit('saved')
@@ -298,7 +361,7 @@ const show = async () => {
         toast.warning('Vui lòng chọn sản phẩm.')
         return
     }
-    
+
     await Promise.all([loadIngredients(), loadRecipe()])
     modalInstance?.show()
 }
@@ -559,4 +622,3 @@ onBeforeUnmount(() => {
     line-height: 1;
 }
 </style>
-

@@ -1,226 +1,329 @@
 <template>
-    <div class="chat-page" data-aos="fade-up">
-        <div class="chat-page__header">
-            <div class="chat-page__header-content">
-                <div class="chat-page__header-title-section">
-                    <h2 class="chat-page__title">Trò chuyện nội bộ</h2>
-                    <p class="chat-page__subtitle">Giao tiếp và cộng tác với đồng nghiệp trong thời gian thực.</p>
-                </div>
-                <div class="chat-page__header-actions">
-                    <button class="btn btn-outline-secondary" @click="refreshConversations" :disabled="loading">
-                        <i class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="chat-page"
+    data-aos="fade-up"
+  >
+    <div class="chat-page__header">
+      <div class="chat-page__header-content">
+        <div class="chat-page__header-title-section">
+          <h2 class="chat-page__title">
+            Trò chuyện nội bộ
+          </h2>
+          <p class="chat-page__subtitle">
+            Giao tiếp và cộng tác với đồng nghiệp trong thời gian thực.
+          </p>
         </div>
-
-        <div class="chat-container">
-            <ChatSidebar
-                :conversations="conversations"
-                :selected-conversation-id="selectedConversation?.id"
-                :loading="loading"
-                :loading-more="loadingMore"
-                :has-more="hasMoreConversations"
-                @select="handleSelectConversation"
-                @create-conversation="showCreateModal"
-                @load-more="loadMoreConversations"
-                @toggle-pin="handleTogglePin"
-            />
-
-            <div class="chat-main">
-                <div v-if="!selectedConversation" class="chat-empty">
-                    <i class="bi bi-chat-dots fs-1 text-muted mb-3"></i>
-                    <h5 class="text-muted">Chọn một hội thoại để bắt đầu</h5>
-                </div>
-
-                <div v-else class="chat-window">
-                    <div class="chat-window__header">
-                        <div class="chat-window__header-info">
-                            <div class="chat-window__avatar">
-                                <img
-                                    v-if="getConversationAvatar(selectedConversation)"
-                                    :src="getConversationAvatar(selectedConversation)"
-                                    :alt="getConversationName(selectedConversation)"
-                                />
-                                <div v-else class="chat-window__avatar-placeholder">
-                                    {{ getConversationInitials(selectedConversation) }}
-                                </div>
-                            </div>
-                            <div>
-                                <h6 class="chat-window__name mb-0">
-                                    {{ getConversationName(selectedConversation) }}
-                                </h6>
-                                <small class="text-muted" v-if="selectedConversation.type === 'GROUP'">
-                                    {{ selectedConversation.memberCount || 0 }} thành viên
-                                </small>
-                            </div>
-                        </div>
-                        <div class="chat-window__header-actions">
-                            <button
-                                class="btn btn-sm btn-link text-muted p-0"
-                                @click="showDetails = !showDetails"
-                                :title="'Chi tiết hội thoại'"
-                            >
-                                <i class="bi bi-info-circle"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="chat-window__messages" ref="messagesContainerRef" @scroll="handleMessagesScroll">
-                        <div v-if="loadingMessages && messages.length === 0" class="chat-window__loading">
-                            <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
-                        </div>
-                        <div v-else-if="messages.length === 0" class="chat-window__empty">
-                            <p class="text-muted">Chưa có tin nhắn nào</p>
-                        </div>
-                        <div v-else>
-                            <div v-if="loadingMoreMessages" class="chat-window__loading-more">
-                                <div class="spinner-border spinner-border-sm text-muted"></div>
-                            </div>
-                            <div
-                                v-for="(message, index) in messages"
-                                :key="message.id"
-                            >
-                                <ChatMessageBubble
-                                    :message="message"
-                                    :is-own="message.senderId === currentUserId"
-                                    :show-avatar="shouldShowAvatar(message, index)"
-                                    :sender-name="getSenderName(message)"
-                                    :sender-avatar="getSenderAvatar(message)"
-                                    @recall="handleRecallMessage(message.id)"
-                                    @delete="handleDeleteMessage(message.id)"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <ChatInput
-                        :sending="sendingMessage"
-                        @send-text="handleSendText"
-                        @send-attachment="handleSendAttachment"
-                    />
-                </div>
-            </div>
-
-            <div v-if="showDetails && selectedConversation" class="chat-details">
-                <div class="chat-details__header">
-                    <h6 class="mb-0">Chi tiết hội thoại</h6>
-                    <button class="btn btn-sm btn-link p-0" @click="showDetails = false">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-                <div class="chat-details__content">
-                    <div class="chat-details__section">
-                        <div class="chat-details__section-header">
-                            <h6 class="chat-details__section-title mb-0">Thành viên</h6>
-                            <button
-                                v-if="selectedConversation?.type === 'GROUP'"
-                                class="btn btn-sm btn-primary"
-                                @click="showAddMemberModal = true"
-                            >
-                                <i class="bi bi-plus-lg me-1"></i>
-                                Thêm
-                            </button>
-                        </div>
-                        <div class="chat-details__members">
-                            <div
-                                v-for="member in conversationMembers"
-                                :key="member.userId"
-                                class="chat-details__member"
-                            >
-                                <div class="chat-details__member-avatar">
-                                    <img v-if="member.avatarUrl" :src="member.avatarUrl" :alt="member.fullName" />
-                                    <div v-else class="chat-details__member-placeholder">
-                                        {{ getMemberInitials(member) }}
-                                    </div>
-                                </div>
-                                <div class="chat-details__member-info">
-                                    <div class="chat-details__member-name">{{ member.fullName || member.username }}</div>
-                                    <div class="chat-details__member-role">
-                                        <select
-                                            v-if="selectedConversation?.type === 'GROUP' && member.userId !== currentUserId && canManageMembers"
-                                            class="form-select form-select-sm"
-                                            :value="member.role"
-                                            @change="handleUpdateRole(member.userId, $event.target.value)"
-                                        >
-                                            <option value="MEMBER">Thành viên</option>
-                                            <option value="ADMIN">Quản trị viên</option>
-                                        </select>
-                                        <span v-else>{{ member.role === 'ADMIN' ? 'Quản trị viên' : 'Thành viên' }}</span>
-                                    </div>
-                                </div>
-                                <div class="chat-details__member-actions" v-if="selectedConversation?.type === 'GROUP' && member.userId !== currentUserId && canManageMembers">
-                                    <button
-                                        class="btn btn-sm btn-link text-danger p-0"
-                                        @click="handleRemoveMember(member.userId)"
-                                        :title="'Xóa thành viên'"
-                                    >
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Add Member Modal -->
-                <Teleport to="body">
-                    <div v-if="showAddMemberModal" class="modal fade show" style="display: block;" @click.self="showAddMemberModal = false">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content" @click.stop>
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Thêm thành viên</h5>
-                                    <button type="button" class="btn-close" @click="showAddMemberModal = false"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">Chọn thành viên</label>
-                                        <div class="member-selection" style="max-height: 300px; overflow-y: auto;">
-                                            <div
-                                                v-for="user in availableUsers"
-                                                :key="user.id"
-                                                class="form-check"
-                                            >
-                                                <input
-                                                    class="form-check-input"
-                                                    type="checkbox"
-                                                    :id="`add-user-${user.id}`"
-                                                    :value="user.id"
-                                                    v-model="selectedMemberIdsToAdd"
-                                                    :disabled="conversationMembers.some(m => m.userId === user.id)"
-                                                />
-                                                <label class="form-check-label" :for="`add-user-${user.id}`">
-                                                    {{ user.fullName || user.username }}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-outline-secondary" @click="showAddMemberModal = false">
-                                        Hủy
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn btn-primary"
-                                        @click="handleAddMembers"
-                                        :disabled="selectedMemberIdsToAdd.length === 0 || addingMembers"
-                                    >
-                                        <span v-if="addingMembers" class="spinner-border spinner-border-sm me-2"></span>
-                                        Thêm
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="showAddMemberModal" class="modal-backdrop fade show"></div>
-                </Teleport>
-            </div>
+        <div class="chat-page__header-actions">
+          <button
+            class="btn btn-outline-secondary"
+            :disabled="loading"
+            @click="refreshConversations"
+          >
+            <i class="bi bi-arrow-clockwise me-2" />
+            Làm mới
+          </button>
         </div>
-
-        <CreateConversationModal ref="createModalRef" @created="handleConversationCreated" />
+      </div>
     </div>
+
+    <div class="chat-container">
+      <ChatSidebar
+        :conversations="conversations"
+        :selected-conversation-id="selectedConversation?.id"
+        :loading="loading"
+        :loading-more="loadingMore"
+        :has-more="hasMoreConversations"
+        @select="handleSelectConversation"
+        @create-conversation="showCreateModal"
+        @load-more="loadMoreConversations"
+        @toggle-pin="handleTogglePin"
+      />
+
+      <div class="chat-main">
+        <div
+          v-if="!selectedConversation"
+          class="chat-empty"
+        >
+          <i class="bi bi-chat-dots fs-1 text-muted mb-3" />
+          <h5 class="text-muted">
+            Chọn một hội thoại để bắt đầu
+          </h5>
+        </div>
+
+        <div
+          v-else
+          class="chat-window"
+        >
+          <div class="chat-window__header">
+            <div class="chat-window__header-info">
+              <div class="chat-window__avatar">
+                <img
+                  v-if="getConversationAvatar(selectedConversation)"
+                  :src="getConversationAvatar(selectedConversation)"
+                  :alt="getConversationName(selectedConversation)"
+                >
+                <div
+                  v-else
+                  class="chat-window__avatar-placeholder"
+                >
+                  {{ getConversationInitials(selectedConversation) }}
+                </div>
+              </div>
+              <div>
+                <h6 class="chat-window__name mb-0">
+                  {{ getConversationName(selectedConversation) }}
+                </h6>
+                <small
+                  v-if="selectedConversation.type === 'GROUP'"
+                  class="text-muted"
+                >
+                  {{ selectedConversation.memberCount || 0 }} thành viên
+                </small>
+              </div>
+            </div>
+            <div class="chat-window__header-actions">
+              <button
+                class="btn btn-sm btn-link text-muted p-0"
+                :title="'Chi tiết hội thoại'"
+                @click="showDetails = !showDetails"
+              >
+                <i class="bi bi-info-circle" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            ref="messagesContainerRef"
+            class="chat-window__messages"
+            @scroll="handleMessagesScroll"
+          >
+            <div
+              v-if="loadingMessages && messages.length === 0"
+              class="chat-window__loading"
+            >
+              <div
+                class="spinner-border spinner-border-sm"
+                style="color: var(--color-primary);"
+              />
+            </div>
+            <div
+              v-else-if="messages.length === 0"
+              class="chat-window__empty"
+            >
+              <p class="text-muted">
+                Chưa có tin nhắn nào
+              </p>
+            </div>
+            <div v-else>
+              <div
+                v-if="loadingMoreMessages"
+                class="chat-window__loading-more"
+              >
+                <div class="spinner-border spinner-border-sm text-muted" />
+              </div>
+              <div
+                v-for="(message, index) in messages"
+                :key="message.id"
+              >
+                <ChatMessageBubble
+                  :message="message"
+                  :is-own="message.senderId === currentUserId"
+                  :show-avatar="shouldShowAvatar(message, index)"
+                  :sender-name="getSenderName(message)"
+                  :sender-avatar="getSenderAvatar(message)"
+                  @recall="handleRecallMessage(message.id)"
+                  @delete="handleDeleteMessage(message.id)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <ChatInput
+            :sending="sendingMessage"
+            @send-text="handleSendText"
+            @send-emoji="handleSendEmoji"
+            @send-attachment="handleSendAttachment"
+          />
+        </div>
+      </div>
+
+      <div
+        v-if="showDetails && selectedConversation"
+        class="chat-details"
+      >
+        <div class="chat-details__header">
+          <h6 class="mb-0">
+            Chi tiết hội thoại
+          </h6>
+          <button
+            class="btn btn-sm btn-link p-0"
+            @click="showDetails = false"
+          >
+            <i class="bi bi-x-lg" />
+          </button>
+        </div>
+        <div class="chat-details__content">
+          <div class="chat-details__section">
+            <div class="chat-details__section-header">
+              <h6 class="chat-details__section-title mb-0">
+                Thành viên
+              </h6>
+              <button
+                v-if="selectedConversation?.type === 'GROUP'"
+                class="btn btn-sm btn-primary"
+                @click="showAddMemberModal = true"
+              >
+                <i class="bi bi-plus-lg me-1" />
+                Thêm
+              </button>
+            </div>
+            <div class="chat-details__members">
+              <div
+                v-for="member in conversationMembers"
+                :key="member.userId"
+                class="chat-details__member"
+              >
+                <div class="chat-details__member-avatar">
+                  <img
+                    v-if="member.avatarUrl"
+                    :src="member.avatarUrl"
+                    :alt="member.fullName"
+                  >
+                  <div
+                    v-else
+                    class="chat-details__member-placeholder"
+                  >
+                    {{ getMemberInitials(member) }}
+                  </div>
+                </div>
+                <div class="chat-details__member-info">
+                  <div class="chat-details__member-name">
+                    {{ member.fullName || member.username }}
+                  </div>
+                  <div class="chat-details__member-role">
+                    <select
+                      v-if="selectedConversation?.type === 'GROUP' && member.userId !== currentUserId && canManageMembers"
+                      class="form-select form-select-sm"
+                      :value="member.role"
+                      @change="handleUpdateRole(member.userId, $event.target.value)"
+                    >
+                      <option value="MEMBER">
+                        Thành viên
+                      </option>
+                      <option value="ADMIN">
+                        Quản trị viên
+                      </option>
+                    </select>
+                    <span v-else>{{ member.role === 'ADMIN' ? 'Quản trị viên' : 'Thành viên' }}</span>
+                  </div>
+                </div>
+                <div
+                  v-if="selectedConversation?.type === 'GROUP' && member.userId !== currentUserId && canManageMembers"
+                  class="chat-details__member-actions"
+                >
+                  <button
+                    class="btn btn-sm btn-link text-danger p-0"
+                    :title="'Xóa thành viên'"
+                    @click="handleRemoveMember(member.userId)"
+                  >
+                    <i class="bi bi-trash" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Member Modal -->
+        <Teleport to="body">
+          <div
+            v-if="showAddMemberModal"
+            class="modal fade show"
+            style="display: block;"
+            @click.self="showAddMemberModal = false"
+          >
+            <div class="modal-dialog modal-dialog-centered">
+              <div
+                class="modal-content"
+                @click.stop
+              >
+                <div class="modal-header">
+                  <h5 class="modal-title">
+                    Thêm thành viên
+                  </h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    @click="showAddMemberModal = false"
+                  />
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Chọn thành viên</label>
+                    <div
+                      class="member-selection"
+                      style="max-height: 300px; overflow-y: auto;"
+                    >
+                      <div
+                        v-for="user in availableUsers"
+                        :key="user.id"
+                        class="form-check"
+                      >
+                        <input
+                          :id="`add-user-${user.id}`"
+                          v-model="selectedMemberIdsToAdd"
+                          class="form-check-input"
+                          type="checkbox"
+                          :value="user.id"
+                          :disabled="conversationMembers.some(m => m.userId === user.id)"
+                        >
+                        <label
+                          class="form-check-label"
+                          :for="`add-user-${user.id}`"
+                        >
+                          {{ user.fullName || user.username }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    @click="showAddMemberModal = false"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    :disabled="selectedMemberIdsToAdd.length === 0 || addingMembers"
+                    @click="handleAddMembers"
+                  >
+                    <span
+                      v-if="addingMembers"
+                      class="spinner-border spinner-border-sm me-2"
+                    />
+                    Thêm
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="showAddMemberModal"
+            class="modal-backdrop fade show"
+          />
+        </Teleport>
+      </div>
+    </div>
+
+    <CreateConversationModal
+      ref="createModalRef"
+      @created="handleConversationCreated"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -313,13 +416,9 @@ const getConversationInitials = (conversation) => {
         .toUpperCase()
 }
 
-const getSenderName = (message) => {
-    return message.senderName || message.sender?.fullName || message.sender?.username || 'Người dùng'
-}
+const getSenderName = (message) => message.senderName || message.sender?.fullName || message.sender?.username || 'Người dùng'
 
-const getSenderAvatar = (message) => {
-    return message.senderAvatar || message.sender?.avatarUrl
-}
+const getSenderAvatar = (message) => message.senderAvatar || message.sender?.avatarUrl
 
 const getMemberInitials = (member) => {
     const name = member.fullName || member.username || 'U'
@@ -345,16 +444,19 @@ const loadConversations = async () => {
         const response = await listConversations(0, size.value)
         const loadedConversations = response.content || []
         conversations.value = loadedConversations
-        // Sort: pinned first
+        // Sort: pinned first, then by updatedAt
         conversations.value.sort((a, b) => {
             if (a.pinned && !b.pinned) return -1
             if (!a.pinned && b.pinned) return 1
-            return 0
+            const timeA = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime()
+            const timeB = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime()
+            return timeB - timeA
         })
         hasMoreConversations.value = !response.last
+        page.value = response.number || 0
     } catch (err) {
         logger.error('Failed to load conversations:', err)
-        toast.error('Không thể tải danh sách hội thoại.')
+        toast.error(err.response?.data?.message || 'Không thể tải danh sách hội thoại.')
     } finally {
         loading.value = false
     }
@@ -364,19 +466,23 @@ const loadMoreConversations = async () => {
     if (loadingMore.value || !hasMoreConversations.value) return
     loadingMore.value = true
     try {
-        const response = await listConversations(page.value + 1, size.value)
+        const nextPage = page.value + 1
+        const response = await listConversations(nextPage, size.value)
         const newConversations = response.content || []
         conversations.value.push(...newConversations)
-        // Sort: pinned first
+        // Sort: pinned first, then by updatedAt
         conversations.value.sort((a, b) => {
             if (a.pinned && !b.pinned) return -1
             if (!a.pinned && b.pinned) return 1
-            return 0
+            const timeA = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime()
+            const timeB = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime()
+            return timeB - timeA
         })
         hasMoreConversations.value = !response.last
-        page.value++
+        page.value = response.number || nextPage
     } catch (err) {
         logger.error('Failed to load more conversations:', err)
+        toast.error(err.response?.data?.message || 'Không thể tải thêm hội thoại.')
     } finally {
         loadingMore.value = false
     }
@@ -388,15 +494,25 @@ const handleSelectConversation = async (conversation) => {
     messagesPage.value = 0
     hasMoreMessages.value = true
     showDetails.value = false
-    
+
     // Subscribe to conversation WebSocket topic
-    if (wsConnection) {
+    if (wsConnection && wsConnection.isConnected && wsConnection.isConnected()) {
         wsConnection.subscribeConversation(conversation.id)
+    } else if (wsConnection) {
+        // If not connected yet, wait for connection then subscribe
+        const checkConnection = setInterval(() => {
+            if (wsConnection && wsConnection.isConnected && wsConnection.isConnected()) {
+                wsConnection.subscribeConversation(conversation.id)
+                clearInterval(checkConnection)
+            }
+        }, 100)
+        // Clear interval after 5 seconds to avoid infinite loop
+        setTimeout(() => clearInterval(checkConnection), 5000)
     }
-    
+
     await loadMessages()
     await loadMembers()
-    
+
     // Mark all messages as seen
     if (messages.value.length > 0) {
         const lastMessage = messages.value[messages.value.length - 1]
@@ -408,7 +524,7 @@ const handleSelectConversation = async (conversation) => {
             }
         }
     }
-    
+
     // Scroll to bottom after messages are loaded
     await nextTick()
     scrollToBottom()
@@ -420,6 +536,7 @@ const loadMessages = async (beforeMessageId = null) => {
         loadingMoreMessages.value = true
     } else {
         loadingMessages.value = true
+        messagesPage.value = 0 // Reset page when loading initial messages
     }
     try {
         const response = await listMessages(
@@ -435,13 +552,14 @@ const loadMessages = async (beforeMessageId = null) => {
         } else {
             // Initial load - replace all
             messages.value = newMessages.reverse()
+            messagesPage.value = response.number || 0
         }
         hasMoreMessages.value = !response.last
-        
+
         // Mark all messages as seen after initial load
         if (newMessages.length > 0 && currentUserId.value && !beforeMessageId) {
-            const unreadMessages = newMessages.filter(m => 
-                m.senderId !== currentUserId.value && 
+            const unreadMessages = newMessages.filter(m =>
+                m.senderId !== currentUserId.value &&
                 (!m.seenByUserIds || !m.seenByUserIds.includes(currentUserId.value))
             )
             if (unreadMessages.length > 0) {
@@ -455,7 +573,7 @@ const loadMessages = async (beforeMessageId = null) => {
         }
     } catch (err) {
         logger.error('Failed to load messages:', err)
-        toast.error('Không thể tải tin nhắn.')
+        toast.error(err.response?.data?.message || 'Không thể tải tin nhắn.')
     } finally {
         loadingMessages.value = false
         loadingMoreMessages.value = false
@@ -465,7 +583,7 @@ const loadMessages = async (beforeMessageId = null) => {
 const handleMessagesScroll = async (event) => {
     const container = event.target
     if (!container || !hasMoreMessages.value || loadingMoreMessages.value) return
-    
+
     // Load more when scrolled to top (within 100px)
     if (container.scrollTop < 100 && messages.value.length > 0) {
         const firstMessage = messages.value[0]
@@ -473,15 +591,17 @@ const handleMessagesScroll = async (event) => {
             // Save current scroll position
             const previousScrollHeight = container.scrollHeight
             const previousScrollTop = container.scrollTop
-            
+
             // Load older messages
             await loadMessages(firstMessage.id)
-            
+
             // Restore scroll position after new messages are added
             await nextTick()
-            const newScrollHeight = container.scrollHeight
-            const heightDifference = newScrollHeight - previousScrollHeight
-            container.scrollTop = previousScrollTop + heightDifference
+            if (messagesContainerRef.value) {
+                const newScrollHeight = messagesContainerRef.value.scrollHeight
+                const heightDifference = newScrollHeight - previousScrollHeight
+                messagesContainerRef.value.scrollTop = previousScrollTop + heightDifference
+            }
         }
     }
 }
@@ -507,8 +627,20 @@ const handleSendText = async (content) => {
     if (!selectedConversation.value || !content.trim()) return
     sendingMessage.value = true
     try {
-        await sendTextMessage(selectedConversation.value.id, content.trim())
-        // Message will be received via WebSocket
+        const message = await sendTextMessage(selectedConversation.value.id, content.trim())
+        // Message will be received via WebSocket, but add optimistically if not received quickly
+        setTimeout(() => {
+            const exists = messages.value.find(m => m.id === message.id)
+            if (!exists && message) {
+                messages.value.push(message)
+                messages.value.sort((a, b) => {
+                    const timeA = new Date(a.createdAt || 0).getTime()
+                    const timeB = new Date(b.createdAt || 0).getTime()
+                    return timeA - timeB
+                })
+                nextTick(() => scrollToBottom())
+            }
+        }, 500)
     } catch (err) {
         logger.error('Failed to send message:', err)
         toast.error(err.response?.data?.message || 'Không thể gửi tin nhắn.')
@@ -518,13 +650,26 @@ const handleSendText = async (content) => {
 }
 
 const handleSendEmoji = async (code) => {
-    if (!selectedConversation.value) return
+    if (!selectedConversation.value || !code) return
     sendingMessage.value = true
     try {
-        await sendEmojiMessage(selectedConversation.value.id, code)
+        const message = await sendEmojiMessage(selectedConversation.value.id, code)
+        // Message will be received via WebSocket, but add optimistically if not received quickly
+        setTimeout(() => {
+            const exists = messages.value.find(m => m.id === message.id)
+            if (!exists && message) {
+                messages.value.push(message)
+                messages.value.sort((a, b) => {
+                    const timeA = new Date(a.createdAt || 0).getTime()
+                    const timeB = new Date(b.createdAt || 0).getTime()
+                    return timeA - timeB
+                })
+                nextTick(() => scrollToBottom())
+            }
+        }, 500)
     } catch (err) {
         logger.error('Failed to send emoji:', err)
-        toast.error('Không thể gửi emoji.')
+        toast.error(err.response?.data?.message || 'Không thể gửi emoji.')
     } finally {
         sendingMessage.value = false
     }
@@ -534,16 +679,28 @@ const handleSendAttachment = async (messageText, files) => {
     if (!selectedConversation.value || !files || files.length === 0) return
     sendingMessage.value = true
     try {
-        await sendAttachmentMessage(selectedConversation.value.id, messageText, files)
-        // Message will be received via WebSocket
+        const message = await sendAttachmentMessage(selectedConversation.value.id, messageText, files)
+        // Message will be received via WebSocket, but add optimistically if not received quickly
+        setTimeout(() => {
+            const exists = messages.value.find(m => m.id === message.id)
+            if (!exists && message) {
+                messages.value.push(message)
+                messages.value.sort((a, b) => {
+                    const timeA = new Date(a.createdAt || 0).getTime()
+                    const timeB = new Date(b.createdAt || 0).getTime()
+                    return timeA - timeB
+                })
+                nextTick(() => scrollToBottom())
+            }
+        }, 500)
     } catch (err) {
         logger.error('Failed to send attachment:', err)
         const errorMsg = err.response?.data?.message || 'Không thể gửi file đính kèm.'
-        if (errorMsg.includes('FILE-TOO-LARGE') || errorMsg.includes('too large')) {
+        if (errorMsg.includes('FILE-TOO-LARGE') || errorMsg.includes('too large') || errorMsg.includes('size')) {
             toast.error('File quá lớn. Vui lòng chọn file nhỏ hơn.')
-        } else if (errorMsg.includes('415') || errorMsg.includes('format')) {
+        } else if (errorMsg.includes('415') || errorMsg.includes('format') || errorMsg.includes('type')) {
             toast.error('Định dạng file không được hỗ trợ.')
-    } else {
+        } else {
             toast.error(errorMsg)
         }
     } finally {
@@ -580,12 +737,19 @@ const handleDeleteMessage = async (messageId) => {
 }
 
 const handleConversationCreated = (conversation) => {
-    // Add to beginning and sort (pinned first)
-    conversations.value.unshift(conversation)
+    // Add to beginning and sort (pinned first, then by updatedAt)
+    const existingIndex = conversations.value.findIndex(c => c.id === conversation.id)
+    if (existingIndex !== -1) {
+        conversations.value[existingIndex] = conversation
+    } else {
+        conversations.value.unshift(conversation)
+    }
     conversations.value.sort((a, b) => {
         if (a.pinned && !b.pinned) return -1
         if (!a.pinned && b.pinned) return 1
-        return 0
+        const timeA = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime()
+        const timeB = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime()
+        return timeB - timeA
     })
     handleSelectConversation(conversation)
 }
@@ -606,70 +770,113 @@ const handleTogglePin = async (conversation) => {
         const index = conversations.value.findIndex(c => c.id === conversation.id)
         if (index !== -1) {
             conversations.value[index].pinned = !conversation.pinned
-            // Sort: pinned first
+            // Sort: pinned first, then by updatedAt
             conversations.value.sort((a, b) => {
                 if (a.pinned && !b.pinned) return -1
                 if (!a.pinned && b.pinned) return 1
-                return 0
+                const timeA = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime()
+                const timeB = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime()
+                return timeB - timeA
             })
         }
         toast.success(conversation.pinned ? 'Đã bỏ ghim hội thoại.' : 'Đã ghim hội thoại.')
     } catch (err) {
         logger.error('Failed to toggle pin:', err)
-        toast.error('Không thể thay đổi trạng thái ghim.')
+        toast.error(err.response?.data?.message || 'Không thể thay đổi trạng thái ghim.')
     }
 }
 
 // WebSocket handlers
 const handleNewMessage = (message) => {
+    if (!message || !message.id || !message.conversationId) {
+        logger.warn('Invalid message received:', message)
+        return
+    }
+
     if (selectedConversation.value && message.conversationId === selectedConversation.value.id) {
         // Check if message already exists (avoid duplicates)
         const existingIndex = messages.value.findIndex(m => m.id === message.id)
         if (existingIndex === -1) {
             messages.value.push(message)
+            // Sort messages by createdAt to maintain order
+            messages.value.sort((a, b) => {
+                const timeA = new Date(a.createdAt || 0).getTime()
+                const timeB = new Date(b.createdAt || 0).getTime()
+                return timeA - timeB
+            })
             nextTick(() => {
                 scrollToBottom()
             })
             // Mark as seen
             if (message.senderId !== currentUserId.value) {
-                markMessageSeen(selectedConversation.value.id, message.id).catch(() => {})
+                markMessageSeen(selectedConversation.value.id, message.id).catch((err) => {
+                    logger.warn('Failed to mark message as seen:', err)
+                })
             }
         } else {
             // Update existing message (e.g., status change, recall)
-            messages.value[existingIndex] = message
+            messages.value[existingIndex] = { ...messages.value[existingIndex], ...message }
         }
     }
     // Update conversation in list
     const index = conversations.value.findIndex(c => c.id === message.conversationId)
     if (index !== -1) {
         conversations.value[index].lastMessage = message
-        conversations.value[index].updatedAt = message.createdAt
+        conversations.value[index].updatedAt = message.createdAt || message.updatedAt
         // Only increment unread if not current conversation and not own message
         if (selectedConversation.value?.id !== message.conversationId && message.senderId !== currentUserId.value) {
             conversations.value[index].unreadCount = (conversations.value[index].unreadCount || 0) + 1
         }
+        // Sort conversations after update
+        conversations.value.sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1
+            if (!a.pinned && b.pinned) return 1
+            const timeA = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime()
+            const timeB = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime()
+            return timeB - timeA
+        })
+    } else {
+        // If conversation not in list, reload conversations
+        loadConversations()
     }
 }
 
 const handleConversationUpdate = (conversation) => {
+    if (!conversation || !conversation.id) {
+        logger.warn('Invalid conversation update received:', conversation)
+        return
+    }
     const index = conversations.value.findIndex(c => c.id === conversation.id)
     if (index !== -1) {
-        conversations.value[index] = conversation
-        // Sort: pinned first
+        conversations.value[index] = { ...conversations.value[index], ...conversation }
+        // Sort: pinned first, then by updatedAt
         conversations.value.sort((a, b) => {
             if (a.pinned && !b.pinned) return -1
             if (!a.pinned && b.pinned) return 1
-            return 0
+            const timeA = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime()
+            const timeB = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime()
+            return timeB - timeA
         })
     } else {
         conversations.value.unshift(conversation)
+        conversations.value.sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1
+            if (!a.pinned && b.pinned) return 1
+            const timeA = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime()
+            const timeB = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime()
+            return timeB - timeA
+        })
     }
     if (selectedConversation.value?.id === conversation.id) {
-        selectedConversation.value = conversation
+        selectedConversation.value = { ...selectedConversation.value, ...conversation }
     }
 }
 
 const handleMessageSeen = (data) => {
+    if (!data || !data.messageId || !data.userId) {
+        logger.warn('Invalid message seen event received:', data)
+        return
+    }
     // Update seen status in messages
     const message = messages.value.find(m => m.id === data.messageId)
     if (message) {
@@ -680,11 +887,21 @@ const handleMessageSeen = (data) => {
             message.seenByUserIds.push(data.userId)
         }
     }
+    // Also update in conversation's last message if applicable
+    const conversation = conversations.value.find(c => c.id === selectedConversation.value?.id)
+    if (conversation && conversation.lastMessage && conversation.lastMessage.id === data.messageId) {
+        if (!conversation.lastMessage.seenByUserIds) {
+            conversation.lastMessage.seenByUserIds = []
+        }
+        if (!conversation.lastMessage.seenByUserIds.includes(data.userId)) {
+            conversation.lastMessage.seenByUserIds.push(data.userId)
+        }
+    }
 }
 
 onMounted(async () => {
     await loadConversations()
-    
+
     // Initialize WebSocket - delay một chút để đảm bảo auth store đã sẵn sàng
     await nextTick()
     wsConnection = initChatWebSocket(

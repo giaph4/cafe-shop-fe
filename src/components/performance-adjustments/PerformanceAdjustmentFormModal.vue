@@ -1,91 +1,125 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade performance-adjustment-form-modal" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Tạo điều chỉnh hiệu suất mới</h5>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade performance-adjustment-form-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Tạo điều chỉnh hiệu suất mới
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
 
-                    <form @submit.prevent="handleSubmit">
-                        <div class="modal-body">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Phân công <span class="text-danger">*</span></label>
-                                    <select
-                                        class="form-select"
-                                        v-model.number="form.assignmentId"
-                                        required
-                                    >
-                                        <option :value="null">Chọn phân công</option>
-                                        <option v-for="opt in assignmentOptions" :key="opt.value" :value="opt.value">
-                                            {{ opt.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Loại <span class="text-danger">*</span></label>
-                                    <select
-                                        class="form-select"
-                                        v-model="form.type"
-                                        required
-                                    >
-                                        <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">
-                                            {{ opt.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Số tiền <span class="text-danger">*</span></label>
-                                    <input
-                                        type="number"
-                                        class="form-control"
-                                        min="0"
-                                        step="1000"
-                                        v-model.number="form.amount"
-                                        placeholder="VD: 50000"
-                                        required
-                                    />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Ngày hiệu lực</label>
-                                    <input
-                                        type="datetime-local"
-                                        class="form-control"
-                                        v-model="form.effectiveAt"
-                                    />
-                                    <small class="text-muted">Để trống sẽ dùng thời gian hiện tại</small>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Lý do</label>
-                                <textarea
-                                    class="form-control"
-                                    rows="3"
-                                    v-model.trim="form.reason"
-                                    maxlength="500"
-                                    placeholder="Nhập lý do điều chỉnh (tùy chọn)"
-                                ></textarea>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="hide">Hủy</button>
-                            <button type="submit" class="btn btn-primary" :disabled="submitting">
-                                <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                                {{ submitting ? 'Đang lưu...' : 'Tạo mới' }}
-                            </button>
-                        </div>
-                    </form>
+          <form @submit.prevent="handleSubmit">
+            <div class="modal-body">
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Phân công <span class="text-danger">*</span></label>
+                  <select
+                    v-model.number="form.assignmentId"
+                    class="form-select"
+                    required
+                  >
+                    <option :value="null">
+                      Chọn phân công
+                    </option>
+                    <option
+                      v-for="opt in assignmentOptions"
+                      :key="opt.value"
+                      :value="opt.value"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </select>
                 </div>
+                <div class="col-md-6">
+                  <label class="form-label">Loại <span class="text-danger">*</span></label>
+                  <select
+                    v-model="form.type"
+                    class="form-select"
+                    required
+                  >
+                    <option
+                      v-for="opt in typeOptions"
+                      :key="opt.value"
+                      :value="opt.value"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Số tiền <span class="text-danger">*</span></label>
+                  <input
+                    v-model.number="form.amount"
+                    type="number"
+                    class="form-control"
+                    min="0"
+                    step="1000"
+                    placeholder="VD: 50000"
+                    required
+                  >
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Ngày hiệu lực</label>
+                  <input
+                    v-model="form.effectiveAt"
+                    type="datetime-local"
+                    class="form-control"
+                  >
+                  <small class="text-muted">Để trống sẽ dùng thời gian hiện tại</small>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Lý do</label>
+                <textarea
+                  v-model.trim="form.reason"
+                  class="form-control"
+                  rows="3"
+                  maxlength="500"
+                  placeholder="Nhập lý do điều chỉnh (tùy chọn)"
+                />
+              </div>
             </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="hide"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="submitting"
+              >
+                <span
+                  v-if="submitting"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                {{ submitting ? 'Đang lưu...' : 'Tạo mới' }}
+              </button>
+            </div>
+          </form>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>

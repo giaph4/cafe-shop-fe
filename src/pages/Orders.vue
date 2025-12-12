@@ -1,269 +1,376 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="orders-header">
-            <div class="orders-header__content">
-                <div class="orders-header__title-section">
-                    <h2 class="orders-header__title">Quản lý Đơn hàng</h2>
-                    <p class="orders-header__subtitle">Xem và quản lý tất cả đơn hàng, thanh toán và trạng thái của quán.</p>
-                </div>
-                <div class="orders-header__actions">
-                    <div class="form-check form-switch">
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            role="switch"
-                            id="autoRefreshSwitch"
-                            v-model="autoRefresh"
-                        >
-                        <label class="form-check-label" for="autoRefreshSwitch">Tự động làm mới</label>
-                    </div>
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchData" :disabled="loading">
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        Làm mới
-                    </button>
-                    <button 
-                        v-if="canExport"
-                        class="btn btn-primary" 
-                        type="button" 
-                        @click="handleExport" 
-                        :disabled="loading || exporting"
-                    >
-                        <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-download me-2"></i>
-                        Xuất Excel
-                    </button>
-                </div>
-            </div>
+  <div
+    class="page-container container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="orders-header">
+      <div class="orders-header__content">
+        <div class="orders-header__title-section">
+          <h2 class="orders-header__title">
+            Quản lý Đơn hàng
+          </h2>
+          <p class="orders-header__subtitle">
+            Xem và quản lý tất cả đơn hàng, thanh toán và trạng thái của quán.
+          </p>
         </div>
-
-        <div class="card filter-card mb-4" v-if="activeTab === 'list' || activeTab === 'statistics'">
-            <div class="card-body">
-                <!-- Basic Filters -->
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-2 col-md-4 col-sm-6">
-                        <label class="form-label">Tìm kiếm ID</label>
-                        <input 
-                            type="text" 
-                            class="form-control" 
-                            v-model="filters.orderId" 
-                            placeholder="Nhập ID đơn hàng"
-                            @input="handleFilterChange"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" v-model="filters.status" @change="handleStatusChange">
-                            <option value="">Tất cả trạng thái</option>
-                            <option v-for="option in STATUS_FILTER_OPTIONS" :key="option.value" :value="option.value">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6">
-                        <label class="form-label">Loại đơn</label>
-                        <select class="form-select" v-model="filters.orderType" @change="handleFilterChange">
-                            <option value="">Tất cả</option>
-                            <option value="DINE_IN">Tại bàn</option>
-                            <option value="TAKEAWAY">Mang về</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6">
-                        <label class="form-label">Nhân viên</label>
-                        <select class="form-select" v-model="filters.staffId" @change="handleFilterChange">
-                            <option value="">Tất cả nhân viên</option>
-                            <option v-for="staff in staffList" :key="staff.id" :value="staff.id">
-                                {{ staff.fullName || staff.username }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="filters.startDate" @change="handleDateChange('startDate')" />
-                    </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="filters.endDate" @change="handleDateChange('endDate')" />
-                    </div>
-                </div>
-
-                <!-- Advanced Filters (Collapsible) -->
-                <div class="mt-3">
-                    <button 
-                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2" 
-                        type="button"
-                        @click="showAdvancedFilters = !showAdvancedFilters"
-                    >
-                        <i :class="showAdvancedFilters ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"></i>
-                        <span class="fw-medium">Bộ lọc nâng cao</span>
-                    </button>
-                    
-                    <div v-show="showAdvancedFilters" class="mt-3 pt-3 border-top">
-                        <div class="row g-3 align-items-end">
-                            <div class="col-lg-3 col-md-6">
-                                <label class="form-label">Giá từ (₫)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-control" 
-                                    v-model.number="filters.minAmount" 
-                                    placeholder="0"
-                                    min="0"
-                                    @input="handleFilterChange"
-                                />
-                            </div>
-                            <div class="col-lg-3 col-md-6">
-                                <label class="form-label">Giá đến (₫)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-control" 
-                                    v-model.number="filters.maxAmount" 
-                                    placeholder="Không giới hạn"
-                                    min="0"
-                                    @input="handleFilterChange"
-                                />
-                            </div>
-                            <div class="col-lg-3 col-md-6">
-                                <label class="form-label">Khách hàng</label>
-                                <select class="form-select" v-model="filters.customerId" @change="handleFilterChange">
-                                    <option value="">Tất cả khách hàng</option>
-                                    <option v-for="customer in customerList" :key="customer.id" :value="customer.id">
-                                        {{ customer.name || customer.phone || `Khách hàng #${customer.id}` }}
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-lg-3 col-md-6">
-                                <button class="btn btn-outline-secondary w-100" type="button" @click="resetFilters" :disabled="loading">
-                                    <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card tabs-card mb-4">
-            <div class="card-body">
-                <div class="orders-tabs mb-3">
-                    <button
-                        v-for="tab in tabs"
-                        :key="tab.key"
-                        type="button"
-                        class="orders-tab"
-                        :class="{ active: activeTab === tab.key }"
-                        @click="activeTab = tab.key"
-                    >
-                        <i :class="tab.icon"></i>
-                        <span>{{ tab.label }}</span>
-                    </button>
-                </div>
-                <LoadingState v-if="loading && activeTab !== 'overview'" />
-                <ErrorState v-else-if="error && activeTab !== 'overview'" :message="error" @retry="fetchData" />
-                <div v-else class="tab-content">
-                    <OrderOverviewTab
-                        v-if="activeTab === 'overview'"
-                        :orders="allOrders"
-                        :loading="loading"
-                    />
-                    <OrderListTab
-                        v-else-if="activeTab === 'list'"
-                        :orders="orders"
-                        :loading="loading"
-                        :error="error"
-                        :zero-based-page="zeroBasedPage"
-                        :total-pages="totalPages"
-                        :total-elements="totalElements"
-                        :can-export="canExport"
-                        :can-cancel="canCancel"
-                        :cancelling="cancelling"
-                        @view-detail="openModal"
-                        @update="handleUpdateOrder"
-                        @cancel="confirmCancel"
-                        @page-change="handlePageChange"
-                        @export="handleExport"
-                    />
-                    <OrderStatisticsTab
-                        v-else-if="activeTab === 'statistics'"
-                        :orders="allOrders"
-                        :loading="loading"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <!-- Order Detail Modal -->
-        <OrderDetailModal ref="orderDetailModal" :orderId="selectedOrderId" />
-        
-        <!-- Order Update Modal -->
-        <OrderUpdateModal 
-            ref="orderUpdateModal" 
-            :orderId="selectedOrderId"
-            :order="selectedOrder"
-            @updated="handleOrderUpdated"
-        />
-
-        <!-- Cancel Order Modal -->
-        <Teleport to="body">
-            <div
-                class="modal fade"
-                tabindex="-1"
-                aria-labelledby="cancelOrderModalLabel"
-                aria-hidden="true"
-                ref="cancelModalRef"
+        <div class="orders-header__actions">
+          <div class="form-check form-switch">
+            <input
+              id="autoRefreshSwitch"
+              v-model="autoRefresh"
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
             >
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div class="modal-header__content">
-                                <h5 class="modal-title" id="cancelOrderModalLabel">Hủy đơn hàng</h5>
-                                <p class="modal-subtitle mb-0">Hành động này không thể hoàn tác.</p>
-                            </div>
-                            <button
-                                type="button"
-                                class="btn-close"
-                                @click="closeCancelModal"
-                                aria-label="Đóng"
-                            ></button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="mb-3">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
-                            <div class="delete-info-card">
-                                <div class="delete-info-item">
-                                    <span class="delete-info-label">Mã đơn:</span>
-                                    <span class="delete-info-value">#{{ cancelTarget?.id ?? '—' }}</span>
-                                </div>
-                                <div class="delete-info-item">
-                                    <span class="delete-info-label">Bàn:</span>
-                                    <span class="delete-info-value">{{ cancelTarget?.tableName || 'Mang về' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                @click="closeCancelModal"
-                                :disabled="cancelling"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                type="button"
-                                class="btn btn-danger"
-                                @click="confirmCancelOrder"
-                                :disabled="cancelling"
-                            >
-                                <span
-                                    v-if="cancelling"
-                                    class="spinner-border spinner-border-sm me-2"
-                                ></span>
-                                Xác nhận hủy
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+            <label
+              class="form-check-label"
+              for="autoRefreshSwitch"
+            >Tự động làm mới</label>
+          </div>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchData"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            Làm mới
+          </button>
+          <button
+            v-if="canExport"
+            class="btn btn-primary"
+            type="button"
+            :disabled="loading || exporting"
+            @click="handleExport"
+          >
+            <span
+              v-if="exporting"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-download me-2"
+            />
+            Xuất Excel
+          </button>
+        </div>
+      </div>
     </div>
+
+    <div
+      v-if="activeTab === 'list' || activeTab === 'statistics'"
+      class="card filter-card mb-4"
+    >
+      <div class="card-body">
+        <!-- Basic Filters -->
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Tìm kiếm ID</label>
+            <input
+              v-model="filters.orderId"
+              type="text"
+              class="form-control"
+              placeholder="Nhập ID đơn hàng"
+              @input="handleFilterChange"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Trạng thái</label>
+            <select
+              v-model="filters.status"
+              class="form-select"
+              @change="handleStatusChange"
+            >
+              <option value="">
+                Tất cả trạng thái
+              </option>
+              <option
+                v-for="option in STATUS_FILTER_OPTIONS"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Loại đơn</label>
+            <select
+              v-model="filters.orderType"
+              class="form-select"
+              @change="handleFilterChange"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option value="DINE_IN">
+                Tại bàn
+              </option>
+              <option value="TAKEAWAY">
+                Mang về
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Nhân viên</label>
+            <select
+              v-model="filters.staffId"
+              class="form-select"
+              @change="handleFilterChange"
+            >
+              <option value="">
+                Tất cả nhân viên
+              </option>
+              <option
+                v-for="staff in staffList"
+                :key="staff.id"
+                :value="staff.id"
+              >
+                {{ staff.fullName || staff.username }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control"
+              @change="handleDateChange('startDate')"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control"
+              @change="handleDateChange('endDate')"
+            >
+          </div>
+        </div>
+
+        <!-- Advanced Filters (Collapsible) -->
+        <div class="mt-3">
+          <button
+            class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2"
+            type="button"
+            @click="showAdvancedFilters = !showAdvancedFilters"
+          >
+            <i :class="showAdvancedFilters ? 'bi bi-chevron-down' : 'bi bi-chevron-right'" />
+            <span class="fw-medium">Bộ lọc nâng cao</span>
+          </button>
+
+          <div
+            v-show="showAdvancedFilters"
+            class="mt-3 pt-3 border-top"
+          >
+            <div class="row g-3 align-items-end">
+              <div class="col-lg-3 col-md-6">
+                <label class="form-label">Giá từ (₫)</label>
+                <input
+                  v-model.number="filters.minAmount"
+                  type="number"
+                  class="form-control"
+                  placeholder="0"
+                  min="0"
+                  @input="handleFilterChange"
+                >
+              </div>
+              <div class="col-lg-3 col-md-6">
+                <label class="form-label">Giá đến (₫)</label>
+                <input
+                  v-model.number="filters.maxAmount"
+                  type="number"
+                  class="form-control"
+                  placeholder="Không giới hạn"
+                  min="0"
+                  @input="handleFilterChange"
+                >
+              </div>
+              <div class="col-lg-3 col-md-6">
+                <label class="form-label">Khách hàng</label>
+                <select
+                  v-model="filters.customerId"
+                  class="form-select"
+                  @change="handleFilterChange"
+                >
+                  <option value="">
+                    Tất cả khách hàng
+                  </option>
+                  <option
+                    v-for="customer in customerList"
+                    :key="customer.id"
+                    :value="customer.id"
+                  >
+                    {{ customer.name || customer.phone || `Khách hàng #${customer.id}` }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-lg-3 col-md-6">
+                <button
+                  class="btn btn-outline-secondary w-100"
+                  type="button"
+                  :disabled="loading"
+                  @click="resetFilters"
+                >
+                  <i class="bi bi-arrow-counterclockwise" /> Đặt lại
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card tabs-card mb-4">
+      <div class="card-body">
+        <div class="orders-tabs mb-3">
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            type="button"
+            class="orders-tab"
+            :class="{ active: activeTab === tab.key }"
+            @click="activeTab = tab.key"
+          >
+            <i :class="tab.icon" />
+            <span>{{ tab.label }}</span>
+          </button>
+        </div>
+        <LoadingState v-if="loading && activeTab !== 'overview'" />
+        <ErrorState
+          v-else-if="error && activeTab !== 'overview'"
+          :message="error"
+          @retry="fetchData"
+        />
+        <div
+          v-else
+          class="tab-content"
+        >
+          <OrderOverviewTab
+            v-if="activeTab === 'overview'"
+            :orders="allOrders"
+            :loading="loading"
+          />
+          <OrderListTab
+            v-else-if="activeTab === 'list'"
+            :orders="orders"
+            :loading="loading"
+            :error="error"
+            :zero-based-page="zeroBasedPage"
+            :total-pages="totalPages"
+            :total-elements="totalElements"
+            :can-export="canExport"
+            :can-cancel="canCancel"
+            :cancelling="cancelling"
+            @view-detail="openModal"
+            @update="handleUpdateOrder"
+            @cancel="confirmCancel"
+            @page-change="handlePageChange"
+            @export="handleExport"
+            @refresh="fetchData"
+          />
+          <OrderStatisticsTab
+            v-else-if="activeTab === 'statistics'"
+            :orders="allOrders"
+            :loading="loading"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <OrderDetailModal
+      ref="orderDetailModal"
+      :order-id="selectedOrderId"
+    />
+
+    <!-- Order Update Modal -->
+    <OrderUpdateModal
+      ref="orderUpdateModal"
+      :order-id="selectedOrderId"
+      :order="selectedOrder"
+      @updated="handleOrderUpdated"
+    />
+
+    <!-- Cancel Order Modal -->
+    <Teleport to="body">
+      <div
+        ref="cancelModalRef"
+        class="modal fade"
+        tabindex="-1"
+        aria-labelledby="cancelOrderModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div class="modal-header__content">
+                <h5
+                  id="cancelOrderModalLabel"
+                  class="modal-title"
+                >
+                  Hủy đơn hàng
+                </h5>
+                <p class="modal-subtitle mb-0">
+                  Hành động này không thể hoàn tác.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Đóng"
+                data-bs-dismiss="modal"
+                @click="closeCancelModal"
+              />
+            </div>
+            <div class="modal-body">
+              <p class="mb-3">
+                Bạn có chắc chắn muốn hủy đơn hàng này không?
+              </p>
+              <div class="delete-info-card">
+                <div class="delete-info-item">
+                  <span class="delete-info-label">Mã đơn:</span>
+                  <span class="delete-info-value">#{{ cancelTarget?.id ?? '—' }}</span>
+                </div>
+                <div class="delete-info-item">
+                  <span class="delete-info-label">Bàn:</span>
+                  <span class="delete-info-value">{{ cancelTarget?.tableName || 'Mang về' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="cancelling"
+                @click="closeCancelModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                :disabled="cancelling"
+                @click="confirmCancelOrder"
+              >
+                <span
+                  v-if="cancelling"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                Xác nhận hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -271,6 +378,7 @@ import { reactive, ref, watch, computed, onBeforeUnmount, onMounted } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
+import { Modal } from 'bootstrap'
 import * as orderService from '@/api/orderService'
 import { exportOrdersToExcel } from '@/api/reportService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
@@ -287,6 +395,7 @@ import { PaginationMode, usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/store/auth'
 import { useAsyncOperation } from '@/composables/useAsyncOperation'
 import { handleApiError } from '@/composables/useErrorHandler'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import logger from '@/utils/logger'
 
 const STATUS_METADATA = Object.freeze({
@@ -406,7 +515,7 @@ const fetchAllOrders = async () => {
                     size,
                     { useFallback: true } // Cho phép fallback
                 )
-                
+
                 // Track nếu đã dùng fallback
                 if (response?._fallback) {
                     usedFallback = true
@@ -422,14 +531,14 @@ const fetchAllOrders = async () => {
         }
 
         // Apply client-side filters
-        let filteredData = applyClientSideFilters(allData)
-        
+        const filteredData = applyClientSideFilters(allData)
+
         allOrders.value = filteredData
-        
+
         // Hiển thị warning nếu đã dùng fallback
         if (usedFallback) {
-            toast.warn('Không thể lọc theo khoảng ngày từ server, đã sử dụng bộ lọc phía client.', { 
-                autoClose: 4000 
+            toast.warn('Không thể lọc theo khoảng ngày từ server, đã sử dụng bộ lọc phía client.', {
+                autoClose: 4000
             })
         }
     }, 'Không thể tải dữ liệu đơn hàng.', {
@@ -446,7 +555,7 @@ const fetchOrders = async () => {
     const size = pageSize.value
     const hasStatus = Boolean(filters.status)
     const hasDateRange = Boolean(filters.startDate) && Boolean(filters.endDate)
-    
+
     try {
         let response
 
@@ -461,11 +570,11 @@ const fetchOrders = async () => {
                 size,
                 { useFallback: true } // Cho phép fallback
             )
-            
+
             // Nếu response có flag _fallback, hiển thị warning
             if (response?._fallback) {
-                toast.warn('Không thể lọc theo khoảng ngày từ server, đã sử dụng bộ lọc phía client.', { 
-                    autoClose: 4000 
+                toast.warn('Không thể lọc theo khoảng ngày từ server, đã sử dụng bộ lọc phía client.', {
+                    autoClose: 4000
                 })
             }
         } else {
@@ -489,12 +598,12 @@ const fetchOrders = async () => {
     } catch (err) {
         // Error handling đã được xử lý trong service layer
         // Chỉ cần hiển thị error message cho user
-        error.value = handleApiError(err, { 
+        error.value = handleApiError(err, {
             context: 'Orders',
             fallbackMessage: 'Không thể tải danh sách đơn hàng.'
         })
         orders.value = []
-        
+
         // Reset pagination về trang đầu nếu có lỗi
         updateFromResponse({
             page: 0,
@@ -513,7 +622,7 @@ const applyClientSideFilters = (orderList) => {
     // Filter by order ID
     if (filters.orderId && filters.orderId.trim()) {
         const orderIdStr = String(filters.orderId).trim()
-        result = result.filter(order => 
+        result = result.filter(order =>
             String(order.id).includes(orderIdStr)
         )
     }
@@ -523,9 +632,9 @@ const applyClientSideFilters = (orderList) => {
         result = result.filter(order => {
             // Check if order has tableId (DINE_IN) or not (TAKEAWAY)
             if (filters.orderType === 'DINE_IN') {
-                return order.tableId != null && order.tableId !== undefined
+                return order.tableId !== null && order.tableId !== undefined
             } else if (filters.orderType === 'TAKEAWAY') {
-                return order.tableId == null || order.tableId === undefined
+                return order.tableId === null || order.tableId === undefined
             }
             return true
         })
@@ -533,27 +642,27 @@ const applyClientSideFilters = (orderList) => {
 
     // Filter by staff
     if (filters.staffId) {
-        result = result.filter(order => 
-            order.staffId == filters.staffId || order.staff?.id == filters.staffId
+        result = result.filter(order =>
+            order.staffId === filters.staffId || order.staff?.id === filters.staffId
         )
     }
 
     // Filter by customer
     if (filters.customerId) {
-        result = result.filter(order => 
-            order.customerId == filters.customerId || order.customer?.id == filters.customerId
+        result = result.filter(order =>
+            order.customerId === filters.customerId || order.customer?.id === filters.customerId
         )
     }
 
     // Filter by amount range
-    if (filters.minAmount != null && filters.minAmount > 0) {
+    if (filters.minAmount !== null && filters.minAmount > 0) {
         result = result.filter(order => {
             const total = order.totalAmount || order.total || 0
             return total >= filters.minAmount
         })
     }
 
-    if (filters.maxAmount != null && filters.maxAmount > 0) {
+    if (filters.maxAmount !== null && filters.maxAmount > 0) {
         result = result.filter(order => {
             const total = order.totalAmount || order.total || 0
             return total <= filters.maxAmount
@@ -652,7 +761,7 @@ const fetchStaffList = async () => {
     try {
         const response = await userService.getUsers({ page: 0, size: 100, sort: 'fullName,asc' })
         const users = response?.content || response?.items || []
-        staffList.value = users.filter(u => 
+        staffList.value = users.filter(u =>
             u.roles?.some(r => r.name === 'ROLE_STAFF' || r === 'ROLE_STAFF')
         )
     } catch (err) {
@@ -698,8 +807,32 @@ const handleExport = async () => {
 
 const confirmCancel = (order) => {
     if (!canCancel.value || !order) return
-    if (confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${order.id} không?`)) {
-        handleCancel(order.id)
+    cancelTarget.value = order
+    if (cancelModalInstance) {
+        cancelModalInstance.show()
+    }
+}
+
+const closeCancelModal = () => {
+    if (cancelModalInstance) {
+        cancelModalInstance.hide()
+    }
+    cancelTarget.value = null
+}
+
+const confirmCancelOrder = async () => {
+    if (!cancelTarget.value || cancelling.value) return
+    const orderId = cancelTarget.value.id
+    cancelling.value = true
+    try {
+        await execute(async () => {
+            await orderService.cancelOrder(orderId)
+            toast.success('Đã hủy đơn hàng thành công.')
+            closeCancelModal()
+            await fetchData()
+        }, 'Không thể hủy đơn hàng.')
+    } finally {
+        cancelling.value = false
     }
 }
 
@@ -764,9 +897,36 @@ watch(autoRefresh, (enabled) => {
 })
 
 // Fetch staff and customer lists on mount
+// Setup keyboard shortcuts
+const filterInputRef = ref(null)
+
+useKeyboardShortcuts({
+    page: 'orders',
+    shortcuts: {
+        'new-order': {
+            handler: () => {
+                router.push('/pos')
+            }
+        },
+        'focus-filter': {
+            handler: () => {
+                // Focus vào filter input đầu tiên
+                const filterInput = document.querySelector('.filter-card input[type="text"]')
+                if (filterInput) {
+                    filterInput.focus()
+                }
+            }
+        }
+    }
+})
+
 onMounted(() => {
     fetchStaffList()
     fetchCustomerList()
+    // Initialize cancel modal
+    if (cancelModalRef.value) {
+        cancelModalInstance = new Modal(cancelModalRef.value)
+    }
 })
 
 onBeforeUnmount(() => {
@@ -944,7 +1104,7 @@ onBeforeUnmount(() => {
 }
 
 .filter-card .btn-link {
-    color: var(--color-primary);
+    color: var(--color-text-inverse);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     font-family: var(--font-family-sans);
@@ -952,7 +1112,7 @@ onBeforeUnmount(() => {
 }
 
 .filter-card .btn-link:hover {
-    color: var(--color-primary-dark);
+    color: var(--color-text-inverse);
     text-decoration: underline;
 }
 

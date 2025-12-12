@@ -1,6 +1,5 @@
 import { buildApiError } from '@/utils/errorHandler'
-import * as productService from './productService'
-import * as reportService from './reportService'
+import api from './axios'
 
 const toNumber = (value) => {
     if (value === null || value === undefined) return 0
@@ -16,16 +15,15 @@ const calculateProfitMargin = (revenue, cost) => {
 const classifyProduct = (volume, margin) => {
     const volumeThreshold = 50
     const marginThreshold = 30
-    
+
     if (volume >= volumeThreshold && margin >= marginThreshold) {
         return 'STAR'
     } else if (volume < volumeThreshold && margin >= marginThreshold) {
         return 'CASH_COW'
     } else if (volume >= volumeThreshold && margin < marginThreshold) {
         return 'QUESTION_MARK'
-    } else {
-        return 'DOG'
     }
+    return 'DOG'
 }
 
 const getClassificationLabel = (classification) => {
@@ -50,48 +48,153 @@ const getClassificationColor = (classification) => {
 
 export const analyzeMenuOptimization = async ({ startDate, endDate } = {}) => {
     try {
-        const [products, bestSellers, categorySales, productSummary, profitReport] = await Promise.all([
+        // Call backend API instead of calculating locally
+        const { data } = await api.get('/api/v1/reports/menu-optimization', {
+            params: { startDate, endDate }
+        })
+
+        if (!data) {
+            throw new Error('Không nhận được dữ liệu từ server')
+        }
+
+        // Normalize response to match frontend expectations
+        return {
+            products: (data.products || []).map(p => ({
+                productId: p.productId,
+                productName: p.productName,
+                categoryId: p.categoryId,
+                categoryName: p.categoryName,
+                price: toNumber(p.price),
+                cost: toNumber(p.cost),
+                revenue: toNumber(p.revenue),
+                quantity: p.quantity || 0,
+                profit: toNumber(p.profit),
+                margin: toNumber(p.margin),
+                volumeScore: p.volumeScore || 0,
+                marginScore: toNumber(p.marginScore),
+                classification: p.classification,
+                classificationLabel: p.classificationLabel,
+                classificationColor: p.classificationColor,
+                isAvailable: p.isAvailable !== false,
+                imageUrl: p.imageUrl
+            })),
+            categoryPerformance: (data.categoryPerformance || []).map(cat => ({
+                categoryId: cat.categoryId,
+                categoryName: cat.categoryName,
+                products: cat.products || [],
+                totalRevenue: toNumber(cat.totalRevenue),
+                totalProfit: toNumber(cat.totalProfit),
+                totalQuantity: cat.totalQuantity || 0,
+                avgMargin: toNumber(cat.avgMargin)
+            })),
+            classifications: {
+                stars: (data.classifications?.stars || []).map(p => ({
+                    productId: p.productId,
+                    productName: p.productName,
+                    classification: p.classification,
+                    classificationLabel: p.classificationLabel,
+                    classificationColor: p.classificationColor,
+                    revenue: toNumber(p.revenue),
+                    profit: toNumber(p.profit),
+                    margin: toNumber(p.margin)
+                })),
+                cashCows: (data.classifications?.cashCows || []).map(p => ({
+                    productId: p.productId,
+                    productName: p.productName,
+                    classification: p.classification,
+                    classificationLabel: p.classificationLabel,
+                    classificationColor: p.classificationColor,
+                    revenue: toNumber(p.revenue),
+                    profit: toNumber(p.profit),
+                    margin: toNumber(p.margin)
+                })),
+                questionMarks: (data.classifications?.questionMarks || []).map(p => ({
+                    productId: p.productId,
+                    productName: p.productName,
+                    classification: p.classification,
+                    classificationLabel: p.classificationLabel,
+                    classificationColor: p.classificationColor,
+                    revenue: toNumber(p.revenue),
+                    profit: toNumber(p.profit),
+                    margin: toNumber(p.margin)
+                })),
+                dogs: (data.classifications?.dogs || []).map(p => ({
+                    productId: p.productId,
+                    productName: p.productName,
+                    classification: p.classification,
+                    classificationLabel: p.classificationLabel,
+                    classificationColor: p.classificationColor,
+                    revenue: toNumber(p.revenue),
+                    profit: toNumber(p.profit),
+                    margin: toNumber(p.margin)
+                }))
+            },
+            recommendations: (data.recommendations || []).map(r => ({
+                type: r.type,
+                priority: r.priority,
+                message: r.message,
+                products: r.products || [],
+                categories: r.categories || [],
+                impact: r.impact
+            })),
+            summary: {
+                totalProducts: data.summary?.totalProducts || 0,
+                totalRevenue: toNumber(data.summary?.totalRevenue),
+                totalProfit: toNumber(data.summary?.totalProfit),
+                avgMargin: toNumber(data.summary?.avgMargin)
+            },
+            period: {
+                startDate: data.period?.startDate || startDate,
+                endDate: data.period?.endDate || endDate
+            },
+            generatedAt: data.generatedAt || new Date().toISOString()
+        }
+    } catch (error) {
+        throw buildApiError(error)
+    }
+}
+
+// Keep the old implementation as fallback (commented out)
+/*
+export const analyzeMenuOptimization_OLD = async ({ startDate, endDate } = {}) => {
+    try {
+        const [products, bestSellers, productSummary] = await Promise.all([
             productService.getProducts({ page: 0, size: 1000 }).catch(() => ({ content: [] })),
             reportService.getBestSellers(startDate, endDate, 100).catch(() => ({ items: [] })),
-            reportService.getCategorySales(startDate, endDate).catch(() => []),
-            reportService.getProductSalesSummary(startDate, endDate).catch(() => ({ items: [] })),
-            reportService.getProfitReport(startDate, endDate).catch(() => ({ totalProfit: 0, totalRevenue: 0, totalCostOfGoodsSold: 0 }))
+            reportService.getProductSalesSummary(startDate, endDate).catch(() => ({ items: [] }))
         ])
-        
+
         const productsList = Array.isArray(products) ? products : (products?.content || [])
         const bestSellersList = Array.isArray(bestSellers) ? bestSellers : (bestSellers?.items || [])
-        const categoryList = Array.isArray(categorySales) ? categorySales : (categorySales?.items || [])
         const summaryList = Array.isArray(productSummary) ? productSummary : (productSummary?.items || [])
-        
+
         const productMetrics = await Promise.all(
             productsList.map(async (product) => {
                 const bestSeller = bestSellersList.find(bs => bs.productId === product.id || bs.id === product.id)
                 const summary = summaryList.find(s => s.productId === product.id || s.id === product.id)
-                
+
                 let cost = 0
                 try {
                     const recipe = await productService.getProductRecipe(product.id).catch(() => null)
                     if (recipe && recipe.ingredients) {
-                        cost = recipe.ingredients.reduce((sum, ing) => {
-                            return sum + (toNumber(ing.amount) * toNumber(ing.unitPrice || 0))
-                        }, 0)
+                        cost = recipe.ingredients.reduce((sum, ing) => sum + (toNumber(ing.amount) * toNumber(ing.unitPrice || 0)), 0)
                     }
                 } catch {
                     cost = toNumber(product.cost || product.unitCost || 0)
                 }
-                
+
                 const revenue = toNumber(bestSeller?.totalRevenueGenerated || summary?.totalRevenue || 0)
                 const quantity = toNumber(bestSeller?.totalQuantitySold || summary?.totalQuantity || 0)
                 const avgPrice = toNumber(product.price || product.unitPrice || 0)
                 const totalCost = cost * quantity
                 const profit = revenue - totalCost
                 const margin = calculateProfitMargin(revenue, totalCost)
-                
+
                 const volumeScore = quantity
                 const marginScore = margin
-                
+
                 const classification = classifyProduct(volumeScore, marginScore)
-                
+
                 return {
                     productId: product.id,
                     productName: product.name,
@@ -113,12 +216,12 @@ export const analyzeMenuOptimization = async ({ startDate, endDate } = {}) => {
                 }
             })
         )
-        
+
         const categoryPerformance = {}
         productMetrics.forEach(product => {
             const catId = product.categoryId || 'other'
             const catName = product.categoryName || 'Khác'
-            
+
             if (!categoryPerformance[catId]) {
                 categoryPerformance[catId] = {
                     categoryId: catId,
@@ -130,26 +233,26 @@ export const analyzeMenuOptimization = async ({ startDate, endDate } = {}) => {
                     avgMargin: 0
                 }
             }
-            
+
             categoryPerformance[catId].products.push(product)
             categoryPerformance[catId].totalRevenue += product.revenue
             categoryPerformance[catId].totalProfit += product.profit
             categoryPerformance[catId].totalQuantity += product.quantity
         })
-        
+
         Object.keys(categoryPerformance).forEach(catId => {
             const cat = categoryPerformance[catId]
             const totalCost = cat.products.reduce((sum, p) => sum + (p.cost * p.quantity), 0)
             cat.avgMargin = calculateProfitMargin(cat.totalRevenue, totalCost)
         })
-        
+
         const recommendations = generateRecommendations(productMetrics, categoryPerformance)
-        
+
         const stars = productMetrics.filter(p => p.classification === 'STAR')
         const cashCows = productMetrics.filter(p => p.classification === 'CASH_COW')
         const questionMarks = productMetrics.filter(p => p.classification === 'QUESTION_MARK')
         const dogs = productMetrics.filter(p => p.classification === 'DOG')
-        
+
         return {
             products: productMetrics.sort((a, b) => b.revenue - a.revenue),
             categoryPerformance: Object.values(categoryPerformance).sort((a, b) => b.totalRevenue - a.totalRevenue),
@@ -178,7 +281,7 @@ export const analyzeMenuOptimization = async ({ startDate, endDate } = {}) => {
 
 const generateRecommendations = (products, categoryPerformance) => {
     const recommendations = []
-    
+
     const stars = products.filter(p => p.classification === 'STAR')
     if (stars.length > 0) {
         recommendations.push({
@@ -189,7 +292,7 @@ const generateRecommendations = (products, categoryPerformance) => {
             impact: 'Tăng doanh thu và lợi nhuận'
         })
     }
-    
+
     const dogs = products.filter(p => p.classification === 'DOG')
     if (dogs.length > 0) {
         recommendations.push({
@@ -200,7 +303,7 @@ const generateRecommendations = (products, categoryPerformance) => {
             impact: 'Giảm waste và tập trung vào sản phẩm profitable'
         })
     }
-    
+
     const questionMarks = products.filter(p => p.classification === 'QUESTION_MARK')
     if (questionMarks.length > 0) {
         recommendations.push({
@@ -211,11 +314,11 @@ const generateRecommendations = (products, categoryPerformance) => {
             impact: 'Cải thiện profit margin'
         })
     }
-    
+
     const lowMarginCategories = Object.values(categoryPerformance)
         .filter(cat => cat.avgMargin < 20)
         .sort((a, b) => a.avgMargin - b.avgMargin)
-    
+
     if (lowMarginCategories.length > 0) {
         recommendations.push({
             type: 'category_review',
@@ -225,11 +328,11 @@ const generateRecommendations = (products, categoryPerformance) => {
             impact: 'Tối ưu product mix theo danh mục'
         })
     }
-    
+
     return recommendations
 }
 
-export const exportOptimizationReport = async (optimizationData) => {
+export const exportOptimizationReport = (optimizationData) => {
     const data = [
         ['BÁO CÁO TỐI ƯU MENU'],
         ['Thời gian:', `${optimizationData.period.startDate} - ${optimizationData.period.endDate}`],
@@ -244,14 +347,14 @@ export const exportOptimizationReport = async (optimizationData) => {
         ['PHÂN LOẠI SẢN PHẨM'],
         ['Loại', 'Số lượng', 'Tổng doanh thu', 'Tổng lợi nhuận']
     ]
-    
+
     const classifications = [
         { name: 'Ngôi sao', products: optimizationData.classifications.stars },
         { name: 'Bò sữa', products: optimizationData.classifications.cashCows },
         { name: 'Dấu hỏi', products: optimizationData.classifications.questionMarks },
         { name: 'Chó', products: optimizationData.classifications.dogs }
     ]
-    
+
     classifications.forEach(cls => {
         const revenue = cls.products.reduce((sum, p) => sum + p.revenue, 0)
         const profit = cls.products.reduce((sum, p) => sum + p.profit, 0)
@@ -262,11 +365,11 @@ export const exportOptimizationReport = async (optimizationData) => {
             profit.toLocaleString('vi-VN')
         ])
     })
-    
+
     data.push([])
     data.push(['CHI TIẾT SẢN PHẨM'])
     data.push(['Tên sản phẩm', 'Danh mục', 'Giá', 'Doanh thu', 'Số lượng', 'Lợi nhuận', 'Margin', 'Phân loại'])
-    
+
     optimizationData.products.slice(0, 100).forEach(product => {
         data.push([
             product.productName,
@@ -279,7 +382,7 @@ export const exportOptimizationReport = async (optimizationData) => {
             product.classificationLabel
         ])
     })
-    
+
     return {
         data,
         sheetName: 'Tối ưu Menu',

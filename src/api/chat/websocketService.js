@@ -22,8 +22,6 @@ const normalizeUrl = (value) => (value ? value.replace(/\/?$/, '') : '')
  * @returns {Object} { connect, disconnect, subscribeConversation }
  */
 export const initChatWebSocket = (onMessage, onConversationUpdate, onMessageSeen) => {
-    const authStore = useAuthStore()
-
     const buildClient = () => {
         const token = getAccessToken()
 
@@ -64,6 +62,7 @@ export const initChatWebSocket = (onMessage, onConversationUpdate, onMessageSeen
                 Authorization: `Bearer ${token}`
             },
             debug: import.meta.env.DEV ? (str) => logger.debug(str) : undefined,
+            brokerURL: undefined,
             onConnect: () => {
                 logger.info('Chat WebSocket connected')
                 reconnectAttempts = 0
@@ -86,11 +85,11 @@ export const initChatWebSocket = (onMessage, onConversationUpdate, onMessageSeen
                 }
             },
             onStompError: (frame) => {
-                const errorMsg = frame.headers?.['message'] || 'Unknown STOMP error'
+                const errorMsg = frame.headers?.message || 'Unknown STOMP error'
                 logger.error('STOMP error:', errorMsg)
-                
+
                 // Nếu lỗi 401 hoặc 403, thử refresh token
-                if (frame.headers?.['status'] === '401' || frame.headers?.['status'] === '403') {
+                if (frame.headers?.status === '401' || frame.headers?.status === '403') {
                     handleTokenExpired()
                 }
             },
@@ -99,7 +98,7 @@ export const initChatWebSocket = (onMessage, onConversationUpdate, onMessageSeen
             },
             onWebSocketClose: (event) => {
                 logger.warn('Chat WebSocket closed', event.code)
-                
+
                 // Nếu close code là 1006 (abnormal closure) hoặc 1008 (policy violation)
                 // có thể do token hết hạn
                 if (event.code === 1006 || event.code === 1008) {

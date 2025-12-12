@@ -8,64 +8,64 @@ export const useTrendAnalysisStore = defineStore('trendAnalysis', () => {
     const error = ref(null)
     const trendData = ref(null)
     const hourlyTrendData = ref(null)
-    
-    const hasData = computed(() => !!trendData.value)
-    
+
+    const hasData = computed(() => Boolean(trendData.value))
+
     const dailyData = computed(() => {
         if (!trendData.value) return []
         return trendData.value.dailyData || []
     })
-    
+
     const weeklyPattern = computed(() => {
         if (!trendData.value) return []
         return trendData.value.weeklyPattern || []
     })
-    
+
     const monthlyPattern = computed(() => {
         if (!trendData.value) return []
         return trendData.value.monthlyPattern || []
     })
-    
+
     const categoryTrends = computed(() => {
         if (!trendData.value) return []
         return trendData.value.categoryTrends || []
     })
-    
+
     const anomalies = computed(() => {
         if (!trendData.value) return []
         return trendData.value.anomalies || []
     })
-    
+
     const growthMetrics = computed(() => {
         if (!trendData.value) return null
         return trendData.value.growthMetrics || null
     })
-    
+
     const summary = computed(() => {
         if (!trendData.value) return null
         return trendData.value.summary || null
     })
-    
+
     const hourlyPattern = computed(() => {
         if (!hourlyTrendData.value) return []
         return hourlyTrendData.value.hourlyPattern || []
     })
-    
+
     const analyzeTrends = async ({ startDate, endDate, metric = 'revenue' } = {}) => {
         loading.value = true
         error.value = null
-        
+
         try {
             const data = await trendAnalysisService.analyzeTrends({
                 startDate,
                 endDate,
                 metric
             })
-            
+
             trendData.value = data
-            logger.log('[TrendAnalysis] Analysis completed', { 
+            logger.log('[TrendAnalysis] Analysis completed', {
                 days: data.summary.totalDays,
-                period: data.period 
+                period: data.period
             })
             return data
         } catch (err) {
@@ -76,7 +76,7 @@ export const useTrendAnalysisStore = defineStore('trendAnalysis', () => {
             loading.value = false
         }
     }
-    
+
     const analyzeHourlyTrends = async (dates) => {
         try {
             const data = await trendAnalysisService.analyzeHourlyTrends(dates)
@@ -87,12 +87,12 @@ export const useTrendAnalysisStore = defineStore('trendAnalysis', () => {
             throw err
         }
     }
-    
+
     const exportReport = async () => {
         if (!trendData.value) {
             throw new Error('Chưa có dữ liệu để xuất')
         }
-        
+
         try {
             const exportData = await trendAnalysisService.exportTrendReport(trendData.value)
             return exportData
@@ -101,13 +101,13 @@ export const useTrendAnalysisStore = defineStore('trendAnalysis', () => {
             throw err
         }
     }
-    
+
     const reset = () => {
         trendData.value = null
         hourlyTrendData.value = null
         error.value = null
     }
-    
+
     return {
         loading,
         error,

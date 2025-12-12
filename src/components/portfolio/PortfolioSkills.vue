@@ -1,52 +1,65 @@
 <template>
-    <section id="skills" class="portfolio-skills">
-        <div class="portfolio-skills__container">
-            <h2 class="portfolio-skills__title">
-                <span class="portfolio-skills__number">02.</span>
-                SYSTEM MODULES
-            </h2>
+  <section
+    id="skills"
+    class="portfolio-skills"
+  >
+    <div class="portfolio-skills__container">
+      <h2 class="portfolio-skills__title">
+        <span class="portfolio-skills__number">02.</span>
+        SYSTEM MODULES
+      </h2>
 
-            <div class="portfolio-skills__orbit" ref="orbitRef">
-                <!-- Central Spring Boot Icon -->
-                <div class="portfolio-skills__center" ref="centerRef">
-                    <i class="bi bi-gear-fill"></i>
-                    <div class="portfolio-skills__center-glow"></div>
-                </div>
-
-                <!-- Orbiting Skills -->
-                <div 
-                    v-for="(skill, index) in skills" 
-                    :key="index"
-                    class="portfolio-skills__orbit-item"
-                    :style="getOrbitStyle(index)"
-                    :ref="el => skillRefs[index] = el"
-                    @mouseenter="hoveredSkill = index"
-                    @mouseleave="hoveredSkill = null"
-                >
-                    <div 
-                        class="portfolio-skills__skill-card"
-                        :class="{ 'portfolio-skills__skill-card--hovered': hoveredSkill === index }"
-                    >
-                        <div class="portfolio-skills__skill-icon">
-                            <i :class="skill.icon"></i>
-                        </div>
-                        <div class="portfolio-skills__skill-name">{{ skill.name }}</div>
-                        <div class="portfolio-skills__skill-level">{{ skill.level }}%</div>
-                        <div class="portfolio-skills__skill-bar">
-                            <div 
-                                class="portfolio-skills__skill-progress"
-                                :style="{ width: `${skill.level}%` }"
-                            ></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <div
+        ref="orbitRef"
+        class="portfolio-skills__orbit"
+      >
+        <!-- Central Spring Boot Icon -->
+        <div
+          ref="centerRef"
+          class="portfolio-skills__center"
+        >
+          <i class="bi bi-gear-fill" />
+          <div class="portfolio-skills__center-glow" />
         </div>
-    </section>
+
+        <!-- Orbiting Skills -->
+        <div
+          v-for="(skill, index) in skills"
+          :key="index"
+          :ref="el => skillRefs[index] = el"
+          class="portfolio-skills__orbit-item"
+          :style="getOrbitStyle(index)"
+          @mouseenter="hoveredSkill = index"
+          @mouseleave="hoveredSkill = null"
+        >
+          <div
+            class="portfolio-skills__skill-card"
+            :class="{ 'portfolio-skills__skill-card--hovered': hoveredSkill === index }"
+          >
+            <div class="portfolio-skills__skill-icon">
+              <i :class="skill.icon" />
+            </div>
+            <div class="portfolio-skills__skill-name">
+              {{ skill.name }}
+            </div>
+            <div class="portfolio-skills__skill-level">
+              {{ skill.level }}%
+            </div>
+            <div class="portfolio-skills__skill-bar">
+              <div
+                class="portfolio-skills__skill-progress"
+                :style="{ width: `${skill.level}%` }"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useMotion } from '@vueuse/motion'
 import { useIntersectionObserver } from '@vueuse/core'
 
@@ -68,7 +81,7 @@ const getOrbitStyle = (index) => {
     const total = skills.length
     const angle = (360 / total) * index
     const radius = 200 // Distance from center
-    
+
     return {
         '--angle': `${angle}deg`,
         '--radius': `${radius}px`
@@ -101,13 +114,13 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(skillRef, {
                         initial: { opacity: 0, scale: 0.5 },
-                        enter: { 
-                            opacity: 1, 
+                        enter: {
+                            opacity: 1,
                             scale: 1,
-                            transition: { 
+                            transition: {
                                 delay: index * 0.1,
-                                duration: 0.5 
-                            } 
+                                duration: 0.5
+                            }
                         }
                     })
                 }
@@ -189,7 +202,7 @@ onMounted(() => {
     position: absolute;
     width: 200px;
     transform-origin: center;
-    transform: 
+    transform:
         rotate(var(--angle))
         translateX(var(--radius))
         rotate(calc(-1 * var(--angle)));

@@ -1,13 +1,13 @@
 <template>
-    <div class="attendance-chart">
-        <apexchart
-            v-if="isMounted"
-            type="bar"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="attendance-chart">
+    <apexchart
+      v-if="isMounted"
+      type="bar"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -55,7 +55,7 @@ const chartOptions = computed(() => ({
     },
     dataLabels: {
         enabled: true,
-        formatter: (val) => val.toFixed(1) + '%'
+        formatter: (val) => `${val.toFixed(1)  }%`
     },
     xaxis: {
         categories: props.staffList.slice(0, 10).map(s => s.fullName),
@@ -66,7 +66,9 @@ const chartOptions = computed(() => ({
                 fontSize: '12px'
             },
             rotate: -45,
-            rotateAlways: false
+            rotateAlways: true,
+            maxHeight: 60,
+            offsetY: 5
         },
         axisBorder: {
             color: 'var(--color-border)'
@@ -91,7 +93,7 @@ const chartOptions = computed(() => ({
                 fontFamily: 'var(--font-family-sans)',
                 fontSize: '12px'
             },
-            formatter: (val) => val.toFixed(0) + '%'
+            formatter: (val) => `${val.toFixed(0)  }%`
         },
         max: 100
     },
@@ -99,7 +101,7 @@ const chartOptions = computed(() => ({
         shared: true,
         intersect: false,
         y: {
-            formatter: (val) => val.toFixed(1) + '%'
+            formatter: (val) => `${val.toFixed(1)  }%`
         }
     },
     legend: {
@@ -107,7 +109,13 @@ const chartOptions = computed(() => ({
     },
     grid: {
         borderColor: 'var(--color-border)',
-        strokeDashArray: 4
+        strokeDashArray: 4,
+        padding: {
+            top: 8,
+            bottom: 40,
+            left: 12,
+            right: 12
+        }
     },
     colors: ['var(--color-info)'],
     fill: {

@@ -1,0 +1,176 @@
+{
+  "common": {
+    "actions": {
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "delete": "Xóa",
+      "edit": "Sửa",
+      "view": "Xem",
+      "add": "Thêm",
+      "update": "Cập nhật",
+      "refresh": "Làm mới",
+      "export": "Xuất Excel",
+      "search": "Tìm kiếm",
+      "filter": "Lọc",
+      "close": "Đóng",
+      "confirm": "Xác nhận",
+      "back": "Quay lại",
+      "next": "Tiếp theo",
+      "previous": "Trước",
+      "submit": "Gửi",
+      "reset": "Đặt lại"
+    },
+    "status": {
+      "loading": "Đang tải...",
+      "error": "Đã xảy ra lỗi",
+      "success": "Thành công",
+      "noData": "Chưa có dữ liệu",
+      "empty": "Trống"
+    },
+    "validation": {
+      "required": "Trường này là bắt buộc",
+      "invalid": "Giá trị không hợp lệ",
+      "minLength": "Tối thiểu {min} ký tự",
+      "maxLength": "Tối đa {max} ký tự",
+      "email": "Email không hợp lệ",
+      "phone": "Số điện thoại không hợp lệ"
+    },
+    "date": {
+      "from": "Từ ngày",
+      "to": "Đến ngày",
+      "dateRange": "Khoảng thời gian",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "thisWeek": "Tuần này",
+      "thisMonth": "Tháng này",
+      "thisYear": "Năm này"
+    },
+    "presets": {
+      "30d": "30 ngày",
+      "90d": "90 ngày",
+      "180d": "180 ngày",
+      "365d": "1 năm"
+    }
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển",
+    "subtitle": "Tổng quan hoạt động",
+    "tabs": {
+      "overview": "Tổng quan",
+      "revenue": "Doanh thu",
+      "orders": "Đơn hàng",
+      "products": "Sản phẩm",
+      "customers": "Khách hàng",
+      "realtime": "Thời gian Thực"
+    },
+    "filters": {
+      "dateRange": "Khoảng thời gian",
+      "update": "Cập nhật"
+    },
+    "kpi": {
+      "revenue": "Doanh thu",
+      "orders": "Đơn hàng",
+      "profit": "Lợi nhuận",
+      "customers": "Khách hàng"
+    }
+  },
+  "costAnalysis": {
+    "title": "Phân tích Chi phí và Tối ưu Ngân sách",
+    "subtitle": "Phân tích chi phí toàn diện và đề xuất tối ưu ngân sách",
+    "kpi": {
+      "totalCost": "Tổng chi phí",
+      "totalRevenue": "Tổng doanh thu",
+      "costRevenueRatio": "Tỷ lệ chi phí/doanh thu",
+      "costPerOrder": "Chi phí/đơn hàng"
+    },
+    "charts": {
+      "breakdown": "Phân loại chi phí",
+      "trend": "Xu hướng chi phí"
+    },
+    "tables": {
+      "topCategories": "Top danh mục chi phí"
+    },
+    "recommendations": {
+      "title": "Đề xuất tối ưu"
+    },
+    "empty": {
+      "title": "Chưa có dữ liệu",
+      "message": "Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+    }
+  },
+  "menuOptimization": {
+    "title": "Tối ưu Menu và Product Mix",
+    "subtitle": "Phân tích menu và đề xuất tối ưu product mix",
+    "kpi": {
+      "totalProducts": "Tổng sản phẩm",
+      "totalRevenue": "Tổng doanh thu",
+      "totalProfit": "Tổng lợi nhuận",
+      "avgMargin": "Margin TB"
+    },
+    "charts": {
+      "portfolio": "Product Portfolio Matrix",
+      "category": "Hiệu suất theo danh mục"
+    },
+    "classifications": {
+      "star": "Ngôi sao",
+      "cashCow": "Bò sữa",
+      "questionMark": "Dấu hỏi",
+      "dog": "Chó"
+    },
+    "empty": {
+      "title": "Chưa có dữ liệu",
+      "message": "Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+    }
+  },
+  "staffPerformance": {
+    "title": "Phân tích Hiệu suất Nhân viên",
+    "subtitle": "Đánh giá toàn diện hiệu suất nhân viên",
+    "tabs": {
+      "overview": "Tổng quan",
+      "performance": "Hiệu suất",
+      "attendance": "Chấm công",
+      "financial": "Tài chính",
+      "trends": "Xu hướng"
+    }
+  },
+  "customerAnalytics": {
+    "title": "Phân tích Khách hàng",
+    "subtitle": "Phân tích hành vi và chiến lược loyalty"
+  },
+  "productProfitability": {
+    "title": "Phân tích Lợi nhuận Sản phẩm",
+    "subtitle": "Phân tích lợi nhuận theo sản phẩm và danh mục"
+  },
+  "inventory": {
+    "title": "Quản lý Kho thông minh",
+    "subtitle": "Theo dõi và tối ưu tồn kho"
+  },
+  "revenueForecast": {
+    "title": "Dự báo Doanh thu",
+    "subtitle": "Dự báo doanh thu dựa trên dữ liệu lịch sử"
+  },
+  "voucherAnalytics": {
+    "title": "Phân tích Voucher",
+    "subtitle": "Theo dõi hiệu quả voucher và khuyến mãi"
+  },
+  "shiftEfficiency": {
+    "title": "Phân tích Hiệu quả Ca làm việc",
+    "subtitle": "Tối ưu scheduling và phân bổ nhân lực"
+  },
+  "cancellationAnalysis": {
+    "title": "Phân tích Tỷ lệ Hủy Đơn",
+    "subtitle": "Phân tích và cải thiện tỷ lệ hủy đơn"
+  },
+  "trendAnalysis": {
+    "title": "Phân tích Xu hướng",
+    "subtitle": "Phân tích xu hướng và seasonal patterns"
+  },
+  "realtimeDashboard": {
+    "title": "Dashboard Thời gian Thực",
+    "subtitle": "Theo dõi hoạt động và hiệu suất theo thời gian thực",
+    "autoRefresh": "Tự động làm mới",
+    "lastRefresh": "Lần cập nhật cuối",
+    "refreshNow": "Làm mới ngay"
+  }
+}
+

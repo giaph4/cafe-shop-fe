@@ -1,18 +1,18 @@
 <template>
-    <div class="cost-breakdown-chart">
-        <apexchart
-            v-if="isMounted && categoryBreakdown.length > 0"
-            type="donut"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-        <EmptyState
-            v-else
-            title="Chưa có dữ liệu"
-            message="Không có dữ liệu phân loại chi phí"
-        />
-    </div>
+  <div class="cost-breakdown-chart">
+    <apexchart
+      v-if="isMounted && categoryBreakdown.length > 0"
+      type="donut"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Không có dữ liệu phân loại chi phí"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -36,9 +36,7 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return props.categoryBreakdown.map(cat => cat.amount)
-})
+const chartSeries = computed(() => props.categoryBreakdown.map(cat => cat.amount))
 
 const chartOptions = computed(() => ({
     chart: {
@@ -67,9 +65,7 @@ const chartOptions = computed(() => ({
     },
     dataLabels: {
         enabled: true,
-        formatter: (val) => {
-            return val.toFixed(1) + '%'
-        },
+        formatter: (val) => `${val.toFixed(1)  }%`,
         style: {
             fontFamily: 'var(--font-family-sans)',
             fontSize: '12px',
@@ -78,12 +74,10 @@ const chartOptions = computed(() => ({
     },
     tooltip: {
         y: {
-            formatter: (value) => {
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(value)
-            }
+            formatter: (value) => new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(value)
         }
     },
     plotOptions: {
@@ -105,14 +99,12 @@ const chartOptions = computed(() => ({
                         fontSize: '18px',
                         fontWeight: 700,
                         color: 'var(--color-heading)',
-                        formatter: (val) => {
-                            return new Intl.NumberFormat('vi-VN', {
-                                style: 'currency',
-                                currency: 'VND',
-                                notation: 'compact',
-                                maximumFractionDigits: 1
-                            }).format(val)
-                        }
+                        formatter: (val) => new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND',
+                            notation: 'compact',
+                            maximumFractionDigits: 1
+                        }).format(val)
                     },
                     total: {
                         show: true,

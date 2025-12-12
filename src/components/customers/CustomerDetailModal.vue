@@ -1,199 +1,263 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade customer-detail-modal" ref="modalElement" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Chi tiết khách hàng #{{ customerId }}</h5>
-                            <p class="modal-subtitle">Xem thông tin chi tiết, lịch sử mua hàng và thống kê của khách hàng.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
-                    </div>
-                    <div class="modal-body">
-                        <LoadingState v-if="loading" />
-                        <ErrorState v-else-if="error" :message="error" :show-retry="false" />
-                        <template v-else-if="customer">
-                            <!-- Thông tin cơ bản -->
-                            <div class="info-section mb-4">
-                                <h6 class="section-title mb-3">
-                                    <i class="bi bi-person-circle me-2"></i>
-                                    Thông tin cơ bản
-                                </h6>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="info-item">
-                                            <span class="info-label">Mã khách hàng:</span>
-                                            <span class="info-value">{{ customer.id }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-item">
-                                            <span class="info-label">Họ và tên:</span>
-                                            <span class="info-value">{{ customer.fullName }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-item">
-                                            <span class="info-label">Số điện thoại:</span>
-                                            <span class="info-value">{{ customer.phone || '—' }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-item">
-                                            <span class="info-label">Email:</span>
-                                            <span class="info-value">{{ customer.email || '—' }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-item">
-                                            <span class="info-label">Điểm thưởng:</span>
-                                            <span class="info-value fw-bold" style="color: var(--color-primary); font-family: var(--font-family-sans);">{{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-item">
-                                            <span class="info-label">Ngày tạo:</span>
-                                            <span class="info-value text-muted">{{ formatDate(customer.createdAt) }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-item">
-                                            <span class="info-label">Cập nhật lần cuối:</span>
-                                            <span class="info-value text-muted">{{ formatDate(customer.updatedAt) }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Thống kê -->
-                            <div class="info-section mb-4">
-                                <h6 class="section-title mb-3">
-                                    <i class="bi bi-graph-up me-2"></i>
-                                    Thống kê
-                                </h6>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="stat-box">
-                                            <div class="stat-icon stat-icon--purple">
-                                                <i class="bi bi-receipt"></i>
-                                            </div>
-                                            <div class="stat-info">
-                                                <div class="stat-label">Tổng đơn hàng</div>
-                                                <div class="stat-value">{{ summary.totalOrders }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="stat-box">
-                                            <div class="stat-icon stat-icon--green">
-                                                <i class="bi bi-cash-stack"></i>
-                                            </div>
-                                            <div class="stat-info">
-                                                <div class="stat-label">Tổng chi tiêu</div>
-                                                <div class="stat-value">{{ formatCurrency(summary.totalAmount) }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="stat-box">
-                                            <div class="stat-icon stat-icon--blue">
-                                                <i class="bi bi-graph-up-arrow"></i>
-                                            </div>
-                                            <div class="stat-info">
-                                                <div class="stat-label">Giá trị TB/đơn</div>
-                                                <div class="stat-value">{{ formatCurrency(summary.averageOrderValue) }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="stat-box">
-                                            <div class="stat-icon stat-icon--yellow">
-                                                <i class="bi bi-calendar-check"></i>
-                                            </div>
-                                            <div class="stat-info">
-                                                <div class="stat-label">Đơn gần nhất</div>
-                                                <div class="stat-value small">{{ formatDate(summary.lastPurchaseDate) }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Lịch sử đơn hàng -->
-                            <div class="info-section">
-                                <h6 class="section-title mb-3">
-                                    <i class="bi bi-clock-history me-2"></i>
-                                    Lịch sử mua hàng
-                                </h6>
-                                <div v-if="ordersLoading" class="text-center py-3">
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                </div>
-                                <div v-else-if="ordersError" class="error-message mb-0">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                    {{ ordersError }}
-                                </div>
-                                <EmptyState
-                                    v-else-if="orders.length === 0"
-                                    title="Chưa có đơn hàng"
-                                    message="Khách hàng này chưa có đơn hàng nào."
-                                >
-                                    <template #icon>
-                                        <i class="bi bi-receipt-cutoff"></i>
-                                    </template>
-                                </EmptyState>
-                                <div v-else class="orders-list">
-                                    <div
-                                        v-for="order in orders"
-                                        :key="order.id"
-                                        class="order-item"
-                                    >
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <div class="fw-semibold">Đơn #{{ order.id }}</div>
-                                                <div class="small text-muted">
-                                                    {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
-                                                </div>
-                                                <div class="mt-1">
-                                                    <span :class="getStatusBadgeClass(order.status)" :style="getStatusBadgeStyle(order.status)">
-                                                        {{ getStatusLabel(order.status) }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="fw-semibold" style="color: var(--color-primary); font-family: var(--font-family-sans);">{{ formatCurrency(order.totalAmount) }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <EmptyState
-                            v-else
-                            title="Không tìm thấy khách hàng"
-                            message="Không tìm thấy thông tin khách hàng."
-                        >
-                            <template #icon>
-                                <i class="bi bi-person-x"></i>
-                            </template>
-                        </EmptyState>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                        <button
-                            v-if="customer"
-                            type="button"
-                            class="btn btn-primary"
-                            @click="handleEdit"
-                        >
-                            <i class="bi bi-pencil me-2"></i>
-                            Chỉnh sửa
-                        </button>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modalElement"
+      class="modal fade customer-detail-modal"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Chi tiết khách hàng #{{ customerId }}
+              </h5>
+              <p class="modal-subtitle">
+                Xem thông tin chi tiết, lịch sử mua hàng và thống kê của khách hàng.
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="hide"
+            />
+          </div>
+          <div class="modal-body">
+            <LoadingState v-if="loading" />
+            <ErrorState
+              v-else-if="error"
+              :message="error"
+              :show-retry="false"
+            />
+            <template v-else-if="customer">
+              <!-- Thông tin cơ bản -->
+              <div class="info-section mb-4">
+                <h6 class="section-title mb-3">
+                  <i class="bi bi-person-circle me-2" />
+                  Thông tin cơ bản
+                </h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <span class="info-label">Mã khách hàng:</span>
+                      <span class="info-value">{{ customer.id }}</span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <span class="info-label">Họ và tên:</span>
+                      <span class="info-value">{{ customer.fullName }}</span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <span class="info-label">Số điện thoại:</span>
+                      <span class="info-value">{{ customer.phone || '—' }}</span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <span class="info-label">Email:</span>
+                      <span class="info-value">{{ customer.email || '—' }}</span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <span class="info-label">Điểm thưởng:</span>
+                      <span
+                        class="info-value fw-bold"
+                        style="color: var(--color-primary); font-family: var(--font-family-sans);"
+                      >{{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm</span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <span class="info-label">Ngày tạo:</span>
+                      <span class="info-value text-muted">{{ formatDate(customer.createdAt) }}</span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <span class="info-label">Cập nhật lần cuối:</span>
+                      <span class="info-value text-muted">{{ formatDate(customer.updatedAt) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thống kê -->
+              <div class="info-section mb-4">
+                <h6 class="section-title mb-3">
+                  <i class="bi bi-graph-up me-2" />
+                  Thống kê
+                </h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="stat-box">
+                      <div class="stat-icon stat-icon--purple">
+                        <i class="bi bi-receipt" />
+                      </div>
+                      <div class="stat-info">
+                        <div class="stat-label">
+                          Tổng đơn hàng
+                        </div>
+                        <div class="stat-value">
+                          {{ summary.totalOrders }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="stat-box">
+                      <div class="stat-icon stat-icon--green">
+                        <i class="bi bi-cash-stack" />
+                      </div>
+                      <div class="stat-info">
+                        <div class="stat-label">
+                          Tổng chi tiêu
+                        </div>
+                        <div class="stat-value">
+                          {{ formatCurrency(summary.totalAmount) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="stat-box">
+                      <div class="stat-icon stat-icon--blue">
+                        <i class="bi bi-graph-up-arrow" />
+                      </div>
+                      <div class="stat-info">
+                        <div class="stat-label">
+                          Giá trị TB/đơn
+                        </div>
+                        <div class="stat-value">
+                          {{ formatCurrency(summary.averageOrderValue) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="stat-box">
+                      <div class="stat-icon stat-icon--yellow">
+                        <i class="bi bi-calendar-check" />
+                      </div>
+                      <div class="stat-info">
+                        <div class="stat-label">
+                          Đơn gần nhất
+                        </div>
+                        <div class="stat-value small">
+                          {{ formatDate(summary.lastPurchaseDate) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lịch sử đơn hàng -->
+              <div class="info-section">
+                <h6 class="section-title mb-3">
+                  <i class="bi bi-clock-history me-2" />
+                  Lịch sử mua hàng
+                </h6>
+                <div
+                  v-if="ordersLoading"
+                  class="text-center py-3"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm text-primary"
+                    role="status"
+                  />
+                </div>
+                <div
+                  v-else-if="ordersError"
+                  class="error-message mb-0"
+                >
+                  <i class="bi bi-exclamation-triangle me-2" />
+                  {{ ordersError }}
+                </div>
+                <EmptyState
+                  v-else-if="orders.length === 0"
+                  title="Chưa có đơn hàng"
+                  message="Khách hàng này chưa có đơn hàng nào."
+                >
+                  <template #icon>
+                    <i class="bi bi-receipt-cutoff" />
+                  </template>
+                </EmptyState>
+                <div
+                  v-else
+                  class="orders-list"
+                >
+                  <div
+                    v-for="order in orders"
+                    :key="order.id"
+                    class="order-item"
+                  >
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold">
+                          Đơn #{{ order.id }}
+                        </div>
+                        <div class="small text-muted">
+                          {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
+                        </div>
+                        <div class="mt-1">
+                          <span
+                            :class="getStatusBadgeClass(order.status)"
+                            :style="getStatusBadgeStyle(order.status)"
+                          >
+                            {{ getStatusLabel(order.status) }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <div
+                          class="fw-semibold"
+                          style="color: var(--color-primary); font-family: var(--font-family-sans);"
+                        >
+                          {{ formatCurrency(order.totalAmount) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <EmptyState
+              v-else
+              title="Không tìm thấy khách hàng"
+              message="Không tìm thấy thông tin khách hàng."
+            >
+              <template #icon>
+                <i class="bi bi-person-x" />
+              </template>
+            </EmptyState>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="hide"
+            >
+              Đóng
+            </button>
+            <button
+              v-if="customer"
+              type="button"
+              class="btn btn-primary"
+              @click="handleEdit"
+            >
+              <i class="bi bi-pencil me-2" />
+              Chỉnh sửa
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -279,7 +343,7 @@ const fetchOrders = async () => {
         summary.value.totalOrders = ordersList.length
         summary.value.totalAmount = paidOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0)
         summary.value.averageOrderValue = paidOrders.length > 0 ? summary.value.totalAmount / paidOrders.length : 0
-        
+
         if (ordersList.length > 0) {
             const sortedByDate = [...ordersList].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             summary.value.lastPurchaseDate = sortedByDate[0].createdAt
@@ -306,13 +370,9 @@ const formatLoyaltyPoints = (points) => {
     return numeric.toLocaleString('vi-VN')
 }
 
-const getStatusLabel = (status) => {
-    return STATUS_METADATA[status]?.label || status
-}
+const getStatusLabel = (status) => STATUS_METADATA[status]?.label || status
 
-const getStatusBadgeClass = (status) => {
-    return 'badge'
-}
+const getStatusBadgeClass = () => 'badge'
 
 const getStatusBadgeStyle = (status) => {
     const styles = {

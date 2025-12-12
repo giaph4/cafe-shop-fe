@@ -1,24 +1,27 @@
 <template>
-    <div class="empty-state">
-        <div class="empty-state__icon">
-            <slot name="icon">
-                <i class="bi bi-clipboard-data"></i>
-            </slot>
-        </div>
-        <div class="empty-state__text">
-            <h6>{{ title }}</h6>
-            <p>{{ message }}</p>
-        </div>
-        <div v-if="$slots.action" class="empty-state__action">
-            <slot name="action"></slot>
-        </div>
+  <div class="empty-state">
+    <div class="empty-state__icon">
+      <slot name="icon">
+        <i class="bi bi-clipboard-data" />
+      </slot>
     </div>
+    <div class="empty-state__text">
+      <h6>{{ title }}</h6>
+      <p>{{ message }}</p>
+    </div>
+    <div
+      v-if="$slots.action"
+      class="empty-state__action"
+    >
+      <slot name="action" />
+    </div>
+  </div>
 </template>
 
 <script setup>
-const props = defineProps({
-    title: {type: String, default: 'Không có dữ liệu'},
-    message: {type: String, default: 'Hãy thử điều chỉnh bộ lọc hoặc tạo mới dữ liệu.'}
+defineProps({
+    title: { type: String, default: 'Không có dữ liệu' },
+    message: { type: String, default: 'Hãy thử điều chỉnh bộ lọc hoặc tạo mới dữ liệu.' }
 })
 </script>
 

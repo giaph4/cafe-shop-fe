@@ -1,106 +1,161 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="pricing-suggestion-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="pricing-suggestion-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Đề xuất Giá: <strong>{{ product.name }}</strong></h5>
-                            <p class="modal-subtitle mb-0">Phân tích và đề xuất giá mới để cải thiện margin</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <LoadingState v-if="loading" text="Đang tính toán đề xuất..." />
-                        <div v-else-if="suggestion">
-                            <div class="row g-4 mb-4">
-                                <div class="col-md-6">
-                                    <div class="info-section">
-                                        <h6 class="section-title mb-3">Giá hiện tại</h6>
-                                        <div class="price-display price-current">
-                                            <div class="price-value">{{ formatCurrency(suggestion.currentPrice) }}</div>
-                                            <div class="price-margin">Margin: {{ suggestion.currentMargin.toFixed(1) }}%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="info-section">
-                                        <h6 class="section-title mb-3">Đề xuất giá</h6>
-                                        <div class="price-display price-suggested">
-                                            <div class="price-value">{{ formatCurrency(suggestion.suggestedPrice) }}</div>
-                                            <div class="price-margin">Margin: {{ suggestion.targetMargin.toFixed(1) }}%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="info-section">
-                                <h6 class="section-title mb-3">Phân tích tác động</h6>
-                                <div class="impact-grid">
-                                    <div class="impact-item">
-                                        <div class="impact-label">Thay đổi giá</div>
-                                        <div class="impact-value" :class="getImpactClass(suggestion.impact.priceChange)">
-                                            {{ suggestion.impact.priceChange >= 0 ? '+' : '' }}{{ formatCurrency(suggestion.impact.priceChange) }}
-                                        </div>
-                                        <div class="impact-percent">
-                                            ({{ suggestion.impact.priceChangePercent >= 0 ? '+' : '' }}{{ suggestion.impact.priceChangePercent.toFixed(1) }}%)
-                                        </div>
-                                    </div>
-                                    <div class="impact-item">
-                                        <div class="impact-label">Thay đổi margin</div>
-                                        <div class="impact-value" :class="getImpactClass(suggestion.impact.marginChange)">
-                                            {{ suggestion.impact.marginChange >= 0 ? '+' : '' }}{{ suggestion.impact.marginChange.toFixed(1) }}%
-                                        </div>
-                                    </div>
-                                    <div class="impact-item">
-                                        <div class="impact-label">Tăng lợi nhuận</div>
-                                        <div class="impact-value impact-positive">
-                                            +{{ formatCurrency(suggestion.impact.profitIncrease) }}
-                                        </div>
-                                        <div class="impact-percent">
-                                            ({{ suggestion.impact.profitIncreasePercent >= 0 ? '+' : '' }}{{ suggestion.impact.profitIncreasePercent.toFixed(1) }}%)
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="info-section">
-                                <h6 class="section-title mb-3">Chi phí đơn vị</h6>
-                                <div class="cost-display">
-                                    {{ formatCurrency(suggestion.costPerUnit) }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Đóng
-                        </button>
-                        <button
-                            v-if="suggestion"
-                            type="button"
-                            class="btn btn-flat btn-flat--primary"
-                            @click="handleApply"
-                            :disabled="applying"
-                        >
-                            <span v-if="applying" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-check me-2"></i>
-                            Áp dụng đề xuất
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Đề xuất Giá: <strong>{{ product.name }}</strong>
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Phân tích và đề xuất giá mới để cải thiện margin
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <LoadingState
+              v-if="loading"
+              text="Đang tính toán đề xuất..."
+            />
+            <div v-else-if="suggestion">
+              <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                  <div class="info-section">
+                    <h6 class="section-title mb-3">
+                      Giá hiện tại
+                    </h6>
+                    <div class="price-display price-current">
+                      <div class="price-value">
+                        {{ formatCurrency(suggestion.currentPrice) }}
+                      </div>
+                      <div class="price-margin">
+                        Margin: {{ suggestion.currentMargin.toFixed(1) }}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-section">
+                    <h6 class="section-title mb-3">
+                      Đề xuất giá
+                    </h6>
+                    <div class="price-display price-suggested">
+                      <div class="price-value">
+                        {{ formatCurrency(suggestion.suggestedPrice) }}
+                      </div>
+                      <div class="price-margin">
+                        Margin: {{ suggestion.targetMargin.toFixed(1) }}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="info-section">
+                <h6 class="section-title mb-3">
+                  Phân tích tác động
+                </h6>
+                <div class="impact-grid">
+                  <div class="impact-item">
+                    <div class="impact-label">
+                      Thay đổi giá
+                    </div>
+                    <div
+                      class="impact-value"
+                      :class="getImpactClass(suggestion.impact.priceChange)"
+                    >
+                      {{ suggestion.impact.priceChange >= 0 ? '+' : '' }}{{ formatCurrency(suggestion.impact.priceChange) }}
+                    </div>
+                    <div class="impact-percent">
+                      ({{ suggestion.impact.priceChangePercent >= 0 ? '+' : '' }}{{ suggestion.impact.priceChangePercent.toFixed(1) }}%)
+                    </div>
+                  </div>
+                  <div class="impact-item">
+                    <div class="impact-label">
+                      Thay đổi margin
+                    </div>
+                    <div
+                      class="impact-value"
+                      :class="getImpactClass(suggestion.impact.marginChange)"
+                    >
+                      {{ suggestion.impact.marginChange >= 0 ? '+' : '' }}{{ suggestion.impact.marginChange.toFixed(1) }}%
+                    </div>
+                  </div>
+                  <div class="impact-item">
+                    <div class="impact-label">
+                      Tăng lợi nhuận
+                    </div>
+                    <div class="impact-value impact-positive">
+                      +{{ formatCurrency(suggestion.impact.profitIncrease) }}
+                    </div>
+                    <div class="impact-percent">
+                      ({{ suggestion.impact.profitIncreasePercent >= 0 ? '+' : '' }}{{ suggestion.impact.profitIncreasePercent.toFixed(1) }}%)
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="info-section">
+                <h6 class="section-title mb-3">
+                  Chi phí đơn vị
+                </h6>
+                <div class="cost-display">
+                  {{ formatCurrency(suggestion.costPerUnit) }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Đóng
+            </button>
+            <button
+              v-if="suggestion"
+              type="button"
+              class="btn btn-flat btn-flat--primary"
+              :disabled="applying"
+              @click="handleApply"
+            >
+              <span
+                v-if="applying"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-check me-2"
+              />
+              Áp dụng đề xuất
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>

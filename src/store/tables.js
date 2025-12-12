@@ -17,7 +17,7 @@ export const useTableStore = defineStore('tables', () => {
     const loading = ref(false)
     const error = ref(null)
     const lastUpdated = ref(null)
-    
+
     // WebSocket connection state
     const wsConnected = ref(false)
     const wsConnecting = ref(false)
@@ -36,31 +36,21 @@ export const useTableStore = defineStore('tables', () => {
     })
 
     // Computed: Get table by ID
-    const getTableById = (id) => {
-        return tablesMap.value.get(id) || null
-    }
+    const getTableById = (id) => tablesMap.value.get(id) || null
 
     // Computed: Get tables by status
-    const getTablesByStatus = (status) => {
-        return tables.value.filter(table => table?.status === status)
-    }
+    const getTablesByStatus = (status) => tables.value.filter(table => table?.status === status)
 
     // Computed: Get available tables (EMPTY or AVAILABLE)
-    const availableTables = computed(() => {
-        return tables.value.filter(table => 
-            table?.status === 'EMPTY' || table?.status === 'AVAILABLE'
-        )
-    })
+    const availableTables = computed(() => tables.value.filter(table =>
+        table?.status === 'EMPTY' || table?.status === 'AVAILABLE'
+    ))
 
     // Computed: Get serving tables
-    const servingTables = computed(() => {
-        return tables.value.filter(table => table?.status === 'SERVING')
-    })
+    const servingTables = computed(() => tables.value.filter(table => table?.status === 'SERVING'))
 
     // Computed: Get reserved tables
-    const reservedTables = computed(() => {
-        return tables.value.filter(table => table?.status === 'RESERVED')
-    })
+    const reservedTables = computed(() => tables.value.filter(table => table?.status === 'RESERVED'))
 
     /**
      * Load tables from API
@@ -68,7 +58,7 @@ export const useTableStore = defineStore('tables', () => {
      */
     const loadTables = async (force = false) => {
         if (loading.value && !force) return
-        
+
         // If we have recent data and not forcing, skip
         if (!force && tables.value.length > 0 && lastUpdated.value) {
             const age = Date.now() - lastUpdated.value
@@ -105,7 +95,7 @@ export const useTableStore = defineStore('tables', () => {
 
         try {
             const updatedTable = await updateTableStatus({ id: tableId, status })
-            
+
             // Update local state
             const index = tables.value.findIndex(t => t.id === tableId)
             if (index !== -1) {
@@ -114,7 +104,7 @@ export const useTableStore = defineStore('tables', () => {
                 // If table not in list, add it
                 tables.value.push(updatedTable)
             }
-            
+
             lastUpdated.value = Date.now()
             return updatedTable
         } catch (err) {

@@ -1,25 +1,35 @@
 <template>
-    <div class="recommendations-panel">
-        <div v-if="recommendations.length === 0" class="text-muted text-center">
-            Không có đề xuất nào
-        </div>
-        <div v-else class="recommendations-list">
-            <div
-                v-for="(rec, index) in recommendations"
-                :key="index"
-                class="recommendation-item"
-                :class="getPriorityClass(rec.priority)"
-            >
-                <div class="recommendation-icon">
-                    <i :class="getPriorityIcon(rec.type)"></i>
-                </div>
-                <div class="recommendation-content">
-                    <div class="recommendation-message">{{ rec.message }}</div>
-                    <div class="recommendation-impact">{{ rec.impact }}</div>
-                </div>
-            </div>
-        </div>
+  <div class="recommendations-panel">
+    <div
+      v-if="recommendations.length === 0"
+      class="text-muted text-center"
+    >
+      Không có đề xuất nào
     </div>
+    <div
+      v-else
+      class="recommendations-list"
+    >
+      <div
+        v-for="(rec, index) in recommendations"
+        :key="index"
+        class="recommendation-item"
+        :class="getPriorityClass(rec.priority)"
+      >
+        <div class="recommendation-icon">
+          <i :class="getPriorityIcon(rec.type)" />
+        </div>
+        <div class="recommendation-content">
+          <div class="recommendation-message">
+            {{ rec.message }}
+          </div>
+          <div class="recommendation-impact">
+            {{ rec.impact }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

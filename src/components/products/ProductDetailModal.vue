@@ -1,156 +1,223 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade product-detail-modal" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header align-items-start">
-                        <div>
-                            <h5 class="modal-title">Chi tiết sản phẩm</h5>
-                            <p class="text-muted mb-0">
-                                Cập nhật lần cuối: {{ formatDate(detail.value?.createdAt) || '—' }}
-                            </p>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <div v-if="loading" class="detail-state">
-                            <div class="spinner-border text-primary" role="status"></div>
-                        </div>
-                        <div v-else-if="error" class="error-message d-flex align-items-center gap-2">
-                            <i class="bi bi-exclamation-triangle"></i>
-                            <span>{{ error }}</span>
-                        </div>
-                        <div v-else-if="!detail.value" class="detail-state text-muted">
-                            Không tìm thấy thông tin sản phẩm.
-                        </div>
-                        <div v-else class="detail-grid">
-                            <aside class="detail-media">
-                                <div class="image-frame">
-                                    <img :src="detail.value.imageUrl || '/placeholder.png'" alt="Ảnh sản phẩm"/>
-                                </div>
-                                <div class="status-block"
-                                     :class="detail.value.available ? 'status-block--active' : 'status-block--inactive'">
-                                    <i class="bi"
-                                       :class="detail.value.available ? 'bi-check-circle-fill' : 'bi-pause-circle'"></i>
-                                    <span>{{ detail.value.available ? 'Đang kinh doanh' : 'Ngừng bán' }}</span>
-                                </div>
-                                <dl class="meta-list">
-                                    <div>
-                                        <dt>Mã sản phẩm</dt>
-                                        <dd>{{ detail.value.code }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Danh mục</dt>
-                                        <dd>{{ detail.value.categoryName || '—' }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Ngày tạo</dt>
-                                        <dd>{{ formatDate(detail.value.createdAt) || '—' }}</dd>
-                                    </div>
-                                </dl>
-                            </aside>
-
-                            <section class="detail-content">
-                                <header class="detail-header">
-                                    <h3>{{ detail.value.name }}</h3>
-                                    <p class="text-muted mb-0">{{
-                                            detail.value.description || 'Chưa có mô tả chi tiết.'
-                                        }}</p>
-                                </header>
-
-                                <div class="info-cards">
-                                    <div class="info-card">
-                                        <span class="label">Giá bán</span>
-                                        <strong class="value text-primary">{{
-                                                formatCurrency(detail.value.price)
-                                            }}</strong>
-                                    </div>
-                                    <div class="info-card">
-                                        <span class="label">Giá vốn</span>
-                                        <strong class="value">{{
-                                                detail.value.cost !== null ? formatCurrency(detail.value.cost) : '—'
-                                            }}</strong>
-                                    </div>
-                                    <div class="info-card">
-                                        <span class="label">Biên lợi nhuận</span>
-                                        <strong class="value text-success">{{ profitMargin }}</strong>
-                                    </div>
-                                </div>
-
-                                <section class="recipe-section">
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <h5 class="mb-0">Công thức & Định lượng</h5>
-                                        <button
-                                            v-if="recipeLoading"
-                                            type="button"
-                                            class="btn btn-sm btn-outline-secondary"
-                                            disabled
-                                        >
-                                            <span class="spinner-border spinner-border-sm me-2"></span>
-                                            Đang tải công thức
-                                        </button>
-                                        <button
-                                            v-else
-                                            type="button"
-                                            class="btn btn-sm btn-outline-secondary"
-                                            @click="refreshRecipe"
-                                        >
-                                            <i class="bi bi-arrow-repeat me-2"></i>Tải lại
-                                        </button>
-                                    </div>
-
-                                    <div v-if="recipeError" class="error-message d-flex align-items-center gap-2">
-                                        <i class="bi bi-exclamation-circle"></i>
-                                        <span>{{ recipeError }}</span>
-                                    </div>
-
-                                    <div v-if="recipeLoading" class="detail-state py-4">
-                                        <div class="spinner-border text-primary" role="status"></div>
-                                    </div>
-                                    <div v-else-if="recipe.length === 0" class="empty-recipe">
-                                        <i class="bi bi-journal-x"></i>
-                                        <p class="mb-0">Chưa thiết lập công thức cho sản phẩm này.</p>
-                                    </div>
-                                    <div v-else class="table-responsive">
-                                        <table class="table table-sm align-middle">
-                                            <thead>
-                                            <tr>
-                                                <th>Nguyên liệu</th>
-                                                <th>Đơn vị</th>
-                                                <th class="text-end">Định lượng</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr v-for="ingredient in recipe"
-                                                :key="ingredient.id || ingredient.ingredientId">
-                                                <td>{{ ingredient.ingredientName }}</td>
-                                                <td>{{ ingredient.unit }}</td>
-                                                <td class="text-end">{{ formatNumber(ingredient.quantityNeeded) }}</td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </section>
-                            </section>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade product-detail-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header align-items-start">
+            <div>
+              <h5 class="modal-title">
+                Chi tiết sản phẩm
+              </h5>
+              <p class="text-muted mb-0">
+                Cập nhật lần cuối: {{ formatDate(detail.value?.createdAt) || '—' }}
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="hide"
+            />
+          </div>
+
+          <div class="modal-body">
+            <div
+              v-if="loading"
+              class="detail-state"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+              />
+            </div>
+            <div
+              v-else-if="error"
+              class="error-message d-flex align-items-center gap-2"
+            >
+              <i class="bi bi-exclamation-triangle" />
+              <span>{{ error }}</span>
+            </div>
+            <div
+              v-else-if="!detail.value"
+              class="detail-state text-muted"
+            >
+              Không tìm thấy thông tin sản phẩm.
+            </div>
+            <div
+              v-else
+              class="detail-grid"
+            >
+              <aside class="detail-media">
+                <div class="image-frame">
+                  <img
+                    :src="detail.value.imageUrl || '/placeholder.png'"
+                    alt="Ảnh sản phẩm"
+                  >
+                </div>
+                <div
+                  class="status-block"
+                  :class="detail.value.available ? 'status-block--active' : 'status-block--inactive'"
+                >
+                  <i
+                    class="bi"
+                    :class="detail.value.available ? 'bi-check-circle-fill' : 'bi-pause-circle'"
+                  />
+                  <span>{{ detail.value.available ? 'Đang kinh doanh' : 'Ngừng bán' }}</span>
+                </div>
+                <dl class="meta-list">
+                  <div>
+                    <dt>Mã sản phẩm</dt>
+                    <dd>{{ detail.value.code }}</dd>
+                  </div>
+                  <div>
+                    <dt>Danh mục</dt>
+                    <dd>{{ detail.value.categoryName || '—' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Ngày tạo</dt>
+                    <dd>{{ formatDate(detail.value.createdAt) || '—' }}</dd>
+                  </div>
+                </dl>
+              </aside>
+
+              <section class="detail-content">
+                <header class="detail-header">
+                  <h3>{{ detail.value.name }}</h3>
+                  <p class="text-muted mb-0">
+                    {{
+                      detail.value.description || 'Chưa có mô tả chi tiết.'
+                    }}
+                  </p>
+                </header>
+
+                <div class="info-cards">
+                  <div class="info-card">
+                    <span class="label">Giá bán</span>
+                    <strong class="value text-primary">{{
+                      formatCurrency(detail.value.price)
+                    }}</strong>
+                  </div>
+                  <div class="info-card">
+                    <span class="label">Giá vốn</span>
+                    <strong class="value">{{
+                      detail.value.cost !== null ? formatCurrency(detail.value.cost) : '—'
+                    }}</strong>
+                  </div>
+                  <div class="info-card">
+                    <span class="label">Biên lợi nhuận</span>
+                    <strong class="value text-success">{{ profitMargin }}</strong>
+                  </div>
+                </div>
+
+                <section class="recipe-section">
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0">
+                      Công thức & Định lượng
+                    </h5>
+                    <button
+                      v-if="recipeLoading"
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      disabled
+                    >
+                      <span class="spinner-border spinner-border-sm me-2" />
+                      Đang tải công thức
+                    </button>
+                    <button
+                      v-else
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      @click="refreshRecipe"
+                    >
+                      <i class="bi bi-arrow-repeat me-2" />Tải lại
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="recipeError"
+                    class="error-message d-flex align-items-center gap-2"
+                  >
+                    <i class="bi bi-exclamation-circle" />
+                    <span>{{ recipeError }}</span>
+                  </div>
+
+                  <div
+                    v-if="recipeLoading"
+                    class="detail-state py-4"
+                  >
+                    <div
+                      class="spinner-border text-primary"
+                      role="status"
+                    />
+                  </div>
+                  <div
+                    v-else-if="recipe.length === 0"
+                    class="empty-recipe"
+                  >
+                    <i class="bi bi-journal-x" />
+                    <p class="mb-0">
+                      Chưa thiết lập công thức cho sản phẩm này.
+                    </p>
+                  </div>
+                  <div
+                    v-else
+                    class="table-responsive"
+                  >
+                    <table class="table table-sm align-middle">
+                      <thead>
+                        <tr>
+                          <th>Nguyên liệu</th>
+                          <th>Đơn vị</th>
+                          <th class="text-end">
+                            Định lượng
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="ingredient in recipe"
+                          :key="ingredient.id || ingredient.ingredientId"
+                        >
+                          <td>{{ ingredient.ingredientName }}</td>
+                          <td>{{ ingredient.unit }}</td>
+                          <td class="text-end">
+                            {{ formatNumber(ingredient.quantityNeeded) }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </section>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="hide"
+            >
+              Đóng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue'
-import {Modal} from 'bootstrap'
-import {toast} from 'vue3-toastify'
-import {getProductById, getProductRecipe} from '@/api/productService'
-import {formatCurrency, formatDateTime, formatNumber} from '@/utils/formatters'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { Modal } from 'bootstrap'
+import { toast } from 'vue3-toastify'
+import { getProductById, getProductRecipe } from '@/api/productService'
+import { formatCurrency, formatDateTime, formatNumber } from '@/utils/formatters'
 
 const props = defineProps({
     product: {
@@ -161,7 +228,7 @@ const props = defineProps({
 
 const modal = ref(null)
 let modalInstance = null
-const detail = reactive({value: null})
+const detail = reactive({ value: null })
 const loading = ref(false)
 const error = ref(null)
 const recipe = ref([])
@@ -246,14 +313,14 @@ const show = async () => {
 const hide = () => modalInstance?.hide()
 
 onMounted(() => {
-    modalInstance = new Modal(modal.value, {backdrop: true})
+    modalInstance = new Modal(modal.value, { backdrop: true })
 })
 
 onBeforeUnmount(() => {
     modalInstance?.dispose()
 })
 
-defineExpose({show, hide})
+defineExpose({ show, hide })
 </script>
 
 <style scoped>

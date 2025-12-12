@@ -1,52 +1,84 @@
 <template>
-    <section id="experience" class="portfolio-experience">
-        <div class="portfolio-experience__container">
-            <h2 class="portfolio-experience__title">
-                <span class="portfolio-experience__number">04.</span>
-                EXPERIENCE TIMELINE
-            </h2>
+  <section
+    id="experience"
+    class="portfolio-experience"
+  >
+    <div class="portfolio-experience__container">
+      <h2 class="portfolio-experience__title">
+        <span class="portfolio-experience__number">04.</span>
+        EXPERIENCE TIMELINE
+      </h2>
 
-            <div class="portfolio-experience__pipeline" ref="pipelineRef">
-                <!-- Pipeline Line -->
-                <svg class="portfolio-experience__line" viewBox="0 0 10 1000" preserveAspectRatio="none">
-                    <path 
-                        d="M 5 0 L 5 1000" 
-                        stroke="url(#gradient)" 
-                        stroke-width="2"
-                        :stroke-dasharray="pipelineProgress"
-                        stroke-dashoffset="0"
-                        fill="none"
-                    />
-                    <defs>
-                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                </svg>
+      <div
+        ref="pipelineRef"
+        class="portfolio-experience__pipeline"
+      >
+        <!-- Pipeline Line -->
+        <svg
+          class="portfolio-experience__line"
+          viewBox="0 0 10 1000"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M 5 0 L 5 1000"
+            stroke="url(#gradient)"
+            stroke-width="2"
+            :stroke-dasharray="pipelineProgress"
+            stroke-dashoffset="0"
+            fill="none"
+          />
+          <defs>
+            <linearGradient
+              id="gradient"
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
+              <stop
+                offset="0%"
+                style="stop-color:#06b6d4;stop-opacity:1"
+              />
+              <stop
+                offset="100%"
+                style="stop-color:#8b5cf6;stop-opacity:1"
+              />
+            </linearGradient>
+          </defs>
+        </svg>
 
-                <!-- Timeline Items -->
-                <div 
-                    v-for="(item, index) in experiences" 
-                    :key="index"
-                    class="portfolio-experience__item"
-                    :class="{ 'portfolio-experience__item--active': activeIndex >= index }"
-                    :style="{ top: `${(index / (experiences.length - 1)) * 100}%` }"
-                    :ref="el => itemRefs[index] = el"
-                >
-                    <div class="portfolio-experience__item-dot"></div>
-                    <div class="portfolio-experience__item-content">
-                        <div class="portfolio-experience__item-date">{{ item.date }}</div>
-                        <h3 class="portfolio-experience__item-title">{{ item.title }}</h3>
-                        <p class="portfolio-experience__item-description">{{ item.description }}</p>
-                        <div class="portfolio-experience__item-tags">
-                            <span v-for="tag in item.tags" :key="tag" class="portfolio-experience__tag">#{{ tag }}</span>
-                        </div>
-                    </div>
-                </div>
+        <!-- Timeline Items -->
+        <div
+          v-for="(item, index) in experiences"
+          :key="index"
+          :ref="el => itemRefs[index] = el"
+          class="portfolio-experience__item"
+          :class="{ 'portfolio-experience__item--active': activeIndex >= index }"
+          :style="{ top: `${(index / (experiences.length - 1)) * 100}%` }"
+        >
+          <div class="portfolio-experience__item-dot" />
+          <div class="portfolio-experience__item-content">
+            <div class="portfolio-experience__item-date">
+              {{ item.date }}
             </div>
+            <h3 class="portfolio-experience__item-title">
+              {{ item.title }}
+            </h3>
+            <p class="portfolio-experience__item-description">
+              {{ item.description }}
+            </p>
+            <div class="portfolio-experience__item-tags">
+              <span
+                v-for="tag in item.tags"
+                :key="tag"
+                class="portfolio-experience__tag"
+              >#{{ tag }}</span>
+            </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -116,13 +148,13 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(itemRef, {
                         initial: { opacity: 0, x: index % 2 === 0 ? -50 : 50 },
-                        enter: { 
-                            opacity: 1, 
+                        enter: {
+                            opacity: 1,
                             x: 0,
-                            transition: { 
+                            transition: {
                                 delay: index * 0.2,
-                                duration: 0.6 
-                            } 
+                                duration: 0.6
+                            }
                         }
                     })
                 }
@@ -133,7 +165,7 @@ onMounted(() => {
     const cleanup = () => {
         window.removeEventListener('scroll', updatePipeline)
     }
-    
+
     onUnmounted(cleanup)
 })
 </script>

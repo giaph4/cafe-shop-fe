@@ -40,9 +40,9 @@ export const hasRole = (userRoles, requiredRoles) => {
     if (!Array.isArray(userRoles) || userRoles.length === 0) {
         return false
     }
-    
+
     const required = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles]
-    
+
     return required.some(role => userRoles.includes(role))
 }
 
@@ -52,9 +52,7 @@ export const hasRole = (userRoles, requiredRoles) => {
  * @param {string[]} requiredRoles - Required roles
  * @returns {boolean} True if user has at least one required role
  */
-export const hasAnyRole = (userRoles, requiredRoles) => {
-    return hasRole(userRoles, requiredRoles)
-}
+export const hasAnyRole = (userRoles, requiredRoles) => hasRole(userRoles, requiredRoles)
 
 /**
  * Check if user has all required roles
@@ -66,11 +64,11 @@ export const hasAllRoles = (userRoles, requiredRoles) => {
     if (!Array.isArray(userRoles) || userRoles.length === 0) {
         return false
     }
-    
+
     if (!Array.isArray(requiredRoles) || requiredRoles.length === 0) {
         return false
     }
-    
+
     return requiredRoles.every(role => userRoles.includes(role))
 }
 
@@ -79,36 +77,28 @@ export const hasAllRoles = (userRoles, requiredRoles) => {
  * @param {string} role - Role value
  * @returns {string} Role display name
  */
-export const getRoleName = (role) => {
-    return ROLE_NAMES[role] || role
-}
+export const getRoleName = (role) => ROLE_NAMES[role] || role
 
 /**
  * Get role description
  * @param {string} role - Role value
  * @returns {string} Role description
  */
-export const getRoleDescription = (role) => {
-    return ROLE_DESCRIPTIONS[role] || ''
-}
+export const getRoleDescription = (role) => ROLE_DESCRIPTIONS[role] || ''
 
 /**
  * Get all available roles
  * @returns {string[]} Array of all role values
  */
-export const getAllRoles = () => {
-    return Object.values(ROLES)
-}
+export const getAllRoles = () => Object.values(ROLES)
 
 /**
  * Get roles for select/dropdown
  * @returns {Array<{value: string, label: string, description: string}>} Roles for select
  */
-export const getRolesForSelect = () => {
-    return Object.values(ROLES).map(role => ({
-        value: role,
-        label: getRoleName(role),
-        description: getRoleDescription(role)
-    }))
-}
+export const getRolesForSelect = () => Object.values(ROLES).map(role => ({
+    value: role,
+    label: getRoleName(role),
+    description: getRoleDescription(role)
+}))
 

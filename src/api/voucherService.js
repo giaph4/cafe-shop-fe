@@ -1,5 +1,4 @@
 import api from './axios'
-import { buildApiError } from '@/utils/errorHandler'
 import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/vouchers'
@@ -69,29 +68,29 @@ export const searchVouchers = async ({
     if (validTo) params.validTo = normalizeDateTime(validTo)
 
     const cleanQuery = cleanParams(params)
-    const {data} = await api.get(BASE_URL, {params: cleanQuery})
+    const { data } = await api.get(BASE_URL, { params: cleanQuery })
     return data
 }
 
 export const getVoucherById = async (id) => {
-    const {data} = await api.get(`${BASE_URL}/${id}`)
+    const { data } = await api.get(`${BASE_URL}/${id}`)
     return data
 }
 
 export const createVoucher = async (voucherData) => {
     const payload = buildVoucherPayload(voucherData)
-    const {data} = await api.post(BASE_URL, payload)
+    const { data } = await api.post(BASE_URL, payload)
     return data
 }
 
-export const updateVoucher = async ({id, data: voucherData}) => {
+export const updateVoucher = async ({ id, data: voucherData }) => {
     const payload = buildVoucherPayload(voucherData)
-    const {data} = await api.put(`${BASE_URL}/${id}`, payload)
+    const { data } = await api.put(`${BASE_URL}/${id}`, payload)
     return data
 }
 
 export const toggleVoucher = async (id) => {
-    const {data} = await api.patch(`${BASE_URL}/${id}/toggle`)
+    const { data } = await api.patch(`${BASE_URL}/${id}/toggle`)
     return data
 }
 
@@ -100,18 +99,18 @@ export const deleteVoucher = async (id) => {
 }
 
 export const getVoucherSummary = async () => {
-    const {data} = await api.get(`${BASE_URL}/summary`)
+    const { data } = await api.get(`${BASE_URL}/summary`)
     return data
 }
 
 export const checkVoucher = async (code, amount) => {
-    const {data} = await api.get(`${BASE_URL}/check`, {
-        params: {code, amount}
+    const { data } = await api.get(`${BASE_URL}/check`, {
+        params: { code, amount }
     })
     return data
 }
 
 export const VOUCHER_TYPES = Object.freeze([
-    {value: 'FIXED_AMOUNT', label: 'Giảm cố định'},
-    {value: 'PERCENTAGE', label: 'Giảm %'}
+    { value: 'FIXED_AMOUNT', label: 'Giảm cố định' },
+    { value: 'PERCENTAGE', label: 'Giảm %' }
 ])

@@ -1,305 +1,406 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade pos-payment-modal" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <header class="modal-header align-items-start">
-                        <div>
-                            <h5 class="modal-title">Thanh toán đơn #{{ orderCode }}</h5>
-                            <p v-if="localOrder" class="mb-0 text-muted small">
-                                Cập nhật: {{ formatDateTime(localOrder.updatedAt || localOrder.createdAt) }}
-                            </p>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <span v-if="statusMeta" class="status-pill" :class="statusMeta.class">{{ statusMeta.label }}</span>
-                            <button
-                                v-if="isPaid"
-                                class="btn btn-outline-primary btn-sm"
-                                type="button"
-                                :disabled="printing"
-                                @click="handlePrint"
-                            >
-                                <span v-if="printing" class="spinner-border spinner-border-sm me-1"></span>
-                                <i v-else class="bi bi-printer me-1"></i>
-                                In hóa đơn
-                            </button>
-                            <button type="button" class="btn-close" :disabled="processing" @click="hide"></button>
-                        </div>
-                    </header>
-
-                    <section v-if="localOrder" class="modal-body">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <ul class="list-unstyled payment-meta">
-                                    <li><span class="label">Bàn phục vụ</span><span>{{ tableLabel }}</span></li>
-                                    <li><span class="label">Nhân viên</span><span>{{ localOrder.staffUsername || localOrder.staffName || '—' }}</span></li>
-                                    <li><span class="label">Khách hàng</span><span>{{ localOrder.customerName || 'Khách lẻ' }}</span></li>
-                                    <li><span class="label">Thời gian tạo</span><span>{{ formatDateTime(localOrder.createdAt) }}</span></li>
-                                    <li v-if="localOrder.paymentMethod"><span class="label">Phương thức</span><span>{{ paymentMethodDisplay }}</span></li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="payment-totals">
-                                    <div><span>Tổng phụ</span><span>{{ formatCurrency(localOrder.subTotal ?? subTotal) }}</span></div>
-                                    <div v-if="(localOrder.discountAmount ?? 0) > 0"><span>Giảm giá</span><span class="text-danger">-{{ formatCurrency(localOrder.discountAmount ?? 0) }}</span></div>
-                                    <div v-if="displayTipAmount > 0" class="text-success"><span>Tiền típ</span><span>+{{ formatCurrency(displayTipAmount) }}</span></div>
-                                    <div class="grand-total"><span>Tổng cộng</span><span>{{ formatCurrency(calculatedTotalAmount) }}</span></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <section class="payment-items">
-                            <h6 class="mb-3">Chi tiết sản phẩm</h6>
-                            <EmptyState
-                                v-if="!orderItems.length"
-                                title="Chưa có sản phẩm"
-                                message="Đơn hàng chưa có sản phẩm nào."
-                            >
-                                <template #icon>
-                                    <i class="bi bi-basket"></i>
-                                </template>
-                            </EmptyState>
-                            <div v-else class="table-responsive">
-                                <table class="table align-middle">
-                                    <thead>
-                                        <tr>
-                                            <th>Sản phẩm</th>
-                                            <th class="text-end">SL</th>
-                                            <th class="text-end">Đơn giá</th>
-                                            <th class="text-end">Thành tiền</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="item in orderItems" :key="item.id || item.productId">
-                                            <td>
-                                                <div class="fw-semibold">{{ item.productName }}</div>
-                                                <small v-if="item.notes" class="text-muted">Ghi chú: {{ item.notes }}</small>
-                                            </td>
-                                            <td class="text-end">{{ item.quantity }}</td>
-                                            <td class="text-end">{{ formatCurrency(item.priceAtOrder) }}</td>
-                                            <td class="text-end">{{ formatCurrency(item.quantity * item.priceAtOrder) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
-
-                        <section v-if="!isPaid" class="payment-options mt-4">
-                            <!-- Order Notes -->
-                            <div class="payment-notes mb-4">
-                                <h6 class="mb-2">
-                                    <i class="bi bi-sticky me-2"></i>Ghi chú đơn hàng
-                                </h6>
-                                <textarea
-                                    v-model.trim="orderNotes"
-                                    class="form-control"
-                                    rows="3"
-                                    placeholder="Nhập ghi chú cho đơn hàng (tùy chọn)"
-                                    :disabled="processing || notesLoading"
-                                ></textarea>
-                                <small class="text-muted d-block mt-2">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Ghi chú sẽ được lưu vào đơn hàng
-                                </small>
-                            </div>
-
-                            <!-- Customer Phone Number -->
-                            <div class="payment-customer mb-4">
-                                <h6 class="mb-2">
-                                    <i class="bi bi-person me-2"></i>Thông tin khách hàng
-                                </h6>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="bi bi-telephone"></i>
-                                    </span>
-                                    <input
-                                        v-model.trim="customerPhone"
-                                        type="tel"
-                                        class="form-control"
-                                        placeholder="Nhập số điện thoại (tùy chọn)"
-                                        :disabled="processing || customerLoading"
-                                        @blur="handlePhoneBlur"
-                                    />
-                                    <button
-                                        v-if="customerLoading"
-                                        class="btn btn-outline-secondary"
-                                        type="button"
-                                        disabled
-                                    >
-                                        <span class="spinner-border spinner-border-sm"></span>
-                                    </button>
-                                    <button
-                                        v-else-if="customerPhone && !foundCustomer"
-                                        class="btn btn-outline-primary"
-                                        type="button"
-                                        :disabled="processing"
-                                        @click="handleFindOrCreateCustomer"
-                                    >
-                                        <i class="bi bi-search me-1"></i>Tìm/Tạo
-                                    </button>
-                                </div>
-                                <div v-if="foundCustomer" class="mt-2">
-                                    <small class="text-success">
-                                        <i class="bi bi-check-circle me-1"></i>
-                                        Khách hàng: {{ foundCustomer.fullName || foundCustomer.phone }}
-                                    </small>
-                                </div>
-                                <div v-if="customerError" class="mt-2">
-                                    <small class="text-danger">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>
-                                        {{ customerError }}
-                                    </small>
-                                </div>
-                                <small class="text-muted d-block mt-2">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Nếu số điện thoại không tồn tại, hệ thống sẽ tự động tạo khách hàng mới
-                                </small>
-                            </div>
-
-                            <!-- Voucher Code -->
-                            <div class="payment-voucher mb-4">
-                                <h6 class="mb-2">
-                                    <i class="bi bi-ticket-perforated me-2"></i>Mã giảm giá
-                                </h6>
-                                <div class="input-group">
-                                    <span class="input-group-text voucher-input-icon" :class="voucherApplied ? 'voucher-applied' : ''">
-                                        <i class="bi bi-ticket-perforated"></i>
-                                    </span>
-                                    <input
-                                        v-model.trim="voucherCode"
-                                        type="text"
-                                        class="form-control"
-                                        :class="voucherApplied ? 'voucher-input-applied' : ''"
-                                        placeholder="Nhập mã voucher và nhấn Áp dụng"
-                                        :disabled="processing || voucherLoading || !canApplyVoucher"
-                                        @keyup.enter="handleApplyVoucher"
-                                    />
-                                    <button
-                                        v-if="voucherLoading"
-                                        class="btn btn-warning"
-                                        type="button"
-                                        disabled
-                                    >
-                                        <span class="spinner-border spinner-border-sm me-1"></span>
-                                        Đang xử lý...
-                                    </button>
-                                    <button
-                                        v-else-if="voucherCode && !voucherApplied"
-                                        class="btn btn-success"
-                                        type="button"
-                                        :disabled="processing || !canApplyVoucher"
-                                        @click="handleApplyVoucher"
-                                    >
-                                        <i class="bi bi-check-circle me-1"></i>Áp dụng
-                                    </button>
-                                    <button
-                                        v-else-if="voucherApplied"
-                                        class="btn btn-danger"
-                                        type="button"
-                                        :disabled="processing"
-                                        @click="handleRemoveVoucher"
-                                    >
-                                        <i class="bi bi-x-circle me-1"></i>Bỏ voucher
-                                    </button>
-                                </div>
-                                <div v-if="voucherApplied && discountAmount > 0" class="voucher-success-message mt-2">
-                                    <i class="bi bi-check-circle-fill me-1"></i>
-                                    <strong>Voucher đã áp dụng!</strong> Giảm giá: 
-                                    <strong class="text-success">{{ formatCurrency(discountAmount) }}</strong>
-                                </div>
-                                <div v-if="voucherError" class="voucher-error-message mt-2">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                                    {{ voucherError }}
-                                </div>
-                                <div v-if="!canApplyVoucher" class="voucher-warning-message mt-2">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Vui lòng lưu đơn hàng trước khi áp dụng voucher
-                                </div>
-                            </div>
-
-                            <div class="payment-methods mb-4">
-                                <h6 class="mb-2">Chọn phương thức thanh toán</h6>
-                                <div class="btn-group payment-methods__group" role="group">
-                                    <button
-                                        v-for="method in PAYMENT_METHODS"
-                                        :key="method.value"
-                                        type="button"
-                                        class="btn"
-                                        :class="[
-                                            selectedPaymentMethod === method.value ? 'btn-primary' : 'btn-outline-primary',
-                                            'payment-methods__btn'
-                                        ]"
-                                        :disabled="processing"
-                                        @click="selectedPaymentMethod = method.value"
-                                    >
-                                        <i :class="method.icon" class="me-2"></i>{{ method.label }}
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="payment-tip">
-                                <h6 class="mb-2">Tiền típ (tùy chọn)</h6>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="bi bi-cash-coin"></i>
-                                    </span>
-                                    <input
-                                        v-model.number="tipAmount"
-                                        type="number"
-                                        class="form-control"
-                                        placeholder="Nhập số tiền típ"
-                                        min="0"
-                                        step="1000"
-                                        :disabled="processing"
-                                        @input="handleTipInput"
-                                    />
-                                    <button
-                                        v-for="quickTip in QUICK_TIP_OPTIONS"
-                                        :key="quickTip"
-                                        type="button"
-                                        class="btn btn-outline-secondary"
-                                        :disabled="processing"
-                                        @click="applyQuickTip(quickTip)"
-                                    >
-                                        {{ formatCurrency(quickTip) }}
-                                    </button>
-                                </div>
-                                <small class="text-muted d-block mt-2">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Tiền típ sẽ được cộng vào tổng thanh toán cuối cùng
-                                </small>
-                            </div>
-                        </section>
-                    </section>
-                    <EmptyState
-                        v-else
-                        title="Không có dữ liệu"
-                        message="Không có dữ liệu đơn hàng để hiển thị."
-                    >
-                        <template #icon>
-                            <i class="bi bi-receipt-cutoff"></i>
-                        </template>
-                    </EmptyState>
-
-                    <footer class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" :disabled="processing" @click="hide">Đóng</button>
-                        <button
-                            v-if="!isPaid"
-                            type="button"
-                            class="btn btn-success"
-                            :disabled="processing || !localOrder || !selectedPaymentMethod"
-                            @click="handleConfirm"
-                        >
-                            <span v-if="processing" class="spinner-border spinner-border-sm me-2"></span>
-                            Xác nhận thanh toán
-                        </button>
-                    </footer>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade pos-payment-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <header class="modal-header align-items-start">
+            <div>
+              <h5 class="modal-title">
+                Thanh toán đơn #{{ orderCode }}
+              </h5>
+              <p
+                v-if="localOrder"
+                class="mb-0 text-muted small"
+              >
+                Cập nhật: {{ formatDateTime(localOrder.updatedAt || localOrder.createdAt) }}
+              </p>
             </div>
+            <div class="d-flex align-items-center gap-2">
+              <span
+                v-if="statusMeta"
+                class="status-pill"
+                :class="statusMeta.class"
+              >{{ statusMeta.label
+              }}</span>
+              <button
+                v-if="isPaid"
+                class="btn btn-outline-primary btn-sm"
+                type="button"
+                :disabled="printing"
+                @click="handlePrint"
+              >
+                <span
+                  v-if="printing"
+                  class="spinner-border spinner-border-sm me-1"
+                />
+                <i
+                  v-else
+                  class="bi bi-printer me-1"
+                />
+                In hóa đơn
+              </button>
+              <button
+                type="button"
+                class="btn-close"
+                :disabled="processing"
+                @click="hide"
+              />
+            </div>
+          </header>
+
+          <section
+            v-if="localOrder"
+            class="modal-body"
+          >
+            <div class="row g-4">
+              <div class="col-md-6">
+                <ul class="list-unstyled payment-meta">
+                  <li><span class="label">Bàn phục vụ</span><span>{{ tableLabel }}</span></li>
+                  <li>
+                    <span class="label">Nhân viên</span><span>{{ localOrder.staffUsername ||
+                      localOrder.staffName ||
+                      '—' }}</span>
+                  </li>
+                  <li><span class="label">Khách hàng</span><span>{{ localOrder.customerName || 'Khách lẻ' }}</span></li>
+                  <li>
+                    <span class="label">Thời gian tạo</span><span>{{
+                      formatDateTime(localOrder.createdAt) }}</span>
+                  </li>
+                  <li v-if="localOrder.paymentMethod">
+                    <span class="label">Phương thức</span><span>{{ paymentMethodDisplay }}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <div class="payment-totals">
+                  <div>
+                    <span>Tổng phụ</span><span>{{ formatCurrency(localOrder.subTotal ?? subTotal)
+                    }}</span>
+                  </div>
+                  <div v-if="(localOrder.discountAmount ?? 0) > 0">
+                    <span>Giảm giá</span><span class="text-danger">-{{
+                      formatCurrency(localOrder.discountAmount ?? 0)
+                    }}</span>
+                  </div>
+                  <div
+                    v-if="displayTipAmount > 0"
+                    class="text-success"
+                  >
+                    <span>Tiền típ</span><span>+{{ formatCurrency(displayTipAmount) }}</span>
+                  </div>
+                  <div class="grand-total">
+                    <span>Tổng cộng</span><span>{{ formatCurrency(calculatedTotalAmount) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <section class="payment-items">
+              <h6 class="mb-3">
+                Chi tiết sản phẩm
+              </h6>
+              <EmptyState
+                v-if="!orderItems.length"
+                title="Chưa có sản phẩm"
+                message="Đơn hàng chưa có sản phẩm nào."
+              >
+                <template #icon>
+                  <i class="bi bi-basket" />
+                </template>
+              </EmptyState>
+              <div
+                v-else
+                class="table-responsive"
+              >
+                <table class="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Sản phẩm</th>
+                      <th class="text-end">
+                        SL
+                      </th>
+                      <th class="text-end">
+                        Đơn giá
+                      </th>
+                      <th class="text-end">
+                        Thành tiền
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="item in orderItems"
+                      :key="item.id || item.productId"
+                    >
+                      <td>
+                        <div class="fw-semibold">
+                          {{ item.productName }}
+                        </div>
+                        <small
+                          v-if="item.notes"
+                          class="text-muted"
+                        >Ghi chú: {{ item.notes
+                        }}</small>
+                      </td>
+                      <td class="text-end">
+                        {{ item.quantity }}
+                      </td>
+                      <td class="text-end">
+                        {{ formatCurrency(item.priceAtOrder) }}
+                      </td>
+                      <td class="text-end">
+                        {{ formatCurrency(item.quantity * item.priceAtOrder) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section
+              v-if="!isPaid"
+              class="payment-options mt-4"
+            >
+              <!-- Customer Phone Number -->
+              <div class="payment-customer mb-4">
+                <h6 class="mb-2">
+                  <i class="bi bi-person me-2" />Thông tin khách hàng
+                </h6>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-telephone" />
+                  </span>
+                  <input
+                    v-model.trim="customerPhone"
+                    type="tel"
+                    class="form-control"
+                    placeholder="Nhập số điện thoại (tùy chọn)"
+                    :disabled="processing || customerLoading"
+                    @blur="handlePhoneBlur"
+                  >
+                  <button
+                    v-if="customerLoading"
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    disabled
+                  >
+                    <span class="spinner-border spinner-border-sm" />
+                  </button>
+                  <button
+                    v-else-if="customerPhone && !foundCustomer"
+                    class="btn btn-outline-primary"
+                    type="button"
+                    :disabled="processing"
+                    @click="handleFindOrCreateCustomer"
+                  >
+                    <i class="bi bi-search me-1" />Tìm/Tạo
+                  </button>
+                </div>
+                <div
+                  v-if="foundCustomer"
+                  class="mt-2"
+                >
+                  <small class="text-success">
+                    <i class="bi bi-check-circle me-1" />
+                    Khách hàng: {{ foundCustomer.fullName || foundCustomer.phone }}
+                  </small>
+                </div>
+                <div
+                  v-if="customerError"
+                  class="mt-2"
+                >
+                  <small class="text-danger">
+                    <i class="bi bi-exclamation-triangle me-1" />
+                    {{ customerError }}
+                  </small>
+                </div>
+                <small class="text-muted d-block mt-2">
+                  <i class="bi bi-info-circle me-1" />
+                  Nếu số điện thoại không tồn tại, hệ thống sẽ tự động tạo khách hàng mới
+                </small>
+              </div>
+
+              <!-- Voucher Code -->
+              <div class="payment-voucher mb-4">
+                <h6 class="mb-2">
+                  <i class="bi bi-ticket-perforated me-2" />Mã giảm giá
+                </h6>
+                <div class="input-group">
+                  <span
+                    class="input-group-text voucher-input-icon"
+                    :class="voucherApplied ? 'voucher-applied' : ''"
+                  >
+                    <i class="bi bi-ticket-perforated" />
+                  </span>
+                  <input
+                    v-model.trim="voucherCode"
+                    type="text"
+                    class="form-control"
+                    :class="voucherApplied ? 'voucher-input-applied' : ''"
+                    placeholder="Nhập mã voucher và nhấn Áp dụng"
+                    :disabled="processing || voucherLoading || !canApplyVoucher"
+                    @keyup.enter="handleApplyVoucher"
+                  >
+                  <button
+                    v-if="voucherLoading"
+                    class="btn btn-warning"
+                    type="button"
+                    disabled
+                  >
+                    <span class="spinner-border spinner-border-sm me-1" />
+                    Đang xử lý...
+                  </button>
+                  <button
+                    v-else-if="voucherCode && !voucherApplied"
+                    class="btn btn-success"
+                    type="button"
+                    :disabled="processing || !canApplyVoucher"
+                    @click="handleApplyVoucher"
+                  >
+                    <i class="bi bi-check-circle me-1" />Áp dụng
+                  </button>
+                  <button
+                    v-else-if="voucherApplied"
+                    class="btn btn-danger"
+                    type="button"
+                    :disabled="processing"
+                    @click="handleRemoveVoucher"
+                  >
+                    <i class="bi bi-x-circle me-1" />Bỏ voucher
+                  </button>
+                </div>
+                <div
+                  v-if="voucherApplied && discountAmount > 0"
+                  class="voucher-success-message mt-2"
+                >
+                  <i class="bi bi-check-circle-fill me-1" />
+                  <strong>Voucher đã áp dụng!</strong> Giảm giá:
+                  <strong class="text-success">{{ formatCurrency(discountAmount) }}</strong>
+                </div>
+                <div
+                  v-if="voucherError"
+                  class="voucher-error-message mt-2"
+                >
+                  <i class="bi bi-exclamation-triangle-fill me-1" />
+                  {{ voucherError }}
+                </div>
+                <div
+                  v-if="!canApplyVoucher"
+                  class="voucher-warning-message mt-2"
+                >
+                  <i class="bi bi-info-circle me-1" />
+                  Vui lòng lưu đơn hàng trước khi áp dụng voucher
+                </div>
+              </div>
+
+              <div class="payment-methods mb-4">
+                <h6 class="mb-2">
+                  Chọn phương thức thanh toán
+                </h6>
+                <div
+                  class="btn-group payment-methods__group"
+                  role="group"
+                >
+                  <button
+                    v-for="method in PAYMENT_METHODS"
+                    :key="method.value"
+                    type="button"
+                    class="btn"
+                    :class="[
+                      selectedPaymentMethod === method.value ? 'btn-primary' : 'btn-outline-primary',
+                      'payment-methods__btn'
+                    ]"
+                    :disabled="processing"
+                    @click="selectedPaymentMethod = method.value"
+                  >
+                    <i
+                      :class="method.icon"
+                      class="me-2"
+                    />{{ method.label }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="payment-tip">
+                <h6 class="mb-2">
+                  Tiền típ (tùy chọn)
+                </h6>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-cash-coin" />
+                  </span>
+                  <input
+                    v-model.number="tipAmount"
+                    type="number"
+                    class="form-control"
+                    placeholder="Nhập số tiền típ"
+                    min="0"
+                    step="1000"
+                    :disabled="processing"
+                    @input="handleTipInput"
+                  >
+                  <button
+                    v-for="quickTip in QUICK_TIP_OPTIONS"
+                    :key="quickTip"
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    :disabled="processing"
+                    @click="applyQuickTip(quickTip)"
+                  >
+                    {{ formatCurrency(quickTip) }}
+                  </button>
+                </div>
+                <small class="text-muted d-block mt-2">
+                  <i class="bi bi-info-circle me-1" />
+                  Tiền típ sẽ được cộng vào tổng thanh toán cuối cùng
+                </small>
+              </div>
+            </section>
+          </section>
+          <EmptyState
+            v-else
+            title="Không có dữ liệu"
+            message="Không có dữ liệu đơn hàng để hiển thị."
+          >
+            <template #icon>
+              <i class="bi bi-receipt-cutoff" />
+            </template>
+          </EmptyState>
+
+          <footer class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="processing"
+              @click="hide"
+            >
+              Đóng
+            </button>
+            <button
+              v-if="!isPaid"
+              type="button"
+              class="btn btn-success"
+              :disabled="processing || !localOrder || !selectedPaymentMethod"
+              @click="handleConfirm"
+            >
+              <span
+                v-if="processing"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Xác nhận thanh toán
+            </button>
+          </footer>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -329,10 +430,6 @@ const printing = ref(false)
 const selectedPaymentMethod = ref('CASH')
 const tipAmount = ref(0)
 
-// Order notes
-const orderNotes = ref('')
-const notesLoading = ref(false)
-
 // Customer phone
 const customerPhone = ref('')
 const foundCustomer = ref(null)
@@ -349,13 +446,13 @@ const STATUS_METADATA = Object.freeze({
     PENDING: { label: 'Đang chờ', class: 'status-pill--pending' },
     PAID: { label: 'Đã thanh toán', class: 'status-pill--paid' },
     CANCELLED: { label: 'Đã hủy', class: 'status-pill--cancelled' },
-    TRANSFERRED: { label: 'Đã chuyển ca', class: 'status-pill--transferred' },
+    TRANSFERRED: { label: 'Đã chuyển ca', class: 'status-pill--transferred' }
 })
 
 const PAYMENT_METHODS = Object.freeze([
     { value: 'CASH', label: 'Tiền mặt', icon: 'bi bi-cash' },
     { value: 'TRANSFER', label: 'Chuyển khoản', icon: 'bi bi-bank' },
-    { value: 'CARD', label: 'Thẻ', icon: 'bi bi-credit-card' },
+    { value: 'CARD', label: 'Thẻ', icon: 'bi bi-credit-card' }
 ])
 
 const QUICK_TIP_OPTIONS = Object.freeze([10000, 20000, 50000, 100000])
@@ -395,9 +492,7 @@ const calculatedTotalAmount = computed(() => {
     return Math.max(amountAfterDiscount + tip, 0)
 })
 
-const canApplyVoucher = computed(() => {
-    return localOrder.value?.id != null
-})
+const canApplyVoucher = computed(() => localOrder.value?.id !== null)
 const tableLabel = computed(() => {
     if (localOrder.value?.tableName) return localOrder.value.tableName
     if (localOrder.value?.table?.name) return localOrder.value.table.name
@@ -419,7 +514,6 @@ const syncOrder = (incoming) => {
     if (!incoming) {
         localOrder.value = null
         tipAmount.value = 0
-        orderNotes.value = ''
         customerPhone.value = ''
         foundCustomer.value = null
         customerError.value = null
@@ -430,7 +524,7 @@ const syncOrder = (incoming) => {
     }
     try {
         localOrder.value = structuredClone(incoming)
-    } catch (err) {
+    } catch {
         localOrder.value = JSON.parse(JSON.stringify(incoming))
     }
 
@@ -446,9 +540,6 @@ const syncOrder = (incoming) => {
     } else {
         tipAmount.value = 0
     }
-
-    // Khôi phục order notes
-    orderNotes.value = localOrder.value?.notes || localOrder.value?.note || ''
 
     // Khôi phục customer info
     if (localOrder.value?.customerPhone) {
@@ -555,7 +646,7 @@ const handleApplyVoucher = async () => {
             orderId: localOrder.value.id,
             voucherCode: voucherCode.value.trim().toUpperCase()
         })
-        
+
         // Cập nhật localOrder với dữ liệu mới từ server
         syncOrder(updatedOrder)
         voucherApplied.value = true
@@ -602,36 +693,22 @@ const handleConfirm = async () => {
         toast.warning('Thiếu thông tin đơn hàng để thanh toán.')
         return
     }
-    
+
     const tip = Number(tipAmount.value) || 0
     if (tip < 0) {
         toast.error('Số tiền tip không được nhỏ hơn 0.')
         return
     }
 
-    // Lưu ghi chú nếu có thay đổi
-    const currentNotes = localOrder.value?.notes || localOrder.value?.note || ''
-    if (orderNotes.value.trim() !== currentNotes.trim()) {
-        try {
-            notesLoading.value = true
-            const updatedOrder = await orderService.updateOrder(localOrder.value.id, {
-                note: orderNotes.value.trim() || null
-            })
-            syncOrder(updatedOrder)
-        } catch (error) {
-            logger.error('Failed to update order notes:', error)
-            toast.warning('Không thể lưu ghi chú, tiếp tục thanh toán...')
-        } finally {
-            notesLoading.value = false
-        }
-    }
-    
+    // Lưu ý: Order entity không có field note, chỉ có OrderDetail có notes
+    // Ghi chú cần được lưu ở cấp item (OrderDetail), không phải cấp đơn hàng
+
     emit('confirm-payment', {
         orderId: localOrder.value.id,
         paymentMethod: selectedPaymentMethod.value || 'CASH',
         tipAmount: tip,
         customerId: foundCustomer.value?.id || localOrder.value.customerId || null,
-        voucherCode: voucherApplied.value ? voucherCode.value : null,
+        voucherCode: voucherApplied.value ? voucherCode.value : null
     })
 }
 
@@ -689,294 +766,264 @@ defineExpose({ show, hide })
 <style scoped>
 /* Modal - Chuẩn hóa theo base.css */
 .pos-payment-modal :global(.modal-content) {
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    box-shadow: var(--shadow-modal);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--color-border);
+	background: var(--color-card);
+	box-shadow: var(--shadow-modal);
 }
 
 .pos-payment-modal :global(.modal-header) {
-    padding: var(--spacing-4);
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-card);
+	padding: var(--spacing-4);
+	border-bottom: 1px solid var(--color-border);
+	background: var(--color-card);
 }
 
 .pos-payment-modal :global(.modal-body) {
-    padding: var(--spacing-5);
-    background: var(--color-card);
+	padding: var(--spacing-5);
+	background: var(--color-card);
 }
 
 .pos-payment-modal :global(.modal-footer) {
-    padding: var(--spacing-4);
-    border-top: 1px solid var(--color-border);
-    background: var(--color-card);
+	padding: var(--spacing-4);
+	border-top: 1px solid var(--color-border);
+	background: var(--color-card);
 }
 
 .payment-meta li {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--spacing-4);
-    padding: var(--spacing-1) 0;
-    font-size: var(--font-size-sm);
+	display: flex;
+	justify-content: space-between;
+	gap: var(--spacing-4);
+	padding: var(--spacing-1) 0;
+	font-size: var(--font-size-sm);
 }
 
 .payment-meta .label {
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-semibold);
+	color: var(--color-text-muted);
+	font-weight: var(--font-weight-semibold);
 }
 
 .payment-totals {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
 }
 
 .payment-totals div {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 .payment-totals .grand-total {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    font-family: var(--font-family-sans);
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-heading);
+	font-family: var(--font-family-sans);
 }
 
 .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-1);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    font-family: var(--font-family-sans);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-1);
+	padding: var(--spacing-1) var(--spacing-3);
+	border-radius: var(--radius-sm);
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-semibold);
+	text-transform: uppercase;
+	letter-spacing: var(--letter-spacing-wide);
+	font-family: var(--font-family-sans);
 }
 
 .status-pill--pending {
-    background: var(--color-soft-amber);
-    border: 1px solid var(--color-warning);
-    color: var(--color-warning);
+	background: var(--color-soft-amber);
+	border: 1px solid var(--color-warning);
+	color: var(--color-warning);
 }
 
 .status-pill--paid {
-    background: var(--color-soft-emerald);
-    border: 1px solid var(--color-success);
-    color: var(--color-success);
+	background: var(--color-soft-emerald);
+	border: 1px solid var(--color-success);
+	color: var(--color-success);
 }
 
 .status-pill--cancelled {
-    background: var(--color-soft-rose);
-    border: 1px solid var(--color-danger);
-    color: var(--color-danger);
+	background: var(--color-soft-rose);
+	border: 1px solid var(--color-danger);
+	color: var(--color-danger);
 }
 
 .status-pill--transferred {
-    background: var(--color-soft-sky);
-    border: 1px solid var(--color-info);
-    color: var(--color-info);
+	background: var(--color-soft-sky);
+	border: 1px solid var(--color-info);
+	color: var(--color-info);
 }
 
 .status-pill--default {
-    background: var(--color-card-muted);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-muted);
+	background: var(--color-card-muted);
+	border: 1px solid var(--color-border);
+	color: var(--color-text-muted);
 }
 
 .payment-items table {
-    border-radius: var(--radius-sm);
-    overflow: hidden;
+	border-radius: var(--radius-sm);
+	overflow: hidden;
 }
 
 .payment-methods__group {
-    display: flex;
-    gap: var(--spacing-3);
-    flex-wrap: wrap;
+	display: flex;
+	gap: var(--spacing-3);
+	flex-wrap: wrap;
 }
 
 .payment-methods__btn {
-    min-width: 120px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-1);
-    text-transform: uppercase;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    border-radius: var(--radius-full);
-    padding: var(--spacing-2) var(--spacing-4);
+	min-width: 120px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-1);
+	text-transform: uppercase;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-semibold);
+	border-radius: var(--radius-full);
+	padding: var(--spacing-2) var(--spacing-4);
 }
 
 .payment-methods__btn i {
-    font-size: var(--font-size-base);
+	font-size: var(--font-size-base);
 }
 
 .payment-options {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-6);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-6);
 }
 
 .payment-tip .input-group {
-    display: flex;
-    gap: var(--spacing-2);
-    flex-wrap: wrap;
+	display: flex;
+	gap: var(--spacing-2);
+	flex-wrap: wrap;
 }
 
 .payment-tip .input-group-text {
-    background: var(--color-card-muted);
-    border-color: var(--color-success);
-    color: var(--color-success);
+	background: var(--color-card-muted);
+	border-color: var(--color-success);
+	color: var(--color-success);
 }
 
 .payment-tip .form-control {
-    flex: 1;
-    min-width: 150px;
-    font-family: var(--font-family-sans);
+	flex: 1;
+	min-width: 150px;
+	font-family: var(--font-family-sans);
 }
 
 .payment-tip .form-control:focus {
-    box-shadow: none;
-    outline: 2px solid var(--color-primary);
-    outline-offset: 0;
+	box-shadow: none;
+	outline: 2px solid var(--color-primary);
+	outline-offset: 0;
 }
 
 .payment-tip .btn {
-    white-space: nowrap;
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-2) var(--spacing-3);
+	white-space: nowrap;
+	font-size: var(--font-size-sm);
+	padding: var(--spacing-2) var(--spacing-3);
 }
 
 /* Voucher Styles */
-/* Payment Notes */
-.payment-notes h6 {
-    color: var(--color-heading);
-    font-weight: var(--font-weight-semibold);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
-}
-
-.payment-notes textarea {
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    color: var(--color-text);
-    font-size: var(--font-size-base);
-    transition: all var(--transition-base);
-    font-family: var(--font-family-sans);
-}
-
-.payment-notes textarea:focus {
-    border-color: var(--color-primary);
-    outline: 2px solid var(--color-primary);
-    outline-offset: 0;
-    box-shadow: none;
-}
-
-.payment-notes textarea:disabled {
-    background: var(--color-card-muted);
-    opacity: 0.6;
-}
 
 /* Payment Customer */
 .payment-customer h6 {
-    color: var(--color-heading);
-    font-weight: var(--font-weight-semibold);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
+	color: var(--color-heading);
+	font-weight: var(--font-weight-semibold);
+	display: flex;
+	align-items: center;
+	font-family: var(--font-family-sans);
 }
 
 .payment-customer .input-group-text {
-    background: var(--color-card-muted);
-    border-color: var(--color-border);
-    color: var(--color-primary);
+	background: var(--color-card-muted);
+	border-color: var(--color-border);
+	color: var(--color-primary);
 }
 
 .payment-customer .form-control {
-    font-family: var(--font-family-sans);
+	font-family: var(--font-family-sans);
 }
 
 .payment-customer .form-control:focus {
-    border-color: var(--color-primary);
-    outline: 2px solid var(--color-primary);
-    outline-offset: 0;
-    box-shadow: none;
+	border-color: var(--color-primary);
+	outline: 2px solid var(--color-primary);
+	outline-offset: 0;
+	box-shadow: none;
 }
 
 /* Payment Voucher */
 .payment-voucher h6 {
-    color: var(--color-heading);
-    font-weight: var(--font-weight-semibold);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
+	color: var(--color-heading);
+	font-weight: var(--font-weight-semibold);
+	display: flex;
+	align-items: center;
+	font-family: var(--font-family-sans);
 }
 
 .voucher-input-icon {
-    background: var(--color-card-muted);
-    border-color: var(--color-border);
-    color: var(--color-text-muted);
-    transition: all var(--transition-base);
+	background: var(--color-card-muted);
+	border-color: var(--color-border);
+	color: var(--color-text-muted);
+	transition: all var(--transition-base);
 }
 
 .voucher-input-icon.voucher-applied {
-    background: var(--color-soft-emerald);
-    border-color: var(--color-success);
-    color: var(--color-success);
+	background: var(--color-soft-emerald);
+	border-color: var(--color-success);
+	color: var(--color-success);
 }
 
 .voucher-input-applied {
-    border-color: var(--color-success);
-    background: var(--color-soft-emerald);
-    font-family: var(--font-family-sans);
+	border-color: var(--color-success);
+	background: var(--color-soft-emerald);
+	font-family: var(--font-family-sans);
 }
 
 .voucher-input-applied:focus {
-    border-color: var(--color-success);
-    outline: 2px solid var(--color-success);
-    outline-offset: 0;
-    box-shadow: none;
+	border-color: var(--color-success);
+	outline: 2px solid var(--color-success);
+	outline-offset: 0;
+	box-shadow: none;
 }
 
 .voucher-success-message {
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
-    background: var(--color-soft-emerald);
-    border: 1px solid var(--color-success);
-    color: var(--color-success);
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
+	padding: var(--spacing-2) var(--spacing-3);
+	border-radius: var(--radius-sm);
+	background: var(--color-soft-emerald);
+	border: 1px solid var(--color-success);
+	color: var(--color-success);
+	font-size: var(--font-size-sm);
+	display: flex;
+	align-items: center;
+	font-family: var(--font-family-sans);
 }
 
 .voucher-error-message {
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
-    background: var(--color-soft-rose);
-    border: 1px solid var(--color-danger);
-    color: var(--color-danger);
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
+	padding: var(--spacing-2) var(--spacing-3);
+	border-radius: var(--radius-sm);
+	background: var(--color-soft-rose);
+	border: 1px solid var(--color-danger);
+	color: var(--color-danger);
+	font-size: var(--font-size-sm);
+	display: flex;
+	align-items: center;
+	font-family: var(--font-family-sans);
 }
 
 .voucher-warning-message {
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
-    background: var(--color-soft-amber);
-    border: 1px solid var(--color-warning);
-    color: var(--color-warning);
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    font-family: var(--font-family-sans);
+	padding: var(--spacing-2) var(--spacing-3);
+	border-radius: var(--radius-sm);
+	background: var(--color-soft-amber);
+	border: 1px solid var(--color-warning);
+	color: var(--color-warning);
+	font-size: var(--font-size-sm);
+	display: flex;
+	align-items: center;
+	font-family: var(--font-family-sans);
 }
 </style>

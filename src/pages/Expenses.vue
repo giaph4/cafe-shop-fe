@@ -1,279 +1,420 @@
 <template>
-    <!-- Expense Modal -->
-   <div data-aos="fade-up">
+  <!-- Expense Modal -->
+  <div data-aos="fade-up">
     <Teleport to="body">
-        <div class="modal fade expense-form-modal" id="expenseModal" tabindex="-1" ref="modalElement" aria-labelledby="expenseModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="expenseModalLabel">
-                            {{ isEditing ? 'Cập nhật Chi phí' : 'Thêm mới Chi phí' }}
-                        </h5>
-                        <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
-                    </div>
-
-                    <Form @submit="handleSubmit" :validation-schema="expenseSchema" v-slot="{ errors }">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="category" class="form-label">
-                                    Hạng mục <span class="text-danger">*</span>
-                                </label>
-                                <Field 
-                                    name="category" 
-                                    type="text" 
-                                    class="form-control"
-                                    :class="{ 'is-invalid': errors.category }" 
-                                    id="category"
-                                    placeholder="VD: Tiền điện, Tiền nước, Lương..." 
-                                    v-model="formData.category" 
-                                />
-                                <ErrorMessage name="category" class="invalid-feedback" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="amount" class="form-label">
-                                    Số tiền (VND) <span class="text-danger">*</span>
-                                </label>
-                                <Field 
-                                    name="amount" 
-                                    type="number" 
-                                    class="form-control"
-                                    :class="{ 'is-invalid': errors.amount }" 
-                                    id="amount" 
-                                    placeholder="500000"
-                                    v-model="formData.amount" 
-                                />
-                                <ErrorMessage name="amount" class="invalid-feedback" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="expenseDate" class="form-label">
-                                    Ngày chi <span class="text-danger">*</span>
-                                </label>
-                                <Field 
-                                    name="expenseDate" 
-                                    type="date" 
-                                    class="form-control"
-                                    :class="{ 'is-invalid': errors.expenseDate }" 
-                                    id="expenseDate"
-                                    v-model="formData.expenseDate" 
-                                />
-                                <ErrorMessage name="expenseDate" class="invalid-feedback" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="description" class="form-label">Mô tả</label>
-                                <Field 
-                                    name="description" 
-                                    as="textarea" 
-                                    rows="3" 
-                                    class="form-control" 
-                                    id="description"
-                                    placeholder="Mô tả chi tiết khoản chi..." 
-                                    v-model="formData.description" 
-                                />
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button 
-                                type="button" 
-                                class="btn btn-outline-secondary" 
-                                @click="closeModal" 
-                                :disabled="createMutation.isPending.value || updateMutation.isPending.value"
-                            >
-                                Hủy
-                            </button>
-                            <button 
-                                type="submit" 
-                                class="btn btn-primary"
-                                :disabled="createMutation.isPending.value || updateMutation.isPending.value"
-                            >
-                                <span 
-                                    v-if="createMutation.isPending.value || updateMutation.isPending.value"
-                                    class="spinner-border spinner-border-sm me-2" 
-                                    role="status" 
-                                    aria-hidden="true"
-                                ></span>
-                                Lưu thay đổi
-                            </button>
-                        </div>
-                    </Form>
-                </div>
+      <div
+        id="expenseModal"
+        ref="modalElement"
+        class="modal fade expense-form-modal"
+        tabindex="-1"
+        aria-labelledby="expenseModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="expenseModalLabel"
+                class="modal-title"
+              >
+                {{ isEditing ? 'Cập nhật Chi phí' : 'Thêm mới Chi phí' }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="closeModal"
+              />
             </div>
+
+            <Form
+              v-slot="{ errors }"
+              :validation-schema="expenseSchema"
+              @submit="handleSubmit"
+            >
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label
+                    for="category"
+                    class="form-label"
+                  >
+                    Hạng mục <span class="text-danger">*</span>
+                  </label>
+                  <Field
+                    id="category"
+                    v-model="formData.category"
+                    name="category"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.category }"
+                    placeholder="VD: Tiền điện, Tiền nước, Lương..."
+                  />
+                  <ErrorMessage
+                    name="category"
+                    class="invalid-feedback"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label
+                    for="amount"
+                    class="form-label"
+                  >
+                    Số tiền (VND) <span class="text-danger">*</span>
+                  </label>
+                  <Field
+                    id="amount"
+                    v-model="formData.amount"
+                    name="amount"
+                    type="number"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.amount }"
+                    placeholder="500000"
+                  />
+                  <ErrorMessage
+                    name="amount"
+                    class="invalid-feedback"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label
+                    for="expenseDate"
+                    class="form-label"
+                  >
+                    Ngày chi <span class="text-danger">*</span>
+                  </label>
+                  <Field
+                    id="expenseDate"
+                    v-model="formData.expenseDate"
+                    name="expenseDate"
+                    type="date"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.expenseDate }"
+                  />
+                  <ErrorMessage
+                    name="expenseDate"
+                    class="invalid-feedback"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label
+                    for="description"
+                    class="form-label"
+                  >Mô tả</label>
+                  <Field
+                    id="description"
+                    v-model="formData.description"
+                    name="description"
+                    as="textarea"
+                    rows="3"
+                    class="form-control"
+                    placeholder="Mô tả chi tiết khoản chi..."
+                  />
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                  @click="closeModal"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                >
+                  <span
+                    v-if="createMutation.isPending.value || updateMutation.isPending.value"
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Lưu thay đổi
+                </button>
+              </div>
+            </Form>
+          </div>
         </div>
+      </div>
     </Teleport>
 
     <!-- Delete Confirmation Modal -->
     <Teleport to="body">
-        <div class="modal fade expense-delete-modal" id="deleteExpenseModal" tabindex="-1" ref="deleteModalElement" aria-labelledby="deleteExpenseModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteExpenseModalLabel">Xác nhận xóa</h5>
-                        <button type="button" class="btn-close" @click="closeDeleteModal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Bạn có chắc chắn muốn xóa khoản chi phí này không?</p>
-                        <div v-if="expenseToDelete" class="card mt-3">
-                            <div class="card-body">
-                                <p class="mb-2"><strong>Hạng mục:</strong> {{ expenseToDelete.category }}</p>
-                                <p class="mb-2"><strong>Số tiền:</strong> <span class="text-danger fw-bold">{{ formatCurrency(expenseToDelete.amount) }}</span></p>
-                                <p class="mb-0"><strong>Ngày chi:</strong> {{ formatDate(expenseToDelete.expenseDate) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="closeDeleteModal">
-                            Hủy
-                        </button>
-                        <button 
-                            type="button" 
-                            class="btn btn-danger" 
-                            @click="confirmDelete"
-                            :disabled="deleteMutation.isPending.value"
-                        >
-                            <span 
-                                v-if="deleteMutation.isPending.value"
-                                class="spinner-border spinner-border-sm me-2" 
-                                role="status" 
-                                aria-hidden="true"
-                            ></span>
-                            Xóa
-                        </button>
-                    </div>
-                </div>
+      <div
+        id="deleteExpenseModal"
+        ref="deleteModalElement"
+        class="modal fade expense-delete-modal"
+        tabindex="-1"
+        aria-labelledby="deleteExpenseModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="deleteExpenseModalLabel"
+                class="modal-title"
+              >
+                Xác nhận xóa
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="closeDeleteModal"
+              />
             </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa khoản chi phí này không?</p>
+              <div
+                v-if="expenseToDelete"
+                class="card mt-3"
+              >
+                <div class="card-body">
+                  <p class="mb-2">
+                    <strong>Hạng mục:</strong> {{ expenseToDelete.category }}
+                  </p>
+                  <p class="mb-2">
+                    <strong>Số tiền:</strong> <span class="text-danger fw-bold">{{ formatCurrency(expenseToDelete.amount) }}</span>
+                  </p>
+                  <p class="mb-0">
+                    <strong>Ngày chi:</strong> {{ formatDate(expenseToDelete.expenseDate) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="closeDeleteModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                :disabled="deleteMutation.isPending.value"
+                @click="confirmDelete"
+              >
+                <span
+                  v-if="deleteMutation.isPending.value"
+                  class="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                />
+                Xóa
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
     </Teleport>
 
-    <div class="page-container container-fluid expenses-page" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="expenses-header">
-            <div class="expenses-header__content">
-                <div class="expenses-header__title-section">
-                    <h2 class="expenses-header__title">Quản lý Chi phí</h2>
-                    <p class="expenses-header__subtitle">Theo dõi và quản lý các khoản chi phí hoạt động của cửa hàng.</p>
-                </div>
-                <div class="expenses-header__actions">
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button" 
-                        @click="refetch()" 
-                        :disabled="isLoading"
+    <div
+      class="page-container container-fluid expenses-page"
+      style="background: var(--color-body-bg); padding: var(--spacing-4);"
+    >
+      <div class="expenses-header">
+        <div class="expenses-header__content">
+          <div class="expenses-header__title-section">
+            <h2 class="expenses-header__title">
+              Quản lý Chi phí
+            </h2>
+            <p class="expenses-header__subtitle">
+              Theo dõi và quản lý các khoản chi phí hoạt động của cửa hàng.
+            </p>
+          </div>
+          <div class="expenses-header__actions">
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              :disabled="isLoading"
+              @click="refetch()"
+            >
+              <span
+                v-if="isLoading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-arrow-clockwise me-2"
+              />
+              Làm mới
+            </button>
+            <button
+              class="btn btn-primary"
+              type="button"
+              @click="openModal()"
+            >
+              <i class="bi bi-plus-lg me-2" />
+              Ghi nhận chi phí
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card filter-card mb-4">
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label">Tìm kiếm</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search" /></span>
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  class="form-control"
+                  placeholder="Tìm theo hạng mục, mô tả, người tạo..."
+                >
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Từ ngày</label>
+              <input
+                v-model="startDate"
+                type="date"
+                class="form-control"
+              >
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Đến ngày</label>
+              <input
+                v-model="endDate"
+                type="date"
+                class="form-control"
+              >
+            </div>
+            <div class="col-md-2">
+              <button
+                class="btn btn-outline-secondary w-100"
+                @click="clearDateFilters"
+              >
+                <i class="bi bi-x-lg me-1" /> Xóa lọc
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <div class="card-body">
+          <LoadingState v-if="isLoading || isFetching" />
+          <ErrorState
+            v-else-if="isError"
+            :message="error?.response?.data?.message || error?.message || 'Không thể tải dữ liệu chi phí'"
+            @retry="refetch()"
+          />
+          <template v-else-if="pageData">
+            <div
+              v-if="filteredExpenses.length === 0"
+              class="table-empty"
+            >
+              <EmptyState
+                title="Không tìm thấy chi phí"
+                :message="searchQuery ? 'Không có chi phí nào khớp với từ khóa tìm kiếm.' : 'Chưa có chi phí nào được ghi nhận.'"
+              />
+            </div>
+            <div
+              v-else
+              class="table-responsive"
+            >
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">
+                      ID
+                    </th>
+                    <th scope="col">
+                      Ngày chi
+                    </th>
+                    <th scope="col">
+                      Hạng mục
+                    </th>
+                    <th scope="col">
+                      Số tiền
+                    </th>
+                    <th scope="col">
+                      Người tạo
+                    </th>
+                    <th scope="col">
+                      Mô tả
+                    </th>
+                    <th
+                      scope="col"
+                      class="text-end"
                     >
-                        <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                    <button class="btn btn-primary" type="button" @click="openModal()">
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Ghi nhận chi phí
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label">Tìm kiếm</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Tìm theo hạng mục, mô tả, người tạo..."
-                                v-model="searchQuery">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="startDate">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="endDate">
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-outline-secondary w-100" @click="clearDateFilters">
-                            <i class="bi bi-x-lg me-1"></i> Xóa lọc
+                      Hành động
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="expense in filteredExpenses"
+                    :key="expense.id"
+                  >
+                    <th scope="row">
+                      {{ expense.id }}
+                    </th>
+                    <td class="fw-bold">
+                      {{ formatDate(expense.expenseDate) }}
+                    </td>
+                    <td>{{ expense.category }}</td>
+                    <td class="text-danger fw-bold">
+                      {{ formatCurrency(expense.amount) }}
+                    </td>
+                    <td>{{ expense.username }}</td>
+                    <td class="text-muted">
+                      {{ expense.description || 'N/A' }}
+                    </td>
+                    <td class="text-end">
+                      <div class="action-buttons">
+                        <button
+                          class="btn btn-sm btn-outline-primary"
+                          title="Chỉnh sửa"
+                          @click="openModal(expense)"
+                        >
+                          <i class="bi bi-pencil me-1" />
+                          <span class="d-none d-md-inline">Sửa</span>
                         </button>
-                    </div>
-                </div>
+                        <button
+                          class="btn btn-sm btn-outline-danger"
+                          title="Xóa"
+                          @click="openDeleteModal(expense)"
+                        >
+                          <i class="bi bi-trash me-1" />
+                          <span class="d-none d-md-inline">Xóa</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+          </template>
         </div>
 
-        <div class="card table-card">
-            <div class="card-body">
-                <LoadingState v-if="isLoading || isFetching" />
-                <ErrorState v-else-if="isError" :message="error?.response?.data?.message || error?.message || 'Không thể tải dữ liệu chi phí'" @retry="refetch()" />
-                <template v-else-if="pageData">
-                    <div v-if="filteredExpenses.length === 0" class="table-empty">
-                        <EmptyState
-                            title="Không tìm thấy chi phí"
-                            :message="searchQuery ? 'Không có chi phí nào khớp với từ khóa tìm kiếm.' : 'Chưa có chi phí nào được ghi nhận.'"
-                        />
-                    </div>
-                    <div v-else class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Ngày chi</th>
-                                    <th scope="col">Hạng mục</th>
-                                    <th scope="col">Số tiền</th>
-                                    <th scope="col">Người tạo</th>
-                                    <th scope="col">Mô tả</th>
-                                    <th scope="col" class="text-end">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="expense in filteredExpenses" :key="expense.id">
-                                    <th scope="row">{{ expense.id }}</th>
-                                    <td class="fw-bold">{{ formatDate(expense.expenseDate) }}</td>
-                                    <td>{{ expense.category }}</td>
-                                    <td class="text-danger fw-bold">{{ formatCurrency(expense.amount) }}</td>
-                                    <td>{{ expense.username }}</td>
-                                    <td class="text-muted">{{ expense.description || 'N/A' }}</td>
-                                    <td class="text-end">
-                                        <div class="action-buttons">
-                                            <button 
-                                                class="btn btn-sm btn-outline-primary" 
-                                                @click="openModal(expense)" 
-                                                title="Chỉnh sửa"
-                                            >
-                                                <i class="bi bi-pencil me-1"></i>
-                                                <span class="d-none d-md-inline">Sửa</span>
-                                            </button>
-                                            <button 
-                                                class="btn btn-sm btn-outline-danger" 
-                                                @click="openDeleteModal(expense)" 
-                                                title="Xóa"
-                                            >
-                                                <i class="bi bi-trash me-1"></i>
-                                                <span class="d-none d-md-inline">Xóa</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </template>
-            </div>
-
-            <div v-if="pageData && pageData.content && filteredExpenses.length > 0" class="card-footer d-flex justify-content-end">
-                <Pagination
-                    v-if="totalPages > 1"
-                    mode="zero-based"
-                    :current-page="currentPage"
-                    :total-pages="totalPages"
-                    @page-change="handlePageChange"
-                />
-            </div>
+        <div
+          v-if="pageData && pageData.content && filteredExpenses.length > 0"
+          class="card-footer d-flex justify-content-end"
+        >
+          <Pagination
+            v-if="totalPages > 1"
+            mode="zero-based"
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-change="handlePageChange"
+          />
         </div>
+      </div>
     </div>
-   </div>
+  </div>
 </template>
 
 <script setup>
@@ -313,13 +454,13 @@ const formData = reactive({
     expenseDate: new Date().toISOString().split('T')[0]
 })
 
-const getTodayDate = () => new Date().toISOString().split('T')[0];
+const getTodayDate = () => new Date().toISOString().split('T')[0]
 const getFirstDayOfMonth = () => {
-    const date = new Date();
-    return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
+    const date = new Date()
+    return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0]
 }
-startDate.value = getFirstDayOfMonth();
-endDate.value = getTodayDate();
+startDate.value = getFirstDayOfMonth()
+endDate.value = getTodayDate()
 
 const expenseSchema = yup.object({
     category: yup.string().required('Hạng mục là bắt buộc').max(100, 'Tên quá dài!'),
@@ -372,7 +513,7 @@ const { data: pageData, isLoading, isError, error, refetch, isFetching } = useQu
                 page: zeroBasedPage.value,
                 size: pageSize.value
             }
-            
+
             // Only add date filters if they have values
             if (startDate.value) {
                 filters.startDate = startDate.value
@@ -380,7 +521,7 @@ const { data: pageData, isLoading, isError, error, refetch, isFetching } = useQu
             if (endDate.value) {
                 filters.endDate = endDate.value
             }
-            
+
             const response = await getExpenses(filters)
             return response
         } catch (err) {

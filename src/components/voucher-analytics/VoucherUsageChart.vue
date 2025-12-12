@@ -1,13 +1,13 @@
 <template>
-    <div class="voucher-usage-chart">
-        <apexchart
-            v-if="isMounted"
-            type="line"
-            height="350"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="voucher-usage-chart">
+    <apexchart
+      v-if="isMounted"
+      type="line"
+      height="350"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -35,17 +35,17 @@ const chartSeries = computed(() => {
         x: item.date,
         y: item.usageCount
     }))
-    
+
     const totalDiscount = props.usageData.map(item => ({
         x: item.date,
         y: item.totalDiscount
     }))
-    
+
     const totalRevenue = props.usageData.map(item => ({
         x: item.date,
         y: item.totalRevenue
     }))
-    
+
     return [
         {
             name: 'Số lần sử dụng',
@@ -157,10 +157,10 @@ const chartOptions = computed(() => ({
             labels: {
                 formatter: (value) => {
                     if (value >= 1000000) {
-                        return (value / 1000000).toFixed(1) + 'M'
+                        return `${(value / 1000000).toFixed(1)  }M`
                     }
                     if (value >= 1000) {
-                        return (value / 1000).toFixed(1) + 'K'
+                        return `${(value / 1000).toFixed(1)  }K`
                     }
                     return value.toFixed(0)
                 },
@@ -178,7 +178,7 @@ const chartOptions = computed(() => ({
         y: {
             formatter: (value, { seriesIndex }) => {
                 if (seriesIndex === 0) {
-                    return value + ' lần'
+                    return `${value  } lần`
                 }
                 return new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
@@ -201,7 +201,13 @@ const chartOptions = computed(() => ({
     },
     grid: {
         borderColor: 'var(--color-border)',
-        strokeDashArray: 4
+        strokeDashArray: 4,
+        padding: {
+            top: 8,
+            bottom: 20,
+            left: 12,
+            right: 12
+        }
     },
     colors: ['var(--color-primary)', 'var(--color-warning)', 'var(--color-success)'],
     theme: {

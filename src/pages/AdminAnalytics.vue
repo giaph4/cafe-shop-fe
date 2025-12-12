@@ -1,378 +1,523 @@
 <template>
-    <div class="admin-analytics-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="admin-analytics-header">
-            <div class="admin-analytics-header__content">
-                <div class="admin-analytics-header__title-section">
-                    <h2 class="admin-analytics-header__title">
-                        <i class="bi bi-graph-up-arrow me-2"></i>Phân tích AI
-                    </h2>
-                    <p class="admin-analytics-header__subtitle">Phân tích dữ liệu kinh doanh thông minh với AI, nhận insights và đề xuất hành động.</p>
-                </div>
-                <div class="admin-analytics-header__actions">
-                    <button class="btn btn-outline-secondary" type="button" @click="resetForm" :disabled="loading || generating">
-                        <i class="bi bi-arrow-clockwise me-2"></i>Đặt lại
-                    </button>
-                </div>
+  <div
+    class="admin-analytics-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <PageHeader
+      title="Phân tích AI"
+      subtitle="Phân tích dữ liệu kinh doanh thông minh với AI, nhận insights và đề xuất hành động."
+    >
+      <template #actions>
+        <button
+          class="btn btn-flat btn-flat--outline"
+          type="button"
+          :disabled="loading || generating"
+          @click="resetForm"
+        >
+          <i class="bi bi-arrow-clockwise me-2" />Đặt lại
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Từ ngày <span class="text-danger">*</span></label>
+            <input
+              v-model="filters.from"
+              type="date"
+              class="form-control clean-input"
+              required
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Đến ngày <span class="text-danger">*</span></label>
+            <input
+              v-model="filters.to"
+              type="date"
+              class="form-control clean-input"
+              required
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Khoảng thời gian</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in timePresets"
+                :key="preset.value"
+                type="button"
+                class="btn btn-flat"
+                :class="selectedTimePreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
+                @click="applyTimePreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
             </div>
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Metric</label>
+            <select
+              v-model="filters.metric"
+              class="form-select clean-input"
+            >
+              <option value="revenue">
+                Doanh thu
+              </option>
+              <option value="profit">
+                Lợi nhuận
+              </option>
+              <option value="orders">
+                Đơn hàng
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-4 col-md-12">
+            <label class="form-label">Câu hỏi phân tích <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input
+                v-model="filters.question"
+                type="text"
+                class="form-control clean-input"
+                placeholder="Ví dụ: Phân tích xu hướng bán hàng và đề xuất cải thiện..."
+                required
+              >
+              <button
+                type="button"
+                class="btn btn-flat btn-flat--outline"
+                title="Xem prompt mẫu"
+                @click="showPromptTemplates = !showPromptTemplates"
+              >
+                <i class="bi bi-lightbulb" />
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-12">
+            <div class="form-label mb-2">
+              Tùy chọn dữ liệu
+            </div>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check">
+                <input
+                  id="includeTopProducts"
+                  v-model="filters.includeTopProducts"
+                  class="form-check-input"
+                  type="checkbox"
+                >
+                <label
+                  class="form-check-label"
+                  for="includeTopProducts"
+                >
+                  Top sản phẩm
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  id="includeVoucherStats"
+                  v-model="filters.includeVoucherStats"
+                  class="form-check-input"
+                  type="checkbox"
+                >
+                <label
+                  class="form-check-label"
+                  for="includeVoucherStats"
+                >
+                  Thống kê Voucher
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  id="includeCustomerStats"
+                  v-model="filters.includeCustomerStats"
+                  class="form-check-input"
+                  type="checkbox"
+                >
+                <label
+                  class="form-check-label"
+                  for="includeCustomerStats"
+                >
+                  Thống kê Khách hàng
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-12">
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+              <button
+                class="btn btn-flat btn-flat--primary"
+                type="button"
+                :disabled="loading || generating || !isFormValid"
+                @click="generateInsight"
+              >
+                <span
+                  v-if="generating"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                <i
+                  v-else
+                  class="bi bi-graph-up-arrow me-2"
+                />
+                {{ generating ? 'Đang phân tích...' : 'Phân tích' }}
+              </button>
+              <button
+                class="btn btn-flat btn-flat--outline"
+                type="button"
+                :disabled="loading || generating"
+                @click="resetForm"
+              >
+                <i class="bi bi-arrow-clockwise me-2" />
+                Đặt lại
+              </button>
+            </div>
+          </div>
+          <div
+            v-if="showPromptTemplates"
+            class="col-lg-12"
+          >
+            <div class="prompt-templates mt-3">
+              <div class="prompt-templates__header">
+                <h6 class="mb-2">
+                  <i class="bi bi-magic me-2" />Prompt mẫu (Click để sử dụng)
+                </h6>
+              </div>
+              <div class="prompt-templates__list">
+                <button
+                  v-for="(prompt, index) in promptTemplates"
+                  :key="index"
+                  type="button"
+                  class="prompt-template-item"
+                  @click="selectPrompt(prompt)"
+                >
+                  <div class="prompt-template-item__icon">
+                    <i :class="prompt.icon" />
+                  </div>
+                  <div class="prompt-template-item__content">
+                    <strong>{{ prompt.title }}</strong>
+                    <small>{{ prompt.description }}</small>
+                  </div>
+                  <i class="bi bi-arrow-right prompt-template-item__arrow" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="validationError"
+            class="col-lg-12"
+          >
+            <div class="error-message mb-0">
+              <i class="bi bi-exclamation-triangle me-2" />
+              {{ validationError }}
+            </div>
+          </div>
         </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Từ ngày <span class="text-danger">*</span></label>
-                        <input
-                            type="date"
-                            class="form-control"
-                            v-model="filters.from"
-                            required
-                        />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Đến ngày <span class="text-danger">*</span></label>
-                        <input
-                            type="date"
-                            class="form-control"
-                            v-model="filters.to"
-                            required
-                        />
-                    </div>
-                    <div class="col-lg-6 col-md-12">
-                        <label class="form-label">Câu hỏi phân tích <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input
-                                type="text"
-                                class="form-control"
-                                v-model="filters.question"
-                                placeholder="Ví dụ: Phân tích xu hướng bán hàng và đề xuất cải thiện..."
-                                required
-                            />
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                @click="showPromptTemplates = !showPromptTemplates"
-                                title="Xem prompt mẫu"
-                            >
-                                <i class="bi bi-lightbulb"></i>
-                            </button>
-                        </div>
-                        <div v-if="showPromptTemplates" class="prompt-templates mt-3">
-                            <div class="prompt-templates__header">
-                                <h6 class="mb-2">
-                                    <i class="bi bi-magic me-2"></i>Prompt mẫu (Click để sử dụng)
-                                </h6>
-                            </div>
-                            <div class="prompt-templates__list">
-                                <button
-                                    v-for="(prompt, index) in promptTemplates"
-                                    :key="index"
-                                    type="button"
-                                    class="prompt-template-item"
-                                    @click="selectPrompt(prompt)"
-                                >
-                                    <div class="prompt-template-item__icon">
-                                        <i :class="prompt.icon"></i>
-                                    </div>
-                                    <div class="prompt-template-item__content">
-                                        <strong>{{ prompt.title }}</strong>
-                                        <small>{{ prompt.description }}</small>
-                                    </div>
-                                    <i class="bi bi-arrow-right prompt-template-item__arrow"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <div class="form-label">Tùy chọn dữ liệu</div>
-                        <div class="form-check form-check-inline">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="includeTopProducts"
-                                v-model="filters.includeTopProducts"
-                            />
-                            <label class="form-check-label" for="includeTopProducts">
-                                Top sản phẩm
-                            </label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="includeVoucherStats"
-                                v-model="filters.includeVoucherStats"
-                            />
-                            <label class="form-check-label" for="includeVoucherStats">
-                                Thống kê Voucher
-                            </label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="includeCustomerStats"
-                                v-model="filters.includeCustomerStats"
-                            />
-                            <label class="form-check-label" for="includeCustomerStats">
-                                Thống kê Khách hàng
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <button
-                            class="btn btn-primary"
-                            type="button"
-                            @click="generateInsight"
-                            :disabled="loading || generating || !isFormValid"
-                        >
-                            <span v-if="generating" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-magic me-2"></i>
-                            {{ generating ? 'Đang phân tích...' : 'Tạo Phân tích AI' }}
-                        </button>
-                    </div>
-                    <div class="col-lg-12" v-if="validationError">
-                        <div class="error-message mb-0">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            {{ validationError }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <LoadingState v-if="loading" message="Đang tải dữ liệu..." />
-        <ErrorState 
-            v-else-if="error" 
-            :message="error"
-        />
-
-        <div v-else-if="insightData" class="row g-4">
-            <!-- AI Insights -->
-            <div class="col-lg-8">
-                <div class="card insight-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-0">
-                                <i class="bi bi-robot me-2"></i>Phân tích AI
-                            </h5>
-                            <small class="text-muted">Được tạo lúc {{ formatDateTime(insightData.generatedAt) }}</small>
-                        </div>
-                        <button
-                            class="btn btn-sm btn-outline-primary"
-                            @click="copyInsight"
-                            :disabled="!insightData.aiInsightMarkdown"
-                        >
-                            <i class="bi bi-clipboard me-1"></i>Copy
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div
-                            v-if="insightData.aiInsightMarkdown"
-                            class="ai-insight-content"
-                            v-html="formatMarkdown(insightData.aiInsightMarkdown)"
-                        ></div>
-                        <div v-else class="text-muted text-center py-4">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            Chưa có phân tích AI
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts Section -->
-                <div v-if="insightData.metrics" class="row g-4 mt-2">
-                    <!-- Revenue Trend Chart -->
-                    <div class="col-lg-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-graph-up me-2"></i>Xu hướng Doanh thu
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <ApexChart
-                                    type="area"
-                                    height="300"
-                                    :options="revenueChartOptions"
-                                    :series="revenueChartSeries"
-                                ></ApexChart>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Top Products Chart -->
-                    <div v-if="insightData.metrics?.topProducts?.length > 0" class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-pie-chart me-2"></i>Top Sản phẩm (Doanh thu)
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <ApexChart
-                                    type="donut"
-                                    height="300"
-                                    :options="topProductsChartOptions"
-                                    :series="topProductsChartSeries"
-                                ></ApexChart>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Order Status Chart -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-bar-chart me-2"></i>Trạng thái Đơn hàng
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <ApexChart
-                                    type="bar"
-                                    height="300"
-                                    :options="orderStatusChartOptions"
-                                    :series="orderStatusChartSeries"
-                                ></ApexChart>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Metrics Summary -->
-            <div class="col-lg-4">
-                <div class="card metrics-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-bar-chart me-2"></i>Tóm tắt Metrics
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div v-if="insightData.metrics" class="metrics-summary">
-                            <div
-                                v-for="metric in metricItems"
-                                :key="metric.key"
-                                class="metric-item"
-                                :class="metric.variant"
-                            >
-                                <div class="metric-item__icon">
-                                    <i :class="metric.icon"></i>
-                                </div>
-                                <div class="metric-item__content">
-                                    <div class="metric-label">{{ metric.label }}</div>
-                                    <div class="metric-value" :class="metric.valueClass">
-                                        {{ metric.value }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Top Products -->
-            <div v-if="insightData.metrics?.topProducts?.length > 0" class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-trophy me-2"></i>Top Sản phẩm
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Sản phẩm</th>
-                                        <th class="text-end">Số lượng</th>
-                                        <th class="text-end">Doanh thu</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(product, index) in insightData.metrics.topProducts" :key="product.productId || index">
-                                        <td>
-                                            <strong>{{ product.productName || 'N/A' }}</strong>
-                                        </td>
-                                        <td class="text-end">{{ formatNumber(product.totalQuantity) }}</td>
-                                        <td class="text-end">{{ formatCurrency(product.totalRevenue) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Top Customers -->
-            <div v-if="insightData.metrics?.topCustomers?.length > 0" class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-people me-2"></i>Top Khách hàng
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Khách hàng</th>
-                                        <th class="text-end">Số đơn</th>
-                                        <th class="text-end">Tổng chi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(customer, index) in insightData.metrics.topCustomers" :key="customer.customerId || index">
-                                        <td>
-                                            <div>
-                                                <strong>{{ customer.customerName || 'N/A' }}</strong>
-                                                <small v-if="customer.phone" class="text-muted d-block">{{ customer.phone }}</small>
-                                            </div>
-                                        </td>
-                                        <td class="text-end">{{ formatNumber(customer.orderCount) }}</td>
-                                        <td class="text-end">{{ formatCurrency(customer.totalSpend) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Top Staff -->
-            <div v-if="insightData.metrics?.topStaff?.length > 0" class="col-lg-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-person-badge me-2"></i>Top Nhân viên
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Nhân viên</th>
-                                        <th class="text-end">Số đơn</th>
-                                        <th class="text-end">Doanh thu</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(staff, index) in insightData.metrics.topStaff" :key="staff.staffId || index">
-                                        <td>
-                                            <strong>{{ staff.staffName || 'N/A' }}</strong>
-                                        </td>
-                                        <td class="text-end">{{ formatNumber(staff.orderCount) }}</td>
-                                        <td class="text-end">{{ formatCurrency(staff.totalRevenue) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <LoadingState
+      v-if="loading"
+      message="Đang tải dữ liệu..."
+    />
+    <ErrorState
+      v-else-if="error"
+      :message="error"
+    />
+
+    <div
+      v-else-if="insightData"
+      class="row g-4"
+    >
+      <!-- AI Insights -->
+      <div class="col-lg-8">
+        <div class="card insight-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">
+                <i class="bi bi-robot me-2" />Phân tích AI
+              </h5>
+              <small class="text-muted">Được tạo lúc {{ formatDateTime(insightData.generatedAt) }}</small>
+            </div>
+            <button
+              class="btn btn-sm btn-outline-primary"
+              :disabled="!insightData.aiInsightMarkdown"
+              @click="copyInsight"
+            >
+              <i class="bi bi-clipboard me-1" />Copy
+            </button>
+          </div>
+          <div class="card-body">
+            <div
+              v-if="insightData.aiInsightMarkdown"
+              class="ai-insight-content"
+              v-html="formatMarkdown(insightData.aiInsightMarkdown)"
+            />
+            <div
+              v-else
+              class="text-muted text-center py-4"
+            >
+              <i class="bi bi-inbox fs-1 d-block mb-2" />
+              Chưa có phân tích AI
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div
+          v-if="insightData.metrics"
+          class="row g-4 mt-2"
+        >
+          <!-- Revenue Trend Chart -->
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="bi bi-graph-up me-2" />Xu hướng Doanh thu
+                </h5>
+              </div>
+              <div class="card-body">
+                <ApexChart
+                  type="area"
+                  height="300"
+                  :options="revenueChartOptions"
+                  :series="revenueChartSeries"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Products Chart -->
+          <div
+            v-if="insightData.metrics?.topProducts?.length > 0"
+            class="col-lg-6"
+          >
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="bi bi-pie-chart me-2" />Top Sản phẩm (Doanh thu)
+                </h5>
+              </div>
+              <div class="card-body">
+                <ApexChart
+                  type="donut"
+                  height="300"
+                  :options="topProductsChartOptions"
+                  :series="topProductsChartSeries"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Status Chart -->
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="bi bi-bar-chart me-2" />Trạng thái Đơn hàng
+                </h5>
+              </div>
+              <div class="card-body">
+                <ApexChart
+                  type="bar"
+                  height="300"
+                  :options="orderStatusChartOptions"
+                  :series="orderStatusChartSeries"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Summary -->
+      <div class="col-lg-4">
+        <div class="card metrics-card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-bar-chart me-2" />Tóm tắt Metrics
+            </h5>
+          </div>
+          <div class="card-body">
+            <div
+              v-if="insightData.metrics"
+              class="metrics-summary"
+            >
+              <div
+                v-for="metric in metricItems"
+                :key="metric.key"
+                class="metric-item"
+                :class="metric.variant"
+              >
+                <div class="metric-item__icon">
+                  <i :class="metric.icon" />
+                </div>
+                <div class="metric-item__content">
+                  <div class="metric-label">
+                    {{ metric.label }}
+                  </div>
+                  <div
+                    class="metric-value"
+                    :class="metric.valueClass"
+                  >
+                    {{ metric.value }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Products -->
+      <div
+        v-if="insightData.metrics?.topProducts?.length > 0"
+        class="col-lg-6"
+      >
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-trophy me-2" />Top Sản phẩm
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th class="text-end">
+                      Số lượng
+                    </th>
+                    <th class="text-end">
+                      Doanh thu
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(product, index) in insightData.metrics.topProducts"
+                    :key="product.productId || index"
+                  >
+                    <td>
+                      <strong>{{ product.productName || 'N/A' }}</strong>
+                    </td>
+                    <td class="text-end">
+                      {{ formatNumber(product.totalQuantity) }}
+                    </td>
+                    <td class="text-end">
+                      {{ formatCurrency(product.totalRevenue) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Customers -->
+      <div
+        v-if="insightData.metrics?.topCustomers?.length > 0"
+        class="col-lg-6"
+      >
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-people me-2" />Top Khách hàng
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Khách hàng</th>
+                    <th class="text-end">
+                      Số đơn
+                    </th>
+                    <th class="text-end">
+                      Tổng chi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(customer, index) in insightData.metrics.topCustomers"
+                    :key="customer.customerId || index"
+                  >
+                    <td>
+                      <div>
+                        <strong>{{ customer.customerName || 'N/A' }}</strong>
+                        <small
+                          v-if="customer.phone"
+                          class="text-muted d-block"
+                        >{{ customer.phone }}</small>
+                      </div>
+                    </td>
+                    <td class="text-end">
+                      {{ formatNumber(customer.orderCount) }}
+                    </td>
+                    <td class="text-end">
+                      {{ formatCurrency(customer.totalSpend) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Staff -->
+      <div
+        v-if="insightData.metrics?.topStaff?.length > 0"
+        class="col-lg-12"
+      >
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-person-badge me-2" />Top Nhân viên
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Nhân viên</th>
+                    <th class="text-end">
+                      Số đơn
+                    </th>
+                    <th class="text-end">
+                      Doanh thu
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(staff, index) in insightData.metrics.topStaff"
+                    :key="staff.staffId || index"
+                  >
+                    <td>
+                      <strong>{{ staff.staffName || 'N/A' }}</strong>
+                    </td>
+                    <td class="text-end">
+                      {{ formatNumber(staff.orderCount) }}
+                    </td>
+                    <td class="text-end">
+                      {{ formatCurrency(staff.totalRevenue) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -381,9 +526,13 @@ import { toast } from 'vue3-toastify'
 import VueApexCharts from 'vue3-apexcharts'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import { formatDateTime, formatCurrency, formatNumber } from '@/utils/formatters'
 import { generateAdminInsight } from '@/api/adminAnalyticsService'
+import { getRevenueByDate } from '@/api/reportService'
+import { getProfitReport } from '@/api/reportService'
 import { useThemePreference } from '@/composables/useThemePreference'
+import logger from '@/utils/logger'
 
 const ApexChart = VueApexCharts
 const { isDark } = useThemePreference()
@@ -394,19 +543,45 @@ const error = ref('')
 const validationError = ref('')
 const insightData = ref(null)
 const showPromptTemplates = ref(false)
+const revenueData = ref(null)
+const profitData = ref(null)
 
 const filters = reactive({
     from: '',
     to: '',
     question: '',
+    metric: 'revenue',
     includeTopProducts: true,
     includeVoucherStats: true,
     includeCustomerStats: true
 })
 
-const isFormValid = computed(() => {
-    return filters.from && filters.to && filters.question.trim()
-})
+const selectedTimePreset = ref('1year')
+const timePresets = [
+    { label: '3 tháng', value: '3months' },
+    { label: '6 tháng', value: '6months' },
+    { label: '1 năm', value: '1year' }
+]
+
+const applyTimePreset = (preset) => {
+    selectedTimePreset.value = preset
+    const today = new Date()
+    const to = new Date(today)
+    const from = new Date(today)
+
+    if (preset === '3months') {
+        from.setMonth(today.getMonth() - 3)
+    } else if (preset === '6months') {
+        from.setMonth(today.getMonth() - 6)
+    } else if (preset === '1year') {
+        from.setFullYear(today.getFullYear() - 1)
+    }
+
+    filters.from = from.toISOString().split('T')[0]
+    filters.to = to.toISOString().split('T')[0]
+}
+
+const isFormValid = computed(() => filters.from && filters.to && filters.question.trim())
 
 const metricItems = computed(() => {
     if (!insightData.value?.metrics) return []
@@ -473,7 +648,7 @@ const metricItems = computed(() => {
 
 const formatMarkdown = (markdown) => {
     if (!markdown) return ''
-    
+
     // Simple markdown to HTML conversion
     let html = markdown
         // Headers
@@ -490,15 +665,15 @@ const formatMarkdown = (markdown) => {
         // Line breaks
         .replace(/\n\n/gim, '</p><p>')
         .replace(/\n/gim, '<br>')
-    
+
     // Wrap list items
     html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>')
-    
+
     // Wrap paragraphs
     if (!html.startsWith('<')) {
-        html = '<p>' + html + '</p>'
+        html = `<p>${  html  }</p>`
     }
-    
+
     return html
 }
 
@@ -519,6 +694,9 @@ const generateInsight = async () => {
     insightData.value = null
 
     try {
+        // Fetch revenue and profit data for charts
+        await fetchRevenueData()
+
         const data = await generateAdminInsight({
             from: filters.from,
             to: filters.to,
@@ -527,7 +705,7 @@ const generateInsight = async () => {
             includeVoucherStats: filters.includeVoucherStats,
             includeCustomerStats: filters.includeCustomerStats
         })
-        
+
         insightData.value = data
         toast.success('Đã tạo phân tích AI thành công!')
     } catch (err) {
@@ -540,11 +718,11 @@ const generateInsight = async () => {
 
 const copyInsight = async () => {
     if (!insightData.value?.aiInsightMarkdown) return
-    
+
     try {
         await navigator.clipboard.writeText(insightData.value.aiInsightMarkdown)
         toast.success('Đã copy phân tích AI vào clipboard!')
-    } catch (err) {
+    } catch (error) {
         toast.error('Không thể copy phân tích AI.')
     }
 }
@@ -638,47 +816,102 @@ const baseLabelStyle = computed(() => ({
     fontSize: '12px'
 }))
 
-// Generate daily revenue data from date range
-const generateDailyRevenue = () => {
-    if (!insightData.value?.metrics || !filters.from || !filters.to) return []
-    const from = new Date(filters.from)
-    const to = new Date(filters.to)
-    const days = []
-    const current = new Date(from)
-    
-    while (current <= to) {
-        days.push({
-            date: current.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-            revenue: Math.random() * (insightData.value.metrics.totalRevenue || 0) / Math.ceil((to - from) / (1000 * 60 * 60 * 24))
-        })
-        current.setDate(current.getDate() + 1)
+// Fetch revenue data from API
+const fetchRevenueData = async () => {
+    if (!filters.from || !filters.to) {
+        revenueData.value = null
+        profitData.value = null
+        return
     }
-    return days
+
+    try {
+        const [revenue, profit] = await Promise.all([
+            getRevenueByDate(filters.from, filters.to),
+            getProfitReport(filters.from, filters.to)
+        ])
+        revenueData.value = revenue
+        profitData.value = profit
+    } catch (err) {
+        logger.error('Không thể tải dữ liệu doanh thu/lợi nhuận:', err)
+        revenueData.value = null
+        profitData.value = null
+    }
+}
+
+// Generate daily revenue data from API
+const generateDailyRevenue = () => {
+    if (!revenueData.value?.entries || revenueData.value.entries.length === 0) {
+        return []
+    }
+
+    return revenueData.value.entries.map(entry => ({
+        date: new Date(entry.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+        revenue: entry.value || 0
+    }))
+}
+
+// Generate daily profit data from API
+const generateDailyProfit = () => {
+    if (!profitData.value?.entries || profitData.value.entries.length === 0) {
+        return []
+    }
+
+    return profitData.value.entries.map(entry => ({
+        date: new Date(entry.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+        profit: entry.profit || 0
+    }))
 }
 
 const revenueChartOptions = computed(() => ({
     chart: {
         type: 'area',
+        height: 350,
         toolbar: { show: true },
         foreColor: isDark.value ? '#e2e8f0' : '#475569',
-        background: 'transparent'
+        background: 'transparent',
+        zoom: { enabled: true }
     },
     stroke: { curve: 'smooth', width: 3 },
     dataLabels: { enabled: false },
-    colors: [VIBRANT_PALETTE[0]],
+    colors: [VIBRANT_PALETTE[0], VIBRANT_PALETTE[2]],
     grid: {
         strokeDashArray: 4,
         borderColor: isDark.value ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.35)',
-        padding: { top: 8, bottom: 8, left: 12, right: 12 }
+        padding: { top: 16, bottom: 40, left: 20, right: 20 },
+        xaxis: { lines: { show: true } },
+        yaxis: { lines: { show: true } }
     },
     xaxis: {
         categories: generateDailyRevenue().map(d => d.date),
-        labels: { style: { ...baseLabelStyle.value } }
+        labels: {
+            style: { ...baseLabelStyle.value },
+            rotate: -45,
+            rotateAlways: true,
+            maxHeight: 60,
+            offsetY: 5
+        },
+        axisBorder: {
+            color: isDark.value ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+        },
+        axisTicks: {
+            color: isDark.value ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+        }
     },
     yaxis: {
         labels: {
             style: { ...baseLabelStyle.value },
-            formatter: (value) => formatCurrency(value)
+            formatter: (value) => formatCurrency(value),
+            maxWidth: 80
+        }
+    },
+    legend: {
+        position: 'top',
+        horizontalAlign: 'right',
+        labels: { colors: isDark.value ? '#cbd5f5' : '#475569' },
+        offsetY: -10,
+        itemMargin: {
+            horizontal: 10,
+            vertical: 5
         }
     },
     tooltip: {
@@ -688,15 +921,34 @@ const revenueChartOptions = computed(() => ({
         }
     },
     fill: {
-        type: 'solid',
-        opacity: 0.15
+        type: 'gradient',
+        gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.4,
+            opacityTo: 0.1,
+            stops: [0, 90, 100]
+        }
     }
 }))
 
-const revenueChartSeries = computed(() => [{
-    name: 'Doanh thu',
-    data: generateDailyRevenue().map(d => d.revenue)
-}])
+const revenueChartSeries = computed(() => {
+    const dailyRevenue = generateDailyRevenue()
+    const dailyProfit = generateDailyProfit()
+
+    // Map profit data to match revenue dates
+    const profitMap = new Map(dailyProfit.map(d => [d.date, d.profit]))
+
+    return [
+        {
+            name: 'Doanh thu',
+            data: dailyRevenue.map(d => d.revenue)
+        },
+        {
+            name: 'Lợi nhuận',
+            data: dailyRevenue.map(d => profitMap.get(d.date) || 0)
+        }
+    ]
+})
 
 const topProductsChartOptions = computed(() => ({
     chart: {
@@ -722,7 +974,7 @@ const topProductsChartOptions = computed(() => ({
     }
 }))
 
-const topProductsChartSeries = computed(() => 
+const topProductsChartSeries = computed(() =>
     insightData.value?.metrics?.topProducts?.slice(0, 5).map(p => p.totalRevenue) || []
 )
 
@@ -781,94 +1033,6 @@ const orderStatusChartSeries = computed(() => [{
     padding: var(--spacing-4);
 }
 
-/* Header - Chuẩn hóa theo base.css */
-.admin-analytics-header {
-    padding: var(--spacing-4);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    margin-bottom: var(--spacing-4);
-}
-
-.admin-analytics-header__content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-4);
-    flex-wrap: wrap;
-}
-
-.admin-analytics-header__title-section {
-    flex: 1;
-    min-width: 0;
-}
-
-.admin-analytics-header__title {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-1);
-    font-size: var(--font-size-xl);
-    line-height: var(--line-height-tight);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    font-family: var(--font-family-sans);
-}
-
-.admin-analytics-header__title i {
-    font-size: 20px;
-    line-height: 1;
-}
-
-.admin-analytics-header__subtitle {
-    margin-bottom: 0;
-    color: var(--color-text-muted);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-base);
-    font-family: var(--font-family-sans);
-}
-
-.admin-analytics-header__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-2);
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.admin-analytics-header__actions .btn {
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    transition: all var(--transition-base);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    font-family: var(--font-family-sans);
-}
-
-.admin-analytics-header__actions .btn-outline-secondary {
-    border-color: var(--color-border);
-    color: var(--color-heading);
-    background: transparent;
-}
-
-.admin-analytics-header__actions .btn-outline-secondary:hover:not(:disabled) {
-    background: var(--color-card-muted);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-
-.admin-analytics-header__actions .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.admin-analytics-header__actions .btn i {
-    font-size: 18px;
-    line-height: 1;
-}
 
 /* Error Message - không dùng alert */
 .error-message {
@@ -1220,26 +1384,70 @@ const orderStatusChartSeries = computed(() => [{
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-card);
     transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.metric-item--primary::before {
+    background: var(--color-primary);
+}
+
+.metric-item--success::before {
+    background: var(--color-success);
+}
+
+.metric-item--danger::before {
+    background: var(--color-danger);
+}
+
+.metric-item--warning::before {
+    background: var(--color-warning);
+}
+
+.metric-item--indigo::before,
+.metric-item--violet::before {
+    background: var(--color-info);
 }
 
 .metric-item:hover {
     background: var(--color-card-muted);
-    border-color: var(--color-primary);
+    border-color: var(--color-border-strong);
+}
+
+.metric-item:hover::before {
+    opacity: 0.7;
 }
 
 .metric-item__icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-sm);
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 1.375rem;
     flex-shrink: 0;
+    transition: transform var(--transition-base);
+}
+
+.metric-item:hover .metric-item__icon {
+    transform: scale(1.05);
 }
 
 /* Màu icon - dùng var(--color-soft-*) */
@@ -1279,16 +1487,20 @@ const orderStatusChartSeries = computed(() => [{
 }
 
 .metric-label {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
-    margin-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-1);
     font-family: var(--font-family-sans);
+    letter-spacing: 0.01em;
+    line-height: 1.4;
 }
 
 .metric-value {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-semibold);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
     color: var(--color-heading);
     line-height: var(--line-height-tight);
     font-family: var(--font-family-sans);
@@ -1337,16 +1549,6 @@ const orderStatusChartSeries = computed(() => [{
 
 /* Responsive cho Admin Analytics Page */
 @media (max-width: 992px) {
-    .admin-analytics-header__content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .admin-analytics-header__actions {
-        width: 100%;
-        justify-content: flex-start;
-    }
-
     .metric-item {
         flex-direction: column;
         text-align: center;

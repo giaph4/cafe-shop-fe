@@ -1,5 +1,5 @@
-import {defineStore} from 'pinia'
-import {computed, ref} from 'vue'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import logger from '@/utils/logger'
 
 const COLLAPSE_KEY = 'ui.sidebar.isCollapsed'
@@ -44,7 +44,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
 
     const expandedSet = computed(() => new Set(expandedItems.value))
 
-    const setCollapsed = (value, {persist = true} = {}) => {
+    const setCollapsed = (value, { persist = true } = {}) => {
         isCollapsed.value = Boolean(value)
         if (persist) {
             persistBoolean(COLLAPSE_KEY, isCollapsed.value)
@@ -75,7 +75,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
         hoverItem.value = null
     }
 
-    const setExpandedItems = (ids, {persist = true} = {}) => {
+    const setExpandedItems = (ids, { persist = true } = {}) => {
         const unique = Array.from(new Set(ids.filter(Boolean)))
         expandedItems.value = unique
         if (persist) {
@@ -83,7 +83,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
         }
     }
 
-    const toggleExpandedItem = (id, {persist = true} = {}) => {
+    const toggleExpandedItem = (id, { persist = true } = {}) => {
         if (!id) return
         const set = new Set(expandedItems.value)
         if (set.has(id)) {
@@ -91,10 +91,10 @@ export const useSidebarStore = defineStore('sidebar', () => {
         } else {
             set.add(id)
         }
-        setExpandedItems([...set], {persist})
+        setExpandedItems([...set], { persist })
     }
 
-    const ensureExpanded = (ids, {persist = false} = {}) => {
+    const ensureExpanded = (ids, { persist = false } = {}) => {
         if (!Array.isArray(ids) || ids.length === 0) return
         const set = new Set(expandedItems.value)
         let changed = false
@@ -106,7 +106,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
             }
         })
         if (changed) {
-            setExpandedItems([...set], {persist})
+            setExpandedItems([...set], { persist })
         }
     }
 

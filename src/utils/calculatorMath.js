@@ -6,7 +6,7 @@
 /**
  * Chuyển đổi số thành string để tính toán chính xác
  */
-function toDecimalString(num) {
+function toDecimalString (num) {
     if (typeof num === 'string') return num
     if (num === null || num === undefined || isNaN(num)) return '0'
     return num.toString()
@@ -15,7 +15,7 @@ function toDecimalString(num) {
 /**
  * Làm tròn số thập phân
  */
-function roundDecimal(num, decimals = 10) {
+function roundDecimal (num, decimals = 10) {
     const factor = Math.pow(10, decimals)
     return Math.round(num * factor) / factor
 }
@@ -23,7 +23,7 @@ function roundDecimal(num, decimals = 10) {
 /**
  * Cộng hai số
  */
-export function add(a, b) {
+export function add (a, b) {
     const numA = parseFloat(toDecimalString(a)) || 0
     const numB = parseFloat(toDecimalString(b)) || 0
     return roundDecimal(numA + numB)
@@ -32,7 +32,7 @@ export function add(a, b) {
 /**
  * Trừ hai số
  */
-export function subtract(a, b) {
+export function subtract (a, b) {
     const numA = parseFloat(toDecimalString(a)) || 0
     const numB = parseFloat(toDecimalString(b)) || 0
     return roundDecimal(numA - numB)
@@ -41,7 +41,7 @@ export function subtract(a, b) {
 /**
  * Nhân hai số
  */
-export function multiply(a, b) {
+export function multiply (a, b) {
     const numA = parseFloat(toDecimalString(a)) || 0
     const numB = parseFloat(toDecimalString(b)) || 0
     return roundDecimal(numA * numB)
@@ -50,7 +50,7 @@ export function multiply(a, b) {
 /**
  * Chia hai số
  */
-export function divide(a, b) {
+export function divide (a, b) {
     const numA = parseFloat(toDecimalString(a)) || 0
     const numB = parseFloat(toDecimalString(b)) || 0
     if (numB === 0) throw new Error('Không thể chia cho 0')
@@ -60,7 +60,7 @@ export function divide(a, b) {
 /**
  * Lũy thừa
  */
-export function power(base, exponent) {
+export function power (base, exponent) {
     const numBase = parseFloat(toDecimalString(base)) || 0
     const numExp = parseFloat(toDecimalString(exponent)) || 0
     return roundDecimal(Math.pow(numBase, numExp))
@@ -69,7 +69,7 @@ export function power(base, exponent) {
 /**
  * Căn bậc hai
  */
-export function sqrt(num) {
+export function sqrt (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     if (numVal < 0) throw new Error('Không thể tính căn số âm')
     return roundDecimal(Math.sqrt(numVal))
@@ -78,7 +78,7 @@ export function sqrt(num) {
 /**
  * Logarit cơ số 10
  */
-export function log(num) {
+export function log (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     if (numVal <= 0) throw new Error('Log chỉ áp dụng cho số dương')
     return roundDecimal(Math.log10(numVal))
@@ -87,7 +87,7 @@ export function log(num) {
 /**
  * Logarit tự nhiên
  */
-export function ln(num) {
+export function ln (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     if (numVal <= 0) throw new Error('Ln chỉ áp dụng cho số dương')
     return roundDecimal(Math.log(numVal))
@@ -96,7 +96,7 @@ export function ln(num) {
 /**
  * Sin
  */
-export function sin(num) {
+export function sin (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     return roundDecimal(Math.sin(numVal * Math.PI / 180)) // Chuyển độ sang radian
 }
@@ -104,7 +104,7 @@ export function sin(num) {
 /**
  * Cos
  */
-export function cos(num) {
+export function cos (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     return roundDecimal(Math.cos(numVal * Math.PI / 180))
 }
@@ -112,7 +112,7 @@ export function cos(num) {
 /**
  * Tan
  */
-export function tan(num) {
+export function tan (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     return roundDecimal(Math.tan(numVal * Math.PI / 180))
 }
@@ -120,7 +120,7 @@ export function tan(num) {
 /**
  * Giai thừa
  */
-export function factorial(num) {
+export function factorial (num) {
     const numVal = parseInt(toDecimalString(num)) || 0
     if (numVal < 0) throw new Error('Giai thừa chỉ áp dụng cho số nguyên không âm')
     if (numVal > 170) throw new Error('Số quá lớn để tính giai thừa')
@@ -135,7 +135,7 @@ export function factorial(num) {
 /**
  * Tính phần trăm
  */
-export function percent(num) {
+export function percent (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     return roundDecimal(numVal / 100)
 }
@@ -143,7 +143,7 @@ export function percent(num) {
 /**
  * Đổi dấu
  */
-export function toggleSign(num) {
+export function toggleSign (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     return roundDecimal(-numVal)
 }
@@ -151,7 +151,7 @@ export function toggleSign(num) {
 /**
  * Làm tròn đến 100
  */
-export function roundTo100(num) {
+export function roundTo100 (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     return Math.round(numVal / 100) * 100
 }
@@ -159,7 +159,7 @@ export function roundTo100(num) {
 /**
  * Làm tròn đến 1000
  */
-export function roundTo1000(num) {
+export function roundTo1000 (num) {
     const numVal = parseFloat(toDecimalString(num)) || 0
     return Math.round(numVal / 1000) * 1000
 }
@@ -167,14 +167,14 @@ export function roundTo1000(num) {
 /**
  * Tính VAT
  */
-export function calculateVAT(amount, vatPercent) {
+export function calculateVAT (amount, vatPercent) {
     const amt = parseFloat(toDecimalString(amount)) || 0
     const vat = parseFloat(toDecimalString(vatPercent)) || 0
     const vatAmount = roundDecimal(amt * vat / 100)
     return {
         subtotal: amt,
         vatPercent: vat,
-        vatAmount: vatAmount,
+        vatAmount,
         total: roundDecimal(amt + vatAmount)
     }
 }
@@ -182,14 +182,14 @@ export function calculateVAT(amount, vatPercent) {
 /**
  * Tính tip
  */
-export function calculateTip(amount, tipPercent) {
+export function calculateTip (amount, tipPercent) {
     const amt = parseFloat(toDecimalString(amount)) || 0
     const tip = parseFloat(toDecimalString(tipPercent)) || 0
     const tipAmount = roundDecimal(amt * tip / 100)
     return {
         subtotal: amt,
         tipPercent: tip,
-        tipAmount: tipAmount,
+        tipAmount,
         total: roundDecimal(amt + tipAmount)
     }
 }
@@ -197,14 +197,14 @@ export function calculateTip(amount, tipPercent) {
 /**
  * Tính tiền nhanh (Quick Pay)
  */
-export function calculateQuickPay(quantity, unitPrice, discount, discountType, vatPercent, tipPercent) {
+export function calculateQuickPay (quantity, unitPrice, discount, discountType, vatPercent, tipPercent) {
     const qty = parseFloat(toDecimalString(quantity)) || 0
     const price = parseFloat(toDecimalString(unitPrice)) || 0
     const disc = parseFloat(toDecimalString(discount)) || 0
-    
+
     // Tính subtotal
-    let subtotal = roundDecimal(qty * price)
-    
+    const subtotal = roundDecimal(qty * price)
+
     // Áp dụng giảm giá
     let discountAmount = 0
     if (discountType === 'percent') {
@@ -213,38 +213,38 @@ export function calculateQuickPay(quantity, unitPrice, discount, discountType, v
         discountAmount = disc
     }
     const subtotalAfterDiscount = roundDecimal(subtotal - discountAmount)
-    
+
     // Tính VAT
     const vat = parseFloat(toDecimalString(vatPercent)) || 0
     const vatAmount = roundDecimal(subtotalAfterDiscount * vat / 100)
-    
+
     // Tính tip
     const tip = parseFloat(toDecimalString(tipPercent)) || 0
     const tipAmount = roundDecimal(subtotalAfterDiscount * tip / 100)
-    
+
     // Tổng cuối
     const total = roundDecimal(subtotalAfterDiscount + vatAmount + tipAmount)
-    
+
     return {
         quantity: qty,
         unitPrice: price,
-        subtotal: subtotal,
+        subtotal,
         discount: disc,
-        discountType: discountType,
-        discountAmount: discountAmount,
-        subtotalAfterDiscount: subtotalAfterDiscount,
+        discountType,
+        discountAmount,
+        subtotalAfterDiscount,
         vatPercent: vat,
-        vatAmount: vatAmount,
+        vatAmount,
         tipPercent: tip,
-        tipAmount: tipAmount,
-        total: total
+        tipAmount,
+        total
     }
 }
 
 /**
  * Chuyển đổi tiền tệ
  */
-export function convertCurrency(amount, exchangeRate) {
+export function convertCurrency (amount, exchangeRate) {
     const amt = parseFloat(toDecimalString(amount)) || 0
     const rate = parseFloat(toDecimalString(exchangeRate)) || 0
     return roundDecimal(amt * rate)

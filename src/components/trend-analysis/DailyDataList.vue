@@ -1,54 +1,68 @@
 <template>
-    <div class="daily-data-list">
-        <div v-if="dailyData.length === 0" class="empty-list">
-            <EmptyState
-                title="Không có dữ liệu"
-                message="Không tìm thấy dữ liệu nào"
-            />
-        </div>
-        <div v-else class="table-responsive">
-            <table class="table table-minimal">
-                <thead>
-                    <tr>
-                        <th>Ngày</th>
-                        <th>Thứ</th>
-                        <th>Doanh thu</th>
-                        <th>Số đơn</th>
-                        <th>Đơn TB</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="day in dailyData"
-                        :key="day.date"
-                        :class="getRowClass(day)"
-                    >
-                        <td>{{ formatDate(day.date) }}</td>
-                        <td>{{ getDayOfWeek(day.date) }}</td>
-                        <td class="revenue-cell">{{ formatCurrency(day.value) }}</td>
-                        <td>{{ formatNumber(day.orders) }}</td>
-                        <td>{{ formatCurrency(day.orders > 0 ? day.value / day.orders : 0) }}</td>
-                        <td>
-                            <span v-if="isAnomaly(day)" class="badge badge-soft badge-warning">
-                                Bất thường
-                            </span>
-                            <span v-else class="badge badge-soft badge-success">
-                                Bình thường
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="daily-data-list">
+    <div
+      v-if="dailyData.length === 0"
+      class="empty-list"
+    >
+      <EmptyState
+        title="Không có dữ liệu"
+        message="Không tìm thấy dữ liệu nào"
+      />
     </div>
+    <div
+      v-else
+      class="table-responsive"
+    >
+      <table class="table table-minimal">
+        <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Thứ</th>
+            <th>Doanh thu</th>
+            <th>Số đơn</th>
+            <th>Đơn TB</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="day in dailyData"
+            :key="day.date"
+            :class="getRowClass(day)"
+          >
+            <td>{{ formatDate(day.date) }}</td>
+            <td>{{ getDayOfWeek(day.date) }}</td>
+            <td class="revenue-cell">
+              {{ formatCurrency(day.value) }}
+            </td>
+            <td>{{ formatNumber(day.orders) }}</td>
+            <td>{{ formatCurrency(day.orders > 0 ? day.value / day.orders : 0) }}</td>
+            <td>
+              <span
+                v-if="isAnomaly(day)"
+                class="badge badge-soft badge-warning"
+              >
+                Bất thường
+              </span>
+              <span
+                v-else
+                class="badge badge-soft badge-success"
+              >
+                Bình thường
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { formatCurrency, formatNumber, formatDate } from '@/utils/formatters'
 import EmptyState from '@/components/common/EmptyState.vue'
 
-const props = defineProps({
+defineProps({
     dailyData: {
         type: Array,
         default: () => []
@@ -65,9 +79,7 @@ const getDayOfWeek = (date) => {
     return days[d.getDay()]
 }
 
-const isAnomaly = (day) => {
-    return day.zScore && day.zScore > 2
-}
+const isAnomaly = (day) => day.zScore && day.zScore > 2
 
 const getRowClass = (day) => {
     if (isAnomaly(day)) return 'table-row-anomaly'

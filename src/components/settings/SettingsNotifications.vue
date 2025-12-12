@@ -1,116 +1,125 @@
 <template>
-    <div class="settings-section">
-        <header class="settings-section__header">
-            <div class="settings-section__title-group">
-                <div class="settings-section__icon-wrapper">
-                    <i class="bi bi-bell settings-section__icon"></i>
-                </div>
-                <div>
-                    <h2 class="settings-section__title">Thông báo</h2>
-                    <p class="settings-section__description">Quản lý các thiết lập thông báo và cảnh báo</p>
-                </div>
-            </div>
-        </header>
-
-        <div class="settings-section__content">
-            <!-- Notification Sound -->
-            <div class="settings-item">
-                <div class="settings-item__header">
-                    <div class="settings-item__info">
-                        <label class="settings-item__label">
-                            <i class="bi bi-volume-up me-2"></i>
-                            Âm thanh thông báo
-                        </label>
-                        <p class="settings-item__description">Phát âm thanh khi có thông báo mới</p>
-                    </div>
-                </div>
-                <div class="settings-item__control">
-                    <label class="settings-toggle">
-                        <input
-                            type="checkbox"
-                            v-model="localSettings.notificationSound"
-                            @change="handleNotificationSoundChange"
-                            class="settings-toggle__input"
-                        />
-                        <span class="settings-toggle__slider"></span>
-                        <span class="settings-toggle__label">
-                            {{ localSettings.notificationSound ? 'Đã bật' : 'Đã tắt' }}
-                        </span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Email Notifications -->
-            <div class="settings-item">
-                <div class="settings-item__header">
-                    <div class="settings-item__info">
-                        <label class="settings-item__label">
-                            <i class="bi bi-envelope me-2"></i>
-                            Thông báo qua Email
-                        </label>
-                        <p class="settings-item__description">Nhận thông báo quan trọng qua email</p>
-                    </div>
-                </div>
-                <div class="settings-item__control">
-                    <label class="settings-toggle">
-                        <input
-                            type="checkbox"
-                            v-model="localSettings.emailNotifications"
-                            @change="handleEmailNotificationsChange"
-                            class="settings-toggle__input"
-                        />
-                        <span class="settings-toggle__slider"></span>
-                        <span class="settings-toggle__label">
-                            {{ localSettings.emailNotifications ? 'Đã bật' : 'Đã tắt' }}
-                        </span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Push Notifications -->
-            <div class="settings-item">
-                <div class="settings-item__header">
-                    <div class="settings-item__info">
-                        <label class="settings-item__label">
-                            <i class="bi bi-bell-fill me-2"></i>
-                            Thông báo đẩy
-                        </label>
-                        <p class="settings-item__description">Nhận thông báo đẩy trên trình duyệt (yêu cầu quyền)</p>
-                    </div>
-                </div>
-                <div class="settings-item__control">
-                    <label class="settings-toggle">
-                        <input
-                            type="checkbox"
-                            v-model="localSettings.pushNotifications"
-                            @change="handlePushNotificationsChange"
-                            class="settings-toggle__input"
-                            :disabled="!pushNotificationSupported"
-                        />
-                        <span class="settings-toggle__slider"></span>
-                        <span class="settings-toggle__label">
-                            {{ localSettings.pushNotifications ? 'Đã bật' : 'Đã tắt' }}
-                        </span>
-                    </label>
-                    <small v-if="!pushNotificationSupported" class="settings-item__hint">
-                        Trình duyệt không hỗ trợ thông báo đẩy
-                    </small>
-                </div>
-            </div>
+  <div class="settings-section">
+    <header class="settings-section__header">
+      <div class="settings-section__title-group">
+        <i class="bi bi-bell settings-section__icon" />
+        <div>
+          <h2 class="settings-section__title">
+            Thông báo
+          </h2>
+          <p class="settings-section__description">
+            Quản lý các thiết lập thông báo và cảnh báo
+          </p>
         </div>
+      </div>
+    </header>
+
+    <div class="settings-section__content">
+      <!-- Notification Sound -->
+      <div class="settings-item">
+        <div class="settings-item__header">
+          <div class="settings-item__info">
+            <label class="settings-item__label">
+              <i class="bi bi-volume-up me-2" />
+              Âm thanh thông báo
+            </label>
+            <p class="settings-item__description">
+              Phát âm thanh khi có thông báo mới
+            </p>
+          </div>
+        </div>
+        <div class="settings-item__control">
+          <label class="settings-toggle">
+            <input
+              v-model="localSettings.notificationSound"
+              type="checkbox"
+              class="settings-toggle__input"
+              @change="handleNotificationSoundChange"
+            >
+            <span class="settings-toggle__slider" />
+            <span class="settings-toggle__label">
+              {{ localSettings.notificationSound ? 'Đã bật' : 'Đã tắt' }}
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Email Notifications -->
+      <div class="settings-item">
+        <div class="settings-item__header">
+          <div class="settings-item__info">
+            <label class="settings-item__label">
+              <i class="bi bi-envelope me-2" />
+              Thông báo qua Email
+            </label>
+            <p class="settings-item__description">
+              Nhận thông báo quan trọng qua email
+            </p>
+          </div>
+        </div>
+        <div class="settings-item__control">
+          <label class="settings-toggle">
+            <input
+              v-model="localSettings.emailNotifications"
+              type="checkbox"
+              class="settings-toggle__input"
+              @change="handleEmailNotificationsChange"
+            >
+            <span class="settings-toggle__slider" />
+            <span class="settings-toggle__label">
+              {{ localSettings.emailNotifications ? 'Đã bật' : 'Đã tắt' }}
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Push Notifications -->
+      <div class="settings-item">
+        <div class="settings-item__header">
+          <div class="settings-item__info">
+            <label class="settings-item__label">
+              <i class="bi bi-bell-fill me-2" />
+              Thông báo đẩy
+            </label>
+            <p class="settings-item__description">
+              Nhận thông báo đẩy trên trình duyệt (yêu cầu quyền)
+            </p>
+            <small
+              v-if="!pushNotificationSupported"
+              class="settings-item__hint"
+            >
+              Trình duyệt không hỗ trợ thông báo đẩy
+            </small>
+          </div>
+        </div>
+        <div class="settings-item__control">
+          <label class="settings-toggle">
+            <input
+              v-model="localSettings.pushNotifications"
+              type="checkbox"
+              class="settings-toggle__input"
+              :disabled="!pushNotificationSupported"
+              @change="handlePushNotificationsChange"
+            >
+            <span class="settings-toggle__slider" />
+            <span class="settings-toggle__label">
+              {{ localSettings.pushNotifications ? 'Đã bật' : 'Đã tắt' }}
+            </span>
+          </label>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, computed, watch } from 'vue'
 import { useSettingsStore } from '@/store/settings'
 import { toast } from 'vue3-toastify'
 
 const settingsStore = useSettingsStore()
 
-const pushNotificationSupported = computed(() => {
-    return 'Notification' in window && 'serviceWorker' in navigator
-})
+const pushNotificationSupported = computed(() => 'Notification' in window && 'serviceWorker' in navigator)
 
 const localSettings = reactive({
     notificationSound: settingsStore.notificationSound,
@@ -139,7 +148,7 @@ const handlePushNotificationsChange = async () => {
                 localSettings.pushNotifications = false
                 toast.warning('Quyền thông báo đẩy bị từ chối')
             }
-        } catch (error) {
+        } catch {
             localSettings.pushNotifications = false
             toast.error('Không thể bật thông báo đẩy')
         }
@@ -155,38 +164,185 @@ watch(() => settingsStore.notificationSound, (newVal) => {
 </script>
 
 <style scoped>
-.settings-section__icon-wrapper {
-    width: 64px;
-    height: 64px;
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+}
+
+.settings-section__header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-4);
+    margin-bottom: var(--spacing-3);
+}
+
+.settings-section__title-group {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--color-soft-primary) 0%, rgba(var(--color-primary-rgb, 13, 110, 253), 0.1) 100%);
-    border-radius: var(--radius-lg);
-    border: 2px solid var(--color-border-contrast);
-    flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb, 13, 110, 253), 0.15);
+    gap: var(--spacing-3);
 }
 
 .settings-section__icon {
-    font-size: var(--font-size-2xl);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 2px 4px rgba(var(--color-primary-rgb, 13, 110, 253), 0.2));
+    font-size: var(--font-size-xl);
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.settings-section__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin: 0 0 var(--spacing-1) 0;
+    font-family: var(--font-family-sans);
+}
+
+.settings-section__description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+    font-family: var(--font-family-sans);
+    line-height: var(--line-height-normal);
+}
+
+.settings-section__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    transition: border-color var(--transition-base), background-color var(--transition-base);
+}
+
+.settings-item:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-card-muted);
+}
+
+.settings-item__header {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.settings-item__label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-heading);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    font-family: var(--font-family-sans);
+    gap: var(--spacing-2);
+}
+
+.settings-item__label i {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+}
+
+.settings-item__description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: var(--line-height-normal);
+    font-family: var(--font-family-sans);
+}
+
+.settings-item__control {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+    user-select: none;
+}
+
+.settings-toggle__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.settings-toggle__slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    transition: background-color var(--transition-base);
+    flex-shrink: 0;
+}
+
+.settings-toggle__slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: var(--color-card);
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-base);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.settings-toggle__input:checked + .settings-toggle__slider {
+    background: var(--color-primary);
+}
+
+.settings-toggle__input:checked + .settings-toggle__slider::before {
+    transform: translateX(20px);
+}
+
+.settings-toggle__input:disabled + .settings-toggle__slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.settings-toggle__label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-sans);
 }
 
 .settings-item__hint {
     display: block;
-    margin-top: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-3);
+    margin-top: var(--spacing-1);
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    font-style: italic;
     font-family: var(--font-family-sans);
-    background: var(--color-card-muted);
-    border-radius: var(--radius-sm);
-    border-left: 3px solid var(--color-warning);
+}
+
+@media (max-width: 768px) {
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .settings-item__control {
+        width: 100%;
+    }
 }
 </style>

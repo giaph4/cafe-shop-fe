@@ -1,69 +1,78 @@
 <template>
-    <div class="chat-input">
-        <div class="chat-input__toolbar">
-            <button
-                class="btn btn-sm btn-link text-muted"
-                @click="toggleEmojiPicker"
-                :title="'Chọn emoji'"
-            >
-                <i class="bi bi-emoji-smile"></i>
-            </button>
-            <button
-                class="btn btn-sm btn-link text-muted"
-                @click="triggerFileInput"
-                :title="'Đính kèm file'"
-            >
-                <i class="bi bi-paperclip"></i>
-            </button>
-            <input
-                ref="fileInputRef"
-                type="file"
-                multiple
-                class="d-none"
-                @change="handleFileSelect"
-            />
-        </div>
-        <div class="chat-input__main">
-            <textarea
-                ref="textareaRef"
-                v-model="messageText"
-                class="form-control chat-input__textarea"
-                placeholder="Nhập tin nhắn..."
-                rows="1"
-                @keydown.enter.exact.prevent="handleEnter"
-                @keydown.enter.shift.exact="handleShiftEnter"
-                @input="handleInput"
-            ></textarea>
-            <button
-                class="btn btn-primary chat-input__send"
-                @click="handleSend"
-                :disabled="!canSend || sending"
-            >
-                <span v-if="sending" class="spinner-border spinner-border-sm"></span>
-                <i v-else class="bi bi-send-fill"></i>
-            </button>
-        </div>
-        <div v-if="selectedFiles.length > 0" class="chat-input__files">
-            <div
-                v-for="(file, index) in selectedFiles"
-                :key="index"
-                class="chat-input__file-item"
-            >
-                <span class="chat-input__file-name">{{ file.name }}</span>
-                <button
-                    class="btn btn-sm btn-link text-danger p-0"
-                    @click="removeFile(index)"
-                >
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-        </div>
-        <EmojiPicker
-            v-if="showEmojiPicker"
-            @select="handleEmojiSelect"
-            @close="showEmojiPicker = false"
-        />
+  <div class="chat-input">
+    <div class="chat-input__toolbar">
+      <button
+        class="btn btn-sm btn-link text-muted"
+        :title="'Chọn emoji'"
+        @click="toggleEmojiPicker"
+      >
+        <i class="bi bi-emoji-smile" />
+      </button>
+      <button
+        class="btn btn-sm btn-link text-muted"
+        :title="'Đính kèm file'"
+        @click="triggerFileInput"
+      >
+        <i class="bi bi-paperclip" />
+      </button>
+      <input
+        ref="fileInputRef"
+        type="file"
+        multiple
+        class="d-none"
+        @change="handleFileSelect"
+      >
     </div>
+    <div class="chat-input__main">
+      <textarea
+        ref="textareaRef"
+        v-model="messageText"
+        class="form-control chat-input__textarea"
+        placeholder="Nhập tin nhắn..."
+        rows="1"
+        @keydown.enter.exact.prevent="handleEnter"
+        @keydown.enter.shift.exact="handleShiftEnter"
+        @input="handleInput"
+      />
+      <button
+        class="btn btn-primary chat-input__send"
+        :disabled="!canSend || sending"
+        @click="handleSend"
+      >
+        <span
+          v-if="sending"
+          class="spinner-border spinner-border-sm"
+        />
+        <i
+          v-else
+          class="bi bi-send-fill"
+        />
+      </button>
+    </div>
+    <div
+      v-if="selectedFiles.length > 0"
+      class="chat-input__files"
+    >
+      <div
+        v-for="(file, index) in selectedFiles"
+        :key="index"
+        class="chat-input__file-item"
+      >
+        <span class="chat-input__file-name">{{ file.name }}</span>
+        <button
+          class="btn btn-sm btn-link text-danger p-0"
+          @click="removeFile(index)"
+        >
+          <i class="bi bi-x" />
+        </button>
+      </div>
+    </div>
+    <EmojiPicker
+      v-if="showEmojiPicker"
+      @select="handleEmojiSelect"
+      @close="showEmojiPicker = false"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -85,9 +94,7 @@ const showEmojiPicker = ref(false)
 const textareaRef = ref(null)
 const fileInputRef = ref(null)
 
-const canSend = computed(() => {
-    return (messageText.value.trim().length > 0) || selectedFiles.value.length > 0
-})
+const canSend = computed(() => (messageText.value.trim().length > 0) || selectedFiles.value.length > 0)
 
 const handleInput = () => {
     nextTick(() => {
@@ -132,7 +139,9 @@ const toggleEmojiPicker = () => {
 }
 
 const handleEmojiSelect = (emoji) => {
-    messageText.value += emoji
+    if (!emoji) return
+    // Emit send-emoji event directly instead of adding to text
+    emit('send-emoji', emoji)
     showEmojiPicker.value = false
     nextTick(() => {
         textareaRef.value?.focus()

@@ -1,105 +1,137 @@
 <template>
-    <div class="customer-statistics-tab">
-        <div class="row g-3 mb-4">
-            <div class="col-lg-4 col-md-6" v-for="(stat, index) in stats" :key="stat.label">
-                <div class="stat-card" :class="getCardClass(index)">
-                    <div class="stat-icon" :class="getIconClass(index)">
-                        <i :class="stat.icon"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">{{ stat.label }}</div>
-                        <div class="stat-value">{{ stat.value }}</div>
-                    </div>
-                </div>
+  <div class="customer-statistics-tab">
+    <div class="row g-3 mb-4">
+      <div
+        v-for="(stat, index) in stats"
+        :key="stat.label"
+        class="col-lg-4 col-md-6"
+      >
+        <div
+          class="stat-card"
+          :class="getCardClass(index)"
+        >
+          <div
+            class="stat-icon"
+            :class="getIconClass(index)"
+          >
+            <i :class="stat.icon" />
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">
+              {{ stat.label }}
             </div>
+            <div class="stat-value">
+              {{ stat.value }}
+            </div>
+          </div>
         </div>
-
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-graph-up me-2"></i>
-                            Phân bố điểm thưởng
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <EmptyState
-                            v-if="loyaltyDistribution.length === 0"
-                            title="Chưa có dữ liệu"
-                            message="Chưa có dữ liệu phân bố điểm thưởng."
-                        >
-                            <template #icon>
-                                <i class="bi bi-graph-up"></i>
-                            </template>
-                        </EmptyState>
-                        <div v-else class="loyalty-distribution">
-                            <div
-                                v-for="item in loyaltyDistribution"
-                                :key="item.range"
-                                class="distribution-item mb-3"
-                            >
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-semibold">{{ item.range }}</span>
-                                    <span class="badge" style="background: var(--color-primary); color: var(--color-text-inverse);">{{ item.count }} khách hàng</span>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div
-                                        class="progress-bar"
-                                        :style="{ width: item.percentage + '%' }"
-                                    ></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-calendar me-2"></i>
-                            Khách hàng mới theo tháng
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <EmptyState
-                            v-if="monthlyNewCustomers.length === 0"
-                            title="Chưa có dữ liệu"
-                            message="Chưa có dữ liệu khách hàng mới."
-                        >
-                            <template #icon>
-                                <i class="bi bi-calendar"></i>
-                            </template>
-                        </EmptyState>
-                        <div v-else class="monthly-stats">
-                            <div
-                                v-for="item in monthlyNewCustomers"
-                                :key="item.month"
-                                class="monthly-item d-flex justify-content-between align-items-center py-2 border-bottom"
-                            >
-                                <div>
-                                    <div class="fw-semibold">{{ item.month }}</div>
-                                    <small class="text-muted">{{ item.year }}</small>
-                                </div>
-                                <div class="text-end">
-                                    <div class="fs-5 fw-bold" style="color: var(--color-primary); font-family: var(--font-family-sans);">{{ item.count }}</div>
-                                    <small class="text-muted">khách hàng</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-graph-up me-2" />
+              Phân bố điểm thưởng
+            </h5>
+          </div>
+          <div class="card-body">
+            <EmptyState
+              v-if="loyaltyDistribution.length === 0"
+              title="Chưa có dữ liệu"
+              message="Chưa có dữ liệu phân bố điểm thưởng."
+            >
+              <template #icon>
+                <i class="bi bi-graph-up" />
+              </template>
+            </EmptyState>
+            <div
+              v-else
+              class="loyalty-distribution"
+            >
+              <div
+                v-for="item in loyaltyDistribution"
+                :key="item.range"
+                class="distribution-item mb-3"
+              >
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-semibold">{{ item.range }}</span>
+                  <span
+                    class="badge"
+                    style="background: var(--color-primary); color: var(--color-text-inverse);"
+                  >{{ item.count }} khách hàng</span>
+                </div>
+                <div
+                  class="progress"
+                  style="height: 8px;"
+                >
+                  <div
+                    class="progress-bar"
+                    :style="{ width: item.percentage + '%' }"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-calendar me-2" />
+              Khách hàng mới theo tháng
+            </h5>
+          </div>
+          <div class="card-body">
+            <EmptyState
+              v-if="monthlyNewCustomers.length === 0"
+              title="Chưa có dữ liệu"
+              message="Chưa có dữ liệu khách hàng mới."
+            >
+              <template #icon>
+                <i class="bi bi-calendar" />
+              </template>
+            </EmptyState>
+            <div
+              v-else
+              class="monthly-stats"
+            >
+              <div
+                v-for="item in monthlyNewCustomers"
+                :key="item.month"
+                class="monthly-item d-flex justify-content-between align-items-center py-2 border-bottom"
+              >
+                <div>
+                  <div class="fw-semibold">
+                    {{ item.month }}
+                  </div>
+                  <small class="text-muted">{{ item.year }}</small>
+                </div>
+                <div class="text-end">
+                  <div
+                    class="fs-5 fw-bold"
+                    style="color: var(--color-primary); font-family: var(--font-family-sans);"
+                  >
+                    {{ item.count }}
+                  </div>
+                  <small class="text-muted">khách hàng</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { formatNumber } from '@/utils/formatters'
 import EmptyState from '@/components/common/EmptyState.vue'
 
-const props = defineProps({
+defineProps({
     stats: {
         type: Array,
         default: () => []
@@ -265,7 +297,7 @@ const getIconClass = (index) => {
         text-align: center;
         min-height: auto;
     }
-    
+
     .stat-icon {
         width: 48px;
         height: 48px;

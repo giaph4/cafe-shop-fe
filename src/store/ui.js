@@ -1,5 +1,5 @@
-import {defineStore} from 'pinia'
-import {ref} from 'vue'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import logger from '@/utils/logger'
 
 const COLLAPSE_KEY = 'ui.sidebar.collapsed'
@@ -40,7 +40,7 @@ export const useUiStore = defineStore('ui', () => {
     const sidebarExpandedGroups = ref(readArray(EXPANDED_KEY))
     const sidebarOpen = ref(false)
 
-    const setSidebarCollapsed = (value, {persist = true} = {}) => {
+    const setSidebarCollapsed = (value, { persist = true } = {}) => {
         sidebarCollapsed.value = value
         if (persist) {
             persistBoolean(COLLAPSE_KEY, value)
@@ -59,24 +59,24 @@ export const useUiStore = defineStore('ui', () => {
     const closeSidebar = () => setSidebarOpen(false)
     const toggleSidebarOpen = () => setSidebarOpen(!sidebarOpen.value)
 
-    const setExpandedGroups = (ids, {persist = true} = {}) => {
+    const setExpandedGroups = (ids, { persist = true } = {}) => {
         sidebarExpandedGroups.value = Array.from(new Set(ids))
         if (persist) {
             persistArray(EXPANDED_KEY, sidebarExpandedGroups.value)
         }
     }
 
-    const toggleSidebarGroup = (id, {persist = true} = {}) => {
+    const toggleSidebarGroup = (id, { persist = true } = {}) => {
         const set = new Set(sidebarExpandedGroups.value)
         if (set.has(id)) {
             set.delete(id)
         } else {
             set.add(id)
         }
-        setExpandedGroups([...set], {persist})
+        setExpandedGroups([...set], { persist })
     }
 
-    const ensureSidebarGroups = (ids, {persist = false} = {}) => {
+    const ensureSidebarGroups = (ids, { persist = false } = {}) => {
         if (!ids?.length) return
         const set = new Set(sidebarExpandedGroups.value)
         let changed = false
@@ -87,7 +87,7 @@ export const useUiStore = defineStore('ui', () => {
             }
         })
         if (changed) {
-            setExpandedGroups([...set], {persist})
+            setExpandedGroups([...set], { persist })
         }
     }
 

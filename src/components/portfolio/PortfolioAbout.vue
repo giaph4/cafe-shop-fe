@@ -1,50 +1,68 @@
 <template>
-    <section id="about" class="portfolio-about" ref="aboutRef">
-        <div class="portfolio-about__container">
-            <div class="portfolio-about__content" ref="contentRef">
-                <h2 class="portfolio-about__title">
-                    <span class="portfolio-about__number">01.</span>
-                    <span class="portfolio-about__title-text">KERNEL INFO</span>
-                </h2>
-                <p class="portfolio-about__description">
-                    Tôi là một lập trình viên đam mê kiến trúc hệ thống và tối ưu hóa hiệu năng.
-                    Không chỉ viết code chạy được, tôi viết code <span class="portfolio-about__highlight">sạch, dễ bảo trì và mở rộng</span>.
-                    Thế giới của tôi xoay quanh Spring Boot, Microservices và giải quyết các bài toán hóc búa ở phía Server-side.
-                </p>
+  <section
+    id="about"
+    ref="aboutRef"
+    class="portfolio-about"
+  >
+    <div class="portfolio-about__container">
+      <div
+        ref="contentRef"
+        class="portfolio-about__content"
+      >
+        <h2 class="portfolio-about__title">
+          <span class="portfolio-about__number">01.</span>
+          <span class="portfolio-about__title-text">KERNEL INFO</span>
+        </h2>
+        <p class="portfolio-about__description">
+          Tôi là một lập trình viên đam mê kiến trúc hệ thống và tối ưu hóa hiệu năng.
+          Không chỉ viết code chạy được, tôi viết code <span class="portfolio-about__highlight">sạch, dễ bảo trì và mở rộng</span>.
+          Thế giới của tôi xoay quanh Spring Boot, Microservices và giải quyết các bài toán hóc búa ở phía Server-side.
+        </p>
 
-                <div class="portfolio-about__stats">
-                    <div 
-                        v-for="(stat, index) in stats" 
-                        :key="index" 
-                        class="portfolio-about__stat-card"
-                        :ref="el => statRefs[index] = el"
-                    >
-                        <div class="portfolio-about__stat-label">{{ stat.label }}</div>
-                        <div class="portfolio-about__stat-value">{{ stat.value }}</div>
-                    </div>
-                </div>
+        <div class="portfolio-about__stats">
+          <div
+            v-for="(stat, index) in stats"
+            :key="index"
+            :ref="el => statRefs[index] = el"
+            class="portfolio-about__stat-card"
+          >
+            <div class="portfolio-about__stat-label">
+              {{ stat.label }}
             </div>
-
-            <div class="portfolio-about__visual" ref="visualRef">
-                <div class="portfolio-about__scan-line" ref="scanLineRef"></div>
-                <div class="portfolio-about__code-box">
-                    <code class="portfolio-about__code">
-                        class HuynhGiaPho extends Developer &#123;<br/>
-                        &nbsp;&nbsp;constructor() &#123;<br/>
-                        &nbsp;&nbsp;&nbsp;&nbsp;this.passion = "Infinite";<br/>
-                        &nbsp;&nbsp;&nbsp;&nbsp;this.stack = "Spring Boot";<br/>
-                        &nbsp;&nbsp;&#125;<br/>
-                        &#125;
-                    </code>
-                </div>
+            <div class="portfolio-about__stat-value">
+              {{ stat.value }}
             </div>
+          </div>
         </div>
-    </section>
+      </div>
+
+      <div
+        ref="visualRef"
+        class="portfolio-about__visual"
+      >
+        <div
+          ref="scanLineRef"
+          class="portfolio-about__scan-line"
+        />
+        <div class="portfolio-about__code-box">
+          <code class="portfolio-about__code">
+            class HuynhGiaPho extends Developer &#123;<br>
+            &nbsp;&nbsp;constructor() &#123;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;this.passion = "Infinite";<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;this.stack = "Spring Boot";<br>
+            &nbsp;&nbsp;&#125;<br>
+            &#125;
+          </code>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
+import { useMotion } from '@vueuse/motion'
 
 const aboutRef = ref(null)
 const contentRef = ref(null)
@@ -78,13 +96,13 @@ onMounted(() => {
             if (isIntersecting) {
                 useMotion(scanLineRef.value, {
                     initial: { y: '-100%' },
-                    enter: { 
-                        y: '100%', 
-                        transition: { 
-                            duration: 2, 
+                    enter: {
+                        y: '100%',
+                        transition: {
+                            duration: 2,
                             ease: 'linear',
                             delay: 0.5
-                        } 
+                        }
                     }
                 })
             }
@@ -98,13 +116,13 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(statRef, {
                         initial: { opacity: 0, y: 20 },
-                        enter: { 
-                            opacity: 1, 
-                            y: 0, 
-                            transition: { 
+                        enter: {
+                            opacity: 1,
+                            y: 0,
+                            transition: {
                                 delay: 0.5 + index * 0.1,
-                                duration: 0.5 
-                            } 
+                                duration: 0.5
+                            }
                         }
                     })
                 }

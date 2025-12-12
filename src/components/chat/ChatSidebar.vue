@@ -1,114 +1,164 @@
 <template>
-    <div class="chat-sidebar">
-        <div class="chat-sidebar__header">
-            <h5 class="chat-sidebar__title">Hội thoại</h5>
-            <button class="btn btn-sm btn-primary" @click="$emit('create-conversation')">
-                <i class="bi bi-plus-lg me-1"></i>
-                Tạo mới
-            </button>
-        </div>
-
-        <div class="chat-sidebar__search">
-            <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Tìm kiếm hội thoại..."
-                    v-model="searchQuery"
-                    @input="handleSearch"
-                />
-            </div>
-        </div>
-
-        <div class="chat-sidebar__list" v-if="!loading">
-            <div
-                v-for="conversation in filteredConversations"
-                :key="conversation.id"
-                class="conversation-item"
-                :class="{
-                    'conversation-item--active': selectedConversationId === conversation.id,
-                    'conversation-item--pinned': conversation.pinned
-                }"
-                @click="$emit('select', conversation)"
-            >
-                <div class="conversation-item__avatar">
-                    <img
-                        v-if="getConversationAvatar(conversation)"
-                        :src="getConversationAvatar(conversation)"
-                        :alt="getConversationName(conversation)"
-                    />
-                    <div v-else class="conversation-item__avatar-placeholder">
-                        {{ getConversationInitials(conversation) }}
-                    </div>
-                </div>
-                <div class="conversation-item__content">
-                    <div class="conversation-item__header">
-                        <h6 class="conversation-item__name">{{ getConversationName(conversation) }}</h6>
-                        <span class="conversation-item__time" v-if="conversation.lastMessage">
-                            {{ formatTime(conversation.lastMessage.createdAt) }}
-                        </span>
-                    </div>
-                    <div class="conversation-item__preview">
-                        <span class="conversation-item__last-message" v-if="conversation.lastMessage">
-                            <span v-if="conversation.lastMessage.recalled" class="text-muted fst-italic">
-                                Tin nhắn đã được thu hồi
-                            </span>
-                            <span v-else-if="conversation.lastMessage.status === 'RECALLED'" class="text-muted fst-italic">
-                                Tin nhắn đã được thu hồi
-                            </span>
-                            <span v-else-if="conversation.lastMessage.contentType === 'TEXT'">
-                                {{ conversation.lastMessage.content }}
-                            </span>
-                            <span v-else-if="conversation.lastMessage.contentType === 'EMOJI'">
-                                {{ conversation.lastMessage.metadata || conversation.lastMessage.content }}
-                            </span>
-                            <span v-else-if="['IMAGE', 'VIDEO', 'AUDIO', 'FILE'].includes(conversation.lastMessage.contentType)">
-                                <i class="bi bi-paperclip me-1"></i>
-                                {{ conversation.lastMessage.attachments?.length || 0 }} tệp đính kèm
-                            </span>
-                        </span>
-                    </div>
-                </div>
-                <div class="conversation-item__badges">
-                    <span
-                        v-if="conversation.unreadCount > 0"
-                        class="badge bg-primary rounded-pill"
-                    >
-                        {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
-                    </span>
-                </div>
-                <div class="conversation-item__actions" @click.stop>
-                    <button
-                        class="btn btn-sm btn-link text-muted p-1"
-                        @click="$emit('toggle-pin', conversation)"
-                        :title="conversation.pinned ? 'Bỏ ghim' : 'Ghim'"
-                    >
-                        <i :class="conversation.pinned ? 'bi bi-pin-angle-fill text-warning' : 'bi bi-pin-angle'"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="chat-sidebar__loading" v-if="loading">
-            <div class="spinner-border spinner-border-sm" style="color: var(--color-primary);"></div>
-            <span class="ms-2">Đang tải...</span>
-        </div>
-
-        <div class="chat-sidebar__empty" v-if="!loading && filteredConversations.length === 0">
-            <i class="bi bi-chat-dots fs-1 text-muted"></i>
-            <p class="text-muted mb-0">Chưa có hội thoại nào</p>
-        </div>
-
-        <div class="chat-sidebar__pagination" v-if="hasMore">
-            <button class="btn btn-sm btn-outline-primary w-100" @click="$emit('load-more')" :disabled="loadingMore">
-                <span v-if="loadingMore" class="spinner-border spinner-border-sm me-2" style="color: var(--color-primary);"></span>
-                Tải thêm
-            </button>
-        </div>
+  <div class="chat-sidebar">
+    <div class="chat-sidebar__header">
+      <h5 class="chat-sidebar__title">
+        Hội thoại
+      </h5>
+      <button
+        class="btn btn-sm btn-primary"
+        @click="$emit('create-conversation')"
+      >
+        <i class="bi bi-plus-lg me-1" />
+        Tạo mới
+      </button>
     </div>
+
+    <div class="chat-sidebar__search">
+      <div class="input-group">
+        <span class="input-group-text bg-white">
+          <i class="bi bi-search" />
+        </span>
+        <input
+          v-model="searchQuery"
+          type="text"
+          class="form-control"
+          placeholder="Tìm kiếm hội thoại..."
+          @input="handleSearch"
+        >
+      </div>
+    </div>
+
+    <div
+      v-if="!loading"
+      class="chat-sidebar__list"
+    >
+      <div
+        v-for="conversation in filteredConversations"
+        :key="conversation.id"
+        class="conversation-item"
+        :class="{
+          'conversation-item--active': selectedConversationId === conversation.id,
+          'conversation-item--pinned': conversation.pinned
+        }"
+        @click="$emit('select', conversation)"
+      >
+        <div class="conversation-item__avatar">
+          <img
+            v-if="getConversationAvatar(conversation)"
+            :src="getConversationAvatar(conversation)"
+            :alt="getConversationName(conversation)"
+          >
+          <div
+            v-else
+            class="conversation-item__avatar-placeholder"
+          >
+            {{ getConversationInitials(conversation) }}
+          </div>
+        </div>
+        <div class="conversation-item__content">
+          <div class="conversation-item__header">
+            <h6 class="conversation-item__name">
+              {{ getConversationName(conversation) }}
+            </h6>
+            <span
+              v-if="conversation.lastMessage"
+              class="conversation-item__time"
+            >
+              {{ formatTime(conversation.lastMessage.createdAt) }}
+            </span>
+          </div>
+          <div class="conversation-item__preview">
+            <span
+              v-if="conversation.lastMessage"
+              class="conversation-item__last-message"
+            >
+              <span
+                v-if="conversation.lastMessage.recalled"
+                class="text-muted fst-italic"
+              >
+                Tin nhắn đã được thu hồi
+              </span>
+              <span
+                v-else-if="conversation.lastMessage.status === 'RECALLED'"
+                class="text-muted fst-italic"
+              >
+                Tin nhắn đã được thu hồi
+              </span>
+              <span v-else-if="conversation.lastMessage.contentType === 'TEXT'">
+                {{ conversation.lastMessage.content }}
+              </span>
+              <span v-else-if="conversation.lastMessage.contentType === 'EMOJI'">
+                {{ conversation.lastMessage.metadata || conversation.lastMessage.content }}
+              </span>
+              <span v-else-if="['IMAGE', 'VIDEO', 'AUDIO', 'FILE'].includes(conversation.lastMessage.contentType)">
+                <i class="bi bi-paperclip me-1" />
+                {{ conversation.lastMessage.attachments?.length || 0 }} tệp đính kèm
+              </span>
+            </span>
+          </div>
+        </div>
+        <div class="conversation-item__badges">
+          <span
+            v-if="conversation.unreadCount > 0"
+            class="badge bg-primary rounded-pill"
+          >
+            {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
+          </span>
+        </div>
+        <div
+          class="conversation-item__actions"
+          @click.stop
+        >
+          <button
+            class="btn btn-sm btn-link text-muted p-1"
+            :title="conversation.pinned ? 'Bỏ ghim' : 'Ghim'"
+            @click="$emit('toggle-pin', conversation)"
+          >
+            <i :class="conversation.pinned ? 'bi bi-pin-angle-fill text-warning' : 'bi bi-pin-angle'" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="loading"
+      class="chat-sidebar__loading"
+    >
+      <div
+        class="spinner-border spinner-border-sm"
+        style="color: var(--color-primary);"
+      />
+      <span class="ms-2">Đang tải...</span>
+    </div>
+
+    <div
+      v-if="!loading && filteredConversations.length === 0"
+      class="chat-sidebar__empty"
+    >
+      <i class="bi bi-chat-dots fs-1 text-muted" />
+      <p class="text-muted mb-0">
+        Chưa có hội thoại nào
+      </p>
+    </div>
+
+    <div
+      v-if="hasMore"
+      class="chat-sidebar__pagination"
+    >
+      <button
+        class="btn btn-sm btn-outline-primary w-100"
+        :disabled="loadingMore"
+        @click="$emit('load-more')"
+      >
+        <span
+          v-if="loadingMore"
+          class="spinner-border spinner-border-sm me-2"
+          style="color: var(--color-primary);"
+        />
+        Tải thêm
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>

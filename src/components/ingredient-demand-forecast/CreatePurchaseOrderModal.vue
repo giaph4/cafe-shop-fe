@@ -1,89 +1,118 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="create-po-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="create-po-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Tạo Đơn đặt hàng từ Dự báo</h5>
-                            <p class="modal-subtitle mb-0">Tạo đơn đặt hàng dựa trên dự báo nhu cầu</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            Tính năng này sẽ được tích hợp với hệ thống đơn đặt hàng trong tương lai.
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-minimal">
-                                <thead>
-                                    <tr>
-                                        <th>Nguyên liệu</th>
-                                        <th>Đơn vị</th>
-                                        <th>Đề xuất số lượng</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="ingredient in ingredients" :key="ingredient.ingredientId">
-                                        <td>
-                                            <div class="fw-semibold">{{ ingredient.name }}</div>
-                                            <small class="text-muted">Dự báo 30 ngày: {{ formatNumber(ingredient.forecast30d, 2) }}</small>
-                                        </td>
-                                        <td>{{ ingredient.unit }}</td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                class="form-control form-control-sm clean-input"
-                                                v-model.number="orderQuantities[ingredient.ingredientId]"
-                                                min="0"
-                                                style="width: 120px;"
-                                            />
-                                        </td>
-                                        <td>
-                                            <button
-                                                class="btn btn-flat btn-flat--outline btn-sm"
-                                                @click="removeIngredient(ingredient.ingredientId)"
-                                            >
-                                                <i class="bi bi-x"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Hủy
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-flat btn-flat--primary"
-                            @click="handleCreate"
-                            :disabled="creating || ingredients.length === 0"
-                        >
-                            <span v-if="creating" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-check me-2"></i>
-                            Tạo đơn đặt hàng
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Tạo Đơn đặt hàng từ Dự báo
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Tạo đơn đặt hàng dựa trên dự báo nhu cầu
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2" />
+              Tính năng này sẽ được tích hợp với hệ thống đơn đặt hàng trong tương lai.
+            </div>
+            <div class="table-responsive">
+              <table class="table table-minimal">
+                <thead>
+                  <tr>
+                    <th>Nguyên liệu</th>
+                    <th>Đơn vị</th>
+                    <th>Đề xuất số lượng</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="ingredient in ingredients"
+                    :key="ingredient.ingredientId"
+                  >
+                    <td>
+                      <div class="fw-semibold">
+                        {{ ingredient.name }}
+                      </div>
+                      <small class="text-muted">Dự báo 30 ngày: {{ formatNumber(ingredient.forecast30d, 2) }}</small>
+                    </td>
+                    <td>{{ ingredient.unit }}</td>
+                    <td>
+                      <input
+                        v-model.number="orderQuantities[ingredient.ingredientId]"
+                        type="number"
+                        class="form-control form-control-sm clean-input"
+                        min="0"
+                        style="width: 120px;"
+                      >
+                    </td>
+                    <td>
+                      <button
+                        class="btn btn-flat btn-flat--outline btn-sm"
+                        @click="removeIngredient(ingredient.ingredientId)"
+                      >
+                        <i class="bi bi-x" />
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--primary"
+              :disabled="creating || ingredients.length === 0"
+              @click="handleCreate"
+            >
+              <span
+                v-if="creating"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-check me-2"
+              />
+              Tạo đơn đặt hàng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>

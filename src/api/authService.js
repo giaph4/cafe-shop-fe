@@ -1,5 +1,4 @@
 import api from './axios'
-import { buildApiError } from '@/utils/errorHandler'
 
 /**
  * 1.1 Đăng ký tài khoản mới
@@ -27,7 +26,7 @@ export const refreshToken = async (refreshToken) => {
     if (!refreshToken || typeof refreshToken !== 'string' || !refreshToken.trim()) {
         throw new Error('Refresh token is required')
     }
-    
+
     // Gọi API refresh token với refresh token trong body
     const { data } = await api.post('/api/v1/auth/refresh', { refreshToken })
     return data

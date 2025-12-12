@@ -1,174 +1,216 @@
 <template>
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      class="ingredient-detail-modal modal fade show"
+      tabindex="-1"
+      style="display: block; z-index: 1055;"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-backdrop fade show"
+        style="z-index: 1050;"
+        @click="handleClose"
+      />
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+        style="z-index: 1056;"
+      >
         <div
-            class="ingredient-detail-modal modal fade show"
-            tabindex="-1"
-            @click.self="handleClose"
-            style="display: block; z-index: 1055;"
+          class="modal-content"
+          @click.stop
         >
-            <div class="modal-backdrop fade show" @click="handleClose" style="z-index: 1050;"></div>
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="z-index: 1056;">
-                <div class="modal-content" @click.stop>
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title">Chi tiết: <strong>{{ ingredient.name }}</strong></h5>
-                            <p class="modal-subtitle mb-0">Xem thông tin chi tiết về dự báo và tiêu thụ</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="handleClose"
-                            aria-label="Đóng"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-box me-2"></i>
-                                        Thông tin nguyên liệu
-                                    </h6>
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <span class="info-label">Tên:</span>
-                                            <span class="info-value fw-semibold">{{ ingredient.name }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Đơn vị:</span>
-                                            <span class="info-value">{{ ingredient.unit }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Tồn kho hiện tại:</span>
-                                            <span class="info-value">{{ formatNumber(ingredient.currentStock) }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Mức đặt lại:</span>
-                                            <span class="info-value">{{ formatNumber(ingredient.reorderLevel) }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-graph-up me-2"></i>
-                                        Dự báo & Tiêu thụ
-                                    </h6>
-                                    <div class="row g-3">
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--primary">
-                                                    <i class="bi bi-speedometer2"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Tiêu thụ TB/ngày</div>
-                                                    <div class="stat-value">{{ formatNumber(ingredient.avgDailyConsumption, 2) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--info">
-                                                    <i class="bi bi-calendar-week"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Dự báo 7 ngày</div>
-                                                    <div class="stat-value">{{ formatNumber(ingredient.forecast7d, 2) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--warning">
-                                                    <i class="bi bi-calendar-month"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Dự báo 30 ngày</div>
-                                                    <div class="stat-value">{{ formatNumber(ingredient.forecast30d, 2) }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="stat-box">
-                                                <div class="stat-icon stat-icon--danger">
-                                                    <i class="bi bi-clock"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <div class="stat-label">Số ngày còn lại</div>
-                                                    <div class="stat-value">{{ ingredient.daysRemaining || 'N/A' }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-4">
-                            <div class="col-12">
-                                <div class="info-section">
-                                    <h6 class="section-title mb-3">
-                                        <i class="bi bi-list-check me-2"></i>
-                                        Chi tiết metrics
-                                    </h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-minimal">
-                                            <thead>
-                                                <tr>
-                                                    <th>Chỉ số</th>
-                                                    <th>Giá trị</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Trạng thái</td>
-                                                    <td>
-                                                        <span class="badge badge-soft" :class="getStatusClass(ingredient.status)">
-                                                            {{ getStatusLabel(ingredient.status) }}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Độ tin cậy dự báo</td>
-                                                    <td>{{ (ingredient.confidence * 100).toFixed(1) }}%</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Xu hướng</td>
-                                                    <td>
-                                                        <span class="trend-badge" :class="getTrendClass(ingredient.trend)">
-                                                            {{ getTrendLabel(ingredient.trend) }}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Đề xuất đặt hàng</td>
-                                                    <td class="suggested-order-cell">{{ formatNumber(ingredient.suggestedOrder) }}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-flat btn-flat--outline" @click="handleClose">
-                            Đóng
-                        </button>
-                        <button
-                            v-if="ingredient.suggestedOrder > 0"
-                            type="button"
-                            class="btn btn-flat btn-flat--primary"
-                            @click="handleCreatePO"
-                        >
-                            <i class="bi bi-cart-plus me-2"></i>
-                            Tạo đơn đặt hàng
-                        </button>
-                    </div>
-                </div>
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5 class="modal-title">
+                Chi tiết: <strong>{{ ingredient.name }}</strong>
+              </h5>
+              <p class="modal-subtitle mb-0">
+                Xem thông tin chi tiết về dự báo và tiêu thụ
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="handleClose"
+            />
+          </div>
+          <div class="modal-body">
+            <div class="row g-4 mb-4">
+              <div class="col-md-6">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-box me-2" />
+                    Thông tin nguyên liệu
+                  </h6>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Tên:</span>
+                      <span class="info-value fw-semibold">{{ ingredient.name }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Đơn vị:</span>
+                      <span class="info-value">{{ ingredient.unit }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Tồn kho hiện tại:</span>
+                      <span class="info-value">{{ formatNumber(ingredient.currentStock) }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Mức đặt lại:</span>
+                      <span class="info-value">{{ formatNumber(ingredient.reorderLevel) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-graph-up me-2" />
+                    Dự báo & Tiêu thụ
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--primary">
+                          <i class="bi bi-speedometer2" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Tiêu thụ TB/ngày
+                          </div>
+                          <div class="stat-value">
+                            {{ formatNumber(ingredient.avgDailyConsumption, 2) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--info">
+                          <i class="bi bi-calendar-week" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Dự báo 7 ngày
+                          </div>
+                          <div class="stat-value">
+                            {{ formatNumber(ingredient.forecast7d, 2) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--warning">
+                          <i class="bi bi-calendar-month" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Dự báo 30 ngày
+                          </div>
+                          <div class="stat-value">
+                            {{ formatNumber(ingredient.forecast30d, 2) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="stat-box">
+                        <div class="stat-icon stat-icon--danger">
+                          <i class="bi bi-clock" />
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-label">
+                            Số ngày còn lại
+                          </div>
+                          <div class="stat-value">
+                            {{ ingredient.daysRemaining || 'N/A' }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row g-4">
+              <div class="col-12">
+                <div class="info-section">
+                  <h6 class="section-title mb-3">
+                    <i class="bi bi-list-check me-2" />
+                    Chi tiết metrics
+                  </h6>
+                  <div class="table-responsive">
+                    <table class="table table-minimal">
+                      <thead>
+                        <tr>
+                          <th>Chỉ số</th>
+                          <th>Giá trị</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Trạng thái</td>
+                          <td>
+                            <span
+                              class="badge badge-soft"
+                              :class="getStatusClass(ingredient.status)"
+                            >
+                              {{ getStatusLabel(ingredient.status) }}
+                            </span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Độ tin cậy dự báo</td>
+                          <td>{{ (ingredient.confidence * 100).toFixed(1) }}%</td>
+                        </tr>
+                        <tr>
+                          <td>Xu hướng</td>
+                          <td>
+                            <span
+                              class="trend-badge"
+                              :class="getTrendClass(ingredient.trend)"
+                            >
+                              {{ getTrendLabel(ingredient.trend) }}
+                            </span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Đề xuất đặt hàng</td>
+                          <td class="suggested-order-cell">
+                            {{ formatNumber(ingredient.suggestedOrder) }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-flat btn-flat--outline"
+              @click="handleClose"
+            >
+              Đóng
+            </button>
+            <button
+              v-if="ingredient.suggestedOrder > 0"
+              type="button"
+              class="btn btn-flat btn-flat--primary"
+              @click="handleCreatePO"
+            >
+              <i class="bi bi-cart-plus me-2" />
+              Tạo đơn đặt hàng
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>

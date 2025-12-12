@@ -1,62 +1,75 @@
 <template>
-    <div class="shift-list">
-        <div v-if="shifts.length === 0" class="empty-list">
-            <EmptyState
-                title="Không có dữ liệu"
-                message="Không tìm thấy ca làm việc nào phù hợp"
-            />
-        </div>
-        <div v-else class="table-responsive">
-            <table class="table table-minimal">
-                <thead>
-                    <tr>
-                        <th>Ca</th>
-                        <th>Ngày</th>
-                        <th>Thời gian</th>
-                        <th>Nhân viên</th>
-                        <th>Doanh thu</th>
-                        <th>Số đơn</th>
-                        <th>Doanh thu/NV</th>
-                        <th>Điểm hiệu quả</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="shift in shifts"
-                        :key="shift.shiftId"
-                        :class="getRowClass(shift.efficiencyScore)"
-                    >
-                        <td>
-                            <div class="fw-semibold shift-name">{{ shift.shiftName }}</div>
-                        </td>
-                        <td>{{ formatDate(shift.date) }}</td>
-                        <td>
-                            <small>{{ formatTime(shift.startTime) }} - {{ formatTime(shift.endTime) }}</small>
-                        </td>
-                        <td>{{ formatNumber(shift.staffCount) }}</td>
-                        <td class="revenue-cell">{{ formatCurrency(shift.revenue) }}</td>
-                        <td>{{ formatNumber(shift.ordersCount) }}</td>
-                        <td>{{ formatCurrency(shift.revenuePerStaff) }}</td>
-                        <td>
-                            <span class="score-badge" :class="getScoreClass(shift.efficiencyScore)">
-                                {{ shift.efficiencyScore.toFixed(1) }}
-                            </span>
-                        </td>
-                        <td>
-                            <button
-                                class="btn btn-flat btn-flat--outline btn-sm"
-                                @click="$emit('view', shift)"
-                                title="Xem chi tiết"
-                            >
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="shift-list">
+    <div
+      v-if="shifts.length === 0"
+      class="empty-list"
+    >
+      <EmptyState
+        title="Không có dữ liệu"
+        message="Không tìm thấy ca làm việc nào phù hợp"
+      />
     </div>
+    <div
+      v-else
+      class="table-responsive"
+    >
+      <table class="table table-minimal">
+        <thead>
+          <tr>
+            <th>Ca</th>
+            <th>Ngày</th>
+            <th>Thời gian</th>
+            <th>Nhân viên</th>
+            <th>Doanh thu</th>
+            <th>Số đơn</th>
+            <th>Doanh thu/NV</th>
+            <th>Điểm hiệu quả</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="shift in shifts"
+            :key="shift.shiftId"
+            :class="getRowClass(shift.efficiencyScore)"
+          >
+            <td>
+              <div class="fw-semibold shift-name">
+                {{ shift.shiftName }}
+              </div>
+            </td>
+            <td>{{ formatDate(shift.date) }}</td>
+            <td>
+              <small>{{ formatTime(shift.startTime) }} - {{ formatTime(shift.endTime) }}</small>
+            </td>
+            <td>{{ formatNumber(shift.staffCount) }}</td>
+            <td class="revenue-cell">
+              {{ formatCurrency(shift.revenue) }}
+            </td>
+            <td>{{ formatNumber(shift.ordersCount) }}</td>
+            <td>{{ formatCurrency(shift.revenuePerStaff) }}</td>
+            <td>
+              <span
+                class="score-badge"
+                :class="getScoreClass(shift.efficiencyScore)"
+              >
+                {{ shift.efficiencyScore.toFixed(1) }}
+              </span>
+            </td>
+            <td>
+              <button
+                class="btn btn-flat btn-flat--outline btn-sm"
+                title="Xem chi tiết"
+                @click="$emit('view', shift)"
+              >
+                <i class="bi bi-eye" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>

@@ -1,221 +1,267 @@
 <template>
-    <Teleport to="body">
-        <Transition name="fade">
-            <div v-if="visible" class="staff-detail-modal-overlay" @click.self="$emit('close')">
-                <div class="staff-detail-modal-dialog">
-                    <div class="staff-detail-modal-content">
-                        <div class="staff-detail-modal-header">
-                            <div class="staff-detail-modal-header-main">
-                                <div class="avatar-wrapper">
-                                    <img
-                                        v-if="avatarUrl"
-                                        :src="avatarUrl"
-                                        class="avatar"
-                                        :alt="staff.fullName || staff.username"
-                                    />
-                                    <div v-else class="avatar placeholder">{{ initials }}</div>
-                                </div>
-                                <div class="staff-detail-modal-header-text">
-                                    <h4 class="mb-1">{{ staff.fullName || staff.username }}</h4>
-                                    <p class="text-muted mb-1">@{{ staff.username }}</p>
-                                    <div class="small text-muted">Tạo lúc {{ formatDateTime(staff.createdAt) }}</div>
-                                </div>
-                            </div>
-                            <div class="staff-detail-modal-header-meta">
-                                <span class="status-badge" :class="statusClass">{{ statusLabel }}</span>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" @click="$emit('close')">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="staff-detail-modal-body">
-                            <section class="info-card">
-                                <div class="section-header">
-                                    <h6>Thông tin cá nhân</h6>
-                                </div>
-                                <div class="info-grid">
-                                    <div>
-                                        <label>Họ tên</label>
-                                        <p>{{ staff.fullName || 'Chưa cập nhật' }}</p>
-                                    </div>
-                                    <div>
-                                        <label>Email</label>
-                                        <p>{{ staff.email || 'Chưa có email' }}</p>
-                                    </div>
-                                    <div>
-                                        <label>Số điện thoại</label>
-                                        <p>{{ staff.phone || 'Chưa cập nhật' }}</p>
-                                    </div>
-                                    <div>
-                                        <label>Địa chỉ</label>
-                                        <p>{{ staff.address || 'Chưa cập nhật' }}</p>
-                                    </div>
-                                    <div>
-                                        <label>Quyền</label>
-                                        <p>
-                                            <span
-                                                v-for="role in staff.roles"
-                                                :key="role.id"
-                                                class="badge bg-soft me-1"
-                                            >
-                                                {{ formatRole(role.name) }}
-                                            </span>
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label>Cập nhật lần cuối</label>
-                                        <p>{{ formatDateTime(staff.updatedAt) }}</p>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section class="info-card" v-if="dashboard">
-                                <div class="section-header">
-                                    <h6>Hiệu suất & KPI</h6>
-                                </div>
-                                <div class="kpi-grid">
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Tổng đơn hàng</span>
-                                        <span class="kpi-value">{{ dashboard.performance?.totalOrders ?? 0 }}</span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Doanh thu</span>
-                                        <span class="kpi-value">
-                                            {{ formatCurrency(dashboard.performance?.totalRevenue) }}
-                                        </span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Giá trị trung bình</span>
-                                        <span class="kpi-value">
-                                            {{ formatCurrency(dashboard.performance?.averageOrderValue) }}
-                                        </span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Ca tuần này</span>
-                                        <span class="kpi-value">{{ dashboard.shiftSummary?.shiftsThisWeek ?? 0 }}</span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Đang/chờ thực hiện</span>
-                                        <span class="kpi-value">{{ dashboard.shiftSummary?.pendingShifts ?? 0 }}</span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Ca hoàn thành</span>
-                                        <span class="kpi-value">{{ dashboard.shiftSummary?.completedShifts ?? 0 }}</span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section class="info-card" v-if="dashboard?.attendance">
-                                <div class="section-header">
-                                    <h6>Chấm công</h6>
-                                </div>
-                                <ul class="list-unstyled mb-0">
-                                    <li>
-                                        <strong>Đang check-in:</strong>
-                                        <span :class="dashboard.attendance.currentlyCheckedIn ? 'text-success' : 'text-muted'">
-                                            {{ dashboard.attendance.currentlyCheckedIn ? 'Có' : 'Không' }}
-                                        </span>
-                                    </li>
-                                    <li>
-                                        <strong>Check-in gần nhất:</strong>
-                                        {{ formatDateTime(dashboard.attendance.lastCheckIn) }}
-                                    </li>
-                                    <li>
-                                        <strong>Check-out gần nhất:</strong>
-                                        {{ formatDateTime(dashboard.attendance.lastCheckOut) }}
-                                    </li>
-                                    <li>
-                                        <strong>Số ngày đúng giờ liên tiếp:</strong>
-                                        {{ dashboard.attendance.consecutiveOnTimeDays ?? 0 }}
-                                    </li>
-                                </ul>
-                            </section>
-
-                            <section class="info-card" v-if="dashboard?.payroll">
-                                <div class="section-header">
-                                    <h6>Payroll</h6>
-                                </div>
-                                <div class="kpi-grid">
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Ước tính chu kỳ hiện tại</span>
-                                        <span class="kpi-value">
-                                            {{ formatCurrency(dashboard.payroll.estimatedCurrentCycle) }}
-                                        </span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Tổng thưởng</span>
-                                        <span class="kpi-value text-success">
-                                            {{ formatCurrency(dashboard.payroll.bonusTotal) }}
-                                        </span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Tổng phạt</span>
-                                        <span class="kpi-value text-danger">
-                                            {{ formatCurrency(dashboard.payroll.penaltyTotal) }}
-                                        </span>
-                                    </div>
-                                    <div class="kpi-item">
-                                        <span class="kpi-label">Điều chỉnh ròng</span>
-                                        <span class="kpi-value">
-                                            {{ formatCurrency(dashboard.payroll.adjustmentNet) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section class="info-card" v-if="dashboard?.upcomingShifts?.length">
-                                <div class="section-header">
-                                    <h6>Ca sắp tới</h6>
-                                </div>
-                                <ul class="list-group list-group-flush staff-detail-upcoming-list">
-                                    <li
-                                        v-for="shift in dashboard.upcomingShifts"
-                                        :key="shift.assignmentId"
-                                        class="list-group-item"
-                                    >
-                                        <div class="d-flex justify-content-between align-items-start gap-3">
-                                            <div>
-                                                <div class="fw-semibold">
-                                                    {{ formatDate(shift.shiftDate) }} • {{ shift.timeRange }}
-                                                </div>
-                                                <div class="text-muted small">Vai trò: {{ shift.role || '—' }}</div>
-                                                <div class="text-muted small" v-if="shift.managerNote">
-                                                    Ghi chú: {{ shift.managerNote }}
-                                                </div>
-                                            </div>
-                                            <span class="badge bg-soft">{{ shift.status }}</span>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </section>
-
-                            <div v-if="loading" class="text-center py-3">
-                                <div class="spinner-border text-primary"></div>
-                            </div>
-                        </div>
-
-                        <div class="staff-detail-modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="$emit('close')">
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="visible"
+        class="staff-detail-modal-overlay"
+        @click.self="$emit('close')"
+      >
+        <div class="staff-detail-modal-dialog">
+          <div class="staff-detail-modal-content">
+            <div class="staff-detail-modal-header">
+              <div class="staff-detail-modal-header-main">
+                <div class="avatar-wrapper">
+                  <img
+                    v-if="avatarUrl"
+                    :src="avatarUrl"
+                    class="avatar"
+                    :alt="staff.fullName || staff.username"
+                  >
+                  <div
+                    v-else
+                    class="avatar placeholder"
+                  >
+                    {{ initials }}
+                  </div>
                 </div>
+                <div class="staff-detail-modal-header-text">
+                  <h4 class="mb-1">
+                    {{ staff.fullName || staff.username }}
+                  </h4>
+                  <p class="text-muted mb-1">
+                    @{{ staff.username }}
+                  </p>
+                  <div class="small text-muted">
+                    Tạo lúc {{ formatDateTime(staff.createdAt) }}
+                  </div>
+                </div>
+              </div>
+              <div class="staff-detail-modal-header-meta">
+                <span
+                  class="status-badge"
+                  :class="statusClass"
+                >{{ statusLabel }}</span>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  @click="$emit('close')"
+                >
+                  <i class="bi bi-x-lg" />
+                </button>
+              </div>
             </div>
-        </Transition>
-    </Teleport>
+
+            <div class="staff-detail-modal-body">
+              <section class="info-card">
+                <div class="section-header">
+                  <h6>Thông tin cá nhân</h6>
+                </div>
+                <div class="info-grid">
+                  <div>
+                    <label>Họ tên</label>
+                    <p>{{ staff.fullName || 'Chưa cập nhật' }}</p>
+                  </div>
+                  <div>
+                    <label>Email</label>
+                    <p>{{ staff.email || 'Chưa có email' }}</p>
+                  </div>
+                  <div>
+                    <label>Số điện thoại</label>
+                    <p>{{ staff.phone || 'Chưa cập nhật' }}</p>
+                  </div>
+                  <div>
+                    <label>Địa chỉ</label>
+                    <p>{{ staff.address || 'Chưa cập nhật' }}</p>
+                  </div>
+                  <div>
+                    <label>Quyền</label>
+                    <p>
+                      <span
+                        v-for="role in staff.roles"
+                        :key="role.id"
+                        class="badge bg-soft me-1"
+                      >
+                        {{ formatRole(role.name) }}
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <label>Cập nhật lần cuối</label>
+                    <p>{{ formatDateTime(staff.updatedAt) }}</p>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                v-if="dashboard"
+                class="info-card"
+              >
+                <div class="section-header">
+                  <h6>Hiệu suất & KPI</h6>
+                </div>
+                <div class="kpi-grid">
+                  <div class="kpi-item">
+                    <span class="kpi-label">Tổng đơn hàng</span>
+                    <span class="kpi-value">{{ dashboard.performance?.totalOrders ?? 0 }}</span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Doanh thu</span>
+                    <span class="kpi-value">
+                      {{ formatCurrency(dashboard.performance?.totalRevenue) }}
+                    </span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Giá trị trung bình</span>
+                    <span class="kpi-value">
+                      {{ formatCurrency(dashboard.performance?.averageOrderValue) }}
+                    </span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Ca tuần này</span>
+                    <span class="kpi-value">{{ dashboard.shiftSummary?.shiftsThisWeek ?? 0 }}</span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Đang/chờ thực hiện</span>
+                    <span class="kpi-value">{{ dashboard.shiftSummary?.pendingShifts ?? 0 }}</span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Ca hoàn thành</span>
+                    <span class="kpi-value">{{ dashboard.shiftSummary?.completedShifts ?? 0 }}</span>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                v-if="dashboard?.attendance"
+                class="info-card"
+              >
+                <div class="section-header">
+                  <h6>Chấm công</h6>
+                </div>
+                <ul class="list-unstyled mb-0">
+                  <li>
+                    <strong>Đang check-in:</strong>
+                    <span :class="dashboard.attendance.currentlyCheckedIn ? 'text-success' : 'text-muted'">
+                      {{ dashboard.attendance.currentlyCheckedIn ? 'Có' : 'Không' }}
+                    </span>
+                  </li>
+                  <li>
+                    <strong>Check-in gần nhất:</strong>
+                    {{ formatDateTime(dashboard.attendance.lastCheckIn) }}
+                  </li>
+                  <li>
+                    <strong>Check-out gần nhất:</strong>
+                    {{ formatDateTime(dashboard.attendance.lastCheckOut) }}
+                  </li>
+                  <li>
+                    <strong>Số ngày đúng giờ liên tiếp:</strong>
+                    {{ dashboard.attendance.consecutiveOnTimeDays ?? 0 }}
+                  </li>
+                </ul>
+              </section>
+
+              <section
+                v-if="dashboard?.payroll"
+                class="info-card"
+              >
+                <div class="section-header">
+                  <h6>Payroll</h6>
+                </div>
+                <div class="kpi-grid">
+                  <div class="kpi-item">
+                    <span class="kpi-label">Ước tính chu kỳ hiện tại</span>
+                    <span class="kpi-value">
+                      {{ formatCurrency(dashboard.payroll.estimatedCurrentCycle) }}
+                    </span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Tổng thưởng</span>
+                    <span class="kpi-value text-success">
+                      {{ formatCurrency(dashboard.payroll.bonusTotal) }}
+                    </span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Tổng phạt</span>
+                    <span class="kpi-value text-danger">
+                      {{ formatCurrency(dashboard.payroll.penaltyTotal) }}
+                    </span>
+                  </div>
+                  <div class="kpi-item">
+                    <span class="kpi-label">Điều chỉnh ròng</span>
+                    <span class="kpi-value">
+                      {{ formatCurrency(dashboard.payroll.adjustmentNet) }}
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                v-if="dashboard?.upcomingShifts?.length"
+                class="info-card"
+              >
+                <div class="section-header">
+                  <h6>Ca sắp tới</h6>
+                </div>
+                <ul class="list-group list-group-flush staff-detail-upcoming-list">
+                  <li
+                    v-for="shift in dashboard.upcomingShifts"
+                    :key="shift.assignmentId"
+                    class="list-group-item"
+                  >
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                      <div>
+                        <div class="fw-semibold">
+                          {{ formatDate(shift.shiftDate) }} • {{ shift.timeRange }}
+                        </div>
+                        <div class="text-muted small">
+                          Vai trò: {{ shift.role || '—' }}
+                        </div>
+                        <div
+                          v-if="shift.managerNote"
+                          class="text-muted small"
+                        >
+                          Ghi chú: {{ shift.managerNote }}
+                        </div>
+                      </div>
+                      <span class="badge bg-soft">{{ shift.status }}</span>
+                    </div>
+                  </li>
+                </ul>
+              </section>
+
+              <div
+                v-if="loading"
+                class="text-center py-3"
+              >
+                <div class="spinner-border text-primary" />
+              </div>
+            </div>
+
+            <div class="staff-detail-modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="$emit('close')"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import {computed} from 'vue'
-import {formatCurrency, formatDate, formatDateTime} from '@/utils/formatters'
+import { computed } from 'vue'
+import { formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
 const props = defineProps({
-    visible: {type: Boolean, default: false},
-    staff: {type: Object, default: () => ({})},
-    dashboard: {type: Object, default: null},
-    loading: {type: Boolean, default: false}
+    visible: { type: Boolean, default: false },
+    staff: { type: Object, default: () => ({}) },
+    dashboard: { type: Object, default: null },
+    loading: { type: Boolean, default: false }
 })
 
 defineEmits(['close'])

@@ -13,19 +13,28 @@ import { ref, computed } from 'vue'
  * @param {string} options.endDate - Initial end date (optional)
  * @returns {Object} Date range filter utilities
  */
-export const useDateRangeFilter = (options = {}) => {
-    const {
-        defaultDays = 7,
-        startDate: initialStartDate,
-        endDate: initialEndDate
-    } = options
+export const useDateRangeFilter = (defaultPreset = '90d') => {
+    // Support both old and new API
+    let defaultDays = 90
+    let initialStartDate = null
+    let initialEndDate = null
+
+    if (typeof defaultPreset === 'object') {
+        defaultDays = defaultPreset.defaultDays || 90
+        initialStartDate = defaultPreset.startDate
+        initialEndDate = defaultPreset.endDate
+    } else if (typeof defaultPreset === 'string') {
+        // Handle preset strings like '90d', '30d'
+        const match = defaultPreset.match(/(\d+)d/)
+        if (match) {
+            defaultDays = parseInt(match[1], 10)
+        }
+    }
 
     /**
      * Get today's date in YYYY-MM-DD format
      */
-    const today = () => {
-        return new Date().toISOString().split('T')[0]
-    }
+    const today = () => new Date().toISOString().split('T')[0]
 
     /**
      * Shift date by number of days
@@ -44,18 +53,14 @@ export const useDateRangeFilter = (options = {}) => {
      * @param {Date} date - Date object
      * @returns {string} Formatted date
      */
-    const formatDate = (date) => {
-        return date.toISOString().split('T')[0]
-    }
+    const formatDate = (date) => date.toISOString().split('T')[0]
 
     /**
      * Shift date from today by number of days
      * @param {number} days - Number of days to shift
      * @returns {string} Date in YYYY-MM-DD format
      */
-    const shiftDate = (days) => {
-        return shiftDateFrom(new Date(), days)
-    }
+    const shiftDate = (days) => shiftDateFrom(new Date(), days)
 
     /**
      * Initialize filters
@@ -69,24 +74,57 @@ export const useDateRangeFilter = (options = {}) => {
      * Date range presets
      */
     const presets = [
-        { value: '7', label: '7 ngày', days: 7 },
-        { value: '30', label: '30 ngày', days: 30 },
-        { value: '90', label: '90 ngày', days: 90 }
+        { value: '30d', label: '30 ngày', days: 30 },
+        { value: '90d', label: '90 ngày', days: 90 },
+        { value: '180d', label: '180 ngày', days: 180 },
+        { value: '365d', label: '1 năm', days: 365 }
     ]
+
+    const selectedPreset = ref(defaultPreset)
+    const validationError = ref('')
 
     /**
      * Apply preset
-     * @param {string} presetValue - Preset value ('7', '30', '90')
+     * @param {string} presetValue - Preset value ('30d', '90d', etc)
      */
     const applyPreset = (presetValue) => {
+        selectedPreset.value = presetValue
         const preset = presets.find(p => p.value === presetValue)
         if (preset) {
             filters.value = {
                 startDate: shiftDate(-preset.days),
                 endDate: today()
             }
+            validateDates()
         }
     }
+
+    /**
+     * Validate dates
+     */
+    const validateDates = () => {
+        validationError.value = ''
+
+        if (!filters.value.startDate || !filters.value.endDate) {
+            return
+        }
+
+        const start = new Date(filters.value.startDate)
+        const end = new Date(filters.value.endDate)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        if (start > end) {
+            validationError.value = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
+            return
+        }
+
+        if (end > today) {
+            validationError.value = 'Ngày kết thúc không được vượt quá hôm nay'
+        }
+    }
+
+    const canAnalyze = computed(() => filters.value.startDate && filters.value.endDate && !validationError.value)
 
     /**
      * Reset filters to default
@@ -104,7 +142,7 @@ export const useDateRangeFilter = (options = {}) => {
      */
     const validate = computed(() => {
         const { startDate, endDate } = filters.value
-        
+
         if (!startDate || !endDate) {
             return {
                 valid: false,
@@ -145,10 +183,10 @@ export const useDateRangeFilter = (options = {}) => {
         const diffDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)))
         const previousEnd = shiftDateFrom(start, -1)
         const previousStart = shiftDateFrom(previousEnd, -diffDays)
-        
+
         return {
-            previousStart: previousStart,
-            previousEnd: previousEnd
+            previousStart,
+            previousEnd
         }
     }
 
@@ -167,6 +205,8 @@ export const useDateRangeFilter = (options = {}) => {
     return {
         filters,
         presets,
+        selectedPreset,
+        validationError,
         today,
         shiftDate,
         shiftDateFrom,
@@ -174,6 +214,8 @@ export const useDateRangeFilter = (options = {}) => {
         applyPreset,
         resetFilters,
         validate,
+        validateDates,
+        canAnalyze,
         computePreviousRange,
         rangeDays
     }

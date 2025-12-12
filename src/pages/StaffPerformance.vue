@@ -1,336 +1,462 @@
 <template>
-    <div class="staff-performance-page page-container container-fluid" data-aos="fade-up">
-        <PageHeader
-            title="Phân tích hiệu suất nhân viên"
-            subtitle="Đánh giá toàn diện hiệu suất và hiệu quả làm việc của nhân viên"
+  <div
+    class="staff-performance-page page-container container-fluid"
+    data-aos="fade-up"
+  >
+    <PageHeader
+      title="Phân tích hiệu suất nhân viên"
+      subtitle="Đánh giá toàn diện hiệu suất và hiệu quả làm việc của nhân viên"
+    >
+      <template #actions>
+        <button
+          class="btn-flat btn-flat--outline"
+          :disabled="loading"
+          @click="handleRefresh"
         >
-            <template #actions>
-                <button
-                    class="btn-flat btn-flat--outline"
-                    @click="handleRefresh"
-                    :disabled="loading"
-                >
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                    Làm mới
-                </button>
-                <button
-                    v-if="hasData"
-                    class="btn-flat btn-flat--outline"
-                    @click="handleExport"
-                    :disabled="exporting"
-                >
-                    <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-download me-2"></i>
-                    Xuất Excel
-                </button>
-            </template>
-        </PageHeader>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.startDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.endDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Nhân viên (tùy chọn)</label>
-                        <select class="form-select clean-input" v-model="filters.userId">
-                            <option value="">Tất cả nhân viên</option>
-                            <option v-for="staff in availableStaff" :key="staff.id" :value="staff.id">
-                                {{ staff.fullName }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Khoảng thời gian</label>
-                        <div class="btn-group w-100" role="group">
-                            <button
-                                v-for="preset in presets"
-                                :key="preset.value"
-                                type="button"
-                                class="btn btn-flat"
-                                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
-                                @click="applyPreset(preset.value)"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <button
-                            class="btn btn-flat btn-flat--primary w-100"
-                            @click="handleAnalyze"
-                            :disabled="loading || !canAnalyze"
-                        >
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-graph-up-arrow me-2"></i>
-                            Phân tích
-                        </button>
-                    </div>
-                </div>
-                <div v-if="validationError" class="alert alert-warning mt-3 mb-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    {{ validationError }}
-                </div>
-            </div>
-        </div>
-
-        <LoadingState v-if="loading" text="Đang phân tích hiệu suất nhân viên..." />
-        <ErrorState
-            v-else-if="error"
-            :message="error"
-            @retry="handleAnalyze"
-        />
-
-        <div v-else-if="hasData" class="performance-content">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--primary">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng nhân viên</div>
-                            <div class="kpi-card__value">{{ staffList.length }}</div>
-                            <div class="kpi-card__subtitle">Đã phân tích</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--success">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-trophy"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Top performer</div>
-                            <div class="kpi-card__value">{{ topPerformers[0]?.fullName || 'N/A' }}</div>
-                            <div class="kpi-card__subtitle">{{ topPerformers[0] ? formatNumber(topPerformers[0].metrics.performanceScore.toFixed(1)) : 0 }} điểm</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--info">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-cash-stack"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Doanh thu TB</div>
-                            <div class="kpi-card__value">{{ formatCurrency(teamMetrics?.avgRevenue || 0) }}</div>
-                            <div class="kpi-card__subtitle">Theo nhân viên</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--warning">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-clipboard-check"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Đơn hàng TB</div>
-                            <div class="kpi-card__value">{{ formatNumber(teamMetrics?.avgOrders || 0) }}</div>
-                            <div class="kpi-card__subtitle">Theo nhân viên</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card standard-card mb-4">
-                <div class="card-header standard-card-header">
-                    <h5 class="card-title">Bảng xếp hạng</h5>
-                    <button
-                        class="btn btn-flat btn-flat--outline btn-sm"
-                        @click="showComparisonModal"
-                        :disabled="selectedStaffIds.length < 2"
-                    >
-                        <i class="bi bi-bar-chart me-2"></i>
-                        So sánh
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-minimal">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px;">
-                                        <input
-                                            type="checkbox"
-                                            class="form-check-input"
-                                            :checked="allSelected"
-                                            @change="toggleSelectAll"
-                                        />
-                                    </th>
-                                    <th>Hạng</th>
-                                    <th>Nhân viên</th>
-                                    <th>Điểm hiệu suất</th>
-                                    <th>Doanh thu</th>
-                                    <th>Số đơn</th>
-                                    <th>Chuyên cần</th>
-                                    <th>Đúng giờ</th>
-                                    <th>Tips</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(staff, index) in staffList" :key="staff.userId">
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            class="form-check-input"
-                                            :value="staff.userId"
-                                            v-model="selectedStaffIds"
-                                        />
-                                    </td>
-                                    <td>
-                                        <span class="rank-badge" :class="getRankClass(index)">
-                                            {{ index + 1 }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="staff-avatar" v-if="staff.avatarUrl">
-                                                <img :src="staff.avatarUrl" :alt="staff.fullName" />
-                                            </div>
-                                            <div>
-                                                <div class="fw-semibold staff-name">{{ staff.fullName }}</div>
-                                                <small class="text-muted staff-username">{{ staff.username }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="score-badge" :class="getScoreClass(staff.metrics.performanceScore)">
-                                            {{ staff.metrics.performanceScore.toFixed(1) }}
-                                        </span>
-                                    </td>
-                                    <td class="revenue-cell">{{ formatCurrency(staff.metrics.revenue) }}</td>
-                                    <td class="orders-cell">{{ formatNumber(staff.metrics.ordersCount) }}</td>
-                                    <td>
-                                        <span class="rate-badge">{{ (staff.metrics.attendanceRate * 100).toFixed(1) }}%</span>
-                                    </td>
-                                    <td>
-                                        <span class="rate-badge">{{ (staff.metrics.onTimeRate * 100).toFixed(1) }}%</span>
-                                    </td>
-                                    <td class="tips-cell">{{ formatCurrency(staff.metrics.tipsEarned) }}</td>
-                                    <td>
-                                        <button
-                                            class="btn btn-flat btn-flat--outline btn-sm"
-                                            @click="showStaffDetail(staff)"
-                                            title="Xem chi tiết"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card standard-card">
-                <div class="card-header standard-card-header">
-                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button
-                                class="nav-link"
-                                :class="{ active: activeTab === 'overview' }"
-                                @click="activeTab = 'overview'"
-                                type="button"
-                            >
-                                Tổng quan
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button
-                                class="nav-link"
-                                :class="{ active: activeTab === 'performance' }"
-                                @click="activeTab = 'performance'"
-                                type="button"
-                            >
-                                Hiệu suất
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button
-                                class="nav-link"
-                                :class="{ active: activeTab === 'attendance' }"
-                                @click="activeTab = 'attendance'"
-                                type="button"
-                            >
-                                Chuyên cần
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button
-                                class="nav-link"
-                                :class="{ active: activeTab === 'financial' }"
-                                @click="activeTab = 'financial'"
-                                type="button"
-                            >
-                                Tài chính
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button
-                                class="nav-link"
-                                :class="{ active: activeTab === 'trends' }"
-                                @click="activeTab = 'trends'"
-                                type="button"
-                            >
-                                Xu hướng
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                <div class="card-body">
-                    <OverviewTab v-if="activeTab === 'overview'" :staff-list="staffList" :team-metrics="teamMetrics" />
-                    <PerformanceTab v-if="activeTab === 'performance'" :staff-list="staffList" />
-                    <AttendanceTab v-if="activeTab === 'attendance'" :staff-list="staffList" />
-                    <FinancialTab v-if="activeTab === 'financial'" :staff-list="staffList" />
-                    <TrendsTab v-if="activeTab === 'trends'" :selected-staff-id="filters.userId" />
-                </div>
-            </div>
-        </div>
-
-        <EmptyState
+          <span
+            v-if="loading"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
             v-else
-            title="Chưa có dữ liệu"
-            message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+            class="bi bi-arrow-clockwise me-2"
+          />
+          Làm mới
+        </button>
+        <button
+          v-if="hasData"
+          class="btn-flat btn-flat--outline"
+          :disabled="exporting"
+          @click="handleExport"
         >
-            <template #icon>
-                <i class="bi bi-graph-up-arrow"></i>
-            </template>
-        </EmptyState>
+          <span
+            v-if="exporting"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
+            v-else
+            class="bi bi-download me-2"
+          />
+          Xuất Excel
+        </button>
+      </template>
+    </PageHeader>
 
-        <StaffDetailModal
-            v-if="selectedStaff"
-            :staff="selectedStaff"
-            @close="selectedStaff = null"
-        />
-
-        <ComparisonModal
-            v-if="showComparison"
-            :staff-ids="selectedStaffIds"
-            :start-date="filters.startDate"
-            :end-date="filters.endDate"
-            @close="showComparison = false"
-        />
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Nhân viên (tùy chọn)</label>
+            <select
+              v-model="filters.userId"
+              class="form-select clean-input"
+            >
+              <option value="">
+                Tất cả nhân viên
+              </option>
+              <option
+                v-for="staff in availableStaff"
+                :key="staff.id"
+                :value="staff.id"
+              >
+                {{ staff.fullName }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Khoảng thời gian</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in presets"
+                :key="preset.value"
+                type="button"
+                class="btn btn-flat"
+                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
+                @click="applyPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">&nbsp;</label>
+            <button
+              class="btn btn-flat btn-flat--primary w-100"
+              :disabled="loading || !canAnalyze"
+              @click="handleAnalyze"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-graph-up-arrow me-2"
+              />
+              Phân tích
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="validationError"
+          class="alert alert-warning mt-3 mb-0"
+        >
+          <i class="bi bi-exclamation-triangle me-2" />
+          {{ validationError }}
+        </div>
+      </div>
     </div>
+
+    <LoadingState
+      v-if="loading"
+      text="Đang phân tích hiệu suất nhân viên..."
+    />
+    <ErrorState
+      v-else-if="error"
+      :message="error"
+      @retry="handleAnalyze"
+    />
+
+    <div
+      v-else-if="hasData"
+      class="performance-content"
+    >
+      <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--primary">
+            <div class="kpi-card__icon">
+              <i class="bi bi-people" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng nhân viên
+              </div>
+              <div class="kpi-card__value">
+                {{ staffList.length }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Đã phân tích
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+              <i class="bi bi-trophy" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Top performer
+              </div>
+              <div class="kpi-card__value">
+                {{ topPerformers[0]?.fullName || 'N/A' }}
+              </div>
+              <div class="kpi-card__subtitle">
+                {{ topPerformers[0] ? formatNumber(topPerformers[0].metrics.performanceScore.toFixed(1)) : 0 }} điểm
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <i class="bi bi-cash-stack" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Doanh thu TB
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(teamMetrics?.avgRevenue || 0) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Theo nhân viên
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--warning">
+            <div class="kpi-card__icon">
+              <i class="bi bi-clipboard-check" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Đơn hàng TB
+              </div>
+              <div class="kpi-card__value">
+                {{ formatNumber(teamMetrics?.avgOrders || 0) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Theo nhân viên
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card standard-card mb-4">
+        <div class="card-header standard-card-header">
+          <h5 class="card-title">
+            Bảng xếp hạng
+          </h5>
+          <button
+            class="btn btn-flat btn-flat--outline btn-sm"
+            :disabled="selectedStaffIds.length < 2"
+            @click="showComparisonModal"
+          >
+            <i class="bi bi-bar-chart me-2" />
+            So sánh
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-minimal">
+              <thead>
+                <tr>
+                  <th style="width: 40px;">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      :checked="allSelected"
+                      @change="toggleSelectAll"
+                    >
+                  </th>
+                  <th>Hạng</th>
+                  <th>Nhân viên</th>
+                  <th>Điểm hiệu suất</th>
+                  <th>Doanh thu</th>
+                  <th>Số đơn</th>
+                  <th>Chuyên cần</th>
+                  <th>Đúng giờ</th>
+                  <th>Tips</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(staff, index) in staffList"
+                  :key="staff.userId"
+                >
+                  <td>
+                    <input
+                      v-model="selectedStaffIds"
+                      type="checkbox"
+                      class="form-check-input"
+                      :value="staff.userId"
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="rank-badge"
+                      :class="getRankClass(index)"
+                    >
+                      {{ index + 1 }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div
+                        v-if="staff.avatarUrl"
+                        class="staff-avatar"
+                      >
+                        <img
+                          :src="staff.avatarUrl"
+                          :alt="staff.fullName"
+                        >
+                      </div>
+                      <div>
+                        <div class="fw-semibold staff-name">
+                          {{ staff.fullName }}
+                        </div>
+                        <small class="text-muted staff-username">{{ staff.username }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="score-badge"
+                      :class="getScoreClass(staff.metrics.performanceScore)"
+                    >
+                      {{ staff.metrics.performanceScore.toFixed(1) }}
+                    </span>
+                  </td>
+                  <td class="revenue-cell">
+                    {{ formatCurrency(staff.metrics.revenue) }}
+                  </td>
+                  <td class="orders-cell">
+                    {{ formatNumber(staff.metrics.ordersCount) }}
+                  </td>
+                  <td>
+                    <span class="rate-badge">{{ (staff.metrics.attendanceRate * 100).toFixed(1) }}%</span>
+                  </td>
+                  <td>
+                    <span class="rate-badge">{{ (staff.metrics.onTimeRate * 100).toFixed(1) }}%</span>
+                  </td>
+                  <td class="tips-cell">
+                    {{ formatCurrency(staff.metrics.tipsEarned) }}
+                  </td>
+                  <td>
+                    <button
+                      class="btn btn-flat btn-flat--outline btn-sm"
+                      title="Xem chi tiết"
+                      @click="showStaffDetail(staff)"
+                    >
+                      <i class="bi bi-eye" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card standard-card">
+        <div class="card-header standard-card-header">
+          <ul
+            class="nav nav-tabs card-header-tabs"
+            role="tablist"
+          >
+            <li
+              class="nav-item"
+              role="presentation"
+            >
+              <button
+                class="nav-link"
+                :class="{ active: activeTab === 'overview' }"
+                type="button"
+                @click="activeTab = 'overview'"
+              >
+                Tổng quan
+              </button>
+            </li>
+            <li
+              class="nav-item"
+              role="presentation"
+            >
+              <button
+                class="nav-link"
+                :class="{ active: activeTab === 'performance' }"
+                type="button"
+                @click="activeTab = 'performance'"
+              >
+                Hiệu suất
+              </button>
+            </li>
+            <li
+              class="nav-item"
+              role="presentation"
+            >
+              <button
+                class="nav-link"
+                :class="{ active: activeTab === 'attendance' }"
+                type="button"
+                @click="activeTab = 'attendance'"
+              >
+                Chuyên cần
+              </button>
+            </li>
+            <li
+              class="nav-item"
+              role="presentation"
+            >
+              <button
+                class="nav-link"
+                :class="{ active: activeTab === 'financial' }"
+                type="button"
+                @click="activeTab = 'financial'"
+              >
+                Tài chính
+              </button>
+            </li>
+            <li
+              class="nav-item"
+              role="presentation"
+            >
+              <button
+                class="nav-link"
+                :class="{ active: activeTab === 'trends' }"
+                type="button"
+                @click="activeTab = 'trends'"
+              >
+                Xu hướng
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <OverviewTab
+            v-if="activeTab === 'overview'"
+            :staff-list="staffList"
+            :team-metrics="teamMetrics"
+          />
+          <PerformanceTab
+            v-if="activeTab === 'performance'"
+            :staff-list="staffList"
+          />
+          <AttendanceTab
+            v-if="activeTab === 'attendance'"
+            :staff-list="staffList"
+          />
+          <FinancialTab
+            v-if="activeTab === 'financial'"
+            :staff-list="staffList"
+          />
+          <TrendsTab
+            v-if="activeTab === 'trends'"
+            :selected-staff-id="filters.userId"
+          />
+        </div>
+      </div>
+    </div>
+
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+    >
+      <template #icon>
+        <i class="bi bi-graph-up-arrow" />
+      </template>
+    </EmptyState>
+
+    <StaffDetailModal
+      v-if="selectedStaff"
+      :staff="selectedStaff"
+      @close="selectedStaff = null"
+    />
+
+    <ComparisonModal
+      v-if="showComparison"
+      :staff-ids="selectedStaffIds"
+      :start-date="filters.startDate"
+      :end-date="filters.endDate"
+      @close="showComparison = false"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -350,6 +476,7 @@ import StaffDetailModal from '@/components/staff-performance/StaffDetailModal.vu
 import ComparisonModal from '@/components/staff-performance/ComparisonModal.vue'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 import * as XLSX from 'xlsx'
+import logger from '@/utils/logger'
 
 const store = useStaffPerformanceStore()
 
@@ -382,23 +509,19 @@ const presets = [
     { value: '180d', label: '6 tháng', days: 180 }
 ]
 
-const canAnalyze = computed(() => {
-    return filters.value.startDate && filters.value.endDate && !validationError.value
-})
+const canAnalyze = computed(() => filters.value.startDate && filters.value.endDate && !validationError.value)
 
-const allSelected = computed(() => {
-    return staffList.value.length > 0 && selectedStaffIds.value.length === staffList.value.length
-})
+const allSelected = computed(() => staffList.value.length > 0 && selectedStaffIds.value.length === staffList.value.length)
 
 const applyPreset = (preset) => {
     selectedPreset.value = preset
     const presetConfig = presets.find(p => p.value === preset)
     if (!presetConfig) return
-    
+
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - presetConfig.days)
-    
+
     filters.value.endDate = endDate.toISOString().split('T')[0]
     filters.value.startDate = startDate.toISOString().split('T')[0]
     validateDates()
@@ -406,24 +529,23 @@ const applyPreset = (preset) => {
 
 const validateDates = () => {
     validationError.value = ''
-    
+
     if (!filters.value.startDate || !filters.value.endDate) {
         return
     }
-    
+
     const start = new Date(filters.value.startDate)
     const end = new Date(filters.value.endDate)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     if (start > end) {
         validationError.value = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
         return
     }
-    
+
     if (end > today) {
         validationError.value = 'Ngày kết thúc không được vượt quá hôm nay'
-        return
     }
 }
 
@@ -432,13 +554,13 @@ const loadStaff = async () => {
         const data = await userService.getUsers({ role: 'STAFF', page: 0, size: 1000 })
         availableStaff.value = Array.isArray(data) ? data : (data?.content || [])
     } catch (err) {
-        console.error('Failed to load staff', err)
+        logger.error('Không thể tải danh sách nhân viên:', err)
     }
 }
 
 const handleAnalyze = async () => {
     if (!canAnalyze.value || validationError.value) return
-    
+
     try {
         await store.analyzePerformance({
             startDate: filters.value.startDate,
@@ -446,7 +568,7 @@ const handleAnalyze = async () => {
             userId: filters.value.userId || null
         })
     } catch (err) {
-        console.error('Failed to analyze', err)
+        logger.error('Không thể phân tích hiệu suất nhân viên:', err)
     }
 }
 
@@ -456,18 +578,18 @@ const handleRefresh = () => {
 
 const handleExport = async () => {
     if (!hasData.value) return
-    
+
     exporting.value = true
     try {
         const exportData = await store.exportReport()
-        
+
         const ws = XLSX.utils.aoa_to_sheet(exportData.data)
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, exportData.sheetName)
-        
+
         XLSX.writeFile(wb, exportData.filename)
     } catch (err) {
-        console.error('Failed to export', err)
+        logger.error('Không thể xuất báo cáo hiệu suất:', err)
         alert('Không thể xuất file. Vui lòng thử lại.')
     } finally {
         exporting.value = false
@@ -523,7 +645,7 @@ onMounted(() => {
 .kpi-card {
     background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     padding: var(--spacing-4);
     display: flex;
     align-items: center;
@@ -531,6 +653,36 @@ onMounted(() => {
     transition: all var(--transition-base);
     min-height: 120px;
     height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.kpi-card--primary::before {
+    background: var(--color-primary);
+}
+
+.kpi-card--success::before {
+    background: var(--color-success);
+}
+
+.kpi-card--warning::before {
+    background: var(--color-warning);
+}
+
+.kpi-card--info::before {
+    background: var(--color-info);
 }
 
 .kpi-card:hover {
@@ -538,16 +690,24 @@ onMounted(() => {
     border-color: var(--color-border-strong);
 }
 
+.kpi-card:hover::before {
+    opacity: 0.7;
+}
+
 .kpi-card__icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-sm);
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 1.375rem;
     flex-shrink: 0;
-    transition: all var(--transition-base);
+    transition: transform var(--transition-base);
+}
+
+.kpi-card:hover .kpi-card__icon {
+    transform: scale(1.05);
 }
 
 .kpi-card--primary .kpi-card__icon {
@@ -576,28 +736,30 @@ onMounted(() => {
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-2);
-    line-height: var(--line-height-normal);
+    margin-bottom: var(--spacing-1);
+    line-height: 1.4;
     font-family: var(--font-family-sans);
+    letter-spacing: 0.01em;
 }
 
 .kpi-card__value {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    line-height: var(--line-height-tight);
+    line-height: 1.3;
     font-family: var(--font-family-sans);
     margin-bottom: var(--spacing-1);
+    letter-spacing: -0.01em;
 }
 
 .kpi-card__subtitle {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     font-family: var(--font-family-sans);
-    line-height: var(--line-height-normal);
+    line-height: 1.4;
 }
 
 /* Filter Card */

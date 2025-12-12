@@ -1,76 +1,101 @@
 <template>
-    <div class="customer-list">
-        <div v-if="customers.length === 0" class="empty-list">
-            <EmptyState
-                title="Không có dữ liệu"
-                message="Không tìm thấy khách hàng nào phù hợp với bộ lọc"
-            />
-        </div>
-        <div v-else class="table-responsive">
-            <table class="table table-minimal">
-                <thead>
-                    <tr>
-                        <th>Khách hàng</th>
-                        <th>Phân loại</th>
-                        <th>Tổng chi tiêu</th>
-                        <th>Số đơn</th>
-                        <th>Đơn TB</th>
-                        <th>Lần cuối</th>
-                        <th>RFM Score</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="customer in customers" :key="customer.customerId">
-                        <td>
-                            <div>
-                                <div class="fw-semibold customer-name">{{ customer.fullName }}</div>
-                                <small class="text-muted">{{ customer.phone }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge badge-soft" :class="getSegmentClass(customer.segment)">
-                                {{ customer.segment }}
-                            </span>
-                        </td>
-                        <td class="revenue-cell">{{ formatCurrency(customer.metrics.totalSpend) }}</td>
-                        <td>{{ formatNumber(customer.metrics.orderCount) }}</td>
-                        <td>{{ formatCurrency(customer.metrics.avgOrderValue) }}</td>
-                        <td>
-                            <span v-if="customer.metrics.lastVisit !== null" class="last-visit">
-                                {{ customer.metrics.lastVisit }} ngày
-                            </span>
-                            <span v-else class="text-muted">N/A</span>
-                        </td>
-                        <td>
-                            <span class="score-badge" :class="getScoreClass(customer.metrics.rfmScore)">
-                                {{ customer.metrics.rfmScore }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button
-                                    class="btn btn-flat btn-flat--outline btn-sm"
-                                    @click="$emit('view', customer)"
-                                    title="Xem chi tiết"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button
-                                    v-if="customer.segment === 'At-risk'"
-                                    class="btn btn-flat btn-flat--primary btn-sm"
-                                    @click="$emit('create-campaign', customer.segment)"
-                                    title="Tạo campaign"
-                                >
-                                    <i class="bi bi-megaphone"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="customer-list">
+    <div
+      v-if="customers.length === 0"
+      class="empty-list"
+    >
+      <EmptyState
+        title="Không có dữ liệu"
+        message="Không tìm thấy khách hàng nào phù hợp với bộ lọc"
+      />
     </div>
+    <div
+      v-else
+      class="table-responsive"
+    >
+      <table class="table table-minimal">
+        <thead>
+          <tr>
+            <th>Khách hàng</th>
+            <th>Phân loại</th>
+            <th>Tổng chi tiêu</th>
+            <th>Số đơn</th>
+            <th>Đơn TB</th>
+            <th>Lần cuối</th>
+            <th>RFM Score</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="customer in customers"
+            :key="customer.customerId"
+          >
+            <td>
+              <div>
+                <div class="fw-semibold customer-name">
+                  {{ customer.fullName }}
+                </div>
+                <small class="text-muted">{{ customer.phone }}</small>
+              </div>
+            </td>
+            <td>
+              <span
+                class="badge badge-soft"
+                :class="getSegmentClass(customer.segment)"
+              >
+                {{ customer.segment }}
+              </span>
+            </td>
+            <td class="revenue-cell">
+              {{ formatCurrency(customer.metrics.totalSpend) }}
+            </td>
+            <td>{{ formatNumber(customer.metrics.orderCount) }}</td>
+            <td>{{ formatCurrency(customer.metrics.avgOrderValue) }}</td>
+            <td>
+              <span
+                v-if="customer.metrics.lastVisit !== null"
+                class="last-visit"
+              >
+                {{ customer.metrics.lastVisit }} ngày
+              </span>
+              <span
+                v-else
+                class="text-muted"
+              >N/A</span>
+            </td>
+            <td>
+              <span
+                class="score-badge"
+                :class="getScoreClass(customer.metrics.rfmScore)"
+              >
+                {{ customer.metrics.rfmScore }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-flat btn-flat--outline btn-sm"
+                  title="Xem chi tiết"
+                  @click="$emit('view', customer)"
+                >
+                  <i class="bi bi-eye" />
+                </button>
+                <button
+                  v-if="customer.segment === 'At-risk'"
+                  class="btn btn-flat btn-flat--primary btn-sm"
+                  title="Tạo campaign"
+                  @click="$emit('create-campaign', customer.segment)"
+                >
+                  <i class="bi bi-megaphone" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>

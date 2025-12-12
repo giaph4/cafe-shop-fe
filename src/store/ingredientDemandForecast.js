@@ -7,49 +7,49 @@ export const useIngredientDemandForecastStore = defineStore('ingredientDemandFor
     const loading = ref(false)
     const error = ref(null)
     const forecastData = ref(null)
-    
-    const hasData = computed(() => !!forecastData.value)
-    
+
+    const hasData = computed(() => Boolean(forecastData.value))
+
     const ingredients = computed(() => {
         if (!forecastData.value) return []
         return forecastData.value.ingredients || []
     })
-    
+
     const critical = computed(() => {
         if (!forecastData.value) return []
         return forecastData.value.critical || []
     })
-    
+
     const warning = computed(() => {
         if (!forecastData.value) return []
         return forecastData.value.warning || []
     })
-    
+
     const attention = computed(() => {
         if (!forecastData.value) return []
         return forecastData.value.attention || []
     })
-    
+
     const summary = computed(() => {
         if (!forecastData.value) return null
         return forecastData.value.summary || null
     })
-    
+
     const analyzeDemand = async ({ startDate, endDate, forecastDays = 30 } = {}) => {
         loading.value = true
         error.value = null
-        
+
         try {
             const data = await ingredientDemandForecastService.analyzeIngredientDemand({
                 startDate,
                 endDate,
                 forecastDays
             })
-            
+
             forecastData.value = data
-            logger.log('[IngredientDemandForecast] Analysis completed', { 
+            logger.log('[IngredientDemandForecast] Analysis completed', {
                 ingredientCount: data.ingredients.length,
-                period: data.period 
+                period: data.period
             })
             return data
         } catch (err) {
@@ -60,12 +60,12 @@ export const useIngredientDemandForecastStore = defineStore('ingredientDemandFor
             loading.value = false
         }
     }
-    
+
     const exportReport = async () => {
         if (!forecastData.value) {
             throw new Error('Chưa có dữ liệu để xuất')
         }
-        
+
         try {
             const exportData = await ingredientDemandForecastService.exportForecastReport(forecastData.value)
             return exportData
@@ -74,12 +74,12 @@ export const useIngredientDemandForecastStore = defineStore('ingredientDemandFor
             throw err
         }
     }
-    
+
     const reset = () => {
         forecastData.value = null
         error.value = null
     }
-    
+
     return {
         loading,
         error,

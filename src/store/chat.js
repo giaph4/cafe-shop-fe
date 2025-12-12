@@ -1,5 +1,5 @@
-import {defineStore} from 'pinia'
-import {ref, computed, shallowReactive} from 'vue'
+import { defineStore } from 'pinia'
+import { ref, computed, shallowReactive } from 'vue'
 import { chatConversations, chatMessages } from '@/api/chat'
 import { normalizeConversation, normalizeMessage } from '@/api/chat/normalizers'
 import * as userService from '@/api/userService'
@@ -41,7 +41,7 @@ export const useChatStore = defineStore('chat', () => {
     const pendingMessages = shallowReactive(new Map())
     const typingStates = shallowReactive(new Map())
     const typingTimers = new Map()
-    
+
     // Retry logic cho failed messages
     const retryTimers = new Map()
     const MAX_RETRY_ATTEMPTS = 3
@@ -156,7 +156,7 @@ export const useChatStore = defineStore('chat', () => {
         }
     }
 
-    const loadConversations = async ({page = 0, size = 20} = {}) => {
+    const loadConversations = async ({ page = 0, size = 20 } = {}) => {
         conversationsLoading.value = true
         conversationsError.value = null
         try {
@@ -183,12 +183,12 @@ export const useChatStore = defineStore('chat', () => {
         }
     }
 
-    const loadMessages = async (conversationId, {beforeMessageId, page = 0, size = 20} = {}) => {
+    const loadMessages = async (conversationId, { beforeMessageId, page = 0, size = 20 } = {}) => {
         if (!conversationId) return
         messageLoading.set(conversationId, true)
         messageError.set(conversationId, null)
         try {
-            const response = await chatMessages.listMessages(conversationId, {beforeMessageId, page, size})
+            const response = await chatMessages.listMessages(conversationId, { beforeMessageId, page, size })
             const current = getMessages(conversationId)
             if (page === 0 && !beforeMessageId) {
                 setMessages(conversationId, response.items)
@@ -304,16 +304,16 @@ export const useChatStore = defineStore('chat', () => {
 
         // Tính delay cho lần retry này
         const delay = calculateRetryDelay(attempt)
-        
+
         // Lưu timer để có thể cancel nếu cần
         const timerKey = `${conversationId}-${tempId}`
-        
+
         // Xóa timer cũ nếu có (trong trường hợp retry lại)
         const existingTimer = retryTimers.get(timerKey)
         if (existingTimer) {
             clearTimeout(existingTimer)
         }
-        
+
         const timerId = setTimeout(async () => {
             try {
                 // Cập nhật status thành 'retrying'
@@ -324,10 +324,10 @@ export const useChatStore = defineStore('chat', () => {
 
                 // Thử gửi lại message
                 const message = await sendFn()
-                
+
                 // Nếu thành công, resolve message
                 resolvePendingMessage(conversationId, tempId, message)
-                
+
                 // Xóa timer
                 retryTimers.delete(timerKey)
             } catch (retryError) {
@@ -337,7 +337,7 @@ export const useChatStore = defineStore('chat', () => {
                 retryFailedMessage(conversationId, tempId, sendFn, attempt + 1)
             }
         }, delay)
-        
+
         retryTimers.set(timerKey, timerId)
     }
 
@@ -350,7 +350,7 @@ export const useChatStore = defineStore('chat', () => {
             pending[index].retryAttempts = 0
         }
         pendingMessages.set(conversationId, [...pending])
-        
+
         // Tự động retry message đã thất bại với exponential backoff
         // Lưu thông tin về message để có thể retry
         const failedMessage = pending[index]
@@ -359,9 +359,9 @@ export const useChatStore = defineStore('chat', () => {
             // Function này sẽ được gọi mỗi lần retry
             const sendFn = async () => {
                 if (failedMessage.contentType === 'TEXT' && failedMessage.content) {
-                    return await chatMessages.sendTextMessage(conversationId, failedMessage.content)
+                    return chatMessages.sendTextMessage(conversationId, failedMessage.content)
                 } else if (failedMessage.contentType === 'EMOJI' && failedMessage.content) {
-                    return await chatMessages.sendEmojiMessage(conversationId, failedMessage.content)
+                    return chatMessages.sendEmojiMessage(conversationId, failedMessage.content)
                 } else if (failedMessage.contentType === 'IMAGE' || failedMessage.contentType === 'FILE') {
                     // Attachment messages cần files, không thể retry tự động
                     // User cần retry manually
@@ -369,7 +369,7 @@ export const useChatStore = defineStore('chat', () => {
                 }
                 throw new Error('Unknown message type')
             }
-            
+
             // Bắt đầu retry với exponential backoff
             retryFailedMessage(conversationId, tempId, sendFn, 0)
         }
@@ -379,7 +379,7 @@ export const useChatStore = defineStore('chat', () => {
         const pending = getPendingMessages(conversationId)
         const index = pending.findIndex((item) => item.tempId === tempId)
         if (index !== -1) {
-            pending[index] = {...pending[index], ...patch}
+            pending[index] = { ...pending[index], ...patch }
             pendingMessages.set(conversationId, [...pending])
         }
     }
@@ -423,7 +423,7 @@ export const useChatStore = defineStore('chat', () => {
         const list = getMessages(normalized.conversationId)
         const index = list.findIndex((item) => item.id === normalized.id)
         if (index !== -1) {
-            list.splice(index, 1, {...list[index], ...normalized})
+            list.splice(index, 1, { ...list[index], ...normalized })
             setMessages(normalized.conversationId, list)
         } else {
             setMessages(normalized.conversationId, [...list, normalized])
@@ -442,7 +442,7 @@ export const useChatStore = defineStore('chat', () => {
             const target = list[index]
             const seenByUserIds = new Set(target.seenByUserIds || [])
             seenByUserIds.add(payload.userId)
-            list.splice(index, 1, {...target, seenByUserIds: Array.from(seenByUserIds)})
+            list.splice(index, 1, { ...target, seenByUserIds: Array.from(seenByUserIds) })
             setMessages(conversationId, list)
         }
     }
@@ -472,7 +472,7 @@ export const useChatStore = defineStore('chat', () => {
 
     const applyTypingEvent = (conversationId, payload) => {
         if (!conversationId || !payload?.userId) return
-        const {userId, typing, displayName, fullName} = payload
+        const { userId, typing, displayName, fullName } = payload
         const convTyping = typingStates.get(conversationId) || new Map()
 
         if (!typing) {

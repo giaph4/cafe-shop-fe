@@ -1,39 +1,49 @@
 <template>
-    <section id="philosophy" class="portfolio-philosophy">
-        <div class="portfolio-philosophy__container">
-            <h2 class="portfolio-philosophy__title">
-                <span class="portfolio-philosophy__number">07.</span>
-                CODE PHILOSOPHY
-            </h2>
+  <section
+    id="philosophy"
+    class="portfolio-philosophy"
+  >
+    <div class="portfolio-philosophy__container">
+      <h2 class="portfolio-philosophy__title">
+        <span class="portfolio-philosophy__number">07.</span>
+        CODE PHILOSOPHY
+      </h2>
 
-            <div class="portfolio-philosophy__content" ref="contentRef">
-                <div 
-                    v-for="(principle, index) in principles" 
-                    :key="index"
-                    class="portfolio-philosophy__principle"
-                    :ref="el => principleRefs[index] = el"
-                >
-                    <div class="portfolio-philosophy__principle-icon">
-                        <i :class="principle.icon"></i>
-                    </div>
-                    <h3 class="portfolio-philosophy__principle-title">{{ principle.title }}</h3>
-                    <p class="portfolio-philosophy__principle-description">{{ principle.description }}</p>
-                </div>
-            </div>
-
-            <!-- Background Code -->
-            <div class="portfolio-philosophy__code-bg">
-                <code 
-                    v-for="(line, index) in codeLines" 
-                    :key="index"
-                    class="portfolio-philosophy__code-line"
-                    :style="{ animationDelay: `${index * 0.5}s` }"
-                >
-                    {{ line }}
-                </code>
-            </div>
+      <div
+        ref="contentRef"
+        class="portfolio-philosophy__content"
+      >
+        <div
+          v-for="(principle, index) in principles"
+          :key="index"
+          :ref="el => principleRefs[index] = el"
+          class="portfolio-philosophy__principle"
+        >
+          <div class="portfolio-philosophy__principle-icon">
+            <i :class="principle.icon" />
+          </div>
+          <h3 class="portfolio-philosophy__principle-title">
+            {{ principle.title }}
+          </h3>
+          <p class="portfolio-philosophy__principle-description">
+            {{ principle.description }}
+          </p>
         </div>
-    </section>
+      </div>
+
+      <!-- Background Code -->
+      <div class="portfolio-philosophy__code-bg">
+        <code
+          v-for="(line, index) in codeLines"
+          :key="index"
+          class="portfolio-philosophy__code-line"
+          :style="{ animationDelay: `${index * 0.5}s` }"
+        >
+          {{ line }}
+        </code>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -84,13 +94,13 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(principleRef, {
                         initial: { opacity: 0, y: 50 },
-                        enter: { 
-                            opacity: 1, 
+                        enter: {
+                            opacity: 1,
                             y: 0,
-                            transition: { 
+                            transition: {
                                 delay: index * 0.15,
-                                duration: 0.6 
-                            } 
+                                duration: 0.6
+                            }
                         }
                     })
                 }

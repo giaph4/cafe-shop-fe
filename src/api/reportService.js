@@ -1,6 +1,4 @@
 import api from './axios'
-import { buildApiError } from '@/utils/errorHandler'
-import { cleanParams } from './utils'
 
 const toNumber = (value) => {
     if (value === null || value === undefined) return 0
@@ -39,7 +37,7 @@ export const REPORT_ENUMS = Object.freeze({
 
 // 14.1. Dashboard Statistics
 export const getDashboardStats = async () => {
-    const {data} = await api.get('/api/v1/reports/dashboard')
+    const { data } = await api.get('/api/v1/reports/dashboard')
     if (!data) return null
 
     const numericKeys = [
@@ -62,7 +60,7 @@ export const getDashboardStats = async () => {
             acc[key] = toNumber(data[key])
         }
         return acc
-    }, {...data})
+    }, { ...data })
 
     return {
         ...normalized,
@@ -72,8 +70,8 @@ export const getDashboardStats = async () => {
 
 // 14.2. Doanh thu theo ngày
 export const getDailyRevenue = async (date) => {
-    const {data} = await api.get('/api/v1/reports/daily-revenue', {
-        params: {date}
+    const { data } = await api.get('/api/v1/reports/daily-revenue', {
+        params: { date }
     })
     return {
         date: data?.date ?? date,
@@ -84,8 +82,8 @@ export const getDailyRevenue = async (date) => {
 
 // 14.3. Báo cáo tồn kho
 export const getInventoryReport = async (lowStock = false) => {
-    const {data} = await api.get('/api/v1/reports/inventory', {
-        params: {lowStock}
+    const { data } = await api.get('/api/v1/reports/inventory', {
+        params: { lowStock }
     })
 
     const items = (Array.isArray(data) ? data : []).map((item) => {
@@ -118,7 +116,7 @@ export const getInventoryReport = async (lowStock = false) => {
 // 14.4. Xuất báo cáo orders ra Excel
 export const exportOrdersToExcel = async (startDate, endDate) => {
     const response = await api.get('/api/v1/reports/orders/export', {
-        params: {startDate, endDate},
+        params: { startDate, endDate },
         responseType: 'blob'
     })
     return response.data
@@ -126,8 +124,8 @@ export const exportOrdersToExcel = async (startDate, endDate) => {
 
 // 14.5. Báo cáo lợi nhuận
 export const getProfitReport = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/profit', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/profit', {
+        params: { startDate, endDate }
     })
 
     const totalRevenue = toNumber(data?.totalRevenue)
@@ -147,8 +145,8 @@ export const getProfitReport = async (startDate, endDate) => {
 
 // 14.6. Top sản phẩm bán chạy
 export const getBestSellers = async (startDate, endDate, top = 10, sortBy = 'quantity') => {
-    const {data} = await api.get('/api/v1/reports/best-sellers', {
-        params: {startDate, endDate, top, sortBy}
+    const { data } = await api.get('/api/v1/reports/best-sellers', {
+        params: { startDate, endDate, top, sortBy }
     })
 
     const items = (Array.isArray(data) ? data : []).map((item, index) => {
@@ -176,8 +174,8 @@ export const getBestSellers = async (startDate, endDate, top = 10, sortBy = 'qua
 
 // 14.7. Doanh thu theo khoảng thời gian
 export const getRevenueByDate = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/revenue-by-date', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/revenue-by-date', {
+        params: { startDate, endDate }
     })
 
     const entries = Object.entries(data ?? {})
@@ -205,8 +203,8 @@ export const getRevenueByDate = async (startDate, endDate) => {
 
 // 14.8. Chi phí theo khoảng thời gian
 export const getExpensesByDate = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/expenses-by-date', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/expenses-by-date', {
+        params: { startDate, endDate }
     })
 
     const entries = Object.entries(data ?? {})
@@ -239,8 +237,8 @@ export const getExpensesByDate = async (startDate, endDate) => {
 
 // 14.8b. Tổng chi phí
 export const getTotalExpenses = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/total-expenses', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/total-expenses', {
+        params: { startDate, endDate }
     })
 
     return {
@@ -253,8 +251,8 @@ export const getTotalExpenses = async (startDate, endDate) => {
 
 // 14.8c. Chi phí nhập nguyên liệu
 export const getTotalImportedIngredientCost = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/total-imported-ingredients', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/total-imported-ingredients', {
+        params: { startDate, endDate }
     })
 
     return {
@@ -267,8 +265,8 @@ export const getTotalImportedIngredientCost = async (startDate, endDate) => {
 
 // 14.9. Top khách hàng
 export const getTopCustomers = async (startDate, endDate, top = 10) => {
-    const {data} = await api.get('/api/v1/reports/top-customers', {
-        params: {startDate, endDate, top}
+    const { data } = await api.get('/api/v1/reports/top-customers', {
+        params: { startDate, endDate, top }
     })
 
     const items = (Array.isArray(data) ? data : []).map((item, index) => ({
@@ -287,8 +285,8 @@ export const getTopCustomers = async (startDate, endDate, top = 10) => {
 
 // 14.10. Hiệu suất nhân viên
 export const getStaffPerformance = async (startDate, endDate, top = 10) => {
-    const {data} = await api.get('/api/v1/reports/staff-performance', {
-        params: {startDate, endDate, top}
+    const { data } = await api.get('/api/v1/reports/staff-performance', {
+        params: { startDate, endDate, top }
     })
 
     const items = (Array.isArray(data) ? data : []).map((item, index) => ({
@@ -307,8 +305,8 @@ export const getStaffPerformance = async (startDate, endDate, top = 10) => {
 
 // 14.11. Doanh số theo danh mục
 export const getCategorySales = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/category-sales', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/category-sales', {
+        params: { startDate, endDate }
     })
 
     const items = (Array.isArray(data) ? data : []).map((item) => {
@@ -336,8 +334,8 @@ export const getCategorySales = async (startDate, endDate) => {
 
 // 14.12. Phân tích bán hàng theo giờ
 export const getHourlySales = async (date) => {
-    const {data} = await api.get('/api/v1/reports/hourly-sales', {
-        params: {date}
+    const { data } = await api.get('/api/v1/reports/hourly-sales', {
+        params: { date }
     })
 
     const items = (Array.isArray(data) ? data : []).map((item) => ({
@@ -355,8 +353,8 @@ export const getHourlySales = async (date) => {
 
 // 14.12b. Tổng quan doanh số sản phẩm
 export const getProductSalesSummary = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/product-sales-summary', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/product-sales-summary', {
+        params: { startDate, endDate }
     })
 
     if (!data) {
@@ -385,8 +383,8 @@ export const getProductSalesSummary = async (startDate, endDate) => {
 
 // 14.13. Thống kê phương thức thanh toán
 export const getPaymentMethodStats = async (startDate, endDate) => {
-    const {data} = await api.get('/api/v1/reports/payment-method-stats', {
-        params: {startDate, endDate}
+    const { data } = await api.get('/api/v1/reports/payment-method-stats', {
+        params: { startDate, endDate }
     })
 
     const items = (Array.isArray(data) ? data : []).map((item) => ({
@@ -418,8 +416,8 @@ export const getPaymentMethodStats = async (startDate, endDate) => {
 
 // 14.14. So sánh doanh số giữa các kỳ
 export const getSalesComparison = async (currentStart, currentEnd, previousStart, previousEnd) => {
-    const {data} = await api.get('/api/v1/reports/sales-comparison', {
-        params: {currentStart, currentEnd, previousStart, previousEnd}
+    const { data } = await api.get('/api/v1/reports/sales-comparison', {
+        params: { currentStart, currentEnd, previousStart, previousEnd }
     })
 
     if (!data) return null
@@ -447,7 +445,7 @@ export const exportInventoryToExcel = async () => {
 // 14.16. Xuất báo cáo chi phí ra Excel
 export const exportExpensesToExcel = async (startDate, endDate) => {
     const response = await api.get('/api/v1/reports/expenses/export', {
-        params: {startDate, endDate},
+        params: { startDate, endDate },
         responseType: 'blob'
     })
     return response.data

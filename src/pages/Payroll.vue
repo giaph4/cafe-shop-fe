@@ -1,277 +1,403 @@
 <template>
-    <div class="page-container container-fluid payroll-page" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="payroll-header">
-            <div class="payroll-header__content">
-                <div class="payroll-header__title-section">
-                    <h2 class="payroll-header__title">Quản lý Lương</h2>
-                    <p class="payroll-header__subtitle">Theo dõi chu kỳ lương, đồng bộ thống kê và tổng hợp thực lĩnh cho nhân viên.</p>
-                </div>
-                <div class="payroll-header__actions">
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button" 
-                        @click="fetchCycles" 
-                        :disabled="cyclesLoading"
-                    >
-                        <span v-if="cyclesLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                    <button class="btn btn-primary" type="button" @click="openCreateModal">
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Tạo chu kỳ
-                    </button>
-                </div>
-            </div>
+  <div
+    class="page-container container-fluid payroll-page"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="payroll-header">
+      <div class="payroll-header__content">
+        <div class="payroll-header__title-section">
+          <h2 class="payroll-header__title">
+            Quản lý Lương
+          </h2>
+          <p class="payroll-header__subtitle">
+            Theo dõi chu kỳ lương, đồng bộ thống kê và tổng hợp thực lĩnh cho nhân viên.
+          </p>
         </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-3 col-sm-6">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" v-model="cycleFilters.status" :disabled="cyclesLoading">
-                            <option value="">Tất cả</option>
-                            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input type="date" class="form-control" v-model="cycleFilters.from" :disabled="cyclesLoading" />
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input type="date" class="form-control" v-model="cycleFilters.to" :disabled="cyclesLoading" />
-                    </div>
-                    <div class="col-md-3 col-sm-6 text-md-end text-sm-start d-grid d-md-block">
-                        <button class="btn btn-outline-secondary me-md-2 mb-2 mb-md-0" type="button" @click="resetFilters" :disabled="cyclesLoading">
-                            Đặt lại
-                        </button>
-                        <button class="btn btn-primary" type="button" @click="fetchCycles" :disabled="cyclesLoading">
-                            <span v-if="cyclesLoading" class="spinner-border spinner-border-sm me-1"></span>
-                            Áp dụng
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="payroll-header__actions">
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="cyclesLoading"
+            @click="fetchCycles"
+          >
+            <span
+              v-if="cyclesLoading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            @click="openCreateModal"
+          >
+            <i class="bi bi-plus-lg me-2" />
+            Tạo chu kỳ
+          </button>
         </div>
-
-        <div class="card cycles-card mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                    <h5 class="mb-0">Chu kỳ lương</h5>
-                    <div class="text-muted small">{{ cycles.length }} chu kỳ</div>
-                </div>
-
-                <LoadingState v-if="cyclesLoading" />
-                <ErrorState 
-                    v-else-if="cyclesError" 
-                    :message="cyclesError" 
-                    @retry="fetchCycles"
-                />
-                <EmptyState
-                    v-else-if="!cycles.length"
-                    title="Chưa có chu kỳ"
-                    message="Hãy tạo chu kỳ lương đầu tiên để bắt đầu tính lương."
-                >
-                    <template #action>
-                        <button class="btn btn-primary" type="button" @click="openCreateModal">
-                            <i class="bi bi-plus-lg me-2"></i>
-                            Tạo chu kỳ
-                        </button>
-                    </template>
-                </EmptyState>
-                <div v-else class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Mã chu kỳ</th>
-                                <th>Tên</th>
-                                <th>Khoảng thời gian</th>
-                                <th>Trạng thái</th>
-                                <th>Phê duyệt</th>
-                                <th class="text-end">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="cycle in cycles" :key="cycle.id" :class="{'table-active': cycle.id === selectedCycleId}">
-                                <td class="fw-semibold">{{ cycle.code }}</td>
-                                <td>{{ cycle.name || '—' }}</td>
-                                <td>{{ formatDate(cycle.startDate) }} → {{ formatDate(cycle.endDate) }}</td>
-                                <td>
-                                    <span class="badge" :class="statusBadgeClass(cycle.status)">
-                                        {{ translateStatus(cycle.status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div v-if="cycle.approvedBy" class="d-flex flex-column">
-                                        <span class="fw-semibold">{{ cycle.approvedBy }}</span>
-                                        <span class="text-muted small">{{ formatDateTime(cycle.approvedAt) }}</span>
-                                    </div>
-                                    <span v-else class="text-muted small">Chưa phê duyệt</span>
-                                </td>
-                                <td class="text-end">
-                                    <div class="action-buttons">
-                                        <button 
-                                            class="btn btn-sm btn-outline-primary" 
-                                            type="button" 
-                                            @click="selectCycle(cycle)" 
-                                            title="Xem chi tiết"
-                                        >
-                                            <i class="bi bi-eye me-1"></i>
-                                            <span class="d-none d-md-inline">Chi tiết</span>
-                                        </button>
-                                        <button 
-                                            class="btn btn-sm btn-outline-primary" 
-                                            type="button" 
-                                            @click="openEditModal(cycle)" 
-                                            title="Chỉnh sửa"
-                                        >
-                                            <i class="bi bi-pencil me-1"></i>
-                                            <span class="d-none d-md-inline">Sửa</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <section v-if="selectedCycle" class="cycle-detail card mb-4">
-            <div class="card-body">
-                <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start mb-3">
-                    <div>
-                        <h5 class="mb-1">Chu kỳ {{ selectedCycle.code }}</h5>
-                        <div class="text-muted small">Tạo bởi {{ selectedCycle.createdBy || 'Hệ thống' }} • Cập nhật {{ formatDateTime(selectedCycle.updatedAt) }}</div>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2">
-                        <button
-                            class="btn btn-outline-success"
-                            type="button"
-                            @click="handleRegenerate"
-                            :disabled="summariesLoading || !canRegenerate"
-                        >
-                            <span v-if="summariesLoading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-arrow-repeat me-2"></i>
-                            Đồng bộ dữ liệu
-                        </button>
-                        <button class="btn btn-outline-secondary" type="button" @click="deselectCycle">
-                            <i class="bi bi-x-lg me-2"></i>
-                            Bỏ chọn
-                        </button>
-                    </div>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-3 col-sm-6">
-                        <label class="text-muted small">Khoảng thời gian</label>
-                        <div class="fw-semibold">{{ formatDate(selectedCycle.startDate) }} → {{ formatDate(selectedCycle.endDate) }}</div>
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <label class="text-muted small">Trạng thái</label>
-                        <div class="cycle-status-display">
-                            <span class="badge" :class="statusBadgeClass(selectedCycle.status)">
-                                {{ translateStatus(selectedCycle.status) }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <label class="text-muted small">Phê duyệt</label>
-                        <div class="fw-semibold">{{ selectedCycle.approvedBy || '–' }}</div>
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <label class="text-muted small">Ghi chú</label>
-                        <div>{{ selectedCycle.notes || '—' }}</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <PayrollSummaryTable
-            :summaries="filteredSummaries"
-            :loading="summariesLoading"
-            :error="summariesError"
-        >
-            <template #filters>
-                <div class="input-group summary-search-input" style="max-width: 300px;">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Tìm theo tên hoặc username"
-                        v-model="summarySearch"
-                        :disabled="summariesLoading"
-                    />
-                </div>
-                <div class="badge summary-total-badge ms-auto" v-if="selectedCycle">
-                    Tổng thực lĩnh: <span class="fw-semibold">{{ formatCurrency(totalNetPayroll) }}</span>
-                </div>
-            </template>
-        </PayrollSummaryTable>
-
-        <PayrollCycleFormModal
-            ref="cycleModalRef"
-            :status-options="statusOptions"
-            :submitting="formSubmitting"
-            @submit="handleModalSubmit"
-        />
-
-        <!-- Regenerate Confirmation Modal -->
-        <Teleport to="body">
-            <div 
-                class="modal fade payroll-regenerate-modal" 
-                id="regenerateConfirmModal" 
-                tabindex="-1" 
-                ref="regenerateModalElement" 
-                aria-labelledby="regenerateConfirmModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="regenerateConfirmModalLabel">Xác nhận đồng bộ</h5>
-                            <button type="button" class="btn-close" @click="closeRegenerateModal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Việc đồng bộ sẽ tính lại toàn bộ lương trong khoảng thời gian chu kỳ. Bạn có chắc chắn muốn tiếp tục?</p>
-                            <div v-if="selectedCycle" class="alert alert-info mt-3">
-                                <strong>Chu kỳ:</strong> {{ selectedCycle.code }}<br>
-                                <strong>Thời gian:</strong> {{ formatDate(selectedCycle.startDate) }} → {{ formatDate(selectedCycle.endDate) }}
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="closeRegenerateModal">
-                                Hủy
-                            </button>
-                            <button 
-                                type="button" 
-                                class="btn btn-success" 
-                                @click="confirmRegenerate"
-                                :disabled="summariesLoading"
-                            >
-                                <span 
-                                    v-if="summariesLoading"
-                                    class="spinner-border spinner-border-sm me-2" 
-                                    role="status" 
-                                    aria-hidden="true"
-                                ></span>
-                                Đồng bộ
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+      </div>
     </div>
+
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3 col-sm-6">
+            <label class="form-label">Trạng thái</label>
+            <select
+              v-model="cycleFilters.status"
+              class="form-select"
+              :disabled="cyclesLoading"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option
+                v-for="option in statusOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="cycleFilters.from"
+              type="date"
+              class="form-control"
+              :disabled="cyclesLoading"
+            >
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="cycleFilters.to"
+              type="date"
+              class="form-control"
+              :disabled="cyclesLoading"
+            >
+          </div>
+          <div class="col-md-3 col-sm-6 text-md-end text-sm-start d-grid d-md-block">
+            <button
+              class="btn btn-outline-secondary me-md-2 mb-2 mb-md-0"
+              type="button"
+              :disabled="cyclesLoading"
+              @click="resetFilters"
+            >
+              Đặt lại
+            </button>
+            <button
+              class="btn btn-primary"
+              type="button"
+              :disabled="cyclesLoading"
+              @click="fetchCycles"
+            >
+              <span
+                v-if="cyclesLoading"
+                class="spinner-border spinner-border-sm me-1"
+              />
+              Áp dụng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card cycles-card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <h5 class="mb-0">
+            Chu kỳ lương
+          </h5>
+          <div class="text-muted small">
+            {{ cycles.length }} chu kỳ
+          </div>
+        </div>
+
+        <LoadingState v-if="cyclesLoading" />
+        <ErrorState
+          v-else-if="cyclesError"
+          :message="cyclesError"
+          @retry="fetchCycles"
+        />
+        <EmptyState
+          v-else-if="!cycles.length"
+          title="Chưa có chu kỳ"
+          message="Hãy tạo chu kỳ lương đầu tiên để bắt đầu tính lương."
+        >
+          <template #action>
+            <button
+              class="btn btn-primary"
+              type="button"
+              @click="openCreateModal"
+            >
+              <i class="bi bi-plus-lg me-2" />
+              Tạo chu kỳ
+            </button>
+          </template>
+        </EmptyState>
+        <div
+          v-else
+          class="table-responsive"
+        >
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Mã chu kỳ</th>
+                <th>Tên</th>
+                <th>Khoảng thời gian</th>
+                <th>Trạng thái</th>
+                <th>Phê duyệt</th>
+                <th class="text-end">
+                  Thao tác
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="cycle in cycles"
+                :key="cycle.id"
+                :class="{'table-active': cycle.id === selectedCycleId}"
+              >
+                <td class="fw-semibold">
+                  {{ cycle.code }}
+                </td>
+                <td>{{ cycle.name || '—' }}</td>
+                <td>{{ formatDate(cycle.startDate) }} → {{ formatDate(cycle.endDate) }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    :class="statusBadgeClass(cycle.status)"
+                  >
+                    {{ translateStatus(cycle.status) }}
+                  </span>
+                </td>
+                <td>
+                  <div
+                    v-if="cycle.approvedBy"
+                    class="d-flex flex-column"
+                  >
+                    <span class="fw-semibold">{{ cycle.approvedBy }}</span>
+                    <span class="text-muted small">{{ formatDateTime(cycle.approvedAt) }}</span>
+                  </div>
+                  <span
+                    v-else
+                    class="text-muted small"
+                  >Chưa phê duyệt</span>
+                </td>
+                <td class="text-end">
+                  <div class="action-buttons">
+                    <button
+                      class="btn btn-sm btn-outline-primary"
+                      type="button"
+                      title="Xem chi tiết"
+                      @click="selectCycle(cycle)"
+                    >
+                      <i class="bi bi-eye me-1" />
+                      <span class="d-none d-md-inline">Chi tiết</span>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-primary"
+                      type="button"
+                      title="Chỉnh sửa"
+                      @click="openEditModal(cycle)"
+                    >
+                      <i class="bi bi-pencil me-1" />
+                      <span class="d-none d-md-inline">Sửa</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <section
+      v-if="selectedCycle"
+      class="cycle-detail card mb-4"
+    >
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start mb-3">
+          <div>
+            <h5 class="mb-1">
+              Chu kỳ {{ selectedCycle.code }}
+            </h5>
+            <div class="text-muted small">
+              Tạo bởi {{ selectedCycle.createdBy || 'Hệ thống' }} • Cập nhật {{ formatDateTime(selectedCycle.updatedAt) }}
+            </div>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button
+              class="btn btn-outline-success"
+              type="button"
+              :disabled="summariesLoading || !canRegenerate"
+              @click="handleRegenerate"
+            >
+              <span
+                v-if="summariesLoading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-arrow-repeat me-2"
+              />
+              Đồng bộ dữ liệu
+            </button>
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              @click="deselectCycle"
+            >
+              <i class="bi bi-x-lg me-2" />
+              Bỏ chọn
+            </button>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-3 col-sm-6">
+            <label class="text-muted small">Khoảng thời gian</label>
+            <div class="fw-semibold">
+              {{ formatDate(selectedCycle.startDate) }} → {{ formatDate(selectedCycle.endDate) }}
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label class="text-muted small">Trạng thái</label>
+            <div class="cycle-status-display">
+              <span
+                class="badge"
+                :class="statusBadgeClass(selectedCycle.status)"
+              >
+                {{ translateStatus(selectedCycle.status) }}
+              </span>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label class="text-muted small">Phê duyệt</label>
+            <div class="fw-semibold">
+              {{ selectedCycle.approvedBy || '–' }}
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label class="text-muted small">Ghi chú</label>
+            <div>{{ selectedCycle.notes || '—' }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <PayrollSummaryTable
+      :summaries="filteredSummaries"
+      :loading="summariesLoading"
+      :error="summariesError"
+    >
+      <template #filters>
+        <div
+          class="input-group summary-search-input"
+          style="max-width: 300px;"
+        >
+          <span class="input-group-text"><i class="bi bi-search" /></span>
+          <input
+            v-model="summarySearch"
+            type="text"
+            class="form-control"
+            placeholder="Tìm theo tên hoặc username"
+            :disabled="summariesLoading"
+          >
+        </div>
+        <div
+          v-if="selectedCycle"
+          class="badge summary-total-badge ms-auto"
+        >
+          Tổng thực lĩnh: <span class="fw-semibold">{{ formatCurrency(totalNetPayroll) }}</span>
+        </div>
+      </template>
+    </PayrollSummaryTable>
+
+    <PayrollCycleFormModal
+      ref="cycleModalRef"
+      :status-options="statusOptions"
+      :submitting="formSubmitting"
+      @submit="handleModalSubmit"
+    />
+
+    <!-- Regenerate Confirmation Modal -->
+    <Teleport to="body">
+      <div
+        id="regenerateConfirmModal"
+        ref="regenerateModalElement"
+        class="modal fade payroll-regenerate-modal"
+        tabindex="-1"
+        aria-labelledby="regenerateConfirmModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="regenerateConfirmModalLabel"
+                class="modal-title"
+              >
+                Xác nhận đồng bộ
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="closeRegenerateModal"
+              />
+            </div>
+            <div class="modal-body">
+              <p>Việc đồng bộ sẽ tính lại toàn bộ lương trong khoảng thời gian chu kỳ. Bạn có chắc chắn muốn tiếp tục?</p>
+              <div
+                v-if="selectedCycle"
+                class="alert alert-info mt-3"
+              >
+                <strong>Chu kỳ:</strong> {{ selectedCycle.code }}<br>
+                <strong>Thời gian:</strong> {{ formatDate(selectedCycle.startDate) }} → {{ formatDate(selectedCycle.endDate) }}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="closeRegenerateModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-success"
+                :disabled="summariesLoading"
+                @click="confirmRegenerate"
+              >
+                <span
+                  v-if="summariesLoading"
+                  class="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                />
+                Đồng bộ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
-import {computed, reactive, ref, watch, onMounted, onUnmounted} from 'vue'
-import {Teleport} from 'vue'
-import {Modal} from 'bootstrap'
+import { computed, reactive, ref, watch, onMounted, onUnmounted } from 'vue'
+import { Teleport } from 'vue'
+import { Modal } from 'bootstrap'
 import EmptyState from '@/components/common/EmptyState.vue'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
@@ -285,18 +411,18 @@ import {
     regeneratePayrollSummaries,
     getPayrollCycle
 } from '@/api/shiftService'
-import {toast} from 'vue3-toastify'
-import {formatDate, formatDateTime, formatCurrency} from '@/utils/formatters'
+import { toast } from 'vue3-toastify'
+import { formatDate, formatDateTime, formatCurrency } from '@/utils/formatters'
 
 const STATUS_MAP = {
-    DRAFT: {label: 'Nháp', badge: 'bg-secondary'},
-    IN_PROGRESS: {label: 'Đang xử lý', badge: 'bg-info text-dark'},
-    READY_FOR_APPROVAL: {label: 'Chờ phê duyệt', badge: 'bg-warning text-dark'},
-    APPROVED: {label: 'Đã phê duyệt', badge: 'bg-success'},
-    CLOSED: {label: 'Đã chốt', badge: 'bg-dark'}
+    DRAFT: { label: 'Nháp', badge: 'bg-secondary' },
+    IN_PROGRESS: { label: 'Đang xử lý', badge: 'bg-info text-dark' },
+    READY_FOR_APPROVAL: { label: 'Chờ phê duyệt', badge: 'bg-warning text-dark' },
+    APPROVED: { label: 'Đã phê duyệt', badge: 'bg-success' },
+    CLOSED: { label: 'Đã chốt', badge: 'bg-dark' }
 }
 
-const statusOptions = Object.entries(STATUS_MAP).map(([value, meta]) => ({value, label: meta.label}))
+const statusOptions = Object.entries(STATUS_MAP).map(([value, meta]) => ({ value, label: meta.label }))
 
 const cycles = ref([])
 const cyclesLoading = ref(false)
@@ -336,9 +462,7 @@ const filteredSummaries = computed(() => {
     })
 })
 
-const totalNetPayroll = computed(() => {
-    return filteredSummaries.value.reduce((acc, item) => acc + Number(item.totalNetPayroll || 0), 0)
-})
+const totalNetPayroll = computed(() => filteredSummaries.value.reduce((acc, item) => acc + Number(item.totalNetPayroll || 0), 0))
 
 const statusBadgeClass = (status) => STATUS_MAP[status]?.badge || 'bg-secondary'
 const translateStatus = (status) => STATUS_MAP[status]?.label || status
@@ -377,7 +501,7 @@ const fetchSummaries = async () => {
     summariesLoading.value = true
     summariesError.value = ''
     try {
-        const data = await listPayrollSummaries({cycleId: selectedCycleId.value})
+        const data = await listPayrollSummaries({ cycleId: selectedCycleId.value })
         summaries.value = Array.isArray(data) ? data : []
     } catch (err) {
         summariesError.value = err.response?.data?.message || 'Không thể tải tổng hợp lương.'

@@ -1,66 +1,76 @@
 <template>
-    <section id="stats" class="portfolio-stats">
-        <div class="portfolio-stats__container">
-            <h2 class="portfolio-stats__title">
-                <span class="portfolio-stats__number">09.</span>
-                SYSTEM METRICS
-            </h2>
+  <section
+    id="stats"
+    class="portfolio-stats"
+  >
+    <div class="portfolio-stats__container">
+      <h2 class="portfolio-stats__title">
+        <span class="portfolio-stats__number">09.</span>
+        SYSTEM METRICS
+      </h2>
 
-            <div class="portfolio-stats__content">
-                <!-- Github Stats -->
-                <div class="portfolio-stats__section">
-                    <h3 class="portfolio-stats__section-title">GitHub Activity</h3>
-                    <div class="portfolio-stats__github-grid" ref="githubRef">
-                        <div 
-                            v-for="(day, index) in githubDays" 
-                            :key="index"
-                            class="portfolio-stats__github-day"
-                            :style="{ 
-                                height: `${day.contributions * 20}px`,
-                                backgroundColor: getContributionColor(day.contributions)
-                            }"
-                            :ref="el => githubDayRefs[index] = el"
-                        ></div>
-                    </div>
-                    <div class="portfolio-stats__github-info">
-                        <div class="portfolio-stats__stat">
-                            <span class="portfolio-stats__stat-label">Total Commits</span>
-                            <span class="portfolio-stats__stat-value">{{ totalCommits }}+</span>
-                        </div>
-                        <div class="portfolio-stats__stat">
-                            <span class="portfolio-stats__stat-label">Repositories</span>
-                            <span class="portfolio-stats__stat-value">{{ repositories }}+</span>
-                        </div>
-                        <div class="portfolio-stats__stat">
-                            <span class="portfolio-stats__stat-label">Pull Requests</span>
-                            <span class="portfolio-stats__stat-value">{{ pullRequests }}+</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimonials -->
-                <div class="portfolio-stats__section">
-                    <h3 class="portfolio-stats__section-title">Testimonials</h3>
-                    <div class="portfolio-stats__testimonials">
-                        <div 
-                            v-for="(testimonial, index) in testimonials" 
-                            :key="index"
-                            class="portfolio-stats__testimonial"
-                            :ref="el => testimonialRefs[index] = el"
-                        >
-                            <div class="portfolio-stats__testimonial-content">
-                                "{{ testimonial.content }}"
-                            </div>
-                            <div class="portfolio-stats__testimonial-author">
-                                <strong>{{ testimonial.author }}</strong>
-                                <span>{{ testimonial.role }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div class="portfolio-stats__content">
+        <!-- Github Stats -->
+        <div class="portfolio-stats__section">
+          <h3 class="portfolio-stats__section-title">
+            GitHub Activity
+          </h3>
+          <div
+            ref="githubRef"
+            class="portfolio-stats__github-grid"
+          >
+            <div
+              v-for="(day, index) in githubDays"
+              :key="index"
+              :ref="el => githubDayRefs[index] = el"
+              class="portfolio-stats__github-day"
+              :style="{
+                height: `${day.contributions * 20}px`,
+                backgroundColor: getContributionColor(day.contributions)
+              }"
+            />
+          </div>
+          <div class="portfolio-stats__github-info">
+            <div class="portfolio-stats__stat">
+              <span class="portfolio-stats__stat-label">Total Commits</span>
+              <span class="portfolio-stats__stat-value">{{ totalCommits }}+</span>
             </div>
+            <div class="portfolio-stats__stat">
+              <span class="portfolio-stats__stat-label">Repositories</span>
+              <span class="portfolio-stats__stat-value">{{ repositories }}+</span>
+            </div>
+            <div class="portfolio-stats__stat">
+              <span class="portfolio-stats__stat-label">Pull Requests</span>
+              <span class="portfolio-stats__stat-value">{{ pullRequests }}+</span>
+            </div>
+          </div>
         </div>
-    </section>
+
+        <!-- Testimonials -->
+        <div class="portfolio-stats__section">
+          <h3 class="portfolio-stats__section-title">
+            Testimonials
+          </h3>
+          <div class="portfolio-stats__testimonials">
+            <div
+              v-for="(testimonial, index) in testimonials"
+              :key="index"
+              :ref="el => testimonialRefs[index] = el"
+              class="portfolio-stats__testimonial"
+            >
+              <div class="portfolio-stats__testimonial-content">
+                "{{ testimonial.content }}"
+              </div>
+              <div class="portfolio-stats__testimonial-author">
+                <strong>{{ testimonial.author }}</strong>
+                <span>{{ testimonial.role }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -138,12 +148,12 @@ onMounted(() => {
                     setTimeout(() => {
                         useMotion(dayRef, {
                             initial: { scaleY: 0 },
-                            enter: { 
+                            enter: {
                                 scaleY: 1,
-                                transition: { 
+                                transition: {
                                     delay: (index % 52) * 0.01,
-                                    duration: 0.3 
-                                } 
+                                    duration: 0.3
+                                }
                             }
                         })
                     }, index * 5)
@@ -159,13 +169,13 @@ onMounted(() => {
                 if (isIntersecting) {
                     useMotion(testimonialRef, {
                         initial: { opacity: 0, y: 30 },
-                        enter: { 
-                            opacity: 1, 
+                        enter: {
+                            opacity: 1,
                             y: 0,
-                            transition: { 
+                            transition: {
                                 delay: index * 0.2,
-                                duration: 0.6 
-                            } 
+                                duration: 0.6
+                            }
                         }
                     })
                 }

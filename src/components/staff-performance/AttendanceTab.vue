@@ -1,89 +1,109 @@
 <template>
-    <div class="attendance-tab">
-        <div class="row g-4 mb-4">
-            <div class="col-lg-6">
-                <div class="card standard-card">
-                    <div class="card-header standard-card-header">
-                        <h6 class="card-title mb-0">Tỷ lệ chuyên cần</h6>
-                    </div>
-                    <div class="card-body">
-                        <AttendanceChart :staff-list="staffList" />
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card standard-card">
-                    <div class="card-header standard-card-header">
-                        <h6 class="card-title mb-0">Tỷ lệ đúng giờ</h6>
-                    </div>
-                    <div class="card-body">
-                        <OnTimeChart :staff-list="staffList" />
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="attendance-tab">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
         <div class="card standard-card">
-            <div class="card-header standard-card-header">
-                <h6 class="card-title mb-0">Chi tiết chuyên cần</h6>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-minimal">
-                        <thead>
-                            <tr>
-                                <th>Nhân viên</th>
-                                <th>Tổng ca</th>
-                                <th>Đã tham gia</th>
-                                <th>Đúng giờ</th>
-                                <th>Tỷ lệ chuyên cần</th>
-                                <th>Tỷ lệ đúng giờ</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="staff in staffList" :key="staff.userId">
-                                <td>
-                                    <div class="fw-semibold staff-name">{{ staff.fullName }}</div>
-                                </td>
-                                <td>{{ formatNumber(staff.metrics.totalShifts) }}</td>
-                                <td>{{ formatNumber(staff.metrics.attendedShifts) }}</td>
-                                <td>{{ formatNumber(staff.metrics.onTimeShifts) }}</td>
-                                <td>
-                                    <div class="progress-wrapper">
-                                        <div class="progress" style="height: 8px;">
-                                            <div
-                                                class="progress-bar"
-                                                :class="getAttendanceClass(staff.metrics.attendanceRate)"
-                                                :style="{ width: `${staff.metrics.attendanceRate * 100}%` }"
-                                            ></div>
-                                        </div>
-                                        <span class="progress-text">{{ (staff.metrics.attendanceRate * 100).toFixed(1) }}%</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="progress-wrapper">
-                                        <div class="progress" style="height: 8px;">
-                                            <div
-                                                class="progress-bar"
-                                                :class="getOnTimeClass(staff.metrics.onTimeRate)"
-                                                :style="{ width: `${staff.metrics.onTimeRate * 100}%` }"
-                                            ></div>
-                                        </div>
-                                        <span class="progress-text">{{ (staff.metrics.onTimeRate * 100).toFixed(1) }}%</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-soft" :class="getStatusClass(staff.metrics.attendanceRate)">
-                                        {{ getStatusLabel(staff.metrics.attendanceRate) }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+          <div class="card-header standard-card-header">
+            <h6 class="card-title mb-0">
+              Tỷ lệ chuyên cần
+            </h6>
+          </div>
+          <div class="card-body">
+            <AttendanceChart :staff-list="staffList" />
+          </div>
         </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card standard-card">
+          <div class="card-header standard-card-header">
+            <h6 class="card-title mb-0">
+              Tỷ lệ đúng giờ
+            </h6>
+          </div>
+          <div class="card-body">
+            <OnTimeChart :staff-list="staffList" />
+          </div>
+        </div>
+      </div>
     </div>
+    <div class="card standard-card">
+      <div class="card-header standard-card-header">
+        <h6 class="card-title mb-0">
+          Chi tiết chuyên cần
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-minimal">
+            <thead>
+              <tr>
+                <th>Nhân viên</th>
+                <th>Tổng ca</th>
+                <th>Đã tham gia</th>
+                <th>Đúng giờ</th>
+                <th>Tỷ lệ chuyên cần</th>
+                <th>Tỷ lệ đúng giờ</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="staff in staffList"
+                :key="staff.userId"
+              >
+                <td>
+                  <div class="fw-semibold staff-name">
+                    {{ staff.fullName }}
+                  </div>
+                </td>
+                <td>{{ formatNumber(staff.metrics.totalShifts) }}</td>
+                <td>{{ formatNumber(staff.metrics.attendedShifts) }}</td>
+                <td>{{ formatNumber(staff.metrics.onTimeShifts) }}</td>
+                <td>
+                  <div class="progress-wrapper">
+                    <div
+                      class="progress"
+                      style="height: 8px;"
+                    >
+                      <div
+                        class="progress-bar"
+                        :class="getAttendanceClass(staff.metrics.attendanceRate)"
+                        :style="{ width: `${staff.metrics.attendanceRate * 100}%` }"
+                      />
+                    </div>
+                    <span class="progress-text">{{ (staff.metrics.attendanceRate * 100).toFixed(1) }}%</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="progress-wrapper">
+                    <div
+                      class="progress"
+                      style="height: 8px;"
+                    >
+                      <div
+                        class="progress-bar"
+                        :class="getOnTimeClass(staff.metrics.onTimeRate)"
+                        :style="{ width: `${staff.metrics.onTimeRate * 100}%` }"
+                      />
+                    </div>
+                    <span class="progress-text">{{ (staff.metrics.onTimeRate * 100).toFixed(1) }}%</span>
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="badge badge-soft"
+                    :class="getStatusClass(staff.metrics.attendanceRate)"
+                  >
+                    {{ getStatusLabel(staff.metrics.attendanceRate) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -91,7 +111,7 @@ import { formatNumber } from '@/utils/formatters'
 import AttendanceChart from './AttendanceChart.vue'
 import OnTimeChart from './OnTimeChart.vue'
 
-const props = defineProps({
+defineProps({
     staffList: {
         type: Array,
         default: () => []

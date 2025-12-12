@@ -1,641 +1,1158 @@
 <template>
-    <div class="staff-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="staff-header">
-            <div class="staff-header__content">
-                <div class="staff-header__title-section">
-                    <h2 class="page-title">Quản lý Nhân viên</h2>
-                    <p class="page-subtitle">Quản lý thông tin nhân viên, phân ca làm việc và theo dõi hiệu suất.</p>
-                </div>
-                <div class="staff-header__actions">
-                    <div class="btn-group layout-toggle" role="group" aria-label="Chọn bố cục hiển thị">
-                        <button
-                            type="button"
-                            class="btn btn-sm"
-                            :class="viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
-                            @click="viewMode = 'table'"
-                        >
-                            <i class="bi bi-table me-2"></i>Bảng
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-sm"
-                            :class="viewMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
-                            @click="viewMode = 'grid'"
-                        >
-                            <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
-                        </button>
-                    </div>
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchUsers" :disabled="loading">
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                    <button class="btn btn-outline-success" type="button" @click="handleExport"
-                        :disabled="exporting || !users.length">
-                        <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-file-earmark-excel me-2"></i>
-                        Xuất Excel
-                    </button>
-                    <button class="btn btn-primary" type="button" @click="openCreateModal" :disabled="rolesLoading">
-                        <span v-if="rolesLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-person-plus me-2"></i>
-                        Thêm nhân viên
-                    </button>
-                </div>
-            </div>
+  <div
+    class="staff-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="staff-header">
+      <div class="staff-header__content">
+        <div class="staff-header__title-section">
+          <h2 class="page-title">
+            Quản lý Nhân viên
+          </h2>
+          <p class="page-subtitle">
+            Quản lý thông tin nhân viên, phân ca làm việc và theo dõi hiệu suất.
+          </p>
         </div>
-
-        <!-- Statistics Cards -->
-        <div class="row g-4 mb-4" v-if="!loading && users.length > 0">
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--people">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Tổng số nhân viên</div>
-                        <div class="kpi-card__value">{{ formatNumber(totalUsers) }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--active">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Đang hoạt động</div>
-                        <div class="kpi-card__value">{{ formatNumber(activeUsersCount) }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--role">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-person-badge"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Theo quyền</div>
-                        <div class="kpi-card__value">{{ formatNumber(usersByRoleCount) }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--recent">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Hoạt động gần đây</div>
-                        <div class="kpi-card__value">{{ formatNumber(recentlyActiveCount) }}</div>
-                    </div>
-                </div>
-            </div>
+        <div class="staff-header__actions">
+          <div
+            class="btn-group layout-toggle"
+            role="group"
+            aria-label="Chọn bố cục hiển thị"
+          >
+            <button
+              type="button"
+              class="btn btn-sm"
+              :class="viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="viewMode = 'table'"
+            >
+              <i class="bi bi-table me-2" />Bảng
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm"
+              :class="viewMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="viewMode = 'grid'"
+            >
+              <i class="bi bi-grid-3x3-gap me-2" />Thẻ
+            </button>
+          </div>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchUsers"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
+          <button
+            class="btn btn-outline-success"
+            type="button"
+            :disabled="exporting || !users.length"
+            @click="handleExport"
+          >
+            <span
+              v-if="exporting"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-file-earmark-excel me-2"
+            />
+            Xuất Excel
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            :disabled="rolesLoading"
+            @click="openCreateModal"
+          >
+            <span
+              v-if="rolesLoading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-person-plus me-2"
+            />
+            Thêm nhân viên
+          </button>
         </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">Bộ lọc</h5>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" @click="toggleAdvancedFilters">
-                        <i class="bi" :class="showAdvancedFilters ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                        {{ showAdvancedFilters ? 'Ẩn' : 'Hiện' }} bộ lọc nâng cao
-                    </button>
-                </div>
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Tìm kiếm</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Tên đăng nhập, họ tên, SĐT..."
-                                v-model="filters.search" />
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" v-model="filters.status">
-                            <option value="">Tất cả</option>
-                            <option v-for="option in STATUS_OPTIONS" :key="option.value" :value="option.value">{{
-                                option.label }}</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Quyền</label>
-                        <select class="form-select" v-model="filters.role" :disabled="rolesLoading">
-                            <option value="">Tất cả</option>
-                            <option v-for="role in roleFilterOptions" :key="role" :value="role">{{ formatRole(role) }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-6 text-md-end">
-                        <button class="btn btn-outline-secondary me-2" type="button" @click="resetFilters"
-                            :disabled="loading">Đặt lại</button>
-                        <button class="btn btn-outline-primary" type="button" @click="fetchUsers" :disabled="loading">
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                            Làm mới
-                        </button>
-                    </div>
-                </div>
-                <div v-if="showAdvancedFilters" class="row g-3 align-items-end mt-3 pt-3 border-top">
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Ngày tạo từ</label>
-                        <input type="date" class="form-control" v-model="filters.createdFrom" />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Ngày tạo đến</label>
-                        <input type="date" class="form-control" v-model="filters.createdTo" />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Cập nhật từ</label>
-                        <input type="date" class="form-control" v-model="filters.updatedFrom" />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Cập nhật đến</label>
-                        <input type="date" class="form-control" v-model="filters.updatedTo" />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Hoạt động cuối</label>
-                        <select class="form-select" v-model="filters.lastSeen">
-                            <option value="">Tất cả</option>
-                            <option value="today">Hôm nay</option>
-                            <option value="week">Trong tuần</option>
-                            <option value="month">Trong tháng</option>
-                            <option value="never">Chưa từng</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bulk Actions Bar -->
-        <div v-if="selectedUsers.length > 0" class="card mb-4 border-primary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ selectedUsers.length }}</strong> nhân viên đã chọn
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-success" type="button" @click="handleBulkActivate"
-                            :disabled="bulkProcessing">
-                            <span v-if="bulkProcessing" class="spinner-border spinner-border-sm me-1"></span>
-                            <i v-else class="bi bi-check-circle me-1"></i>
-                            Kích hoạt
-                        </button>
-                        <button class="btn btn-sm btn-danger" type="button" @click="handleBulkDeactivate"
-                            :disabled="bulkProcessing">
-                            <span v-if="bulkProcessing" class="spinner-border spinner-border-sm me-1"></span>
-                            <i v-else class="bi bi-x-circle me-1"></i>
-                            Vô hiệu hóa
-                        </button>
-                        <button class="btn btn-sm btn-primary" type="button" @click="handleBulkAssignRoles"
-                            :disabled="bulkProcessing">
-                            <span v-if="bulkProcessing" class="spinner-border spinner-border-sm me-1"></span>
-                            <i v-else class="bi bi-person-badge me-1"></i>
-                            Gán quyền
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" type="button" @click="handleBulkExport"
-                            :disabled="bulkProcessing || exporting">
-                            <span v-if="exporting" class="spinner-border spinner-border-sm me-1"></span>
-                            <i v-else class="bi bi-download me-1"></i>
-                            Xuất Excel
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" type="button" @click="clearSelection"
-                            :disabled="bulkProcessing">
-                            <i class="bi bi-x-lg me-1"></i>
-                            Bỏ chọn
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card data-card mb-4">
-            <div class="card-body">
-                <LoadingState v-if="loading" />
-                <ErrorState v-else-if="error" :message="error" @retry="fetchUsers" />
-                <template v-else>
-                    <div v-if="viewMode === 'table'">
-                        <div v-if="!filteredUsers.length">
-                            <EmptyState title="Không có dữ liệu" message="Điều chỉnh bộ lọc hoặc tải lại danh sách." />
-                        </div>
-                        <div v-else class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th width="40">
-                                            <input type="checkbox" class="form-check-input" :checked="allSelected"
-                                                @change="toggleSelectAll" />
-                                        </th>
-                                        <th></th>
-                                        <th>Tên đăng nhập</th>
-                                        <th>Họ tên</th>
-                                        <th>Liên hệ</th>
-                                        <th>Quyền</th>
-                                        <th>Trạng thái</th>
-                                        <th>Hoạt động cuối</th>
-                                        <th>Ngày tạo</th>
-                                        <th class="text-end">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="user in filteredUsers" :key="user.id">
-                                        <td>
-                                            <input type="checkbox" class="form-check-input"
-                                                :checked="isUserSelected(user.id)"
-                                                @change="toggleUserSelection(user.id)"
-                                                :disabled="isCurrentUser(user.id)" />
-                                        </td>
-                                        <td>
-                                            <img v-if="user.avatarUrl" :src="user.avatarUrl"
-                                                :alt="user.fullName || user.username" class="table-avatar" />
-                                            <div v-else class="table-avatar placeholder">{{ buildInitials(user) }}</div>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-link p-0" type="button" @click="openDetail(user)">{{
-                                                user.username }}</button>
-                                        </td>
-                                        <td>{{ user.fullName || '—' }}</td>
-                                        <td>
-                                            <div>{{ user.phone || '—' }}</div>
-                                            <div class="text-muted small">{{ user.email || '—' }}</div>
-                                        </td>
-                                        <td>
-                                            <span v-for="role in user.roles" :key="role.id"
-                                                class="badge bg-soft staff-role-badge">{{ formatRole(role.name)
-                                                }}</span>
-                                        </td>
-                                        <td><span class="badge" :class="statusBadgeClass(user.status)">{{ user.status
-                                                }}</span></td>
-                                        <td>
-                                            <div v-if="user.lastSeenAt" class="small">
-                                                {{ formatDateTime(user.lastSeenAt) }}
-                                            </div>
-                                            <div v-else class="text-muted small">Chưa từng</div>
-                                        </td>
-                                        <td>{{ formatDateTime(user.createdAt) }}</td>
-                                        <td class="text-end">
-                                            <div class="action-buttons">
-                                                <button class="action-button action-button--primary" type="button"
-                                                    @click="openDetail(user)" title="Xem chi tiết">
-                                                    <i class="bi bi-eye"></i>
-                                                    <span>Chi tiết</span>
-                                                </button>
-                                                <button class="action-button action-button--primary" type="button"
-                                                    @click="openEditModal(user)" title="Chỉnh sửa">
-                                                    <i class="bi bi-pencil"></i>
-                                                    <span>Chỉnh sửa</span>
-                                                </button>
-                                                <button class="action-button action-button--info" type="button"
-                                                    @click="openLoginHistory(user)" title="Lịch sử đăng nhập">
-                                                    <i class="bi bi-clock-history"></i>
-                                                    <span>Lịch sử</span>
-                                                </button>
-                                                <button class="action-button action-button--warning" type="button"
-                                                    @click="openResetPasswordModal(user)" title="Đặt lại mật khẩu"
-                                                    :disabled="isCurrentUser(user.id)">
-                                                    <i class="bi bi-key"></i>
-                                                    <span>Đặt lại mật khẩu</span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <div v-if="!filteredUsers.length">
-                            <EmptyState title="Không có dữ liệu" message="Điều chỉnh bộ lọc hoặc tải lại danh sách." />
-                        </div>
-                        <div v-else class="row g-3">
-                            <div class="col-12 col-md-6 col-xl-4" v-for="user in filteredUsers" :key="user.id">
-                                <StaffCard :staff="user" @detail="openDetail" @edit="openEditModal"
-                                    @history="openLoginHistory" />
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-            <div class="card-footer d-flex justify-content-end" v-if="totalPages > 1">
-                <Pagination mode="zero-based" :current-page="zeroBasedPage" :total-pages="totalPages"
-                    @page-change="handlePageChange" />
-            </div>
-        </div>
-
-        <StaffDetailDrawer :visible="detailVisible" :staff="selectedUser" :dashboard="dashboardData"
-            :loading="dashboardLoading" @close="closeDetail" />
-
-        <StaffCreateModal ref="createModalRef" :roles="roles" :submitting="createSubmitting"
-            @submit="handleCreateSubmit" />
-
-        <LoginHistoryModal ref="loginHistoryRef" :username="historyUsername" />
-        <AvatarEditorModal ref="avatarEditorRef" @apply="handleAvatarEditorApply" @closed="handleAvatarEditorClosed" />
-
-        <!-- Reset Password Modal -->
-        <Teleport to="body">
-            <div class="modal fade" ref="resetPasswordModalRef" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Đặt lại mật khẩu: {{ resetPasswordForm.username }}</h5>
-                            <button type="button" class="btn-close" @click="hideResetPasswordModal"></button>
-                        </div>
-                        <form @submit.prevent="submitResetPassword">
-                            <div class="modal-body">
-                                <div class="error-message mb-3">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                    Mật khẩu mới sẽ được áp dụng ngay lập tức. Người dùng sẽ cần đăng nhập lại với mật
-                                    khẩu mới.
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
-                                    <PasswordInput
-                                        v-model="resetPasswordForm.newPassword"
-                                        :input-class="['form-control', { 'is-invalid': resetPasswordErrors.newPassword }]"
-                                        :disabled="resetPasswordSubmitting"
-                                        autocomplete="new-password"
-                                    />
-                                    <div class="invalid-feedback" v-if="resetPasswordErrors.newPassword">{{
-                                        resetPasswordErrors.newPassword }}</div>
-                                    <div class="form-text">Tối thiểu 6 ký tự</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Xác nhận mật khẩu <span
-                                            class="text-danger">*</span></label>
-                                    <PasswordInput
-                                        v-model="resetPasswordForm.confirmPassword"
-                                        :input-class="['form-control', { 'is-invalid': resetPasswordErrors.confirmPassword }]"
-                                        :disabled="resetPasswordSubmitting"
-                                        autocomplete="new-password"
-                                    />
-                                    <div class="invalid-feedback" v-if="resetPasswordErrors.confirmPassword">{{
-                                        resetPasswordErrors.confirmPassword }}</div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" @click="hideResetPasswordModal"
-                                    :disabled="resetPasswordSubmitting">Hủy</button>
-                                <button type="submit" class="btn btn-primary" :disabled="resetPasswordSubmitting">
-                                    <span v-if="resetPasswordSubmitting"
-                                        class="spinner-border spinner-border-sm me-2"></span>
-                                    Đặt lại mật khẩu
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
-
-        <Teleport to="body">
-            <div class="modal fade" ref="editModalRef" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Cập nhật nhân viên: {{ editForm.username }}</h5>
-                            <button type="button" class="btn-close" @click="hideEditModal"></button>
-                        </div>
-                        <form @submit.prevent="submitEditForm">
-                            <div class="modal-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" v-model.trim="editForm.fullName"
-                                            :class="{ 'is-invalid': editErrors.fullName }" :disabled="editSubmitting" />
-                                        <div class="invalid-feedback" v-if="editErrors.fullName">{{ editErrors.fullName
-                                            }}</div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                                        <select class="form-select" v-model="editForm.status"
-                                            :class="{ 'is-invalid': editErrors.status }"
-                                            :disabled="editSubmitting || isCurrentUser(editForm.id)">
-                                            <option value="ACTIVE">ACTIVE</option>
-                                            <option value="INACTIVE">INACTIVE</option>
-                                        </select>
-                                        <div class="invalid-feedback" v-if="editErrors.status">{{ editErrors.status }}
-                                        </div>
-                                        <div v-if="isCurrentUser(editForm.id)" class="form-text text-warning">
-                                            <i class="bi bi-exclamation-triangle me-1"></i>Bạn không thể thay đổi trạng
-                                            thái của
-                                            chính mình.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row g-3 mt-1">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" class="form-control" v-model.trim="editForm.email"
-                                            :class="{ 'is-invalid': editErrors.email }" :disabled="editSubmitting" />
-                                        <div class="invalid-feedback" v-if="editErrors.email">{{ editErrors.email }}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Số điện thoại <span
-                                                class="text-danger">*</span></label>
-                                        <input type="tel" class="form-control" v-model.trim="editForm.phone"
-                                            :class="{ 'is-invalid': editErrors.phone }" :disabled="editSubmitting" />
-                                        <div class="invalid-feedback" v-if="editErrors.phone">{{ editErrors.phone }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row g-3 mt-1">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Ảnh đại diện</label>
-                                        <div class="avatar-upload-box">
-                                            <div class="avatar-preview-wrapper">
-                                                <img v-if="editAvatarDisplaySrc" :src="editAvatarDisplaySrc"
-                                                    class="avatar-preview-img"
-                                                    :alt="editForm.fullName || editForm.username" />
-                                                <div v-else class="avatar-preview-placeholder">
-                                                    <i class="bi bi-person"></i>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex flex-wrap gap-2 mt-3">
-                                                <label class="btn btn-outline-primary btn-sm mb-0">
-                                                    <i class="bi bi-cloud-arrow-up me-1"></i>Chọn ảnh
-                                                    <input type="file" class="d-none" accept="image/*"
-                                                        @change="handleEditAvatarSelect" :disabled="editSubmitting"
-                                                        ref="editAvatarInputRef" />
-                                                </label>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                    @click="openAvatarEditor"
-                                                    :disabled="!editAvatarDisplaySrc || editSubmitting">
-                                                    <i class="bi bi-eye me-1"></i>Xem & chỉnh sửa
-                                                </button>
-                                                <button type="button" class="btn btn-outline-danger btn-sm"
-                                                    @click="handleEditAvatarRemove"
-                                                    :disabled="editSubmitting || (!editAvatarFile && !editForm.avatarUrl)">
-                                                    <span v-if="editAvatarFile">Hủy ảnh vừa chọn</span>
-                                                    <span v-else>Xóa avatar hiện tại</span>
-                                                </button>
-                                            </div>
-                                            <div class="form-text mt-2">Hỗ trợ JPG, JPEG, PNG, GIF, WEBP • Tối đa 5MB.
-                                            </div>
-                                        </div>
-                                        <div class="text-danger small mt-1" v-if="editErrors.avatarUrl">{{
-                                            editErrors.avatarUrl
-                                            }}</div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Địa chỉ</label>
-                                        <input type="text" class="form-control" v-model.trim="editForm.address"
-                                            :class="{ 'is-invalid': editErrors.address }" :disabled="editSubmitting" />
-                                        <div class="invalid-feedback" v-if="editErrors.address">{{ editErrors.address }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row g-3 mt-1">
-                                    <div class="col-12">
-                                        <label class="form-label">Thông điệp trạng thái</label>
-                                        <input type="text" class="form-control" v-model.trim="editForm.statusMessage"
-                                            placeholder="Ví dụ: Đang nghỉ phép, Đang làm việc từ xa..." maxlength="255"
-                                            :disabled="editSubmitting" />
-                                        <div class="form-text">Thông điệp hiển thị cùng với trạng thái (tùy chọn)</div>
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                    <label class="form-label">Quyền <span class="text-danger">*</span></label>
-                                    <div class="role-box" :class="{ 'is-invalid': editErrors.roleIds }">
-                                        <div v-if="rolesLoading" class="text-center"><span
-                                                class="spinner-border spinner-border-sm"></span></div>
-                                        <div v-else class="form-check" v-for="role in roles" :key="role.id">
-                                            <input class="form-check-input" type="checkbox" :id="`edit-role-${role.id}`"
-                                                :value="role.id" :checked="editForm.roleIds.includes(role.id)"
-                                                @change="toggleEditRole(role.id)"
-                                                :disabled="editSubmitting || isCurrentUser(editForm.id)" />
-                                            <label class="form-check-label" :for="`edit-role-${role.id}`">{{ role.name
-                                                }}</label>
-                                        </div>
-                                    </div>
-                                    <div class="text-danger small" v-if="editErrors.roleIds">{{ editErrors.roleIds }}
-                                    </div>
-                                    <div v-if="isCurrentUser(editForm.id)" class="form-text text-warning mt-2">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>Bạn không thể thay đổi quyền của
-                                        chính
-                                        mình.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" @click="hideEditModal"
-                                    :disabled="editSubmitting">Hủy</button>
-                                <button type="submit" class="btn btn-primary" :disabled="editSubmitting">
-                                    <span v-if="editSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-                                    Lưu thay đổi
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
-
-        <!-- Bulk Action Confirmation Modal -->
-        <Teleport to="body">
-            <div class="modal fade" ref="bulkActionModalRef" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div>
-                                <h5 class="modal-title">
-                                    {{ bulkActionTarget?.action === 'activate' ? 'Kích hoạt nhân viên' : 'Vô hiệu hóa nhân viên' }}
-                                </h5>
-                                <p class="mb-0 text-muted small">Hành động này sẽ áp dụng cho tất cả nhân viên đã chọn.</p>
-                            </div>
-                            <button type="button" class="btn-close" @click="closeBulkActionModal" :disabled="bulkProcessing" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="mb-3">Bạn có chắc chắn muốn {{ bulkActionTarget?.action === 'activate' ? 'kích hoạt' : 'vô hiệu hóa' }} <strong>{{ bulkActionTarget?.count || 0 }}</strong> nhân viên đã chọn không?</p>
-                            <div class="error-message">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                {{ bulkActionTarget?.action === 'activate' ? 'Các nhân viên sẽ được kích hoạt và có thể đăng nhập vào hệ thống.' : 'Các nhân viên sẽ bị vô hiệu hóa và không thể đăng nhập vào hệ thống.' }}
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                @click="closeBulkActionModal"
-                                :disabled="bulkProcessing"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                type="button"
-                                class="btn"
-                                :class="bulkActionTarget?.action === 'activate' ? 'btn-success' : 'btn-danger'"
-                                @click="handleBulkActionConfirm"
-                                :disabled="bulkProcessing"
-                            >
-                                <span v-if="bulkProcessing" class="spinner-border spinner-border-sm me-2"></span>
-                                {{ bulkActionTarget?.action === 'activate' ? 'Kích hoạt' : 'Vô hiệu hóa' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
-
-        <!-- User Activity Log Modal -->
-        <Teleport to="body">
-            <div class="modal fade" ref="userActivityLogModalRef" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Lịch sử hoạt động: {{ activityLogUser?.username || '—' }}</h5>
-                            <button type="button" class="btn-close" @click="hideUserActivityLogModal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <LoadingState v-if="activityLogLoading" text="Đang tải lịch sử hoạt động..." />
-                            <EmptyState
-                                v-else-if="!activityLogs.length"
-                                title="Chưa có dữ liệu hoạt động"
-                                message="Tính năng này cần hỗ trợ từ backend."
-                            >
-                                <template #icon>
-                                    <i class="bi bi-inbox"></i>
-                                </template>
-                            </EmptyState>
-                            <div v-else class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Thời gian</th>
-                                            <th>Hành động</th>
-                                            <th>Loại tài nguyên</th>
-                                            <th>ID tài nguyên</th>
-                                            <th>Kết quả</th>
-                                            <th>Chi tiết</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="log in activityLogs" :key="log.id">
-                                            <td>{{ formatDateTime(log.timestamp) }}</td>
-                                            <td><code>{{ log.action }}</code></td>
-                                            <td>{{ log.resourceType || '—' }}</td>
-                                            <td>{{ log.resourceId || '—' }}</td>
-                                            <td>
-                                                <span class="badge" :class="log.success ? 'bg-success' : 'bg-danger'">
-                                                    {{ log.success ? 'Thành công' : 'Thất bại' }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <small class="text-muted">{{ log.details || '—' }}</small>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="hideUserActivityLogModal">Đóng</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+      </div>
     </div>
+
+    <!-- Statistics Cards -->
+    <div
+      v-if="!loading && users.length > 0"
+      class="row g-4 mb-4"
+    >
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--people">
+          <div class="kpi-card__icon">
+            <i class="bi bi-people" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Tổng số nhân viên
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(totalUsers) }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--active">
+          <div class="kpi-card__icon">
+            <i class="bi bi-check-circle" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Đang hoạt động
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(activeUsersCount) }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--role">
+          <div class="kpi-card__icon">
+            <i class="bi bi-person-badge" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Theo quyền
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(usersByRoleCount) }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--recent">
+          <div class="kpi-card__icon">
+            <i class="bi bi-clock-history" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Hoạt động gần đây
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(recentlyActiveCount) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">
+            Bộ lọc
+          </h5>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            type="button"
+            @click="toggleAdvancedFilters"
+          >
+            <i
+              class="bi"
+              :class="showAdvancedFilters ? 'bi-chevron-up' : 'bi-chevron-down'"
+            />
+            {{ showAdvancedFilters ? 'Ẩn' : 'Hiện' }} bộ lọc nâng cao
+          </button>
+        </div>
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Tìm kiếm</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search" /></span>
+              <input
+                v-model="filters.search"
+                type="text"
+                class="form-control"
+                placeholder="Tên đăng nhập, họ tên, SĐT..."
+              >
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Trạng thái</label>
+            <select
+              v-model="filters.status"
+              class="form-select"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option
+                v-for="option in STATUS_OPTIONS"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{
+                  option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Quyền</label>
+            <select
+              v-model="filters.role"
+              class="form-select"
+              :disabled="rolesLoading"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option
+                v-for="role in roleFilterOptions"
+                :key="role"
+                :value="role"
+              >
+                {{ formatRole(role) }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6 text-md-end">
+            <button
+              class="btn btn-outline-secondary me-2"
+              type="button"
+              :disabled="loading"
+              @click="resetFilters"
+            >
+              Đặt lại
+            </button>
+            <button
+              class="btn btn-outline-primary"
+              type="button"
+              :disabled="loading"
+              @click="fetchUsers"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-1"
+              />
+              Làm mới
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="showAdvancedFilters"
+          class="row g-3 align-items-end mt-3 pt-3 border-top"
+        >
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Ngày tạo từ</label>
+            <input
+              v-model="filters.createdFrom"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Ngày tạo đến</label>
+            <input
+              v-model="filters.createdTo"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Cập nhật từ</label>
+            <input
+              v-model="filters.updatedFrom"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Cập nhật đến</label>
+            <input
+              v-model="filters.updatedTo"
+              type="date"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Hoạt động cuối</label>
+            <select
+              v-model="filters.lastSeen"
+              class="form-select"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option value="today">
+                Hôm nay
+              </option>
+              <option value="week">
+                Trong tuần
+              </option>
+              <option value="month">
+                Trong tháng
+              </option>
+              <option value="never">
+                Chưa từng
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div
+      v-if="selectedUsers.length > 0"
+      class="card mb-4 border-primary"
+    >
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ selectedUsers.length }}</strong> nhân viên đã chọn
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-sm btn-success"
+              type="button"
+              :disabled="bulkProcessing"
+              @click="handleBulkActivate"
+            >
+              <span
+                v-if="bulkProcessing"
+                class="spinner-border spinner-border-sm me-1"
+              />
+              <i
+                v-else
+                class="bi bi-check-circle me-1"
+              />
+              Kích hoạt
+            </button>
+            <button
+              class="btn btn-sm btn-danger"
+              type="button"
+              :disabled="bulkProcessing"
+              @click="handleBulkDeactivate"
+            >
+              <span
+                v-if="bulkProcessing"
+                class="spinner-border spinner-border-sm me-1"
+              />
+              <i
+                v-else
+                class="bi bi-x-circle me-1"
+              />
+              Vô hiệu hóa
+            </button>
+            <button
+              class="btn btn-sm btn-primary"
+              type="button"
+              :disabled="bulkProcessing"
+              @click="handleBulkAssignRoles"
+            >
+              <span
+                v-if="bulkProcessing"
+                class="spinner-border spinner-border-sm me-1"
+              />
+              <i
+                v-else
+                class="bi bi-person-badge me-1"
+              />
+              Gán quyền
+            </button>
+            <button
+              class="btn btn-sm btn-outline-info"
+              type="button"
+              :disabled="bulkProcessing || exporting"
+              @click="handleBulkExport"
+            >
+              <span
+                v-if="exporting"
+                class="spinner-border spinner-border-sm me-1"
+              />
+              <i
+                v-else
+                class="bi bi-download me-1"
+              />
+              Xuất Excel
+            </button>
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              type="button"
+              :disabled="bulkProcessing"
+              @click="clearSelection"
+            >
+              <i class="bi bi-x-lg me-1" />
+              Bỏ chọn
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card data-card mb-4">
+      <div class="card-body">
+        <LoadingState v-if="loading" />
+        <ErrorState
+          v-else-if="error"
+          :message="error"
+          @retry="fetchUsers"
+        />
+        <template v-else>
+          <div v-if="viewMode === 'table'">
+            <div v-if="!filteredUsers.length">
+              <EmptyState
+                title="Không có dữ liệu"
+                message="Điều chỉnh bộ lọc hoặc tải lại danh sách."
+              />
+            </div>
+            <div
+              v-else
+              class="table-responsive"
+            >
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th width="40">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        :checked="allSelected"
+                        @change="toggleSelectAll"
+                      >
+                    </th>
+                    <th />
+                    <th>Tên đăng nhập</th>
+                    <th>Họ tên</th>
+                    <th>Liên hệ</th>
+                    <th>Quyền</th>
+                    <th>Trạng thái</th>
+                    <th>Hoạt động cuối</th>
+                    <th>Ngày tạo</th>
+                    <th class="text-end">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="user in filteredUsers"
+                    :key="user.id"
+                  >
+                    <td>
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        :checked="isUserSelected(user.id)"
+                        :disabled="isCurrentUser(user.id)"
+                        @change="toggleUserSelection(user.id)"
+                      >
+                    </td>
+                    <td>
+                      <img
+                        v-if="user.avatarUrl"
+                        :src="user.avatarUrl"
+                        :alt="user.fullName || user.username"
+                        class="table-avatar"
+                      >
+                      <div
+                        v-else
+                        class="table-avatar placeholder"
+                      >
+                        {{ buildInitials(user) }}
+                      </div>
+                    </td>
+                    <td>
+                      <button
+                        class="btn btn-link p-0"
+                        type="button"
+                        @click="openDetail(user)"
+                      >
+                        {{
+                          user.username }}
+                      </button>
+                    </td>
+                    <td>{{ user.fullName || '—' }}</td>
+                    <td>
+                      <div>{{ user.phone || '—' }}</div>
+                      <div class="text-muted small">
+                        {{ user.email || '—' }}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        v-for="role in user.roles"
+                        :key="role.id"
+                        class="badge bg-soft staff-role-badge"
+                      >{{ formatRole(role.name)
+                      }}</span>
+                    </td>
+                    <td>
+                      <span
+                        class="badge"
+                        :class="statusBadgeClass(user.status)"
+                      >{{ user.status
+                      }}</span>
+                    </td>
+                    <td>
+                      <div
+                        v-if="user.lastSeenAt"
+                        class="small"
+                      >
+                        {{ formatDateTime(user.lastSeenAt) }}
+                      </div>
+                      <div
+                        v-else
+                        class="text-muted small"
+                      >
+                        Chưa từng
+                      </div>
+                    </td>
+                    <td>{{ formatDateTime(user.createdAt) }}</td>
+                    <td class="text-end">
+                      <div class="action-buttons">
+                        <button
+                          class="action-button action-button--primary"
+                          type="button"
+                          title="Xem chi tiết"
+                          @click="openDetail(user)"
+                        >
+                          <i class="bi bi-eye" />
+                          <span>Chi tiết</span>
+                        </button>
+                        <button
+                          class="action-button action-button--primary"
+                          type="button"
+                          title="Chỉnh sửa"
+                          @click="openEditModal(user)"
+                        >
+                          <i class="bi bi-pencil" />
+                          <span>Chỉnh sửa</span>
+                        </button>
+                        <button
+                          class="action-button action-button--info"
+                          type="button"
+                          title="Lịch sử đăng nhập"
+                          @click="openLoginHistory(user)"
+                        >
+                          <i class="bi bi-clock-history" />
+                          <span>Lịch sử</span>
+                        </button>
+                        <button
+                          class="action-button action-button--warning"
+                          type="button"
+                          title="Đặt lại mật khẩu"
+                          :disabled="isCurrentUser(user.id)"
+                          @click="openResetPasswordModal(user)"
+                        >
+                          <i class="bi bi-key" />
+                          <span>Đặt lại mật khẩu</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div v-else>
+            <div v-if="!filteredUsers.length">
+              <EmptyState
+                title="Không có dữ liệu"
+                message="Điều chỉnh bộ lọc hoặc tải lại danh sách."
+              />
+            </div>
+            <div
+              v-else
+              class="row g-3"
+            >
+              <div
+                v-for="user in filteredUsers"
+                :key="user.id"
+                class="col-12 col-md-6 col-xl-4"
+              >
+                <StaffCard
+                  :staff="user"
+                  @detail="openDetail"
+                  @edit="openEditModal"
+                  @history="openLoginHistory"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div
+        v-if="totalPages > 1"
+        class="card-footer d-flex justify-content-end"
+      >
+        <Pagination
+          mode="zero-based"
+          :current-page="zeroBasedPage"
+          :total-pages="totalPages"
+          @page-change="handlePageChange"
+        />
+      </div>
+    </div>
+
+    <StaffDetailDrawer
+      :visible="detailVisible"
+      :staff="selectedUser"
+      :dashboard="dashboardData"
+      :loading="dashboardLoading"
+      @close="closeDetail"
+    />
+
+    <StaffCreateModal
+      ref="createModalRef"
+      :roles="roles"
+      :submitting="createSubmitting"
+      @submit="handleCreateSubmit"
+    />
+
+    <LoginHistoryModal
+      ref="loginHistoryRef"
+      :username="historyUsername"
+    />
+    <AvatarEditorModal
+      ref="avatarEditorRef"
+      @apply="handleAvatarEditorApply"
+      @closed="handleAvatarEditorClosed"
+    />
+
+    <!-- Reset Password Modal -->
+    <Teleport to="body">
+      <div
+        ref="resetPasswordModalRef"
+        class="modal fade"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                Đặt lại mật khẩu: {{ resetPasswordForm.username }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="hideResetPasswordModal"
+              />
+            </div>
+            <form @submit.prevent="submitResetPassword">
+              <div class="modal-body">
+                <div class="error-message mb-3">
+                  <i class="bi bi-exclamation-triangle me-2" />
+                  Mật khẩu mới sẽ được áp dụng ngay lập tức. Người dùng sẽ cần đăng nhập lại với mật
+                  khẩu mới.
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
+                  <PasswordInput
+                    v-model="resetPasswordForm.newPassword"
+                    :input-class="['form-control', { 'is-invalid': resetPasswordErrors.newPassword }]"
+                    :disabled="resetPasswordSubmitting"
+                    autocomplete="new-password"
+                  />
+                  <div
+                    v-if="resetPasswordErrors.newPassword"
+                    class="invalid-feedback"
+                  >
+                    {{
+                      resetPasswordErrors.newPassword }}
+                  </div>
+                  <div class="form-text">
+                    Tối thiểu 6 ký tự
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Xác nhận mật khẩu <span
+                    class="text-danger"
+                  >*</span></label>
+                  <PasswordInput
+                    v-model="resetPasswordForm.confirmPassword"
+                    :input-class="['form-control', { 'is-invalid': resetPasswordErrors.confirmPassword }]"
+                    :disabled="resetPasswordSubmitting"
+                    autocomplete="new-password"
+                  />
+                  <div
+                    v-if="resetPasswordErrors.confirmPassword"
+                    class="invalid-feedback"
+                  >
+                    {{
+                      resetPasswordErrors.confirmPassword }}
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  :disabled="resetPasswordSubmitting"
+                  @click="hideResetPasswordModal"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="resetPasswordSubmitting"
+                >
+                  <span
+                    v-if="resetPasswordSubmitting"
+                    class="spinner-border spinner-border-sm me-2"
+                  />
+                  Đặt lại mật khẩu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div
+        ref="editModalRef"
+        class="modal fade"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                Cập nhật nhân viên: {{ editForm.username }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="hideEditModal"
+              />
+            </div>
+            <form @submit.prevent="submitEditForm">
+              <div class="modal-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                    <input
+                      v-model.trim="editForm.fullName"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': editErrors.fullName }"
+                      :disabled="editSubmitting"
+                    >
+                    <div
+                      v-if="editErrors.fullName"
+                      class="invalid-feedback"
+                    >
+                      {{ editErrors.fullName
+                      }}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                    <select
+                      v-model="editForm.status"
+                      class="form-select"
+                      :class="{ 'is-invalid': editErrors.status }"
+                      :disabled="editSubmitting || isCurrentUser(editForm.id)"
+                    >
+                      <option value="ACTIVE">
+                        ACTIVE
+                      </option>
+                      <option value="INACTIVE">
+                        INACTIVE
+                      </option>
+                    </select>
+                    <div
+                      v-if="editErrors.status"
+                      class="invalid-feedback"
+                    >
+                      {{ editErrors.status }}
+                    </div>
+                    <div
+                      v-if="isCurrentUser(editForm.id)"
+                      class="form-text text-warning"
+                    >
+                      <i class="bi bi-exclamation-triangle me-1" />Bạn không thể thay đổi trạng
+                      thái của
+                      chính mình.
+                    </div>
+                  </div>
+                </div>
+                <div class="row g-3 mt-1">
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input
+                      v-model.trim="editForm.email"
+                      type="email"
+                      class="form-control"
+                      :class="{ 'is-invalid': editErrors.email }"
+                      :disabled="editSubmitting"
+                    >
+                    <div
+                      v-if="editErrors.email"
+                      class="invalid-feedback"
+                    >
+                      {{ editErrors.email }}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Số điện thoại <span
+                      class="text-danger"
+                    >*</span></label>
+                    <input
+                      v-model.trim="editForm.phone"
+                      type="tel"
+                      class="form-control"
+                      :class="{ 'is-invalid': editErrors.phone }"
+                      :disabled="editSubmitting"
+                    >
+                    <div
+                      v-if="editErrors.phone"
+                      class="invalid-feedback"
+                    >
+                      {{ editErrors.phone }}
+                    </div>
+                  </div>
+                </div>
+                <div class="row g-3 mt-1">
+                  <div class="col-md-6">
+                    <label class="form-label">Ảnh đại diện</label>
+                    <div class="avatar-upload-box">
+                      <div class="avatar-preview-wrapper">
+                        <img
+                          v-if="editAvatarDisplaySrc"
+                          :src="editAvatarDisplaySrc"
+                          class="avatar-preview-img"
+                          :alt="editForm.fullName || editForm.username"
+                        >
+                        <div
+                          v-else
+                          class="avatar-preview-placeholder"
+                        >
+                          <i class="bi bi-person" />
+                        </div>
+                      </div>
+                      <div class="d-flex flex-wrap gap-2 mt-3">
+                        <label class="btn btn-outline-primary btn-sm mb-0">
+                          <i class="bi bi-cloud-arrow-up me-1" />Chọn ảnh
+                          <input
+                            ref="editAvatarInputRef"
+                            type="file"
+                            class="d-none"
+                            accept="image/*"
+                            :disabled="editSubmitting"
+                            @change="handleEditAvatarSelect"
+                          >
+                        </label>
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          :disabled="!editAvatarDisplaySrc || editSubmitting"
+                          @click="openAvatarEditor"
+                        >
+                          <i class="bi bi-eye me-1" />Xem & chỉnh sửa
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger btn-sm"
+                          :disabled="editSubmitting || (!editAvatarFile && !editForm.avatarUrl)"
+                          @click="handleEditAvatarRemove"
+                        >
+                          <span v-if="editAvatarFile">Hủy ảnh vừa chọn</span>
+                          <span v-else>Xóa avatar hiện tại</span>
+                        </button>
+                      </div>
+                      <div class="form-text mt-2">
+                        Hỗ trợ JPG, JPEG, PNG, GIF, WEBP • Tối đa 5MB.
+                      </div>
+                    </div>
+                    <div
+                      v-if="editErrors.avatarUrl"
+                      class="text-danger small mt-1"
+                    >
+                      {{
+                        editErrors.avatarUrl
+                      }}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Địa chỉ</label>
+                    <input
+                      v-model.trim="editForm.address"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': editErrors.address }"
+                      :disabled="editSubmitting"
+                    >
+                    <div
+                      v-if="editErrors.address"
+                      class="invalid-feedback"
+                    >
+                      {{ editErrors.address }}
+                    </div>
+                  </div>
+                </div>
+                <div class="row g-3 mt-1">
+                  <div class="col-12">
+                    <label class="form-label">Thông điệp trạng thái</label>
+                    <input
+                      v-model.trim="editForm.statusMessage"
+                      type="text"
+                      class="form-control"
+                      placeholder="Ví dụ: Đang nghỉ phép, Đang làm việc từ xa..."
+                      maxlength="255"
+                      :disabled="editSubmitting"
+                    >
+                    <div class="form-text">
+                      Thông điệp hiển thị cùng với trạng thái (tùy chọn)
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <label class="form-label">Quyền <span class="text-danger">*</span></label>
+                  <div
+                    class="role-box"
+                    :class="{ 'is-invalid': editErrors.roleIds }"
+                  >
+                    <div
+                      v-if="rolesLoading"
+                      class="text-center"
+                    >
+                      <span
+                        class="spinner-border spinner-border-sm"
+                      />
+                    </div>
+                    <div
+                      v-for="role in roles"
+                      v-else
+                      :key="role.id"
+                      class="form-check"
+                    >
+                      <input
+                        :id="`edit-role-${role.id}`"
+                        class="form-check-input"
+                        type="checkbox"
+                        :value="role.id"
+                        :checked="editForm.roleIds.includes(role.id)"
+                        :disabled="editSubmitting || isCurrentUser(editForm.id)"
+                        @change="toggleEditRole(role.id)"
+                      >
+                      <label
+                        class="form-check-label"
+                        :for="`edit-role-${role.id}`"
+                      >{{ role.name
+                      }}</label>
+                    </div>
+                  </div>
+                  <div
+                    v-if="editErrors.roleIds"
+                    class="text-danger small"
+                  >
+                    {{ editErrors.roleIds }}
+                  </div>
+                  <div
+                    v-if="isCurrentUser(editForm.id)"
+                    class="form-text text-warning mt-2"
+                  >
+                    <i class="bi bi-exclamation-triangle me-1" />Bạn không thể thay đổi quyền của
+                    chính
+                    mình.
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  :disabled="editSubmitting"
+                  @click="hideEditModal"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="editSubmitting"
+                >
+                  <span
+                    v-if="editSubmitting"
+                    class="spinner-border spinner-border-sm me-2"
+                  />
+                  Lưu thay đổi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Bulk Action Confirmation Modal -->
+    <Teleport to="body">
+      <div
+        ref="bulkActionModalRef"
+        class="modal fade"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">
+                  {{ bulkActionTarget?.action === 'activate' ? 'Kích hoạt nhân viên' : 'Vô hiệu hóa nhân viên' }}
+                </h5>
+                <p class="mb-0 text-muted small">
+                  Hành động này sẽ áp dụng cho tất cả nhân viên đã chọn.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                :disabled="bulkProcessing"
+                aria-label="Close"
+                @click="closeBulkActionModal"
+              />
+            </div>
+            <div class="modal-body">
+              <p class="mb-3">
+                Bạn có chắc chắn muốn {{ bulkActionTarget?.action === 'activate' ? 'kích hoạt' : 'vô hiệu hóa' }} <strong>{{ bulkActionTarget?.count || 0 }}</strong> nhân viên đã chọn không?
+              </p>
+              <div class="error-message">
+                <i class="bi bi-exclamation-triangle me-2" />
+                {{ bulkActionTarget?.action === 'activate' ? 'Các nhân viên sẽ được kích hoạt và có thể đăng nhập vào hệ thống.' : 'Các nhân viên sẽ bị vô hiệu hóa và không thể đăng nhập vào hệ thống.' }}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="bulkProcessing"
+                @click="closeBulkActionModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn"
+                :class="bulkActionTarget?.action === 'activate' ? 'btn-success' : 'btn-danger'"
+                :disabled="bulkProcessing"
+                @click="handleBulkActionConfirm"
+              >
+                <span
+                  v-if="bulkProcessing"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                {{ bulkActionTarget?.action === 'activate' ? 'Kích hoạt' : 'Vô hiệu hóa' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- User Activity Log Modal -->
+    <Teleport to="body">
+      <div
+        ref="userActivityLogModalRef"
+        class="modal fade"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                Lịch sử hoạt động: {{ activityLogUser?.username || '—' }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="hideUserActivityLogModal"
+              />
+            </div>
+            <div class="modal-body">
+              <LoadingState
+                v-if="activityLogLoading"
+                text="Đang tải lịch sử hoạt động..."
+              />
+              <EmptyState
+                v-else-if="!activityLogs.length"
+                title="Chưa có dữ liệu hoạt động"
+                message="Tính năng này cần hỗ trợ từ backend."
+              >
+                <template #icon>
+                  <i class="bi bi-inbox" />
+                </template>
+              </EmptyState>
+              <div
+                v-else
+                class="table-responsive"
+              >
+                <table class="table table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Thời gian</th>
+                      <th>Hành động</th>
+                      <th>Loại tài nguyên</th>
+                      <th>ID tài nguyên</th>
+                      <th>Kết quả</th>
+                      <th>Chi tiết</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="log in activityLogs"
+                      :key="log.id"
+                    >
+                      <td>{{ formatDateTime(log.timestamp) }}</td>
+                      <td><code>{{ log.action }}</code></td>
+                      <td>{{ log.resourceType || '—' }}</td>
+                      <td>{{ log.resourceId || '—' }}</td>
+                      <td>
+                        <span
+                          class="badge"
+                          :class="log.success ? 'bg-success' : 'bg-danger'"
+                        >
+                          {{ log.success ? 'Thành công' : 'Thất bại' }}
+                        </span>
+                      </td>
+                      <td>
+                        <small class="text-muted">{{ log.details || '—' }}</small>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="hideUserActivityLogModal"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -1538,15 +2055,23 @@ const validateResetPasswordForm = () => {
 
 const submitResetPassword = async () => {
     if (!validateResetPasswordForm()) return
-    
+
     resetPasswordSubmitting.value = true
     try {
         // Gọi API admin reset password
-        await adminResetPassword(resetPasswordForm.userId, resetPasswordForm.newPassword)
-        toast.success('Đã đặt lại mật khẩu thành công.')
+        // Backend không nhận newPassword, tự generate temporary password
+        const response = await adminResetPassword(resetPasswordForm.userId)
+        const tempPassword = response?.temporaryPassword
+        const message = response?.message || 'Đã đặt lại mật khẩu thành công.'
+        
+        if (tempPassword && import.meta.env.DEV) {
+            toast.success(`${message} Mật khẩu tạm: ${tempPassword}`)
+        } else {
+            toast.success(message)
+        }
         hideResetPasswordModal()
     } catch (err) {
-        toast.error(err.response?.data?.message || 'Không thể đặt lại mật khẩu.')
+        toast.error(err.response?.data?.message || err.message || 'Không thể đặt lại mật khẩu.')
     } finally {
         resetPasswordSubmitting.value = false
     }
@@ -1558,11 +2083,11 @@ const openUserActivityLog = async (user) => {
     activityLogs.value = []
     activityLogLoading.value = true
     userActivityLogModalInstance?.show()
-    
+
     try {
         // Gọi API lấy activity logs của user
         const response = await getUserActivityLogs(user.id, { page: 0, size: 50 })
-        
+
         // Xử lý response: có thể là Page object hoặc Array
         if (Array.isArray(response)) {
             activityLogs.value = response

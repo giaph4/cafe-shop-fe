@@ -9,8 +9,8 @@ defineRule('min', min)
 
 configure({
     generateMessage: localize({
-        vi,
-    }),
+        vi
+    })
 })
 
 setLocale('vi')

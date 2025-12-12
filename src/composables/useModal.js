@@ -74,9 +74,7 @@ export const useModal = (options = {}) => {
     /**
      * Check if modal is shown
      */
-    const isShown = () => {
-        return modalInstance?._isShown || false
-    }
+    const isShown = () => modalInstance?._isShown || false
 
     onMounted(() => {
         initModal()

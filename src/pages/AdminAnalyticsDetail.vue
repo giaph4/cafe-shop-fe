@@ -1,123 +1,197 @@
 <template>
-    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="page-header card-shadow">
-            <div>
-                <h2 class="page-title">Chi tiết Phân tích AI</h2>
-                <p class="page-subtitle">Xem chi tiết phân tích #{{ analyticsId }}</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <router-link to="/admin-analytics" class="btn btn-outline-secondary" style="border-radius: var(--radius-sm); font-family: var(--font-family-sans);">
-                    <i class="bi bi-arrow-left me-2"></i>
-                    Quay lại
-                </router-link>
-            </div>
-        </div>
-
-        <div v-if="loading" class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
-            <div class="card-body text-center py-5">
-                <div class="spinner-border" role="status" style="color: var(--color-primary);"></div>
-                <p class="mt-3" style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Đang tải dữ liệu...</p>
-            </div>
-        </div>
-
-        <div v-else-if="error" class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
-            <div class="card-body">
-                <div class="alert alert-danger mb-0" style="background: var(--color-soft-rose); border: 1px solid var(--color-danger); color: var(--color-danger); border-radius: var(--radius-sm); font-family: var(--font-family-sans);">
-                    {{ error }}
-                </div>
-            </div>
-        </div>
-
-        <div v-else-if="analytics" class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <h5 class="mb-3">Thông tin cơ bản</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">ID Phân tích:</th>
-                                <td>#{{ analytics.id }}</td>
-                            </tr>
-                            <tr>
-                                <th>Loại phân tích:</th>
-                                <td>{{ analytics.type || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Tiêu đề:</th>
-                                <td>{{ analytics.title || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Ngày tạo:</th>
-                                <td>{{ formatDateTime(analytics.createdAt) || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Trạng thái:</th>
-                                <td>
-                                    <span :class="['badge', getStatusClass(analytics.status)]">
-                                        {{ getStatusLabel(analytics.status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 class="mb-3">Kết quả phân tích</h5>
-                        <div v-if="analytics.results" class="border rounded p-3 bg-light">
-                            <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.9rem;">{{ formatResults(analytics.results) }}</pre>
-                        </div>
-                        <div v-else class="text-muted">
-                            Chưa có kết quả phân tích
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="analytics.insights && analytics.insights.length > 0" class="mt-4">
-                    <h5 class="mb-3">Insights</h5>
-                    <div class="list-group">
-                        <div 
-                            v-for="(insight, index) in analytics.insights" 
-                            :key="index"
-                            class="list-group-item"
-                        >
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-lightbulb text-warning me-2 mt-1"></i>
-                                <div>
-                                    <strong>{{ insight.title || `Insight ${index + 1}` }}</strong>
-                                    <p class="mb-0 mt-1">{{ insight.description || insight }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="analytics.recommendations && analytics.recommendations.length > 0" class="mt-4">
-                    <h5 class="mb-3">Khuyến nghị</h5>
-                    <div class="list-group">
-                        <div 
-                            v-for="(recommendation, index) in analytics.recommendations" 
-                            :key="index"
-                            class="list-group-item"
-                        >
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-check-circle text-success me-2 mt-1"></i>
-                                <div>
-                                    <strong>{{ recommendation.title || `Khuyến nghị ${index + 1}` }}</strong>
-                                    <p class="mb-0 mt-1">{{ recommendation.description || recommendation }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div v-else class="card" style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-inbox fs-1 d-block mb-3" style="color: var(--color-text-muted);"></i>
-                <p style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Không tìm thấy phân tích với ID này.</p>
-            </div>
-        </div>
+  <div
+    class="page-container container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="page-header card-shadow">
+      <div>
+        <h2 class="page-title">
+          Chi tiết Phân tích AI
+        </h2>
+        <p class="page-subtitle">
+          Xem chi tiết phân tích #{{ analyticsId }}
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <router-link
+          to="/admin-analytics"
+          class="btn btn-outline-secondary"
+          style="border-radius: var(--radius-sm); font-family: var(--font-family-sans);"
+        >
+          <i class="bi bi-arrow-left me-2" />
+          Quay lại
+        </router-link>
+      </div>
     </div>
+
+    <div
+      v-if="loading"
+      class="card"
+      style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);"
+    >
+      <div class="card-body text-center py-5">
+        <div
+          class="spinner-border"
+          role="status"
+          style="color: var(--color-primary);"
+        />
+        <p
+          class="mt-3"
+          style="color: var(--color-text-muted); font-family: var(--font-family-sans);"
+        >
+          Đang tải dữ liệu...
+        </p>
+      </div>
+    </div>
+
+    <div
+      v-else-if="error"
+      class="card"
+      style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);"
+    >
+      <div class="card-body">
+        <div
+          class="alert alert-danger mb-0"
+          style="background: var(--color-soft-rose); border: 1px solid var(--color-danger); color: var(--color-danger); border-radius: var(--radius-sm); font-family: var(--font-family-sans);"
+        >
+          {{ error }}
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-else-if="analytics"
+      class="card"
+      style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);"
+    >
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <h5 class="mb-3">
+              Thông tin cơ bản
+            </h5>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">
+                  ID Phân tích:
+                </th>
+                <td>#{{ analytics.id }}</td>
+              </tr>
+              <tr>
+                <th>Loại phân tích:</th>
+                <td>{{ analytics.type || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Tiêu đề:</th>
+                <td>{{ analytics.title || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Ngày tạo:</th>
+                <td>{{ formatDateTime(analytics.createdAt) || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Trạng thái:</th>
+                <td>
+                  <span :class="['badge', getStatusClass(analytics.status)]">
+                    {{ getStatusLabel(analytics.status) }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h5 class="mb-3">
+              Kết quả phân tích
+            </h5>
+            <div
+              v-if="analytics.results"
+              class="border rounded p-3 bg-light"
+            >
+              <pre
+                class="mb-0"
+                style="white-space: pre-wrap; font-size: 0.9rem;"
+              >{{ formatResults(analytics.results) }}</pre>
+            </div>
+            <div
+              v-else
+              class="text-muted"
+            >
+              Chưa có kết quả phân tích
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="analytics.insights && analytics.insights.length > 0"
+          class="mt-4"
+        >
+          <h5 class="mb-3">
+            Insights
+          </h5>
+          <div class="list-group">
+            <div
+              v-for="(insight, index) in analytics.insights"
+              :key="index"
+              class="list-group-item"
+            >
+              <div class="d-flex align-items-start">
+                <i class="bi bi-lightbulb text-warning me-2 mt-1" />
+                <div>
+                  <strong>{{ insight.title || `Insight ${index + 1}` }}</strong>
+                  <p class="mb-0 mt-1">
+                    {{ insight.description || insight }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="analytics.recommendations && analytics.recommendations.length > 0"
+          class="mt-4"
+        >
+          <h5 class="mb-3">
+            Khuyến nghị
+          </h5>
+          <div class="list-group">
+            <div
+              v-for="(recommendation, index) in analytics.recommendations"
+              :key="index"
+              class="list-group-item"
+            >
+              <div class="d-flex align-items-start">
+                <i class="bi bi-check-circle text-success me-2 mt-1" />
+                <div>
+                  <strong>{{ recommendation.title || `Khuyến nghị ${index + 1}` }}</strong>
+                  <p class="mb-0 mt-1">
+                    {{ recommendation.description || recommendation }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-else
+      class="card"
+      style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card);"
+    >
+      <div class="card-body text-center py-5">
+        <i
+          class="bi bi-inbox fs-1 d-block mb-3"
+          style="color: var(--color-text-muted);"
+        />
+        <p style="color: var(--color-text-muted); font-family: var(--font-family-sans);">
+          Không tìm thấy phân tích với ID này.
+        </p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

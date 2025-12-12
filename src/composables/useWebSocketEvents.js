@@ -132,7 +132,7 @@ export const useWebSocketEvents = (handleEvent, options = {}) => {
             lastError.value = null
             reconnectAttempts.value = 0
             clearSubscription()
-            
+
             // Subscribe to destination topic
             subscription = instance.subscribe(destination, (message) => {
                 try {
@@ -228,22 +228,18 @@ export const useWebSocketEvents = (handleEvent, options = {}) => {
  * @param {Function} handleEvent - Event handler
  * @returns {Object} WebSocket composable result
  */
-export const useTableEvents = (handleEvent) => {
-    return useWebSocketEvents(handleEvent, {
-        destination: '/topic/tables/status-updates',
-        context: 'TableEvents'
-    })
-}
+export const useTableEvents = (handleEvent) => useWebSocketEvents(handleEvent, {
+    destination: '/topic/tables/status-updates',
+    context: 'TableEvents'
+})
 
 /**
  * Composable cho Dashboard updates
  * @param {Function} handleEvent - Event handler
  * @returns {Object} WebSocket composable result
  */
-export const useDashboardEvents = (handleEvent) => {
-    return useWebSocketEvents(handleEvent, {
-        destination: '/topic/dashboard/updates',
-        context: 'DashboardEvents'
-    })
-}
+export const useDashboardEvents = (handleEvent) => useWebSocketEvents(handleEvent, {
+    destination: '/topic/dashboard/updates',
+    context: 'DashboardEvents'
+})
 

@@ -1,199 +1,260 @@
 <template>
-    <div class="cost-analysis-page page-container container-fluid" data-aos="fade-up">
-        <PageHeader
-            title="Phân tích Chi phí và Tối ưu Ngân sách"
-            subtitle="Phân tích chi phí toàn diện và đề xuất tối ưu ngân sách"
+  <div
+    class="cost-analysis-page page-container container-fluid"
+    data-aos="fade-up"
+  >
+    <PageHeader
+      title="Phân tích Chi phí và Tối ưu Ngân sách"
+      subtitle="Phân tích chi phí toàn diện và đề xuất tối ưu ngân sách"
+    >
+      <template #actions>
+        <button
+          class="btn-flat btn-flat--outline"
+          :disabled="loading"
+          @click="handleRefresh"
         >
-            <template #actions>
-                <button
-                    class="btn-flat btn-flat--outline"
-                    @click="handleRefresh"
-                    :disabled="loading"
-                >
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                    Làm mới
-                </button>
-                <button
-                    v-if="hasData"
-                    class="btn-flat btn-flat--outline"
-                    @click="handleExport"
-                    :disabled="exporting"
-                >
-                    <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-download me-2"></i>
-                    Xuất Excel
-                </button>
-            </template>
-        </PageHeader>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.startDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.endDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Khoảng thời gian</label>
-                        <div class="btn-group w-100" role="group">
-                            <button
-                                v-for="preset in presets"
-                                :key="preset.value"
-                                type="button"
-                                class="btn btn-flat"
-                                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
-                                @click="applyPreset(preset.value)"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 col-md-6">
-                        <button
-                            class="btn btn-flat btn-flat--primary w-100"
-                            @click="handleAnalyze"
-                            :disabled="loading || !canAnalyze"
-                        >
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-graph-up-arrow me-2"></i>
-                            Phân tích
-                        </button>
-                    </div>
-                </div>
-                <div v-if="validationError" class="alert alert-warning mt-3 mb-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    {{ validationError }}
-                </div>
-            </div>
-        </div>
-
-        <LoadingState v-if="loading" text="Đang phân tích chi phí..." />
-        <ErrorState
-            v-else-if="error"
-            :message="error"
-            @retry="handleAnalyze"
-        />
-
-        <div v-else-if="hasData" class="analysis-content">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--danger">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-cash-stack"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng chi phí</div>
-                            <div class="kpi-card__value">{{ formatCurrency(summary?.totalCost || 0) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--success">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng doanh thu</div>
-                            <div class="kpi-card__value">{{ formatCurrency(summary?.totalRevenue || 0) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--info">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-percent"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tỷ lệ chi phí/doanh thu</div>
-                            <div class="kpi-card__value">{{ (summary?.costRevenueRatio || 0).toFixed(1) }}%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--warning">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-cart"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Chi phí/đơn hàng</div>
-                            <div class="kpi-card__value">{{ formatCurrency(summary?.costPerOrder || 0) }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-lg-6">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Phân loại chi phí</h5>
-                        </div>
-                        <div class="card-body">
-                            <CostBreakdownChart :category-breakdown="categoryBreakdown" />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Xu hướng chi phí</h5>
-                        </div>
-                        <div class="card-body">
-                            <CostTrendChart :daily-costs="dailyCosts" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-lg-8">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Top danh mục chi phí</h5>
-                        </div>
-                        <div class="card-body">
-                            <TopCategoriesTable :categories="topCategories" :total-cost="summary?.totalCost || 0" />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Đề xuất tối ưu</h5>
-                        </div>
-                        <div class="card-body">
-                            <RecommendationsPanel :recommendations="recommendations" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <EmptyState
+          <span
+            v-if="loading"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
             v-else
-            title="Chưa có dữ liệu"
-            message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+            class="bi bi-arrow-clockwise me-2"
+          />
+          Làm mới
+        </button>
+        <button
+          v-if="hasData"
+          class="btn-flat btn-flat--outline"
+          :disabled="exporting"
+          @click="handleExport"
         >
-            <template #icon>
-                <i class="bi bi-cash-stack"></i>
-            </template>
-        </EmptyState>
+          <span
+            v-if="exporting"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
+            v-else
+            class="bi bi-download me-2"
+          />
+          Xuất Excel
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Khoảng thời gian</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in presets"
+                :key="preset.value"
+                type="button"
+                class="btn btn-flat"
+                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
+                @click="applyPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">&nbsp;</label>
+            <button
+              class="btn btn-flat btn-flat--primary w-100"
+              :disabled="loading || !canAnalyze"
+              @click="handleAnalyze"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-graph-up-arrow me-2"
+              />
+              Phân tích
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="validationError"
+          class="alert alert-warning mt-3 mb-0"
+        >
+          <i class="bi bi-exclamation-triangle me-2" />
+          {{ validationError }}
+        </div>
+      </div>
     </div>
+
+    <LoadingState
+      v-if="loading"
+      text="Đang phân tích chi phí..."
+    />
+    <ErrorState
+      v-else-if="error"
+      :message="error"
+      @retry="handleAnalyze"
+    />
+
+    <div
+      v-else-if="hasData"
+      class="analysis-content"
+    >
+      <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--danger">
+            <div class="kpi-card__icon">
+              <i class="bi bi-cash-stack" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng chi phí
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(summary?.totalCost || 0) }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+              <i class="bi bi-graph-up" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng doanh thu
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(summary?.totalRevenue || 0) }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <i class="bi bi-percent" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tỷ lệ chi phí/doanh thu
+              </div>
+              <div class="kpi-card__value">
+                {{ (summary?.costRevenueRatio || 0).toFixed(1) }}%
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--warning">
+            <div class="kpi-card__icon">
+              <i class="bi bi-cart" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Chi phí/đơn hàng
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(summary?.costPerOrder || 0) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Phân loại chi phí
+              </h5>
+            </div>
+            <div class="card-body">
+              <CostBreakdownChart :category-breakdown="categoryBreakdown" />
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Xu hướng chi phí
+              </h5>
+            </div>
+            <div class="card-body">
+              <CostTrendChart :daily-costs="dailyCosts" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Top danh mục chi phí
+              </h5>
+            </div>
+            <div class="card-body">
+              <TopCategoriesTable
+                :categories="topCategories"
+                :total-cost="summary?.totalCost || 0"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Đề xuất tối ưu
+              </h5>
+            </div>
+            <div class="card-body">
+              <RecommendationsPanel :recommendations="recommendations" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+    >
+      <template #icon>
+        <i class="bi bi-cash-stack" />
+      </template>
+    </EmptyState>
+  </div>
 </template>
 
 <script setup>
@@ -209,6 +270,7 @@ import TopCategoriesTable from '@/components/cost-analysis/TopCategoriesTable.vu
 import RecommendationsPanel from '@/components/cost-analysis/RecommendationsPanel.vue'
 import { formatCurrency } from '@/utils/formatters'
 import * as XLSX from 'xlsx'
+import logger from '@/utils/logger'
 
 const store = useCostAnalysisStore()
 
@@ -237,19 +299,17 @@ const presets = [
     { value: '365d', label: '1 năm', days: 365 }
 ]
 
-const canAnalyze = computed(() => {
-    return filters.value.startDate && filters.value.endDate && !validationError.value
-})
+const canAnalyze = computed(() => filters.value.startDate && filters.value.endDate && !validationError.value)
 
 const applyPreset = (preset) => {
     selectedPreset.value = preset
     const presetConfig = presets.find(p => p.value === preset)
     if (!presetConfig) return
-    
+
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - presetConfig.days)
-    
+
     filters.value.endDate = endDate.toISOString().split('T')[0]
     filters.value.startDate = startDate.toISOString().split('T')[0]
     validateDates()
@@ -257,37 +317,36 @@ const applyPreset = (preset) => {
 
 const validateDates = () => {
     validationError.value = ''
-    
+
     if (!filters.value.startDate || !filters.value.endDate) {
         return
     }
-    
+
     const start = new Date(filters.value.startDate)
     const end = new Date(filters.value.endDate)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     if (start > end) {
         validationError.value = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
         return
     }
-    
+
     if (end > today) {
         validationError.value = 'Ngày kết thúc không được vượt quá hôm nay'
-        return
     }
 }
 
 const handleAnalyze = async () => {
     if (!canAnalyze.value || validationError.value) return
-    
+
     try {
         await store.analyzeCosts({
             startDate: filters.value.startDate,
             endDate: filters.value.endDate
         })
     } catch (err) {
-        console.error('Failed to analyze', err)
+        logger.error('Không thể phân tích chi phí:', err)
     }
 }
 
@@ -297,18 +356,18 @@ const handleRefresh = () => {
 
 const handleExport = async () => {
     if (!hasData.value) return
-    
+
     exporting.value = true
     try {
         const exportData = await store.exportReport()
-        
+
         const ws = XLSX.utils.aoa_to_sheet(exportData.data)
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, exportData.sheetName)
-        
+
         XLSX.writeFile(wb, exportData.filename)
     } catch (err) {
-        console.error('Failed to export', err)
+        logger.error('Không thể xuất báo cáo chi phí:', err)
         alert('Không thể xuất file. Vui lòng thử lại.')
     } finally {
         exporting.value = false

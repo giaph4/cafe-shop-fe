@@ -1,345 +1,394 @@
 <template>
-    <Teleport to="body">
-        <Transition name="calculator-overlay">
-            <div
-                v-if="isOpen"
-                class="calculator-overlay"
-                @click.self="handleOverlayClick"
-                @keydown.esc="handleEscape"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="calculator-title"
-            >
-                <div
-                    ref="panelRef"
-                    class="calculator-panel"
-                    :class="{ 'is-pinned': isPinned, 'is-mobile': isMobile }"
-                    @click.stop
-                >
-                    <!-- Header -->
-                    <header class="calculator-header">
-                        <div class="calculator-header__title">
-                            <i class="bi bi-calculator me-2"></i>
-                            <h3 id="calculator-title">Máy tính</h3>
-                        </div>
-                        <div class="calculator-header__actions">
-                            <button
-                                type="button"
-                                class="calculator-btn calculator-btn--icon"
-                                :class="{ 'is-active': isPinned }"
-                                @click="togglePin"
-                                :title="isPinned ? 'Bỏ ghim' : 'Ghim panel'"
-                                aria-label="Ghim panel"
-                            >
-                                <i class="bi" :class="isPinned ? 'bi-pin-fill' : 'bi-pin'"></i>
-                            </button>
-                            <button
-                                type="button"
-                                class="calculator-btn calculator-btn--icon"
-                                @click="closePanel"
-                                title="Đóng (Esc)"
-                                aria-label="Đóng máy tính"
-                            >
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                    </header>
-
-                    <!-- Body -->
-                    <div class="calculator-body">
-                        <!-- Mode Tabs -->
-                        <div class="calculator-tabs">
-                            <button
-                                v-for="tab in tabs"
-                                :key="tab.key"
-                                type="button"
-                                class="calculator-tab"
-                                :class="{ 'is-active': activeTab === tab.key }"
-                                @click="activeTab = tab.key"
-                            >
-                                <i :class="tab.icon" class="me-1"></i>
-                                {{ tab.label }}
-                            </button>
-                        </div>
-
-                        <!-- Standard Calculator -->
-                        <div v-if="activeTab === 'standard'" class="calculator-standard">
-                            <!-- Display -->
-                            <div class="calculator-display">
-                                <div class="calculator-display__expression" v-if="expression">
-                                    {{ expression }}
-                                </div>
-                                <div class="calculator-display__result" :class="{ 'is-error': hasError }">
-                                    {{ displayValue }}
-                                </div>
-                            </div>
-
-                            <!-- Keypad (phong cách Windows Calculator) -->
-                            <div class="calculator-keypad">
-                                <button
-                                    v-for="key in keypadLayout"
-                                    :key="key"
-                                    type="button"
-                                    class="calculator-key"
-                                    :class="getKeyClass(key)"
-                                    @click="handleKey(key)"
-                                >
-                                    {{ getKeyLabel(key) }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Quick Pay Mode -->
-                        <div v-if="activeTab === 'quickpay'" class="calculator-quickpay">
-                            <div class="quickpay-form">
-                                <div class="quickpay-field">
-                                    <label>Số lượng</label>
-                                    <input
-                                        ref="quantityInput"
-                                        type="number"
-                                        v-model.number="quickPay.quantity"
-                                        @input="calculateQuickPay"
-                                        min="0"
-                                        step="0.01"
-                                        autocomplete="off"
-                                        class="calculator-input"
-                                    />
-                                </div>
-                                <div class="quickpay-field">
-                                    <label>Giá đơn vị</label>
-                                    <input
-                                        type="number"
-                                        v-model.number="quickPay.unitPrice"
-                                        @input="calculateQuickPay"
-                                        min="0"
-                                        step="0.01"
-                                        autocomplete="off"
-                                        class="calculator-input"
-                                    />
-                                </div>
-                                <div class="quickpay-field">
-                                    <label>Giảm giá</label>
-                                    <div class="quickpay-discount">
-                                        <input
-                                            type="number"
-                                            v-model.number="quickPay.discount"
-                                            @input="calculateQuickPay"
-                                            min="0"
-                                            step="0.01"
-                                            autocomplete="off"
-                                            class="calculator-input"
-                                        />
-                                        <select
-                                            v-model="quickPay.discountType"
-                                            @change="calculateQuickPay"
-                                            class="calculator-select"
-                                        >
-                                            <option value="nominal">VNĐ</option>
-                                            <option value="percent">%</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="quickpay-field">
-                                    <label>VAT (%)</label>
-                                    <input
-                                        type="number"
-                                        v-model.number="quickPay.vatPercent"
-                                        @input="calculateQuickPay"
-                                        min="0"
-                                        step="0.1"
-                                        autocomplete="off"
-                                        class="calculator-input"
-                                    />
-                                </div>
-                                <div class="quickpay-field">
-                                    <label>Tip (%)</label>
-                                    <input
-                                        type="number"
-                                        v-model.number="quickPay.tipPercent"
-                                        @input="calculateQuickPay"
-                                        min="0"
-                                        step="0.1"
-                                        autocomplete="off"
-                                        class="calculator-input"
-                                    />
-                                </div>
-                            </div>
-
-                            <!-- Quick Pay Results -->
-                            <Transition name="fade">
-                                <div v-if="quickPayResult" class="quickpay-results">
-                                    <div class="quickpay-step">
-                                        <span class="quickpay-step__label">Subtotal:</span>
-                                        <span class="quickpay-step__value">{{ formatCurrency(quickPayResult.subtotal) }}</span>
-                                    </div>
-                                    <div v-if="quickPayResult.discountAmount > 0" class="quickpay-step">
-                                        <span class="quickpay-step__label">Giảm giá:</span>
-                                        <span class="quickpay-step__value">-{{ formatCurrency(quickPayResult.discountAmount) }}</span>
-                                    </div>
-                                    <div class="quickpay-step">
-                                        <span class="quickpay-step__label">Sau giảm giá:</span>
-                                        <span class="quickpay-step__value">{{ formatCurrency(quickPayResult.subtotalAfterDiscount) }}</span>
-                                    </div>
-                                    <div v-if="quickPayResult.vatAmount > 0" class="quickpay-step">
-                                        <span class="quickpay-step__label">VAT ({{ quickPayResult.vatPercent }}%):</span>
-                                        <span class="quickpay-step__value">+{{ formatCurrency(quickPayResult.vatAmount) }}</span>
-                                    </div>
-                                    <div v-if="quickPayResult.tipAmount > 0" class="quickpay-step">
-                                        <span class="quickpay-step__label">Tip ({{ quickPayResult.tipPercent }}%):</span>
-                                        <span class="quickpay-step__value">+{{ formatCurrency(quickPayResult.tipAmount) }}</span>
-                                    </div>
-                                    <div class="quickpay-total">
-                                        <span class="quickpay-total__label">Tổng cộng:</span>
-                                        <span class="quickpay-total__value">{{ formatCurrency(quickPayResult.total) }}</span>
-                                    </div>
-                                </div>
-                            </Transition>
-                        </div>
-
-                        <!-- Currency Converter -->
-                        <div v-if="activeTab === 'currency'" class="calculator-currency">
-                            <div class="currency-form">
-                                <div class="currency-field">
-                                    <label>Từ</label>
-                                    <div class="currency-input-group">
-                                        <input
-                                            type="number"
-                                            v-model.number="currency.fromAmount"
-                                            @input="calculateCurrency"
-                                            min="0"
-                                            step="0.01"
-                                            autocomplete="off"
-                                            class="calculator-input"
-                                            placeholder="0"
-                                        />
-                                        <select
-                                            v-model="currency.fromCurrency"
-                                            @change="calculateCurrency"
-                                            class="calculator-select calculator-select--currency"
-                                        >
-                                            <option v-for="curr in currencies" :key="curr.code" :value="curr.code">
-                                                {{ curr.symbol }} {{ curr.name }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="currency-swap">
-                                    <button
-                                        type="button"
-                                        class="currency-swap-btn"
-                                        @click="swapCurrencies"
-                                        title="Đổi chiều"
-                                    >
-                                        <i class="bi bi-arrow-down-up"></i>
-                                    </button>
-                                </div>
-                                <div class="currency-field">
-                                    <label>Sang</label>
-                                    <div class="currency-input-group">
-                                        <input
-                                            type="number"
-                                            v-model.number="currency.toAmount"
-                                            @input="calculateCurrencyReverse"
-                                            min="0"
-                                            step="0.01"
-                                            autocomplete="off"
-                                            class="calculator-input"
-                                            placeholder="0"
-                                            readonly
-                                        />
-                                        <select
-                                            v-model="currency.toCurrency"
-                                            @change="calculateCurrency"
-                                            class="calculator-select calculator-select--currency"
-                                        >
-                                            <option v-for="curr in currencies" :key="curr.code" :value="curr.code">
-                                                {{ curr.symbol }} {{ curr.name }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="currency-field">
-                                    <label>Tỷ giá (1 {{ currency.fromCurrency }} = ? {{ currency.toCurrency }})</label>
-                                    <div class="currency-rate">
-                                        <input
-                                            type="number"
-                                            v-model.number="currency.exchangeRate"
-                                            @input="calculateCurrency"
-                                            min="0"
-                                            step="0.0001"
-                                            autocomplete="off"
-                                            class="calculator-input"
-                                            placeholder="Tự động"
-                                        />
-                                        <button
-                                            type="button"
-                                            class="calculator-btn calculator-btn--text"
-                                            @click="useDefaultRate"
-                                            title="Dùng tỷ giá mặc định"
-                                        >
-                                            <i class="bi bi-arrow-clockwise"></i>
-                                        </button>
-                                    </div>
-                                    <div class="currency-rate-info">
-                                        <small v-if="currency.exchangeRate > 0">
-                                            1 {{ getCurrencySymbol(currency.fromCurrency) }} = 
-                                            {{ formatNumber(currency.exchangeRate) }} {{ getCurrencySymbol(currency.toCurrency) }}
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                            <Transition name="fade">
-                                <div v-if="currencyResult !== null && currency.fromAmount > 0" class="currency-result">
-                                    <div class="currency-result__from">
-                                        {{ formatCurrencyAmount(currency.fromAmount, currency.fromCurrency) }}
-                                    </div>
-                                    <div class="currency-result__arrow">
-                                        <i class="bi bi-arrow-right"></i>
-                                    </div>
-                                    <div class="currency-result__to">
-                                        {{ formatCurrencyAmount(currencyResult, currency.toCurrency) }}
-                                    </div>
-                                </div>
-                            </Transition>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <footer class="calculator-footer">
-                        <button
-                            v-if="activeTab === 'quickpay' && quickPayResult"
-                            type="button"
-                            class="calculator-btn calculator-btn--primary"
-                            @click="handleConfirmQuickPay"
-                        >
-                            <i class="bi bi-check-circle me-2"></i>
-                            Xác nhận
-                        </button>
-                        <button
-                            v-if="activeTab === 'quickpay' && quickPayResult"
-                            type="button"
-                            class="calculator-btn calculator-btn--secondary"
-                            @click="handleCopyTotal"
-                        >
-                            <i class="bi bi-clipboard me-2"></i>
-                            Copy tổng
-                        </button>
-                        <div class="calculator-footer__info">
-                            <kbd>Ctrl+M</kbd> để mở/đóng
-                        </div>
-                    </footer>
-                </div>
+  <Teleport to="body">
+    <Transition name="calculator-overlay">
+      <div
+        v-if="isOpen"
+        class="calculator-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="calculator-title"
+        @click.self="handleOverlayClick"
+        @keydown.esc="handleEscape"
+      >
+        <div
+          ref="panelRef"
+          class="calculator-panel"
+          :class="{ 'is-pinned': isPinned, 'is-mobile': isMobile }"
+          @click.stop
+        >
+          <!-- Header -->
+          <header class="calculator-header">
+            <div class="calculator-header__title">
+              <i class="bi bi-calculator me-2" />
+              <h3 id="calculator-title">
+                Máy tính
+              </h3>
             </div>
-        </Transition>
-    </Teleport>
+            <div class="calculator-header__actions">
+              <button
+                type="button"
+                class="calculator-btn calculator-btn--icon"
+                :class="{ 'is-active': isPinned }"
+                :title="isPinned ? 'Bỏ ghim' : 'Ghim panel'"
+                aria-label="Ghim panel"
+                @click="togglePin"
+              >
+                <i
+                  class="bi"
+                  :class="isPinned ? 'bi-pin-fill' : 'bi-pin'"
+                />
+              </button>
+              <button
+                type="button"
+                class="calculator-btn calculator-btn--icon"
+                title="Đóng (Esc)"
+                aria-label="Đóng máy tính"
+                @click="closePanel"
+              >
+                <i class="bi bi-x-lg" />
+              </button>
+            </div>
+          </header>
+
+          <!-- Body -->
+          <div class="calculator-body">
+            <!-- Mode Tabs -->
+            <div class="calculator-tabs">
+              <button
+                v-for="tab in tabs"
+                :key="tab.key"
+                type="button"
+                class="calculator-tab"
+                :class="{ 'is-active': activeTab === tab.key }"
+                @click="activeTab = tab.key"
+              >
+                <i
+                  :class="tab.icon"
+                  class="me-1"
+                />
+                {{ tab.label }}
+              </button>
+            </div>
+
+            <!-- Standard Calculator -->
+            <div
+              v-if="activeTab === 'standard'"
+              class="calculator-standard"
+            >
+              <!-- Display -->
+              <div class="calculator-display">
+                <div
+                  v-if="expression"
+                  class="calculator-display__expression"
+                >
+                  {{ expression }}
+                </div>
+                <div
+                  class="calculator-display__result"
+                  :class="{ 'is-error': hasError }"
+                >
+                  {{ displayValue }}
+                </div>
+              </div>
+
+              <!-- Keypad (phong cách Windows Calculator) -->
+              <div class="calculator-keypad">
+                <button
+                  v-for="key in keypadLayout"
+                  :key="key"
+                  type="button"
+                  class="calculator-key"
+                  :class="getKeyClass(key)"
+                  @click="handleKey(key)"
+                >
+                  {{ getKeyLabel(key) }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Pay Mode -->
+            <div
+              v-if="activeTab === 'quickpay'"
+              class="calculator-quickpay"
+            >
+              <div class="quickpay-form">
+                <div class="quickpay-field">
+                  <label>Số lượng</label>
+                  <input
+                    ref="quantityInput"
+                    v-model.number="quickPay.quantity"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    autocomplete="off"
+                    class="calculator-input"
+                    @input="calculateQuickPay"
+                  >
+                </div>
+                <div class="quickpay-field">
+                  <label>Giá đơn vị</label>
+                  <input
+                    v-model.number="quickPay.unitPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    autocomplete="off"
+                    class="calculator-input"
+                    @input="calculateQuickPay"
+                  >
+                </div>
+                <div class="quickpay-field">
+                  <label>Giảm giá</label>
+                  <div class="quickpay-discount">
+                    <input
+                      v-model.number="quickPay.discount"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      autocomplete="off"
+                      class="calculator-input"
+                      @input="calculateQuickPay"
+                    >
+                    <select
+                      v-model="quickPay.discountType"
+                      class="calculator-select"
+                      @change="calculateQuickPay"
+                    >
+                      <option value="nominal">
+                        VNĐ
+                      </option>
+                      <option value="percent">
+                        %
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="quickpay-field">
+                  <label>VAT (%)</label>
+                  <input
+                    v-model.number="quickPay.vatPercent"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    autocomplete="off"
+                    class="calculator-input"
+                    @input="calculateQuickPay"
+                  >
+                </div>
+                <div class="quickpay-field">
+                  <label>Tip (%)</label>
+                  <input
+                    v-model.number="quickPay.tipPercent"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    autocomplete="off"
+                    class="calculator-input"
+                    @input="calculateQuickPay"
+                  >
+                </div>
+              </div>
+
+              <!-- Quick Pay Results -->
+              <Transition name="fade">
+                <div
+                  v-if="quickPayResult"
+                  class="quickpay-results"
+                >
+                  <div class="quickpay-step">
+                    <span class="quickpay-step__label">Subtotal:</span>
+                    <span class="quickpay-step__value">{{ formatCurrency(quickPayResult.subtotal) }}</span>
+                  </div>
+                  <div
+                    v-if="quickPayResult.discountAmount > 0"
+                    class="quickpay-step"
+                  >
+                    <span class="quickpay-step__label">Giảm giá:</span>
+                    <span class="quickpay-step__value">-{{ formatCurrency(quickPayResult.discountAmount) }}</span>
+                  </div>
+                  <div class="quickpay-step">
+                    <span class="quickpay-step__label">Sau giảm giá:</span>
+                    <span class="quickpay-step__value">{{ formatCurrency(quickPayResult.subtotalAfterDiscount) }}</span>
+                  </div>
+                  <div
+                    v-if="quickPayResult.vatAmount > 0"
+                    class="quickpay-step"
+                  >
+                    <span class="quickpay-step__label">VAT ({{ quickPayResult.vatPercent }}%):</span>
+                    <span class="quickpay-step__value">+{{ formatCurrency(quickPayResult.vatAmount) }}</span>
+                  </div>
+                  <div
+                    v-if="quickPayResult.tipAmount > 0"
+                    class="quickpay-step"
+                  >
+                    <span class="quickpay-step__label">Tip ({{ quickPayResult.tipPercent }}%):</span>
+                    <span class="quickpay-step__value">+{{ formatCurrency(quickPayResult.tipAmount) }}</span>
+                  </div>
+                  <div class="quickpay-total">
+                    <span class="quickpay-total__label">Tổng cộng:</span>
+                    <span class="quickpay-total__value">{{ formatCurrency(quickPayResult.total) }}</span>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+
+            <!-- Currency Converter -->
+            <div
+              v-if="activeTab === 'currency'"
+              class="calculator-currency"
+            >
+              <div class="currency-form">
+                <div class="currency-field">
+                  <label>Từ</label>
+                  <div class="currency-input-group">
+                    <input
+                      v-model.number="currency.fromAmount"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      autocomplete="off"
+                      class="calculator-input"
+                      placeholder="0"
+                      @input="calculateCurrency"
+                    >
+                    <select
+                      v-model="currency.fromCurrency"
+                      class="calculator-select calculator-select--currency"
+                      @change="calculateCurrency"
+                    >
+                      <option
+                        v-for="curr in currencies"
+                        :key="curr.code"
+                        :value="curr.code"
+                      >
+                        {{ curr.symbol }} {{ curr.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="currency-swap">
+                  <button
+                    type="button"
+                    class="currency-swap-btn"
+                    title="Đổi chiều"
+                    @click="swapCurrencies"
+                  >
+                    <i class="bi bi-arrow-down-up" />
+                  </button>
+                </div>
+                <div class="currency-field">
+                  <label>Sang</label>
+                  <div class="currency-input-group">
+                    <input
+                      v-model.number="currency.toAmount"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      autocomplete="off"
+                      class="calculator-input"
+                      placeholder="0"
+                      readonly
+                      @input="calculateCurrencyReverse"
+                    >
+                    <select
+                      v-model="currency.toCurrency"
+                      class="calculator-select calculator-select--currency"
+                      @change="calculateCurrency"
+                    >
+                      <option
+                        v-for="curr in currencies"
+                        :key="curr.code"
+                        :value="curr.code"
+                      >
+                        {{ curr.symbol }} {{ curr.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="currency-field">
+                  <label>Tỷ giá (1 {{ currency.fromCurrency }} = ? {{ currency.toCurrency }})</label>
+                  <div class="currency-rate">
+                    <input
+                      v-model.number="currency.exchangeRate"
+                      type="number"
+                      min="0"
+                      step="0.0001"
+                      autocomplete="off"
+                      class="calculator-input"
+                      placeholder="Tự động"
+                      @input="calculateCurrency"
+                    >
+                    <button
+                      type="button"
+                      class="calculator-btn calculator-btn--text"
+                      title="Dùng tỷ giá mặc định"
+                      @click="useDefaultRate"
+                    >
+                      <i class="bi bi-arrow-clockwise" />
+                    </button>
+                  </div>
+                  <div class="currency-rate-info">
+                    <small v-if="currency.exchangeRate > 0">
+                      1 {{ getCurrencySymbol(currency.fromCurrency) }} =
+                      {{ formatNumber(currency.exchangeRate) }} {{ getCurrencySymbol(currency.toCurrency) }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <Transition name="fade">
+                <div
+                  v-if="currencyResult !== null && currency.fromAmount > 0"
+                  class="currency-result"
+                >
+                  <div class="currency-result__from">
+                    {{ formatCurrencyAmount(currency.fromAmount, currency.fromCurrency) }}
+                  </div>
+                  <div class="currency-result__arrow">
+                    <i class="bi bi-arrow-right" />
+                  </div>
+                  <div class="currency-result__to">
+                    {{ formatCurrencyAmount(currencyResult, currency.toCurrency) }}
+                  </div>
+                </div>
+              </Transition>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <footer class="calculator-footer">
+            <button
+              v-if="activeTab === 'quickpay' && quickPayResult"
+              type="button"
+              class="calculator-btn calculator-btn--primary"
+              @click="handleConfirmQuickPay"
+            >
+              <i class="bi bi-check-circle me-2" />
+              Xác nhận
+            </button>
+            <button
+              v-if="activeTab === 'quickpay' && quickPayResult"
+              type="button"
+              class="calculator-btn calculator-btn--secondary"
+              @click="handleCopyTotal"
+            >
+              <i class="bi bi-clipboard me-2" />
+              Copy tổng
+            </button>
+            <div class="calculator-footer__info">
+              <kbd>Ctrl+M</kbd> để mở/đóng
+            </div>
+          </footer>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import logger from '@/utils/logger'
 import {
-    add, subtract, multiply, divide, power, sqrt, log, ln,
-    sin, cos, tan, factorial, percent, toggleSign,
+    add, subtract, multiply, divide, percent, toggleSign,
     roundTo100, roundTo1000, calculateQuickPay as calcQuickPay, convertCurrency
 } from '@/utils/calculatorMath'
 
@@ -404,7 +453,7 @@ const currencies = [
     { code: 'THB', name: 'Thai Baht', symbol: '฿', rate: 0.0011 }, // 1 THB = 909 VND
     { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', rate: 0.00003 }, // 1 SGD = 33,333 VND
     { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', rate: 0.000027 }, // 1 AUD = 37,037 VND
-    { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', rate: 0.000029 }, // 1 CAD = 34,483 VND
+    { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', rate: 0.000029 } // 1 CAD = 34,483 VND
 ]
 
 const currency = ref({
@@ -458,17 +507,15 @@ const formatNumber = (num) => {
     if (numStr.includes('e')) return num.toExponential(2)
     if (numStr.includes('.')) {
         const parts = numStr.split('.')
-        return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + parts[1]
+        return `${parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')  }.${  parts[1]}`
     }
     return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
-const formatCurrency = (num) => {
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-    }).format(num)
-}
+const formatCurrency = (num) => new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+}).format(num)
 
 const updateDisplay = (value) => {
     displayValue.value = formatNumber(value)
@@ -477,7 +524,7 @@ const updateDisplay = (value) => {
 
 const handleKey = (key) => {
     hasError.value = false
-    
+
     if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
         handleNumber(key)
     } else if (key === '.') {
@@ -540,12 +587,12 @@ const handleOperation = (op) => {
 
 const handleEquals = () => {
     if (!operation.value || previousValue.value === null) return
-    
+
     try {
         let result
         const prev = previousValue.value
         const curr = currentValue.value
-        
+
         switch (operation.value) {
             case '+':
                 result = add(prev, curr)
@@ -562,65 +609,22 @@ const handleEquals = () => {
             default:
                 return
         }
-        
+
         expression.value = `${formatNumber(prev)} ${operation.value} ${formatNumber(curr)} =`
         updateDisplay(result)
-        
+
         // Lưu vào lịch sử
         addToHistory(expression.value, result)
-        
+
         operation.value = null
         previousValue.value = null
         shouldResetDisplay.value = true
-    } catch (error) {
+    } catch {
         hasError.value = true
         displayValue.value = 'Lỗi'
     }
 }
 
-const handleFunction = (func) => {
-    try {
-        let result
-        const value = currentValue.value
-        
-        switch (func) {
-            case 'sqrt':
-                result = sqrt(value)
-                break
-            case 'power':
-                result = power(value, 2)
-                break
-            case 'log':
-                result = log(value)
-                break
-            case 'ln':
-                result = ln(value)
-                break
-            case 'sin':
-                result = sin(value)
-                break
-            case 'cos':
-                result = cos(value)
-                break
-            case 'tan':
-                result = tan(value)
-                break
-            case 'factorial':
-                result = factorial(value)
-                break
-            default:
-                return
-        }
-        
-        expression.value = `${func}(${formatNumber(value)}) =`
-        updateDisplay(result)
-        addToHistory(expression.value, result)
-        shouldResetDisplay.value = true
-    } catch (error) {
-        hasError.value = true
-        displayValue.value = error.message || 'Lỗi'
-    }
-}
 
 const handleClear = () => {
     displayValue.value = '0'
@@ -654,7 +658,7 @@ const handleToggleSign = () => {
     try {
         const result = toggleSign(currentValue.value)
         updateDisplay(result)
-    } catch (error) {
+    } catch {
         hasError.value = true
     }
 }
@@ -663,7 +667,7 @@ const handlePercent = () => {
     try {
         const result = percent(currentValue.value)
         updateDisplay(result)
-    } catch (error) {
+    } catch {
         hasError.value = true
     }
 }
@@ -672,7 +676,7 @@ const handleRoundTo100 = () => {
     try {
         const result = roundTo100(currentValue.value)
         updateDisplay(result)
-    } catch (error) {
+    } catch {
         hasError.value = true
     }
 }
@@ -681,7 +685,7 @@ const handleRoundTo1000 = () => {
     try {
         const result = roundTo1000(currentValue.value)
         updateDisplay(result)
-    } catch (error) {
+    } catch {
         hasError.value = true
     }
 }
@@ -701,6 +705,8 @@ const handleMemory = (op) => {
         case 'MC':
             memory.value = 0
             break
+        default:
+            break
     }
 }
 
@@ -711,14 +717,6 @@ const addToHistory = (expr, result) => {
     }
 }
 
-const clearHistory = () => {
-    history.value = []
-}
-
-const loadFromHistory = (item) => {
-    updateDisplay(item.result)
-    shouldResetDisplay.value = true
-}
 
 const calculateQuickPay = () => {
     try {
@@ -744,25 +742,24 @@ const getCurrencySymbol = (code) => {
 
 const getCurrencyRate = (fromCode, toCode) => {
     if (fromCode === toCode) return 1
-    
+
     const fromCurr = currencies.find(c => c.code === fromCode)
     const toCurr = currencies.find(c => c.code === toCode)
-    
+
     if (!fromCurr || !toCurr) return 1
-    
+
     // Convert through VND as base
     // If converting from VND to other: use other's rate
     // If converting from other to VND: use 1/other's rate
     // If converting between two non-VND: convert through VND
-    
+
     if (fromCode === 'VND') {
         return toCurr.rate
     } else if (toCode === 'VND') {
         return 1 / fromCurr.rate
-    } else {
-        // Convert from -> VND -> to
-        return toCurr.rate / fromCurr.rate
     }
+    // Convert from -> VND -> to
+    return toCurr.rate / fromCurr.rate
 }
 
 const useDefaultRate = () => {
@@ -785,11 +782,11 @@ const calculateCurrency = () => {
             currency.value.toAmount = 0
             return
         }
-        
-        const rate = currency.value.exchangeRate > 0 
-            ? currency.value.exchangeRate 
+
+        const rate = currency.value.exchangeRate > 0
+            ? currency.value.exchangeRate
             : getCurrencyRate(currency.value.fromCurrency, currency.value.toCurrency)
-        
+
         currency.value.exchangeRate = rate
         currencyResult.value = convertCurrency(currency.value.fromAmount, rate)
         currency.value.toAmount = currencyResult.value
@@ -807,8 +804,8 @@ const calculateCurrencyReverse = () => {
 
 const formatCurrencyAmount = (amount, code) => {
     const curr = currencies.find(c => c.code === code)
-    if (!curr) return formatNumber(amount) + ' ' + code
-    
+    if (!curr) return `${formatNumber(amount)  } ${  code}`
+
     if (code === 'VND') {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -816,9 +813,8 @@ const formatCurrencyAmount = (amount, code) => {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         }).format(amount)
-    } else {
-        return curr.symbol + ' ' + formatNumber(amount)
     }
+    return `${curr.symbol  } ${  formatNumber(amount)}`
 }
 
 const handleConfirmQuickPay = () => {
@@ -907,7 +903,7 @@ const setupKeyboardShortcuts = (e) => {
         Backspace: '⌫',
         Escape: 'C',
         Delete: 'CE',
-        '%': '%',
+        '%': '%'
     }
 
     // Số và dấu chấm

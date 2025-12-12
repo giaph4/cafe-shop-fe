@@ -1,137 +1,189 @@
 <template>
-    <div class="shift-assignment-page container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="shift-assignment-header">
-            <div class="shift-assignment-header__content">
-                <div class="shift-assignment-header__title-section">
-                    <h2 class="shift-assignment-header__title">Quản lý Phân công Ca làm</h2>
-                    <p class="shift-assignment-header__subtitle">Phân công nhân viên vào ca làm, quản lý thời gian và lương theo ca.</p>
-                </div>
-                <div class="shift-assignment-header__actions">
-                    <button 
-                        class="btn btn-primary" 
-                        type="button" 
-                        @click="openCreateModal" 
-                        v-if="activeTab === 'list'"
-                    >
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Tạo phân công mới
-                    </button>
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button" 
-                        @click="fetchData" 
-                        :disabled="loading"
-                    >
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="shift-assignment-page container-fluid"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="shift-assignment-header">
+      <div class="shift-assignment-header__content">
+        <div class="shift-assignment-header__title-section">
+          <h2 class="shift-assignment-header__title">
+            Quản lý Phân công Ca làm
+          </h2>
+          <p class="shift-assignment-header__subtitle">
+            Phân công nhân viên vào ca làm, quản lý thời gian và lương theo ca.
+          </p>
         </div>
-
-        <div class="card tabs-card mb-4">
-            <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in tabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
-                <LoadingState v-if="loading && activeTab === 'list'" />
-                <ErrorState 
-                    v-else-if="error && activeTab === 'list'" 
-                    :message="error"
-                    @retry="fetchData"
-                />
-                <div v-else class="tab-content">
-                    <ShiftAssignmentListTab
-                        v-if="activeTab === 'list'"
-                        :assignments="assignments"
-                        :loading="loading"
-                        :error="error"
-                        :filters="filters"
-                        :status-options="ASSIGNMENT_STATUSES"
-                        :shift-options="shiftOptions"
-                        :staff-options="staffOptions"
-                        @filter="fetchAssignments"
-                        @reset-filters="resetFilters"
-                        @view-detail="openDetail"
-                        @edit="openEdit"
-                        @update-status="handleUpdateStatus"
-                        @remove="handleRemove"
-                    />
-                    <ShiftAssignmentMyTab
-                        v-else-if="activeTab === 'my'"
-                        :assignments="myAssignments"
-                        :loading="myLoading"
-                        :error="myError"
-                        @refresh="fetchMyAssignments"
-                    />
-                </div>
-            </div>
+        <div class="shift-assignment-header__actions">
+          <button
+            v-if="activeTab === 'list'"
+            class="btn btn-primary"
+            type="button"
+            @click="openCreateModal"
+          >
+            <i class="bi bi-plus-lg me-2" />
+            Tạo phân công mới
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchData"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
         </div>
-
-        <Teleport to="body">
-            <ShiftAssignmentFormModal
-                ref="formModal"
-                :assignment="editingAssignment"
-                :shift-options="shiftOptions"
-                :staff-options="staffOptions"
-                :submitting="formSubmitting"
-                @submit="handleFormSubmit"
-            />
-
-            <ShiftAssignmentStatusUpdateModal
-                ref="statusModal"
-                :status-options="ASSIGNMENT_STATUSES"
-                @submit="handleStatusUpdateSubmit"
-            />
-
-            <!-- Delete Assignment Confirmation Modal -->
-            <div 
-                class="modal fade shift-assignment-delete-modal" 
-                id="deleteAssignmentModal" 
-                tabindex="-1" 
-                ref="deleteAssignmentModalElement" 
-                aria-labelledby="deleteAssignmentModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteAssignmentModalLabel">Xác nhận xóa</h5>
-                            <button type="button" class="btn-close" @click="deleteAssignmentBsModal?.hide()" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa phân công này không?</p>
-                            <div v-if="assignmentToDelete" class="card mt-3">
-                                <div class="card-body">
-                                    <p class="mb-2"><strong>Nhân viên:</strong> {{ assignmentToDelete.fullName || assignmentToDelete.username || 'N/A' }}</p>
-                                    <p class="mb-2"><strong>Ca làm:</strong> Shift #{{ assignmentToDelete.shiftId || 'N/A' }}</p>
-                                    <p class="mb-0"><strong>Thời gian:</strong> {{ formatTime(assignmentToDelete.plannedStart) }} - {{ formatTime(assignmentToDelete.plannedEnd) }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="deleteAssignmentBsModal?.hide()">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="confirmDeleteAssignment">
-                                Xóa
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+      </div>
     </div>
+
+    <div class="card tabs-card mb-4">
+      <div class="card-body">
+        <ul
+          class="nav nav-pills reports-tabs mb-3"
+          role="tablist"
+        >
+          <li
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="nav-item"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="nav-link"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              <i :class="[tab.icon, 'me-2']" />{{ tab.label }}
+            </button>
+          </li>
+        </ul>
+        <LoadingState v-if="loading && activeTab === 'list'" />
+        <ErrorState
+          v-else-if="error && activeTab === 'list'"
+          :message="error"
+          @retry="fetchData"
+        />
+        <div
+          v-else
+          class="tab-content"
+        >
+          <ShiftAssignmentListTab
+            v-if="activeTab === 'list'"
+            :assignments="assignments"
+            :loading="loading"
+            :error="error"
+            :filters="filters"
+            :status-options="ASSIGNMENT_STATUSES"
+            :shift-options="shiftOptions"
+            :staff-options="staffOptions"
+            @filter="fetchAssignments"
+            @reset-filters="resetFilters"
+            @view-detail="openDetail"
+            @edit="openEdit"
+            @update-status="handleUpdateStatus"
+            @remove="handleRemove"
+          />
+          <ShiftAssignmentMyTab
+            v-else-if="activeTab === 'my'"
+            :assignments="myAssignments"
+            :loading="myLoading"
+            :error="myError"
+            @refresh="fetchMyAssignments"
+          />
+        </div>
+      </div>
+    </div>
+
+    <Teleport to="body">
+      <ShiftAssignmentFormModal
+        ref="formModal"
+        :assignment="editingAssignment"
+        :shift-options="shiftOptions"
+        :staff-options="staffOptions"
+        :submitting="formSubmitting"
+        @submit="handleFormSubmit"
+      />
+
+      <ShiftAssignmentStatusUpdateModal
+        ref="statusModal"
+        :status-options="ASSIGNMENT_STATUSES"
+        @submit="handleStatusUpdateSubmit"
+      />
+
+      <!-- Delete Assignment Confirmation Modal -->
+      <div
+        id="deleteAssignmentModal"
+        ref="deleteAssignmentModalElement"
+        class="modal fade shift-assignment-delete-modal"
+        tabindex="-1"
+        aria-labelledby="deleteAssignmentModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="deleteAssignmentModalLabel"
+                class="modal-title"
+              >
+                Xác nhận xóa
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="deleteAssignmentBsModal?.hide()"
+              />
+            </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa phân công này không?</p>
+              <div
+                v-if="assignmentToDelete"
+                class="card mt-3"
+              >
+                <div class="card-body">
+                  <p class="mb-2">
+                    <strong>Nhân viên:</strong> {{ assignmentToDelete.fullName || assignmentToDelete.username || 'N/A' }}
+                  </p>
+                  <p class="mb-2">
+                    <strong>Ca làm:</strong> Shift #{{ assignmentToDelete.shiftId || 'N/A' }}
+                  </p>
+                  <p class="mb-0">
+                    <strong>Thời gian:</strong> {{ formatTime(assignmentToDelete.plannedStart) }} - {{ formatTime(assignmentToDelete.plannedEnd) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="deleteAssignmentBsModal?.hide()"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="confirmDeleteAssignment"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -199,7 +251,7 @@ const fetchShiftOptions = async () => {
             value: shift.id,
             label: `${shift.templateName || 'Ca'} • ${formatDate(shift.shiftDate)} • ${formatTime(shift.startTime)}-${formatTime(shift.endTime)}`
         }))
-    } catch (err) {
+    } catch {
         shiftOptions.value = []
     }
 }
@@ -232,24 +284,24 @@ const fetchAssignments = async () => {
     try {
         const data = await getAssignmentsForShift(filters.shiftId)
         let fetched = Array.isArray(data) ? data : []
-        
+
         // Filter by status if selected
         if (filters.status) {
             fetched = fetched.filter(a => a.status === filters.status)
         }
-        
+
         // Filter by user if selected
         if (filters.userId) {
             fetched = fetched.filter(a => a.userId === filters.userId)
         }
-        
+
         // Sort by created date desc
         fetched.sort((a, b) => {
             const dateA = new Date(a.createdAt || 0)
             const dateB = new Date(b.createdAt || 0)
             return dateB - dateA
         })
-        
+
         assignments.value = fetched
     } catch (err) {
         error.value = err.response?.data?.message || 'Không thể tải danh sách phân công.'
@@ -265,14 +317,14 @@ const fetchMyAssignments = async () => {
     try {
         const data = await getAssignmentsForCurrentUser()
         const fetched = Array.isArray(data) ? data : []
-        
+
         // Sort by created date desc
         fetched.sort((a, b) => {
             const dateA = new Date(a.createdAt || 0)
             const dateB = new Date(b.createdAt || 0)
             return dateB - dateA
         })
-        
+
         myAssignments.value = fetched
     } catch (err) {
         myError.value = err.response?.data?.message || 'Không thể tải phân công của bạn.'

@@ -1,15 +1,25 @@
 <template>
-    <div class="historical-comparison">
-        <span v-if="loading" class="text-muted small">
-            <span class="spinner-border spinner-border-sm me-1"></span>
-            Đang tải...
-        </span>
-        <span v-else-if="comparisonData" class="comparison-text" :class="getChangeClass(change)">
-            <i :class="getChangeIcon(change)"></i>
-            {{ formatChange(change) }}
-        </span>
-        <span v-else class="text-muted small">So với {{ getCompareLabel(compareType) }}</span>
-    </div>
+  <div class="historical-comparison">
+    <span
+      v-if="loading"
+      class="text-muted small"
+    >
+      <span class="spinner-border spinner-border-sm me-1" />
+      Đang tải...
+    </span>
+    <span
+      v-else-if="comparisonData"
+      class="comparison-text"
+      :class="getChangeClass(change)"
+    >
+      <i :class="getChangeIcon(change)" />
+      {{ formatChange(change) }}
+    </span>
+    <span
+      v-else
+      class="text-muted small"
+    >So với {{ getCompareLabel(compareType) }}</span>
+  </div>
 </template>
 
 <script setup>
@@ -34,8 +44,8 @@ const comparisonData = ref(null)
 
 const change = computed(() => {
     if (!comparisonData.value) return 0
-    return props.type === 'revenue' 
-        ? comparisonData.value.revenue.change 
+    return props.type === 'revenue'
+        ? comparisonData.value.revenue.change
         : comparisonData.value.orders.change
 })
 

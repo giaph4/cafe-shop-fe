@@ -11,7 +11,7 @@ import { cleanParams } from './utils'
  * Base service class với common methods
  */
 export class BaseService {
-    constructor(baseUrl) {
+    constructor (baseUrl) {
         this.baseUrl = baseUrl
     }
 
@@ -20,7 +20,7 @@ export class BaseService {
      * @param {string} path - Path to append
      * @returns {string} Full URL
      */
-    buildUrl(path = '') {
+    buildUrl (path = '') {
         if (!path) return this.baseUrl
         return `${this.baseUrl}${path.startsWith('/') ? path : `/${path}`}`
     }
@@ -30,7 +30,7 @@ export class BaseService {
      * @param {Error} error - Error object
      * @throws {Object} Standardized error object
      */
-    handleError(error) {
+    handleError (error) {
         throw buildApiError(error)
     }
 
@@ -40,7 +40,7 @@ export class BaseService {
      * @param {Object} params - Query parameters
      * @returns {Promise} Response data
      */
-    async get(path = '', params = {}) {
+    async get (path = '', params = {}) {
         try {
             const url = this.buildUrl(path)
             const cleanQuery = cleanParams(params)
@@ -48,6 +48,7 @@ export class BaseService {
             return data
         } catch (error) {
             this.handleError(error)
+            return null
         }
     }
 
@@ -57,13 +58,14 @@ export class BaseService {
      * @param {Object} body - Request body
      * @returns {Promise} Response data
      */
-    async post(path = '', body = {}) {
+    async post (path = '', body = {}) {
         try {
             const url = this.buildUrl(path)
             const { data } = await api.post(url, body)
             return data
         } catch (error) {
             this.handleError(error)
+            return null
         }
     }
 
@@ -73,13 +75,14 @@ export class BaseService {
      * @param {Object} body - Request body
      * @returns {Promise} Response data
      */
-    async put(path = '', body = {}) {
+    async put (path = '', body = {}) {
         try {
             const url = this.buildUrl(path)
             const { data } = await api.put(url, body)
             return data
         } catch (error) {
             this.handleError(error)
+            return null
         }
     }
 
@@ -89,13 +92,14 @@ export class BaseService {
      * @param {Object} body - Request body
      * @returns {Promise} Response data
      */
-    async patch(path = '', body = {}) {
+    async patch (path = '', body = {}) {
         try {
             const url = this.buildUrl(path)
             const { data } = await api.patch(url, body)
             return data
         } catch (error) {
             this.handleError(error)
+            return null
         }
     }
 
@@ -104,13 +108,14 @@ export class BaseService {
      * @param {string} path - Path to append
      * @returns {Promise} Response data
      */
-    async delete(path = '') {
+    async delete (path = '') {
         try {
             const url = this.buildUrl(path)
             const { data } = await api.delete(url)
             return data
         } catch (error) {
             this.handleError(error)
+            return null
         }
     }
 }
@@ -120,7 +125,5 @@ export class BaseService {
  * @param {string} baseUrl - Base URL for the service
  * @returns {BaseService} Service instance
  */
-export const createService = (baseUrl) => {
-    return new BaseService(baseUrl)
-}
+export const createService = (baseUrl) => new BaseService(baseUrl)
 

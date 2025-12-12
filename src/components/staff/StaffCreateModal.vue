@@ -1,145 +1,212 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">Tạo tài khoản nhân viên</h5>
-                            <p class="text-muted mb-0">Nhập thông tin nhân viên mới, hệ thống sẽ tạo tài khoản đăng
-                                nhập.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
-
-                    <form @submit.prevent="handleSubmit">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                                <input
-                                    v-model.trim="form.username"
-                                    type="text"
-                                    class="form-control"
-                                    :class="{'is-invalid': errors.username}"
-                                    maxlength="50"
-                                    autocomplete="off"
-                                    :disabled="submitting"
-                                />
-                                <div class="invalid-feedback" v-if="errors.username">{{ errors.username }}</div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
-                                    <PasswordInput
-                                        v-model="form.password"
-                                        :input-class="['form-control', {'is-invalid': errors.password}]"
-                                        autocomplete="new-password"
-                                        :disabled="submitting"
-                                    />
-                                    <div class="invalid-feedback" v-if="errors.password">{{ errors.password }}</div>
-                                    <div class="form-text">Ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và ký tự đặc
-                                        biệt.
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Xác nhận mật khẩu <span
-                                        class="text-danger">*</span></label>
-                                    <PasswordInput
-                                        v-model="form.confirmPassword"
-                                        :input-class="['form-control', {'is-invalid': errors.confirmPassword}]"
-                                        autocomplete="new-password"
-                                        :disabled="submitting"
-                                    />
-                                    <div class="invalid-feedback" v-if="errors.confirmPassword">
-                                        {{ errors.confirmPassword }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-3">
-                                <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                                <input
-                                    v-model.trim="form.fullName"
-                                    type="text"
-                                    class="form-control"
-                                    :class="{'is-invalid': errors.fullName}"
-                                    maxlength="100"
-                                    :disabled="submitting"
-                                />
-                                <div class="invalid-feedback" v-if="errors.fullName">{{ errors.fullName }}</div>
-                            </div>
-
-                            <div class="row g-3 mt-1">
-                                <div class="col-md-6">
-                                    <label class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input
-                                        v-model.trim="form.email"
-                                        type="email"
-                                        class="form-control"
-                                        :class="{'is-invalid': errors.email}"
-                                        maxlength="100"
-                                        :disabled="submitting"
-                                    />
-                                    <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                                    <input
-                                        v-model.trim="form.phone"
-                                        type="tel"
-                                        class="form-control"
-                                        :class="{'is-invalid': errors.phone}"
-                                        placeholder="0901234567"f
-                                        :disabled="submitting"
-                                    />
-                                    <div class="invalid-feedback" v-if="errors.phone">{{ errors.phone }}</div>
-                                </div>
-                            </div>
-
-                            <div class="mt-3">
-                                <label class="form-label">Phân quyền <span class="text-danger">*</span></label>
-                                <div class="role-box">
-                                    <div class="form-check" v-for="role in roles" :key="role.id">
-                                        <input
-                                            class="form-check-input"
-                                            type="checkbox"
-                                            :id="`create-role-${role.id}`"
-                                            :value="role.id"
-                                            :checked="form.roleIds.includes(role.id)"
-                                            @change="toggleRole(role.id)"
-                                            :disabled="submitting"
-                                        />
-                                        <label class="form-check-label" :for="`create-role-${role.id}`">
-                                            {{ role.name }}
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="text-danger small" v-if="errors.roleIds">{{ errors.roleIds }}</div>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="hide"
-                                    :disabled="submitting">
-                                Hủy
-                            </button>
-                            <button type="submit" class="btn btn-primary" :disabled="submitting">
-                                <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                                Tạo tài khoản
-                            </button>
-                        </div>
-                    </form>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modal"
+      class="modal fade"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title">
+                Tạo tài khoản nhân viên
+              </h5>
+              <p class="text-muted mb-0">
+                Nhập thông tin nhân viên mới, hệ thống sẽ tạo tài khoản đăng
+                nhập.
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
+
+          <form @submit.prevent="handleSubmit">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+                <input
+                  v-model.trim="form.username"
+                  type="text"
+                  class="form-control"
+                  :class="{'is-invalid': errors.username}"
+                  maxlength="50"
+                  autocomplete="off"
+                  :disabled="submitting"
+                >
+                <div
+                  v-if="errors.username"
+                  class="invalid-feedback"
+                >
+                  {{ errors.username }}
+                </div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                  <PasswordInput
+                    v-model="form.password"
+                    :input-class="['form-control', {'is-invalid': errors.password}]"
+                    autocomplete="new-password"
+                    :disabled="submitting"
+                  />
+                  <div
+                    v-if="errors.password"
+                    class="invalid-feedback"
+                  >
+                    {{ errors.password }}
+                  </div>
+                  <div class="form-text">
+                    Ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và ký tự đặc
+                    biệt.
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Xác nhận mật khẩu <span
+                    class="text-danger"
+                  >*</span></label>
+                  <PasswordInput
+                    v-model="form.confirmPassword"
+                    :input-class="['form-control', {'is-invalid': errors.confirmPassword}]"
+                    autocomplete="new-password"
+                    :disabled="submitting"
+                  />
+                  <div
+                    v-if="errors.confirmPassword"
+                    class="invalid-feedback"
+                  >
+                    {{ errors.confirmPassword }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                <input
+                  v-model.trim="form.fullName"
+                  type="text"
+                  class="form-control"
+                  :class="{'is-invalid': errors.fullName}"
+                  maxlength="100"
+                  :disabled="submitting"
+                >
+                <div
+                  v-if="errors.fullName"
+                  class="invalid-feedback"
+                >
+                  {{ errors.fullName }}
+                </div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                  <label class="form-label">Email <span class="text-danger">*</span></label>
+                  <input
+                    v-model.trim="form.email"
+                    type="email"
+                    class="form-control"
+                    :class="{'is-invalid': errors.email}"
+                    maxlength="100"
+                    :disabled="submitting"
+                  >
+                  <div
+                    v-if="errors.email"
+                    class="invalid-feedback"
+                  >
+                    {{ errors.email }}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                  <input
+                    v-model.trim="form.phone"
+                    type="tel"
+                    class="form-control"
+                    :class="{'is-invalid': errors.phone}"
+                    placeholder="0901234567"
+                    f
+                    :disabled="submitting"
+                  >
+                  <div
+                    v-if="errors.phone"
+                    class="invalid-feedback"
+                  >
+                    {{ errors.phone }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <label class="form-label">Phân quyền <span class="text-danger">*</span></label>
+                <div class="role-box">
+                  <div
+                    v-for="role in roles"
+                    :key="role.id"
+                    class="form-check"
+                  >
+                    <input
+                      :id="`create-role-${role.id}`"
+                      class="form-check-input"
+                      type="checkbox"
+                      :value="role.id"
+                      :checked="form.roleIds.includes(role.id)"
+                      :disabled="submitting"
+                      @change="toggleRole(role.id)"
+                    >
+                    <label
+                      class="form-check-label"
+                      :for="`create-role-${role.id}`"
+                    >
+                      {{ role.name }}
+                    </label>
+                  </div>
+                </div>
+                <div
+                  v-if="errors.roleIds"
+                  class="text-danger small"
+                >
+                  {{ errors.roleIds }}
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="submitting"
+                @click="hide"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="submitting"
+              >
+                <span
+                  v-if="submitting"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                Tạo tài khoản
+              </button>
+            </div>
+          </form>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import {reactive, ref, watch, onMounted, onBeforeUnmount} from 'vue'
-import {Modal} from 'bootstrap'
-import {toast} from 'vue3-toastify'
+import { reactive, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { Modal } from 'bootstrap'
+import { toast } from 'vue3-toastify'
 import PasswordInput from '@/components/common/PasswordInput.vue'
 
 const props = defineProps({
@@ -287,14 +354,14 @@ const show = () => {
 const hide = () => modalInstance?.hide()
 
 onMounted(() => {
-    modalInstance = new Modal(modal.value, {backdrop: 'static'})
+    modalInstance = new Modal(modal.value, { backdrop: 'static' })
 })
 
 onBeforeUnmount(() => {
     modalInstance?.dispose()
 })
 
-defineExpose({show, hide})
+defineExpose({ show, hide })
 </script>
 
 <style scoped>

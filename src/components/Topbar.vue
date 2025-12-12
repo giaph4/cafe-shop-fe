@@ -1,121 +1,157 @@
 <template>
-    <header class="neo-nav" :class="{ 'neo-nav--scrolled': isScrolled }" :style="{ left: topbarLeft }">
-        <div class="neo-nav__section neo-nav__section--left">
-            <button
-                class="neo-nav__icon neo-nav__icon--primary"
-                type="button"
-                :aria-label="sidebarAriaLabel"
-                @click="toggleSidebar"
-            >
-                <i class="bi" :class="sidebarIcon"></i>
-            </button>
+  <header
+    class="neo-nav"
+    :class="{ 'neo-nav--scrolled': isScrolled }"
+    :style="{ left: topbarLeft }"
+  >
+    <div class="neo-nav__section neo-nav__section--left">
+      <button
+        class="neo-nav__icon neo-nav__icon--primary"
+        type="button"
+        :aria-label="sidebarAriaLabel"
+        @click="toggleSidebar"
+      >
+        <i
+          class="bi"
+          :class="sidebarIcon"
+        />
+      </button>
 
-            <div class="neo-nav__brand">
-                <span class="neo-nav__brand-prefix">Trang hiện tại</span>
-                <strong class="neo-nav__brand-title" :title="pageTitle">{{ pageTitle }}</strong>
-            </div>
+      <div class="neo-nav__brand">
+        <span class="neo-nav__brand-prefix">Trang hiện tại</span>
+        <strong
+          class="neo-nav__brand-title"
+          :title="pageTitle"
+        >{{ pageTitle }}</strong>
+      </div>
+    </div>
+
+    <div class="neo-nav__section neo-nav__section--center">
+      <GlobalSearch />
+    </div>
+
+    <div class="neo-nav__section neo-nav__section--right">
+      <div
+        ref="themeDropdownRef"
+        class="neo-nav__theme-dropdown"
+      >
+        <button
+          class="neo-nav__icon"
+          type="button"
+          :title="`Theme hiện tại: ${currentThemeInfo.label}`"
+          @click="toggleThemeDropdown"
+        >
+          <i
+            class="bi"
+            :class="currentThemeInfo.icon"
+          />
+        </button>
+        <div
+          v-if="themeDropdownOpen"
+          class="neo-nav__theme-menu"
+          @click.stop
+        >
+          <ThemeSelector />
         </div>
+      </div>
 
-        <div class="neo-nav__section neo-nav__section--center">
-            <div class="neo-nav__search" role="search">
-                <i class="bi bi-search"></i>
-                <input
-                    v-model="searchKeyword"
-                    class="neo-nav__search-input"
-                    type="search"
-                    placeholder="Tìm kiếm nhanh..."
-                    @keydown.enter.prevent="emitSearch"
-                />
-                <button v-if="searchKeyword" class="neo-nav__search-clear" type="button" @click="clearSearch">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
+      <NotificationBell />
+
+      <button
+        class="neo-nav__icon"
+        type="button"
+        :title="calculatorOpen ? 'Đóng máy tính' : 'Mở máy tính (Ctrl+M)'"
+        aria-label="Máy tính"
+        @click="toggleCalculator"
+      >
+        <i class="bi bi-calculator" />
+      </button>
+
+      <button
+        v-if="canAccessSettings"
+        ref="settingsButtonRef"
+        class="neo-nav__icon"
+        type="button"
+        title="Cài đặt hệ thống"
+        aria-label="Cài đặt"
+        @click="openSettings"
+      >
+        <i class="bi bi-gear" />
+      </button>
+
+      <div
+        class="neo-nav__profile"
+        :class="{ 'is-open': profileMenuOpen }"
+      >
+        <button
+          class="neo-nav__profile-trigger"
+          type="button"
+          aria-haspopup="menu"
+          :aria-expanded="profileMenuOpen"
+          @click="toggleProfileMenu"
+        >
+          <img
+            :src="avatarUrl"
+            alt="Avatar"
+          >
+          <div class="neo-nav__profile-info">
+            <span>Xin chào</span>
+            <strong>{{ displayName }}</strong>
+          </div>
+          <i class="bi bi-chevron-down" />
+        </button>
+
+        <div
+          v-if="profileMenuOpen"
+          class="neo-nav__profile-menu"
+          role="menu"
+        >
+          <button
+            class="neo-nav__profile-item"
+            type="button"
+            role="menuitem"
+            @click="goToProfile"
+          >
+            <i class="bi bi-person-circle" />
+            <span>Hồ sơ</span>
+          </button>
+          <hr class="neo-nav__profile-divider">
+          <button
+            class="neo-nav__profile-item neo-nav__profile-item--danger"
+            type="button"
+            role="menuitem"
+            @click="handleLogout"
+          >
+            <i class="bi bi-box-arrow-right" />
+            <span>Đăng xuất</span>
+          </button>
         </div>
+      </div>
+    </div>
+  </header>
 
-        <div class="neo-nav__section neo-nav__section--right">
-            <div class="neo-nav__theme-dropdown" ref="themeDropdownRef">
-                <button
-                    class="neo-nav__icon"
-                    type="button"
-                    :title="`Theme hiện tại: ${currentThemeInfo.label}`"
-                    @click="toggleThemeDropdown"
-                >
-                    <i class="bi" :class="currentThemeInfo.icon"></i>
-                </button>
-                <div
-                    v-if="themeDropdownOpen"
-                    class="neo-nav__theme-menu"
-                    @click.stop
-                >
-                    <ThemeSelector />
-                </div>
-            </div>
+  <CalculatorPanel
+    v-model="calculatorOpen"
+    @calculate:completed="handleCalculatorCompleted"
+  />
 
-            <button class="neo-nav__icon" type="button" aria-label="Thông báo">
-                <span class="neo-nav__icon-indicator"></span>
-                <i class="bi bi-bell"></i>
-            </button>
-
-            <button
-                class="neo-nav__icon"
-                type="button"
-                :title="calculatorOpen ? 'Đóng máy tính' : 'Mở máy tính (Ctrl+M)'"
-                aria-label="Máy tính"
-                @click="toggleCalculator"
-            >
-                <i class="bi bi-calculator"></i>
-            </button>
-
-            <div class="neo-nav__profile" :class="{ 'is-open': profileMenuOpen }">
-                <button class="neo-nav__profile-trigger" type="button" @click="toggleProfileMenu" aria-haspopup="menu" :aria-expanded="profileMenuOpen">
-                    <img :src="avatarUrl" alt="Avatar"/>
-                    <div class="neo-nav__profile-info">
-                        <span>Xin chào</span>
-                        <strong>{{ displayName }}</strong>
-                    </div>
-                    <i class="bi bi-chevron-down"></i>
-                </button>
-
-                <div v-if="profileMenuOpen" class="neo-nav__profile-menu" role="menu">
-                    <button class="neo-nav__profile-item" type="button" role="menuitem" @click="goToProfile">
-                        <i class="bi bi-person-circle"></i>
-                        <span>Hồ sơ</span>
-                    </button>
-                    <button class="neo-nav__profile-item" type="button" role="menuitem">
-                        <i class="bi bi-gear"></i>
-                        <span>Cài đặt</span>
-                    </button>
-                    <hr class="neo-nav__profile-divider"/>
-                    <button class="neo-nav__profile-item neo-nav__profile-item--danger" type="button" role="menuitem" @click="handleLogout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Đăng xuất</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <CalculatorPanel
-        v-model="calculatorOpen"
-        @calculate:completed="handleCalculatorCompleted"
-    />
+  <SettingsModal ref="settingsModalRef" />
 </template>
 <script setup>
-import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
-import {useAuthStore} from '@/store/auth'
-import {useSettingsStore} from '@/store/settings'
-import {storeToRefs} from 'pinia'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
+import { useSettingsStore } from '@/store/settings'
+import { storeToRefs } from 'pinia'
 import {
     getStoredTheme,
-    applyThemeClass,
-    persistTheme,
-    normalizeTheme,
-    resolveInitialTheme,
     THEME_METADATA
 } from '@/utils/theme'
 import CalculatorPanel from '@/components/CalculatorPanel.vue'
 import ThemeSelector from '@/components/common/ThemeSelector.vue'
+import SettingsModal from '@/components/settings/SettingsModal.vue'
+import NotificationBell from '@/components/NotificationBell.vue'
+import GlobalSearch from '@/components/GlobalSearch.vue'
 
 const emit = defineEmits(['toggleSidebar', 'search'])
 
@@ -132,13 +168,14 @@ const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 const { currentTheme } = storeToRefs(settingsStore)
 
-const searchKeyword = ref('')
 const profileMenuOpen = ref(false)
 const profileRef = ref(null)
 const isScrolled = ref(false)
 const calculatorOpen = ref(false)
 const themeDropdownOpen = ref(false)
 const themeDropdownRef = ref(null)
+const settingsModalRef = ref(null)
+const settingsButtonRef = ref(null)
 
 const currentThemeInfo = computed(() => {
     const meta = THEME_METADATA[currentTheme.value]
@@ -148,6 +185,10 @@ const currentThemeInfo = computed(() => {
 const pageTitle = computed(() => route.meta?.breadcrumb || route.meta?.title || route.name || 'Trang chính')
 const displayName = computed(() => authStore.user?.fullName || authStore.user?.username || 'Người dùng')
 const avatarUrl = computed(() => authStore.user?.avatar || 'https://i.pravatar.cc/80')
+const canAccessSettings = computed(() => {
+    const userRoles = authStore.userRoles || []
+    return userRoles.includes('ROLE_ADMIN')
+})
 
 const sidebarIcon = computed(() => (props.isSidebarCollapsed ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar'))
 const sidebarAriaLabel = computed(() => (props.isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'))
@@ -156,14 +197,6 @@ const toggleSidebar = () => {
     emit('toggleSidebar')
 }
 
-const emitSearch = () => {
-    emit('search', searchKeyword.value.trim())
-}
-
-const clearSearch = () => {
-    searchKeyword.value = ''
-    emitSearch()
-}
 
 const handleLogout = () => {
     authStore.logout()
@@ -190,11 +223,17 @@ const toggleProfileMenu = () => {
 
 const goToProfile = () => {
     profileMenuOpen.value = false
-    router.push({name: 'Hồ sơ cá nhân'})
+    router.push({ name: 'Hồ sơ cá nhân' })
 }
 
 const toggleCalculator = () => {
     calculatorOpen.value = !calculatorOpen.value
+}
+
+const openSettings = () => {
+    if (settingsModalRef.value) {
+        settingsModalRef.value.show()
+    }
 }
 
 import logger from '@/utils/logger'
@@ -240,7 +279,7 @@ onMounted(() => {
     window.addEventListener('pointerdown', closeProfileMenu)
     window.addEventListener('pointerdown', closeThemeDropdown)
     window.addEventListener('keydown', handleEscape)
-    window.addEventListener('scroll', handleScroll, {passive: true})
+    window.addEventListener('scroll', handleScroll, { passive: true })
     const media = window.matchMedia?.('(prefers-color-scheme: dark)')
     if (media) {
         media.addEventListener('change', handleSystemPreference)

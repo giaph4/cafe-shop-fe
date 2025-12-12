@@ -1,5 +1,4 @@
 import api from './axios'
-import { buildApiError } from '@/utils/errorHandler'
 import { cleanParams } from './utils'
 
 const BASE_URL = '/api/v1/customers'
@@ -34,7 +33,7 @@ export const createCustomer = async (customerData) => {
     const payload = {
         fullName: customerData.fullName,
         phone: customerData.phone,
-        email: customerData.email ?? null,
+        email: customerData.email ?? null
     }
     const { data } = await api.post(BASE_URL, payload)
     return data
@@ -63,7 +62,7 @@ export const updateCustomer = async ({ id, data: customerData }) => {
     const payload = {
         fullName: customerData.fullName,
         phone: customerData.phone,
-        email: customerData.email ?? null,
+        email: customerData.email ?? null
     }
     const { data } = await api.put(`${BASE_URL}/${id}`, payload)
     return data
@@ -86,7 +85,7 @@ export const getCustomerPurchaseHistory = async ({
     endDate,
     status,
     page = 0,
-    size = 10,
+    size = 10
 } = {}) => {
     const params = cleanParams({
         page,

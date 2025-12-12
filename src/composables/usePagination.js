@@ -7,7 +7,7 @@ export const PaginationMode = Object.freeze({
 
 const hasSessionStorage = () => typeof window !== 'undefined' && window.sessionStorage
 
-export function usePagination(options = {}) {
+export function usePagination (options = {}) {
     const mode = options.mode ?? PaginationMode.ZERO_BASED
     const initialPage = options.initialPage ?? (mode === PaginationMode.ONE_BASED ? 1 : 0)
     const initialPageSize = options.pageSize ?? 10
@@ -28,13 +28,13 @@ export function usePagination(options = {}) {
 
     const maxZeroIndex = computed(() => Math.max(totalPages.value - 1, 0))
 
-    function clampZeroIndex(value) {
+    function clampZeroIndex (value) {
         const numeric = Number(value)
         if (!Number.isFinite(numeric)) return 0
         return Math.min(Math.max(Math.floor(numeric), 0), maxZeroIndex.value)
     }
 
-    function clampPage(value) {
+    function clampPage (value) {
         return denormalizeFromZero(clampZeroIndex(normalizeToZero(value)))
     }
 

@@ -1,26 +1,38 @@
 <template>
-    <div class="tab-navigation" :class="containerClass">
-        <ul class="nav nav-pills" role="tablist">
-            <li
-                v-for="tab in tabs"
-                :key="tab.key"
-                class="nav-item"
-                role="presentation"
-            >
-                <button
-                    type="button"
-                    class="nav-link"
-                    :class="{ active: modelValue === tab.key }"
-                    :disabled="tab.disabled"
-                    @click="handleTabClick(tab.key)"
-                >
-                    <i v-if="tab.icon" :class="[tab.icon, 'me-2']"></i>
-                    {{ tab.label }}
-                    <span v-if="tab.badge" class="badge ms-2">{{ tab.badge }}</span>
-                </button>
-            </li>
-        </ul>
-    </div>
+  <div
+    class="tab-navigation"
+    :class="containerClass"
+  >
+    <ul
+      class="nav nav-pills"
+      role="tablist"
+    >
+      <li
+        v-for="tab in tabs"
+        :key="tab.key"
+        class="nav-item"
+        role="presentation"
+      >
+        <button
+          type="button"
+          class="nav-link"
+          :class="{ active: modelValue === tab.key }"
+          :disabled="tab.disabled"
+          @click="handleTabClick(tab.key)"
+        >
+          <i
+            v-if="tab.icon"
+            :class="[tab.icon, 'me-2']"
+          />
+          {{ tab.label }}
+          <span
+            v-if="tab.badge"
+            class="badge ms-2"
+          >{{ tab.badge }}</span>
+        </button>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script setup>
@@ -39,9 +51,7 @@ const props = defineProps({
     tabs: {
         type: Array,
         required: true,
-        validator: (tabs) => {
-            return tabs.every(tab => tab.key && tab.label)
-        }
+        validator: (tabs) => tabs.every(tab => tab.key && tab.label)
     },
     /**
      * Container class
@@ -136,7 +146,7 @@ const handleTabClick = (tabKey) => {
     .tab-navigation .nav {
         gap: var(--spacing-2);
     }
-    
+
     .tab-navigation .nav-link {
         padding: var(--spacing-2) var(--spacing-4);
         font-size: var(--font-size-sm);

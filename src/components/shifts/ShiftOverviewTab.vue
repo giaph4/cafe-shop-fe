@@ -1,133 +1,203 @@
 <template>
-    <div class="shift-overview-tab">
-        <!-- KPI Cards Row -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--shifts">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-calendar-check"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Ca hôm nay:</div>
-                        <div class="kpi-card__value">{{ formatNumber(todayShiftsCount) }}</div>
-                        <div class="kpi-card__detail">{{ formatNumber(inProgressCount) }} đang diễn ra</div>
-                    </div>
-                </div>
+  <div class="shift-overview-tab">
+    <!-- KPI Cards Row -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--shifts">
+          <div class="kpi-card__icon">
+            <i class="bi bi-calendar-check" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Ca hôm nay:
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--completed">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Đã hoàn thành:</div>
-                        <div class="kpi-card__value">{{ formatNumber(completedCount) }}</div>
-                        <div class="kpi-card__detail">{{ formatNumber(totalShiftsCount) }} tổng ca</div>
-                    </div>
-                </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(todayShiftsCount) }}
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--planned">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-calendar-event"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Đã lên lịch:</div>
-                        <div class="kpi-card__value">{{ formatNumber(plannedCount) }}</div>
-                        <div class="kpi-card__detail">{{ formatNumber(lockedCount) }} đã khóa</div>
-                    </div>
-                </div>
+            <div class="kpi-card__detail">
+              {{ formatNumber(inProgressCount) }} đang diễn ra
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="kpi-card kpi-card--cancelled">
-                    <div class="kpi-card__icon">
-                        <i class="bi bi-x-circle"></i>
-                    </div>
-                    <div class="kpi-card__content">
-                        <div class="kpi-card__label">Đã hủy:</div>
-                        <div class="kpi-card__value">{{ formatNumber(cancelledCount) }}</div>
-                        <div class="kpi-card__detail">{{ formatNumber(assignmentsCount) }} phân công</div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-
-        <div class="row g-4">
-            <div class="col-12">
-                <div class="card calendar-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                            <div>
-                                <h5 class="card-title mb-1">Lịch ca làm</h5>
-                                <p class="text-muted mb-0">Đánh dấu ngày có ca và xem nhanh lịch trình.</p>
-                            </div>
-                            <div class="calendar-nav d-flex align-items-center gap-2">
-                                <button class="btn btn-outline-secondary btn-sm" type="button" @click="changeMonth(-1)" :disabled="calendarLoading">
-                                    <i class="bi bi-chevron-left"></i>
-                                </button>
-                                <span class="fw-semibold text-nowrap">{{ calendarTitle }}</span>
-                                <button class="btn btn-outline-secondary btn-sm" type="button" @click="changeMonth(1)" :disabled="calendarLoading">
-                                    <i class="bi bi-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <ErrorState 
-                            v-if="calendarError" 
-                            :message="calendarError"
-                        />
-                        <div v-else>
-                            <LoadingState v-if="calendarLoading" />
-                            <div v-else>
-                                <div class="calendar-grid mb-3">
-                                    <div class="calendar-weekday" v-for="day in WEEK_DAYS" :key="day">{{ day }}</div>
-                                    <button
-                                        v-for="day in calendarCells"
-                                        :key="day.dateKey"
-                                        type="button"
-                                        class="calendar-day"
-                                        :class="{
-                                            'is-outside': !day.inCurrentMonth,
-                                            'is-today': day.isToday,
-                                            'is-selected': calendarState.selectedDate === day.dateKey,
-                                            'has-shift': day.hasShifts
-                                        }"
-                                        @click="handleSelectDay(day)"
-                                    >
-                                        <span class="day-number">{{ day.label }}</span>
-                                        <span v-if="day.hasShifts" class="calendar-indicator"></span>
-                                    </button>
-                                </div>
-
-                                <div class="selected-day">
-                                    <h6 class="mb-3">Ca trong ngày {{ selectedDateLabel }}</h6>
-                                    <div v-if="!calendarSelectedShifts.length" class="selected-day__empty text-muted text-center py-3">
-                                        Chưa có ca nào. Hãy thêm ca mới cho ngày này.
-                                    </div>
-                                    <div v-else class="list-group list-group-flush rounded-3">
-                                        <div class="list-group-item" v-for="shift in calendarSelectedShifts" :key="shift.id">
-                                            <div class="d-flex justify-content-between align-items-start gap-2">
-                                                <div>
-                                                    <div class="fw-semibold">{{ shift.templateName || 'Ca linh hoạt' }}</div>
-                                                    <div class="text-muted small">{{ formatTime(shift.startTime) }} - {{ formatTime(shift.endTime) }}</div>
-                                                    <div class="text-muted small" v-if="shift.assignments?.length">
-                                                        {{ shift.assignments.length }} phân công
-                                                    </div>
-                                                </div>
-                                                <button class="btn btn-outline-primary btn-sm" type="button" @click="handleViewDetail(shift)">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--completed">
+          <div class="kpi-card__icon">
+            <i class="bi bi-check-circle" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Đã hoàn thành:
             </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(completedCount) }}
+            </div>
+            <div class="kpi-card__detail">
+              {{ formatNumber(totalShiftsCount) }} tổng ca
+            </div>
+          </div>
         </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--planned">
+          <div class="kpi-card__icon">
+            <i class="bi bi-calendar-event" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Đã lên lịch:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(plannedCount) }}
+            </div>
+            <div class="kpi-card__detail">
+              {{ formatNumber(lockedCount) }} đã khóa
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="kpi-card kpi-card--cancelled">
+          <div class="kpi-card__icon">
+            <i class="bi bi-x-circle" />
+          </div>
+          <div class="kpi-card__content">
+            <div class="kpi-card__label">
+              Đã hủy:
+            </div>
+            <div class="kpi-card__value">
+              {{ formatNumber(cancelledCount) }}
+            </div>
+            <div class="kpi-card__detail">
+              {{ formatNumber(assignmentsCount) }} phân công
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card calendar-card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+              <div>
+                <h5 class="card-title mb-1">
+                  Lịch ca làm
+                </h5>
+                <p class="text-muted mb-0">
+                  Đánh dấu ngày có ca và xem nhanh lịch trình.
+                </p>
+              </div>
+              <div class="calendar-nav d-flex align-items-center gap-2">
+                <button
+                  class="btn btn-outline-secondary btn-sm"
+                  type="button"
+                  :disabled="calendarLoading"
+                  @click="changeMonth(-1)"
+                >
+                  <i class="bi bi-chevron-left" />
+                </button>
+                <span class="fw-semibold text-nowrap">{{ calendarTitle }}</span>
+                <button
+                  class="btn btn-outline-secondary btn-sm"
+                  type="button"
+                  :disabled="calendarLoading"
+                  @click="changeMonth(1)"
+                >
+                  <i class="bi bi-chevron-right" />
+                </button>
+              </div>
+            </div>
+
+            <ErrorState
+              v-if="calendarError"
+              :message="calendarError"
+            />
+            <div v-else>
+              <LoadingState v-if="calendarLoading" />
+              <div v-else>
+                <div class="calendar-grid mb-3">
+                  <div
+                    v-for="day in WEEK_DAYS"
+                    :key="day"
+                    class="calendar-weekday"
+                  >
+                    {{ day }}
+                  </div>
+                  <button
+                    v-for="day in calendarCells"
+                    :key="day.dateKey"
+                    type="button"
+                    class="calendar-day"
+                    :class="{
+                      'is-outside': !day.inCurrentMonth,
+                      'is-today': day.isToday,
+                      'is-selected': calendarState.selectedDate === day.dateKey,
+                      'has-shift': day.hasShifts
+                    }"
+                    @click="handleSelectDay(day)"
+                  >
+                    <span class="day-number">{{ day.label }}</span>
+                    <span
+                      v-if="day.hasShifts"
+                      class="calendar-indicator"
+                    />
+                  </button>
+                </div>
+
+                <div class="selected-day">
+                  <h6 class="mb-3">
+                    Ca trong ngày {{ selectedDateLabel }}
+                  </h6>
+                  <div
+                    v-if="!calendarSelectedShifts.length"
+                    class="selected-day__empty text-muted text-center py-3"
+                  >
+                    Chưa có ca nào. Hãy thêm ca mới cho ngày này.
+                  </div>
+                  <div
+                    v-else
+                    class="list-group list-group-flush rounded-3"
+                  >
+                    <div
+                      v-for="shift in calendarSelectedShifts"
+                      :key="shift.id"
+                      class="list-group-item"
+                    >
+                      <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                          <div class="fw-semibold">
+                            {{ shift.templateName || 'Ca linh hoạt' }}
+                          </div>
+                          <div class="text-muted small">
+                            {{ formatTime(shift.startTime) }} - {{ formatTime(shift.endTime) }}
+                          </div>
+                          <div
+                            v-if="shift.assignments?.length"
+                            class="text-muted small"
+                          >
+                            {{ shift.assignments.length }} phân công
+                          </div>
+                        </div>
+                        <button
+                          class="btn btn-outline-primary btn-sm"
+                          type="button"
+                          @click="handleViewDetail(shift)"
+                        >
+                          <i class="bi bi-eye" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -137,7 +207,7 @@ import ErrorState from '@/components/common/ErrorState.vue'
 import { formatNumber } from '@/utils/formatters'
 
 const WEEK_DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
-const CALENDAR_FETCH_SIZE = 200
+const _CALENDAR_FETCH_SIZE = 200
 
 const props = defineProps({
     calendarLoading: { type: Boolean, default: false },
@@ -174,46 +244,40 @@ const todayKey = computed(() => {
     return `${year}-${month}-${day}`
 })
 
-const todayShifts = computed(() => {
-    return allShifts.value.filter(shift => {
-        if (!shift.shiftDate) return false
-        const shiftDate = new Date(shift.shiftDate)
-        const year = shiftDate.getFullYear()
-        const month = String(shiftDate.getMonth() + 1).padStart(2, '0')
-        const day = String(shiftDate.getDate()).padStart(2, '0')
-        return `${year}-${month}-${day}` === todayKey.value
-    })
-})
+const todayShifts = computed(() => allShifts.value.filter(shift => {
+    if (!shift.shiftDate) return false
+    const shiftDate = new Date(shift.shiftDate)
+    const year = shiftDate.getFullYear()
+    const month = String(shiftDate.getMonth() + 1).padStart(2, '0')
+    const day = String(shiftDate.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}` === todayKey.value
+}))
 
 const todayShiftsCount = computed(() => todayShifts.value.length)
 
-const inProgressCount = computed(() => 
+const inProgressCount = computed(() =>
     allShifts.value.filter(s => s.status === 'IN_PROGRESS').length
 )
 
-const completedCount = computed(() => 
+const completedCount = computed(() =>
     allShifts.value.filter(s => s.status === 'DONE').length
 )
 
-const plannedCount = computed(() => 
+const plannedCount = computed(() =>
     allShifts.value.filter(s => s.status === 'PLANNED').length
 )
 
-const lockedCount = computed(() => 
+const lockedCount = computed(() =>
     allShifts.value.filter(s => s.status === 'LOCKED').length
 )
 
-const cancelledCount = computed(() => 
+const cancelledCount = computed(() =>
     allShifts.value.filter(s => s.status === 'CANCELLED').length
 )
 
 const totalShiftsCount = computed(() => allShifts.value.length)
 
-const assignmentsCount = computed(() => {
-    return allShifts.value.reduce((sum, shift) => {
-        return sum + (shift.assignments?.length || 0)
-    }, 0)
-})
+const assignmentsCount = computed(() => allShifts.value.reduce((sum, shift) => sum + (shift.assignments?.length || 0), 0))
 
 const changeMonth = (delta) => emit('change-month', delta)
 const handleSelectDay = (day) => emit('select-day', day)

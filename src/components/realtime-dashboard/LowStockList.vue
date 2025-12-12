@@ -1,39 +1,50 @@
 <template>
-    <div class="low-stock-list">
-        <div v-if="items.length === 0" class="text-muted text-center">
-            Không có nguyên liệu sắp hết
-        </div>
-        <div v-else class="table-responsive">
-            <table class="table table-minimal">
-                <thead>
-                    <tr>
-                        <th>Nguyên liệu</th>
-                        <th>Tồn kho</th>
-                        <th>Tối thiểu</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="item in items"
-                        :key="item.id || item.ingredientId"
-                    >
-                        <td>
-                            <div class="fw-semibold ingredient-name">{{ item.name || item.ingredientName || 'Unknown' }}</div>
-                            <small class="text-muted">{{ item.unit || 'kg' }}</small>
-                        </td>
-                        <td>{{ formatNumber(item.stockLevel || 0, 2) }}</td>
-                        <td>{{ formatNumber(item.minStockLevel || 0, 2) }}</td>
-                        <td>
-                            <span class="stock-badge" :class="getStockClass(item)">
-                                {{ getStockLabel(item) }}
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="low-stock-list">
+    <div
+      v-if="items.length === 0"
+      class="text-muted text-center"
+    >
+      Không có nguyên liệu sắp hết
     </div>
+    <div
+      v-else
+      class="table-responsive"
+    >
+      <table class="table table-minimal">
+        <thead>
+          <tr>
+            <th>Nguyên liệu</th>
+            <th>Tồn kho</th>
+            <th>Tối thiểu</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="item in items"
+            :key="item.id || item.ingredientId"
+          >
+            <td>
+              <div class="fw-semibold ingredient-name">
+                {{ item.name || item.ingredientName || 'Unknown' }}
+              </div>
+              <small class="text-muted">{{ item.unit || 'kg' }}</small>
+            </td>
+            <td>{{ formatNumber(item.stockLevel || 0, 2) }}</td>
+            <td>{{ formatNumber(item.minStockLevel || 0, 2) }}</td>
+            <td>
+              <span
+                class="stock-badge"
+                :class="getStockClass(item)"
+              >
+                {{ getStockLabel(item) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>

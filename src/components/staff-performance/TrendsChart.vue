@@ -1,13 +1,13 @@
 <template>
-    <div class="trends-chart">
-        <apexchart
-            v-if="isMounted"
-            type="line"
-            height="400"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="trends-chart">
+    <apexchart
+      v-if="isMounted"
+      type="line"
+      height="400"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -30,38 +30,36 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Điểm hiệu suất',
-            data: props.trendsData.map(t => ({
-                x: t.period,
-                y: t.performanceScore
-            }))
-        },
-        {
-            name: 'Doanh thu',
-            data: props.trendsData.map(t => ({
-                x: t.period,
-                y: t.revenue
-            }))
-        },
-        {
-            name: 'Số đơn',
-            data: props.trendsData.map(t => ({
-                x: t.period,
-                y: t.ordersCount
-            }))
-        },
-        {
-            name: 'Tỷ lệ chuyên cần',
-            data: props.trendsData.map(t => ({
-                x: t.period,
-                y: t.attendanceRate * 100
-            }))
-        }
-    ]
-})
+const chartSeries = computed(() => [
+    {
+        name: 'Điểm hiệu suất',
+        data: props.trendsData.map(t => ({
+            x: t.period,
+            y: t.performanceScore
+        }))
+    },
+    {
+        name: 'Doanh thu',
+        data: props.trendsData.map(t => ({
+            x: t.period,
+            y: t.revenue
+        }))
+    },
+    {
+        name: 'Số đơn',
+        data: props.trendsData.map(t => ({
+            x: t.period,
+            y: t.ordersCount
+        }))
+    },
+    {
+        name: 'Tỷ lệ chuyên cần',
+        data: props.trendsData.map(t => ({
+            x: t.period,
+            y: t.attendanceRate * 100
+        }))
+    }
+])
 
 const chartOptions = computed(() => ({
     chart: {
@@ -141,7 +139,7 @@ const chartOptions = computed(() => ({
                     fontFamily: 'var(--font-family-sans)',
                     fontSize: '12px'
                 },
-                formatter: (val) => val.toFixed(0) + '%'
+                formatter: (val) => `${val.toFixed(0)  }%`
             },
             max: 100
         }

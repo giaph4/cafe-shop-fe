@@ -1,18 +1,18 @@
 <template>
-    <div class="hourly-demand-chart">
-        <apexchart
-            v-if="isMounted && hourlyAnalysis.length > 0"
-            type="bar"
-            height="350"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-        <EmptyState
-            v-else
-            title="Chưa có dữ liệu"
-            message="Không có dữ liệu phân tích theo giờ"
-        />
-    </div>
+  <div class="hourly-demand-chart">
+    <apexchart
+      v-if="isMounted && hourlyAnalysis.length > 0"
+      type="bar"
+      height="350"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Không có dữ liệu phân tích theo giờ"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -36,18 +36,16 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Doanh thu',
-            data: props.hourlyAnalysis.map(h => h.totalRevenue)
-        },
-        {
-            name: 'Số nhân viên',
-            data: props.hourlyAnalysis.map(h => h.totalStaff)
-        }
-    ]
-})
+const chartSeries = computed(() => [
+    {
+        name: 'Doanh thu',
+        data: props.hourlyAnalysis.map(h => h.totalRevenue)
+    },
+    {
+        name: 'Số nhân viên',
+        data: props.hourlyAnalysis.map(h => h.totalStaff)
+    }
+])
 
 const chartOptions = computed(() => ({
     chart: {

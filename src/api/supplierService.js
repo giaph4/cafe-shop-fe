@@ -1,5 +1,4 @@
 import api from './axios'
-import { buildApiError } from '@/utils/errorHandler'
 import { cleanParams } from './utils'
 import logger from '@/utils/logger'
 
@@ -9,12 +8,12 @@ const BASE_URL = '/api/v1/suppliers'
 
 /**
  * 11.1 Lấy danh sách nhà cung cấp (hỗ trợ phân trang/search)
- * 
+ *
  * Normalize response để xử lý cả array và Page format:
  * - Format 1: Page object { content: [], totalElements, totalPages, ... }
  * - Format 2: Array trực tiếp []
  * - Format 3: Object với data property { data: [] }
- * 
+ *
  * @param {Object} [params={}] - Query parameters
  * @param {number} [params.page] - Số trang (zero-based)
  * @param {number} [params.size] - Kích thước trang
@@ -24,7 +23,7 @@ const BASE_URL = '/api/v1/suppliers'
 export const getSuppliers = async (params = {}) => {
     const query = cleanParams(params)
     const { data } = await api.get(BASE_URL, { params: query })
-    
+
     // Nếu không có data, trả về format chuẩn
     if (!data) {
         // Nếu có params phân trang, trả về Page format
@@ -67,13 +66,13 @@ export const getSuppliers = async (params = {}) => {
             const startIndex = page * size
             const endIndex = startIndex + size
             const paginatedContent = data.slice(startIndex, endIndex)
-            
+
             return {
                 content: paginatedContent,
                 totalElements: data.length,
                 totalPages: Math.ceil(data.length / size),
                 number: page,
-                size: size,
+                size,
                 first: page === 0,
                 last: endIndex >= data.length,
                 numberOfElements: paginatedContent.length
@@ -92,13 +91,13 @@ export const getSuppliers = async (params = {}) => {
             const startIndex = page * size
             const endIndex = startIndex + size
             const paginatedContent = data.data.slice(startIndex, endIndex)
-            
+
             return {
                 content: paginatedContent,
                 totalElements: data.data.length,
                 totalPages: Math.ceil(data.data.length / size),
                 number: page,
-                size: size,
+                size,
                 first: page === 0,
                 last: endIndex >= data.data.length,
                 numberOfElements: paginatedContent.length

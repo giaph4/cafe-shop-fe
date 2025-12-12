@@ -1,66 +1,106 @@
 <template>
-    <div class="page-container container-fluid role-dashboards-page" data-aos="fade-up">
-        <div class="role-dashboards-header">
-            <div class="role-dashboards-header__content">
-                <div class="role-dashboards-header__title-section">
-                    <h2 class="page-title">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard theo vai trò
-                    </h2>
-                    <p class="page-subtitle">Xem tổng quan và các chỉ số quan trọng dựa trên vai trò của bạn trong hệ thống.</p>
-                </div>
-                <div class="role-dashboards-header__actions">
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchDashboard" :disabled="loading">
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="page-container container-fluid role-dashboards-page"
+    data-aos="fade-up"
+  >
+    <div class="role-dashboards-header">
+      <div class="role-dashboards-header__content">
+        <div class="role-dashboards-header__title-section">
+          <h2 class="page-title">
+            <i class="bi bi-speedometer2 me-2" />Dashboard theo vai trò
+          </h2>
+          <p class="page-subtitle">
+            Xem tổng quan và các chỉ số quan trọng dựa trên vai trò của bạn trong hệ thống.
+          </p>
         </div>
-
-        <div class="card tabs-card mb-4">
-            <div class="card-body">
-                <ul class="nav nav-pills reports-tabs mb-3" role="tablist">
-                    <li class="nav-item" v-for="tab in availableTabs" :key="tab.key" role="presentation">
-                        <button
-                            type="button"
-                            class="nav-link"
-                            :class="{ active: activeTab === tab.key }"
-                            @click="activeTab = tab.key"
-                        >
-                            <i :class="[tab.icon, 'me-2']"></i>{{ tab.label }}
-                        </button>
-                    </li>
-                </ul>
-
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-3 text-muted">Đang tải dữ liệu...</p>
-                </div>
-
-                <div v-else-if="error" class="error-message mb-0">{{ error }}</div>
-
-                <div v-else class="tab-content">
-                    <AdminDashboardTab
-                        v-if="activeTab === 'admin' && isAdmin"
-                        :dashboard-data="dashboardData"
-                        :range="range"
-                        @update-range="handleRangeUpdate"
-                    />
-
-                    <ManagerDashboardTab
-                        v-else-if="activeTab === 'manager' && isManager"
-                        :dashboard-data="dashboardData"
-                    />
-
-                    <StaffDashboardTab
-                        v-else-if="activeTab === 'staff' && isStaff"
-                        :dashboard-data="dashboardData"
-                    />
-                </div>
-            </div>
+        <div class="role-dashboards-header__actions">
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchDashboard"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
         </div>
+      </div>
     </div>
+
+    <div class="card tabs-card mb-4">
+      <div class="card-body">
+        <ul
+          class="nav nav-pills reports-tabs mb-3"
+          role="tablist"
+        >
+          <li
+            v-for="tab in availableTabs"
+            :key="tab.key"
+            class="nav-item"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="nav-link"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              <i :class="[tab.icon, 'me-2']" />{{ tab.label }}
+            </button>
+          </li>
+        </ul>
+
+        <div
+          v-if="loading"
+          class="text-center py-5"
+        >
+          <div
+            class="spinner-border text-primary"
+            role="status"
+          />
+          <p class="mt-3 text-muted">
+            Đang tải dữ liệu...
+          </p>
+        </div>
+
+        <div
+          v-else-if="error"
+          class="error-message mb-0"
+        >
+          {{ error }}
+        </div>
+
+        <div
+          v-else
+          class="tab-content"
+        >
+          <AdminDashboardTab
+            v-if="activeTab === 'admin' && isAdmin"
+            :dashboard-data="dashboardData"
+            :range="range"
+            @update-range="handleRangeUpdate"
+          />
+
+          <ManagerDashboardTab
+            v-else-if="activeTab === 'manager' && isManager"
+            :dashboard-data="dashboardData"
+          />
+
+          <StaffDashboardTab
+            v-else-if="activeTab === 'staff' && isStaff"
+            :dashboard-data="dashboardData"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -90,7 +130,7 @@ const isStaff = computed(() => authStore.isStaff)
 const availableTabs = computed(() => {
     const tabs = []
     const roles = authStore.userRoles || []
-    
+
     if (roles.includes('ROLE_ADMIN')) {
         tabs.push({
             key: 'admin',
@@ -98,7 +138,7 @@ const availableTabs = computed(() => {
             icon: 'bi bi-shield-check'
         })
     }
-    
+
     if (roles.includes('ROLE_MANAGER')) {
         tabs.push({
             key: 'manager',
@@ -106,7 +146,7 @@ const availableTabs = computed(() => {
             icon: 'bi bi-person-badge'
         })
     }
-    
+
     if (roles.includes('ROLE_STAFF')) {
         tabs.push({
             key: 'staff',
@@ -114,7 +154,7 @@ const availableTabs = computed(() => {
             icon: 'bi bi-person'
         })
     }
-    
+
     return tabs
 })
 
@@ -123,14 +163,14 @@ const fetchDashboard = async () => {
     if (!activeTab.value) {
         return
     }
-    
+
     loading.value = true
     error.value = ''
-    
+
     try {
         const roles = authStore.userRoles || []
         let data = null
-        
+
         if (activeTab.value === 'admin' && roles.includes('ROLE_ADMIN')) {
             const params = {}
             if (range.value) {
@@ -160,7 +200,7 @@ const fetchDashboard = async () => {
         } else if (activeTab.value === 'staff' && roles.includes('ROLE_STAFF')) {
             data = await getStaffDashboard(null)
         }
-        
+
         dashboardData.value = data
     } catch (err) {
         const errorMessage = handleError(err, 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.')

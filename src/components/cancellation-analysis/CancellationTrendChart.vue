@@ -1,27 +1,29 @@
 <template>
-    <div class="cancellation-trend-chart">
-        <apexchart
-            v-if="isMounted && dailyTrend.length > 0"
-            type="line"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-        <EmptyState
-            v-else
-            title="Chưa có dữ liệu"
-            message="Không có dữ liệu xu hướng hủy đơn"
-        />
-    </div>
+  <div class="cancellation-trend-chart">
+    <apexchart
+      v-if="isMounted && dailyTrend.length > 0"
+      type="line"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Không có dữ liệu xu hướng hủy đơn"
+    />
+  </div>
 </template>
 
 <script setup>
 import { computed, ref, onMounted, nextTick } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { useChartOptions } from '@/composables/useChartOptions'
 
 const apexchart = VueApexCharts
 const isMounted = ref(false)
+const { createComputedChartOptions } = useChartOptions()
 
 onMounted(async () => {
     await nextTick()
@@ -36,55 +38,36 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Số đơn hủy',
-            data: props.dailyTrend.map(d => ({
-                x: d.date,
-                y: d.count
-            }))
-        },
-        {
-            name: 'Doanh thu mất',
-            data: props.dailyTrend.map(d => ({
-                x: d.date,
-                y: d.revenue
-            }))
-        }
-    ]
-})
-
-const chartOptions = computed(() => ({
-    chart: {
-        type: 'line',
-        height: 300,
-        toolbar: {
-            show: true
-        }
+const chartSeries = computed(() => [
+    {
+        name: 'Số đơn hủy',
+        data: props.dailyTrend.map(d => ({
+            x: d.date,
+            y: d.count
+        }))
     },
+    {
+        name: 'Doanh thu mất',
+        data: props.dailyTrend.map(d => ({
+            x: d.date,
+            y: d.revenue
+        }))
+    }
+])
+
+const baseChartOptions = createComputedChartOptions({
+    type: 'line',
+    height: 300,
+    colors: ['var(--color-danger)', 'var(--color-warning)'],
+    hasLegend: true,
     stroke: {
         curve: 'smooth',
         width: [2, 3]
     },
-    dataLabels: {
-        enabled: false
-    },
     xaxis: {
         type: 'datetime',
         labels: {
-            format: 'dd/MM',
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
-            }
-        },
-        axisBorder: {
-            color: 'var(--color-border)'
-        },
-        axisTicks: {
-            color: 'var(--color-border)'
+            format: 'dd/MM'
         }
     },
     yaxis: [
@@ -96,13 +79,6 @@ const chartOptions = computed(() => ({
                     fontFamily: 'var(--font-family-sans)',
                     fontSize: '12px',
                     fontWeight: 600
-                }
-            },
-            labels: {
-                style: {
-                    colors: 'var(--color-text)',
-                    fontFamily: 'var(--font-family-sans)',
-                    fontSize: '12px'
                 }
             }
         },
@@ -119,24 +95,17 @@ const chartOptions = computed(() => ({
             },
             labels: {
                 formatter: (value) => {
-                    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
-                    if (value >= 1000) return (value / 1000).toFixed(1) + 'K'
+                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
+                    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`
                     return value.toFixed(0)
-                },
-                style: {
-                    colors: 'var(--color-text)',
-                    fontFamily: 'var(--font-family-sans)',
-                    fontSize: '12px'
                 }
             }
         }
     ],
     tooltip: {
-        shared: true,
-        intersect: false,
         y: {
             formatter: (value, { seriesIndex }) => {
-                if (seriesIndex === 0) return value + ' đơn'
+                if (seriesIndex === 0) return `${value} đơn`
                 return new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
                     currency: 'VND'
@@ -146,22 +115,10 @@ const chartOptions = computed(() => ({
         x: {
             format: 'dd/MM/yyyy'
         }
-    },
-    legend: {
-        position: 'top',
-        horizontalAlign: 'right',
-        fontFamily: 'var(--font-family-sans)',
-        fontSize: '12px',
-        labels: {
-            colors: 'var(--color-text)'
-        }
-    },
-    grid: {
-        borderColor: 'var(--color-border)',
-        strokeDashArray: 4
-    },
-    colors: ['var(--color-danger)', 'var(--color-warning)']
-}))
+    }
+})
+
+const chartOptions = computed(() => baseChartOptions.value)
 </script>
 
 <style scoped>

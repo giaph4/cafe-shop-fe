@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getProducts, getProductById } from '@/api/productService'
+import { getProducts } from '@/api/productService'
 import logger from '@/utils/logger'
 
 /**
@@ -19,24 +19,16 @@ export const useProductStore = defineStore('products', () => {
     const lastUpdated = ref(null)
 
     // Computed: Get product by ID
-    const getProductById = (id) => {
-        return productsMap.value.get(id) || null
-    }
+    const getProductById = (id) => productsMap.value.get(id) || null
 
     // Computed: Get products by category
-    const getProductsByCategory = (categoryId) => {
-        return products.value.filter(product => product?.categoryId === categoryId)
-    }
+    const getProductsByCategory = (categoryId) => products.value.filter(product => product?.categoryId === categoryId)
 
     // Computed: Get active products
-    const activeProducts = computed(() => {
-        return products.value.filter(product => product?.status === 'ACTIVE' || !product?.status)
-    })
+    const activeProducts = computed(() => products.value.filter(product => product?.status === 'ACTIVE' || !product?.status))
 
     // Computed: Get products by status
-    const getProductsByStatus = (status) => {
-        return products.value.filter(product => product?.status === status)
-    }
+    const getProductsByStatus = (status) => products.value.filter(product => product?.status === status)
 
     /**
      * Load products from API
@@ -60,10 +52,10 @@ export const useProductStore = defineStore('products', () => {
         try {
             const data = await getProducts(params)
             const productsArray = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
-            
+
             // Update products list
             products.value = productsArray
-            
+
             // Update map
             productsArray.forEach(product => {
                 if (product?.id) {
@@ -106,13 +98,13 @@ export const useProductStore = defineStore('products', () => {
             if (product?.id) {
                 // Update cache
                 productsMap.value.set(product.id, product)
-                
+
                 // Update in list if exists
                 const index = products.value.findIndex(p => p.id === product.id)
                 if (index !== -1) {
                     products.value[index] = product
                 }
-                
+
                 lastUpdated.value = Date.now()
             }
             return product

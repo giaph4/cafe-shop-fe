@@ -109,7 +109,6 @@ export const useShiftSessionStore = defineStore('shiftSession', () => {
             setCurrentSession(session)
             return session
         } catch (error) {
-            // Service đã xử lý 404 và return null, nên chỉ cần xử lý các lỗi khác
             currentError.value = error
             setCurrentSession(null)
             throw error

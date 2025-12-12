@@ -1,164 +1,274 @@
 <template>
-    <div class="sales-analysis">
-        <div class="filters card card-inline">
-            <div class="card-body d-flex flex-wrap gap-3 align-items-end">
-                <div>
-                    <label class="form-label mb-1">Xếp hạng theo</label>
-                    <select class="form-select" :value="sortBy" @change="onSortChange($event.target.value)">
-                        <option value="quantity">Số lượng bán</option>
-                        <option value="revenue">Doanh thu</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label mb-1">Số lượng sản phẩm top</label>
-                    <select class="form-select" :value="topLimit" @change="onTopChange($event.target.value)">
-                        <option v-for="option in topOptions" :key="option" :value="option">{{ option === 'all' ? 'Tất cả' : `Top ${option}` }}</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label mb-1">Loại biểu đồ</label>
-                    <select class="form-select" :value="productChartType" @change="onProductChartType($event.target.value)">
-                        <option value="bar">Bar</option>
-                        <option value="horizontalBar">Bar ngang</option>
-                        <option value="radar">Radar</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label mb-1">Loại biểu đồ danh mục</label>
-                    <select class="form-select" :value="categoryChartType" @change="onCategoryChartType($event.target.value)">
-                        <option value="donut">Donut</option>
-                        <option value="pie">Pie</option>
-                        <option value="bar">Bar</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label mb-1">Sắp xếp chi tiết</label>
-                    <select class="form-select" :value="tableSort" @change="onTableSort($event.target.value)">
-                        <option value="quantity-desc">Số lượng ↓</option>
-                        <option value="quantity-asc">Số lượng ↑</option>
-                        <option value="revenue-desc">Doanh thu ↓</option>
-                        <option value="revenue-asc">Doanh thu ↑</option>
-                        <option value="name-asc">Tên A-Z</option>
-                        <option value="name-desc">Tên Z-A</option>
-                    </select>
-                </div>
-                <p class="text-muted mb-0">Tổng doanh thu: {{ formatCurrency(productSummary?.totalRevenueGenerated ?? 0) }} · Tổng sản phẩm: {{ formatNumber(productSummary?.totalQuantitySold ?? 0) }}</p>
-            </div>
+  <div class="sales-analysis">
+    <div class="filters card card-inline">
+      <div class="card-body d-flex flex-wrap gap-3 align-items-end">
+        <div>
+          <label class="form-label mb-1">Xếp hạng theo</label>
+          <select
+            class="form-select"
+            :value="sortBy"
+            @change="onSortChange($event.target.value)"
+          >
+            <option value="quantity">
+              Số lượng bán
+            </option>
+            <option value="revenue">
+              Doanh thu
+            </option>
+          </select>
         </div>
-
-        <div class="chart-grid">
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Top sản phẩm bán chạy</h5>
-                        <p class="text-muted mb-0">Theo {{ sortBy === 'revenue' ? 'doanh thu' : 'số lượng' }}</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart 
-                        v-if="productChartReady && safeProductSeries && safeProductOptions"
-                        :key="`product-${productChartKey}`"
-                        :type="resolvedProductChartType" 
-                        height="340" 
-                        :series="safeProductSeries" 
-                        :options="safeProductOptions" 
-                    />
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-graph-up"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card chart-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Doanh thu theo danh mục</h5>
-                    <p class="text-muted mb-0">Phân loại theo nhóm sản phẩm</p>
-                </div>
-                <div class="card-body">
-                    <ApexChart 
-                        v-if="categoryChartReady && safeCategorySeries && safeCategoryOptions"
-                        :key="`category-${categoryChartKey}`"
-                        :type="resolvedCategoryChartType" 
-                        height="320" 
-                        :series="safeCategorySeries" 
-                        :options="safeCategoryOptions" 
-                    />
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-pie-chart"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                </div>
-            </div>
+        <div>
+          <label class="form-label mb-1">Số lượng sản phẩm top</label>
+          <select
+            class="form-select"
+            :value="topLimit"
+            @change="onTopChange($event.target.value)"
+          >
+            <option
+              v-for="option in topOptions"
+              :key="option"
+              :value="option"
+            >
+              {{ option === 'all' ? 'Tất cả' : `Top ${option}` }}
+            </option>
+          </select>
         </div>
-
-        <div class="card table-card">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Thứ hạng</th>
-                            <th>Sản phẩm</th>
-                            <th class="text-end">Số lượng</th>
-                            <th class="text-end">Doanh thu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in sortedTableItems" :key="item.productId">
-                            <td><span class="badge bg-primary-subtle text-primary">#{{ item.rank }}</span></td>
-                            <td class="fw-semibold">{{ item.productName }}</td>
-                            <td class="text-end">{{ formatNumber(item.totalQuantitySold) }}</td>
-                            <td class="text-end">{{ formatCurrency(item.totalRevenueGenerated) }}</td>
-                        </tr>
-                        <tr v-if="!sortedTableItems.length">
-                            <td colspan="4" class="text-center text-muted py-4">Chưa có dữ liệu bán hàng.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div>
+          <label class="form-label mb-1">Loại biểu đồ</label>
+          <select
+            class="form-select"
+            :value="productChartType"
+            @change="onProductChartType($event.target.value)"
+          >
+            <option value="bar">
+              Bar
+            </option>
+            <option value="horizontalBar">
+              Bar ngang
+            </option>
+            <option value="radar">
+              Radar
+            </option>
+          </select>
         </div>
-
-        <div class="chart-grid alternating-grid">
-            <div class="card chart-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Doanh thu theo sản phẩm (stacked vs tổng)</h5>
-                    <p class="text-muted mb-0">So sánh top sản phẩm với phần còn lại</p>
-                </div>
-                <div class="card-body">
-                    <ApexChart 
-                        v-if="stackedChartReady && safeStackedSeries && safeStackedOptions"
-                        type="bar" 
-                        height="320" 
-                        :series="safeStackedSeries" 
-                        :options="safeStackedOptions" 
-                    />
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-bar-chart"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                </div>
-            </div>
-            <div class="card chart-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Doanh thu theo khung giờ</h5>
-                    <p class="text-muted mb-0">Phủ đủ 24 giờ trong giai đoạn</p>
-                </div>
-                <div class="card-body">
-                    <ApexChart 
-                        v-if="hourlyChartReady && safeHourlySeries && safeHourlyOptions"
-                        type="area" 
-                        height="320" 
-                        :series="safeHourlySeries" 
-                        :options="safeHourlyOptions" 
-                    />
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-clock-history"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                </div>
-            </div>
+        <div>
+          <label class="form-label mb-1">Loại biểu đồ danh mục</label>
+          <select
+            class="form-select"
+            :value="categoryChartType"
+            @change="onCategoryChartType($event.target.value)"
+          >
+            <option value="donut">
+              Donut
+            </option>
+            <option value="pie">
+              Pie
+            </option>
+            <option value="bar">
+              Bar
+            </option>
+          </select>
         </div>
+        <div>
+          <label class="form-label mb-1">Sắp xếp chi tiết</label>
+          <select
+            class="form-select"
+            :value="tableSort"
+            @change="onTableSort($event.target.value)"
+          >
+            <option value="quantity-desc">
+              Số lượng ↓
+            </option>
+            <option value="quantity-asc">
+              Số lượng ↑
+            </option>
+            <option value="revenue-desc">
+              Doanh thu ↓
+            </option>
+            <option value="revenue-asc">
+              Doanh thu ↑
+            </option>
+            <option value="name-asc">
+              Tên A-Z
+            </option>
+            <option value="name-desc">
+              Tên Z-A
+            </option>
+          </select>
+        </div>
+        <p class="text-muted mb-0">
+          Tổng doanh thu: {{ formatCurrency(productSummary?.totalRevenueGenerated ?? 0) }} · Tổng sản phẩm: {{ formatNumber(productSummary?.totalQuantitySold ?? 0) }}
+        </p>
+      </div>
     </div>
+
+    <div class="chart-grid">
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Top sản phẩm bán chạy
+            </h5>
+            <p class="text-muted mb-0">
+              Theo {{ sortBy === 'revenue' ? 'doanh thu' : 'số lượng' }}
+            </p>
+          </div>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="productChartReady && safeProductSeries && safeProductOptions"
+            :key="`product-${productChartKey}`"
+            :type="resolvedProductChartType"
+            height="340"
+            :series="safeProductSeries"
+            :options="safeProductOptions"
+          />
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-graph-up" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Doanh thu theo danh mục
+          </h5>
+          <p class="text-muted mb-0">
+            Phân loại theo nhóm sản phẩm
+          </p>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="categoryChartReady && safeCategorySeries && safeCategoryOptions"
+            :key="`category-${categoryChartKey}`"
+            :type="resolvedCategoryChartType"
+            height="320"
+            :series="safeCategorySeries"
+            :options="safeCategoryOptions"
+          />
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-pie-chart" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Thứ hạng</th>
+              <th>Sản phẩm</th>
+              <th class="text-end">
+                Số lượng
+              </th>
+              <th class="text-end">
+                Doanh thu
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in sortedTableItems"
+              :key="item.productId"
+            >
+              <td><span class="badge bg-primary-subtle text-primary">#{{ item.rank }}</span></td>
+              <td class="fw-semibold">
+                {{ item.productName }}
+              </td>
+              <td class="text-end">
+                {{ formatNumber(item.totalQuantitySold) }}
+              </td>
+              <td class="text-end">
+                {{ formatCurrency(item.totalRevenueGenerated) }}
+              </td>
+            </tr>
+            <tr v-if="!sortedTableItems.length">
+              <td
+                colspan="4"
+                class="text-center text-muted py-4"
+              >
+                Chưa có dữ liệu bán hàng.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="chart-grid alternating-grid">
+      <div class="card chart-card">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Doanh thu theo sản phẩm (stacked vs tổng)
+          </h5>
+          <p class="text-muted mb-0">
+            So sánh top sản phẩm với phần còn lại
+          </p>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="stackedChartReady && safeStackedSeries && safeStackedOptions"
+            type="bar"
+            height="320"
+            :series="safeStackedSeries"
+            :options="safeStackedOptions"
+          />
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-bar-chart" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="card chart-card">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Doanh thu theo khung giờ
+          </h5>
+          <p class="text-muted mb-0">
+            Phủ đủ 24 giờ trong giai đoạn
+          </p>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="hourlyChartReady && safeHourlySeries && safeHourlyOptions"
+            type="area"
+            height="320"
+            :series="safeHourlySeries"
+            :options="safeHourlyOptions"
+          />
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-clock-history" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -228,10 +338,10 @@ const validateSeries = (series, chartType) => {
     if (!series) return false
     if (!Array.isArray(series)) return false
     if (series.length === 0) return false
-    
+
     const first = series[0]
     if (first === undefined || first === null) return false
-    
+
     // For pie/donut - array of numbers
     if (chartType === 'pie' || chartType === 'donut') {
         return series.every(v => {
@@ -239,7 +349,7 @@ const validateSeries = (series, chartType) => {
             return typeof num === 'number' && Number.isFinite(num) && !isNaN(num) && num >= 0
         }) && series.some(v => Number(v) > 0)
     }
-    
+
     // For bar/line/area/radar - array of objects with data
     if (typeof first === 'object') {
         return series.every(item => {
@@ -253,7 +363,7 @@ const validateSeries = (series, chartType) => {
             })
         })
     }
-    
+
     return false
 }
 
@@ -264,17 +374,17 @@ const createSafeSeries = (rawSeries, chartType) => {
             if (chartType === 'pie' || chartType === 'donut') return [0]
             return [{ name: 'Doanh thu', data: [0] }]
         }
-        
+
         if (!Array.isArray(rawSeries)) {
             if (chartType === 'pie' || chartType === 'donut') return [0]
             return [{ name: 'Doanh thu', data: [0] }]
         }
-        
+
         if (rawSeries.length === 0) {
             if (chartType === 'pie' || chartType === 'donut') return [0]
             return [{ name: 'Doanh thu', data: [0] }]
         }
-        
+
         // For pie/donut
         if (chartType === 'pie' || chartType === 'donut') {
             const numbers = rawSeries
@@ -285,26 +395,26 @@ const createSafeSeries = (rawSeries, chartType) => {
                 .filter(v => v > 0)
             return numbers.length > 0 ? numbers : [0]
         }
-        
+
         // For bar/line/area/radar
         const objects = rawSeries.map(item => {
             if (!item || typeof item !== 'object') {
                 return { name: 'Doanh thu', data: [0] }
             }
-            
+
             const data = Array.isArray(item.data) ? item.data : []
             const validData = data
                 .map(v => {
                     const num = Number(v)
                     return Number.isFinite(num) && !isNaN(num) && num >= 0 ? num : 0
                 })
-            
+
             return {
                 name: String(item.name || 'Doanh thu'),
                 data: validData.length > 0 ? validData : [0]
             }
         })
-        
+
         return objects.length > 0 ? objects : [{ name: 'Doanh thu', data: [0] }]
     } catch (error) {
         console.error('Error creating safe series:', error)
@@ -319,13 +429,13 @@ const createSafeOptions = (rawOptions, chartType) => {
         if (!rawOptions || typeof rawOptions !== 'object') {
             return createBaseOptions(chartType)
         }
-        
+
         const options = deepClone(rawOptions)
-        
+
         // Ensure chart.type exists
         if (!options.chart) options.chart = {}
         options.chart.type = chartType
-        
+
         // Handle xaxis based on chart type
         if (chartType === 'pie' || chartType === 'donut') {
             // Remove xaxis completely for pie/donut
@@ -337,7 +447,7 @@ const createSafeOptions = (rawOptions, chartType) => {
                 options.xaxis.categories = []
             }
         }
-        
+
         return options
     } catch (error) {
         console.error('Error creating safe options:', error)
@@ -350,7 +460,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
     const isBar = type === 'bar'
     const isCircular = ['pie', 'donut', 'radialBar'].includes(type)
     const dark = isDark.value
-    
+
     const base = {
         chart: {
             type,
@@ -368,16 +478,16 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
             padding: { top: 8, bottom: 8, left: 12, right: 12 }
         },
         colors,
-        legend: { 
-            position: 'bottom', 
-            labels: { colors: dark ? '#cbd5f5' : '#475569' } 
+        legend: {
+            position: 'bottom',
+            labels: { colors: dark ? '#cbd5f5' : '#475569' }
         },
         tooltip: {
             theme: dark ? 'dark' : 'light',
             y: { formatter: (value) => value ?? 0 }
         }
     }
-    
+
     // Only add xaxis for non-circular charts
     if (!isCircular) {
         base.xaxis = {
@@ -395,7 +505,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
             }
         }
     }
-    
+
     base.yaxis = {
         labels: {
             colors: dark ? '#cbd5f5' : '#64748b',
@@ -403,7 +513,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
             formatter: (value) => value ?? 0
         }
     }
-    
+
     base.fill = isBar
         ? { type: 'solid', opacity: dark ? 0.85 : 0.95 }
         : isCircular
@@ -417,7 +527,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
                     stops: [0, 90, 100]
                 }
             }
-    
+
     base.plotOptions = {
         bar: {
             horizontal: false,
@@ -426,7 +536,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
             distributed: false
         }
     }
-    
+
     return base
 }
 
@@ -475,15 +585,15 @@ const productChartSeries = computed(() => {
         if (!Array.isArray(data) || data.length === 0) {
             return [{ name: 'Doanh thu', data: [0] }]
         }
-        
+
         const isRevenue = props.sortBy === 'revenue'
         const values = data.map(item => {
-            const val = isRevenue 
-                ? Number(item?.totalRevenueGenerated) 
+            const val = isRevenue
+                ? Number(item?.totalRevenueGenerated)
                 : Number(item?.totalQuantitySold)
             return Number.isFinite(val) && !isNaN(val) && val >= 0 ? val : 0
         })
-        
+
         return [{
             name: isRevenue ? 'Doanh thu' : 'Số lượng',
             data: values.length > 0 ? values : [0]
@@ -500,7 +610,7 @@ const productChartOptions = computed(() => {
         const categories = applied.length > 0
             ? applied.map((item, idx) => String(item?.productName || `SP #${idx + 1}`))
             : []
-        
+
         const isRevenue = props.sortBy === 'revenue'
         const base = createBaseOptions(resolvedProductChartType.value, isRevenue ? ['#1d4ed8'] : ['#16a34a'])
         const formatter = (val) => {
@@ -509,9 +619,9 @@ const productChartOptions = computed(() => {
                 ? (isRevenue ? formatCurrency(num) : formatNumber(num))
                 : (isRevenue ? formatCurrency(0) : formatNumber(0))
         }
-        
+
         const isRadar = resolvedProductChartType.value === 'radar'
-        
+
         const options = {
             ...base,
             yaxis: {
@@ -533,7 +643,7 @@ const productChartOptions = computed(() => {
                 }
             }
         }
-        
+
         // Handle xaxis
         if (isRadar) {
             delete options.xaxis
@@ -547,7 +657,7 @@ const productChartOptions = computed(() => {
                 }
             }
         }
-        
+
         return options
     } catch {
         return createBaseOptions(resolvedProductChartType.value)
@@ -564,18 +674,18 @@ const categoryChartSeries = computed(() => {
             }
             return [0]
         }
-        
+
         const data = sales
             .map(item => {
                 const val = Number(item?.totalRevenue)
                 return Number.isFinite(val) && !isNaN(val) && val > 0 ? val : 0
             })
             .filter(v => v > 0)
-        
+
         if (categoryChartType.value === 'pie' || categoryChartType.value === 'donut') {
             return data.length > 0 ? data : [0]
         }
-        
+
         return [{
             name: 'Doanh thu',
             data: data.length > 0 ? data : [0]
@@ -595,11 +705,11 @@ const categoryChartOptions = computed(() => {
         const labels = data.length > 0
             ? data.map((item, idx) => String(item?.categoryName || `DM #${idx + 1}`))
             : []
-        
+
         const isBar = categoryChartType.value === 'bar'
         const isCircular = ['pie', 'donut'].includes(resolvedCategoryChartType.value)
         const base = createBaseOptions(resolvedCategoryChartType.value, VIBRANT_PALETTE)
-        
+
         const options = {
             ...base,
             dataLabels: {
@@ -620,7 +730,7 @@ const categoryChartOptions = computed(() => {
                 }
             }
         }
-        
+
         if (isCircular) {
             options.labels = labels.length > 0 ? labels : ['Không có dữ liệu']
             delete options.xaxis
@@ -630,7 +740,7 @@ const categoryChartOptions = computed(() => {
                 categories: labels.length > 0 ? labels : ['Không có dữ liệu']
             }
         }
-        
+
         return options
     } catch {
         return createBaseOptions(resolvedCategoryChartType.value, VIBRANT_PALETTE)
@@ -645,13 +755,13 @@ const stackedChartSeries = computed(() => {
             const val = Number(item?.totalRevenueGenerated)
             return sum + (Number.isFinite(val) && !isNaN(val) && val >= 0 ? val : 0)
         }, 0)
-        
+
         const totalRevenue = Number(props.productSummary?.totalRevenueGenerated)
-        const finalTotal = Number.isFinite(totalRevenue) && !isNaN(totalRevenue) && totalRevenue >= 0 
-            ? totalRevenue 
+        const finalTotal = Number.isFinite(totalRevenue) && !isNaN(totalRevenue) && totalRevenue >= 0
+            ? totalRevenue
             : topRevenue
         const remainder = Math.max(finalTotal - topRevenue, 0)
-        
+
         return [
             { name: 'Top sản phẩm', data: [topRevenue >= 0 ? topRevenue : 0] },
             { name: 'Phần còn lại', data: [remainder >= 0 ? remainder : 0] }
@@ -712,7 +822,7 @@ const hourlyChartSeries = computed(() => {
     try {
         const hours = Array.from({ length: 24 }, (_, i) => i)
         const mapped = new Map(hours.map(h => [h, 0]))
-        
+
         const sales = Array.isArray(props.hourlySales) ? props.hourlySales : []
         sales.forEach(item => {
             const hour = Number(item?.hour)
@@ -723,12 +833,12 @@ const hourlyChartSeries = computed(() => {
                 mapped.set(hour, current + revNum)
             }
         })
-        
+
         const data = hours.map(h => {
             const val = mapped.get(h) || 0
             return Number.isFinite(val) && !isNaN(val) && val >= 0 ? val : 0
         })
-        
+
         return [{
             name: 'Doanh thu',
             data: Array.isArray(data) && data.length === 24 ? data : Array.from({ length: 24 }, () => 0)
@@ -747,7 +857,7 @@ const hourlyChartOptions = computed(() => {
         const base = createBaseOptions('area', ['#2563eb'])
         const hours = Array.from({ length: 24 }, (_, i) => i)
         const categories = hours.map(h => `${String(h).padStart(2, '0')}:00`)
-        
+
         return {
             ...base,
             xaxis: {
@@ -784,16 +894,16 @@ const hourlyChartOptions = computed(() => {
 const updateProductChart = async () => {
     productChartReady.value = false
     productChartKey.value++
-    
+
     await nextTick()
-    
+
     const series = createSafeSeries(productChartSeries.value, resolvedProductChartType.value)
     const options = createSafeOptions(productChartOptions.value, resolvedProductChartType.value)
-    
+
     if (validateSeries(series, resolvedProductChartType.value)) {
         safeProductSeries.value = deepClone(series)
         safeProductOptions.value = deepClone(options)
-        
+
         await nextTick()
         productChartReady.value = true
     } else {
@@ -805,16 +915,16 @@ const updateProductChart = async () => {
 const updateCategoryChart = async () => {
     categoryChartReady.value = false
     categoryChartKey.value++
-    
+
     await nextTick()
-    
+
     const series = createSafeSeries(categoryChartSeries.value, resolvedCategoryChartType.value)
     const options = createSafeOptions(categoryChartOptions.value, resolvedCategoryChartType.value)
-    
+
     if (validateSeries(series, resolvedCategoryChartType.value)) {
         safeCategorySeries.value = deepClone(series)
         safeCategoryOptions.value = deepClone(options)
-        
+
         await nextTick()
         categoryChartReady.value = true
     } else {
@@ -825,16 +935,16 @@ const updateCategoryChart = async () => {
 
 const updateStackedChart = async () => {
     stackedChartReady.value = false
-    
+
     await nextTick()
-    
+
     const series = createSafeSeries(stackedChartSeries.value, 'bar')
     const options = createSafeOptions(stackedChartOptions.value, 'bar')
-    
+
     if (validateSeries(series, 'bar')) {
         safeStackedSeries.value = deepClone(series)
         safeStackedOptions.value = deepClone(options)
-        
+
         await nextTick()
         stackedChartReady.value = true
     } else {
@@ -845,16 +955,16 @@ const updateStackedChart = async () => {
 
 const updateHourlyChart = async () => {
     hourlyChartReady.value = false
-    
+
     await nextTick()
-    
+
     const series = createSafeSeries(hourlyChartSeries.value, 'area')
     const options = createSafeOptions(hourlyChartOptions.value, 'area')
-    
+
     if (validateSeries(series, 'area')) {
         safeHourlySeries.value = deepClone(series)
         safeHourlyOptions.value = deepClone(options)
-        
+
         await nextTick()
         hourlyChartReady.value = true
     } else {
@@ -864,7 +974,7 @@ const updateHourlyChart = async () => {
 }
 
 // Watch for changes and update charts
-watch(() => [productChartSeries.value, productChartOptions.value, resolvedProductChartType.value], 
+watch(() => [productChartSeries.value, productChartOptions.value, resolvedProductChartType.value],
     () => updateProductChart(),
     { deep: true }
 )

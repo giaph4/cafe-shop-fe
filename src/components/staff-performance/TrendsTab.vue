@@ -1,44 +1,66 @@
 <template>
-    <div class="trends-tab">
-        <div v-if="!selectedStaffId" class="alert alert-info">
-            <i class="bi bi-info-circle me-2"></i>
-            Vui lòng chọn nhân viên ở bộ lọc để xem xu hướng
-        </div>
-        <div v-else>
-            <div class="card standard-card mb-4">
-                <div class="card-header standard-card-header">
-                    <h6 class="card-title mb-0">Xu hướng hiệu suất</h6>
-                    <div class="d-flex gap-2">
-                        <select class="form-select form-select-sm clean-input" v-model="period" style="width: auto;">
-                            <option value="week">Theo tuần</option>
-                            <option value="month">Theo tháng</option>
-                        </select>
-                        <button
-                            class="btn btn-flat btn-flat--outline btn-sm"
-                            @click="loadTrends"
-                            :disabled="loading"
-                        >
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                            Tải lại
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <TrendsChart v-if="trendsData && trendsData.length > 0" :trends-data="trendsData" />
-                    <EmptyState
-                        v-else
-                        title="Chưa có dữ liệu"
-                        message="Chưa có dữ liệu xu hướng"
-                    >
-                        <template #icon>
-                            <i class="bi bi-graph-up"></i>
-                        </template>
-                    </EmptyState>
-                </div>
-            </div>
-        </div>
+  <div class="trends-tab">
+    <div
+      v-if="!selectedStaffId"
+      class="alert alert-info"
+    >
+      <i class="bi bi-info-circle me-2" />
+      Vui lòng chọn nhân viên ở bộ lọc để xem xu hướng
     </div>
+    <div v-else>
+      <div class="card standard-card mb-4">
+        <div class="card-header standard-card-header">
+          <h6 class="card-title mb-0">
+            Xu hướng hiệu suất
+          </h6>
+          <div class="d-flex gap-2">
+            <select
+              v-model="period"
+              class="form-select form-select-sm clean-input"
+              style="width: auto;"
+            >
+              <option value="week">
+                Theo tuần
+              </option>
+              <option value="month">
+                Theo tháng
+              </option>
+            </select>
+            <button
+              class="btn btn-flat btn-flat--outline btn-sm"
+              :disabled="loading"
+              @click="loadTrends"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-arrow-clockwise me-2"
+              />
+              Tải lại
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <TrendsChart
+            v-if="trendsData && trendsData.length > 0"
+            :trends-data="trendsData"
+          />
+          <EmptyState
+            v-else
+            title="Chưa có dữ liệu"
+            message="Chưa có dữ liệu xu hướng"
+          >
+            <template #icon>
+              <i class="bi bi-graph-up" />
+            </template>
+          </EmptyState>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -62,11 +84,11 @@ const period = ref('week')
 
 const loadTrends = async () => {
     if (!props.selectedStaffId) return
-    
+
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - 90)
-    
+
     try {
         await store.getTrends({
             userId: props.selectedStaffId,

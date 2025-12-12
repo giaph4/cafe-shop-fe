@@ -1,27 +1,29 @@
 <template>
-    <div class="cancellation-by-hour-chart">
-        <apexchart
-            v-if="isMounted && hourlyAnalysis.length > 0"
-            type="bar"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-        <EmptyState
-            v-else
-            title="Chưa có dữ liệu"
-            message="Không có dữ liệu hủy đơn theo giờ"
-        />
-    </div>
+  <div class="cancellation-by-hour-chart">
+    <apexchart
+      v-if="isMounted && hourlyAnalysis.length > 0"
+      type="bar"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Không có dữ liệu hủy đơn theo giờ"
+    />
+  </div>
 </template>
 
 <script setup>
 import { computed, ref, onMounted, nextTick } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { useChartOptions } from '@/composables/useChartOptions'
 
 const apexchart = VueApexCharts
 const isMounted = ref(false)
+const { createComputedChartOptions } = useChartOptions()
 
 onMounted(async () => {
     await nextTick()
@@ -36,23 +38,18 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Số đơn hủy',
-            data: props.hourlyAnalysis.map(h => h.count)
-        }
-    ]
-})
+const chartSeries = computed(() => [
+    {
+        name: 'Số đơn hủy',
+        data: props.hourlyAnalysis.map(h => h.count)
+    }
+])
 
-const chartOptions = computed(() => ({
-    chart: {
-        type: 'bar',
-        height: 300,
-        toolbar: {
-            show: true
-        }
-    },
+const baseChartOptions = createComputedChartOptions({
+    type: 'bar',
+    height: 300,
+    colors: ['var(--color-danger)'],
+    hasLegend: false,
     plotOptions: {
         bar: {
             horizontal: false,
@@ -63,22 +60,6 @@ const chartOptions = computed(() => ({
     dataLabels: {
         enabled: true
     },
-    xaxis: {
-        categories: props.hourlyAnalysis.map(h => `${h.hour}:00`),
-        labels: {
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
-            }
-        },
-        axisBorder: {
-            color: 'var(--color-border)'
-        },
-        axisTicks: {
-            color: 'var(--color-border)'
-        }
-    },
     yaxis: {
         title: {
             text: 'Số đơn hủy',
@@ -88,29 +69,15 @@ const chartOptions = computed(() => ({
                 fontSize: '12px',
                 fontWeight: 600
             }
-        },
-        labels: {
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
-            }
         }
-    },
-    tooltip: {
-        shared: true,
-        intersect: false
-    },
-    legend: {
-        show: false
-    },
-    grid: {
-        borderColor: 'var(--color-border)',
-        strokeDashArray: 4
-    },
-    colors: ['var(--color-danger)'],
-    fill: {
-        opacity: 0.8
+    }
+})
+
+const chartOptions = computed(() => ({
+    ...baseChartOptions.value,
+    xaxis: {
+        ...baseChartOptions.value.xaxis,
+        categories: props.hourlyAnalysis.map(h => `${h.hour}:00`)
     }
 }))
 </script>

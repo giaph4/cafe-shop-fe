@@ -1,5 +1,4 @@
 import api from './axios'
-import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/v1/categories'
 
@@ -14,19 +13,19 @@ const normalizeCategoryPayload = (payload = {}) => {
 }
 
 export const getCategories = async () => {
-    const {data} = await api.get(BASE_URL)
+    const { data } = await api.get(BASE_URL)
     return Array.isArray(data) ? data : []
 }
 
 export const createCategory = async (payload) => {
     const body = normalizeCategoryPayload(payload)
-    const {data} = await api.post(BASE_URL, body)
+    const { data } = await api.post(BASE_URL, body)
     return data
 }
 
 export const updateCategory = async (id, payload) => {
     const body = normalizeCategoryPayload(payload)
-    const {data} = await api.put(`${BASE_URL}/${id}`, body)
+    const { data } = await api.put(`${BASE_URL}/${id}`, body)
     return data
 }
 

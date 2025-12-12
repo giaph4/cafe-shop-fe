@@ -1,142 +1,205 @@
 <template>
-    <div class="page-container container-fluid login-history-page" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <div class="login-history-header">
-            <div class="login-history-header__content">
-                <div class="login-history-header__title-section">
-                    <h2 class="page-title">Lịch sử đăng nhập</h2>
-                    <p class="page-subtitle">Theo dõi và quản lý lịch sử đăng nhập của tất cả người dùng trong hệ thống.</p>
-                </div>
-                <div class="login-history-header__actions">
-                    <button class="btn btn-outline-secondary" type="button" @click="fetchHistory" :disabled="loading">
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="page-container container-fluid login-history-page"
+    data-aos="fade-up"
+    style="background: var(--color-body-bg); padding: var(--spacing-4);"
+  >
+    <div class="login-history-header">
+      <div class="login-history-header__content">
+        <div class="login-history-header__title-section">
+          <h2 class="page-title">
+            Lịch sử đăng nhập
+          </h2>
+          <p class="page-subtitle">
+            Theo dõi và quản lý lịch sử đăng nhập của tất cả người dùng trong hệ thống.
+          </p>
         </div>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Tên người dùng</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            v-model="filters.username"
-                            placeholder="Nhập username"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-4">
-                        <label class="form-label">Kết quả</label>
-                        <select class="form-select" v-model="filters.success">
-                            <option value="">Tất cả</option>
-                            <option value="true">Thành công</option>
-                            <option value="false">Thất bại</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input
-                            type="datetime-local"
-                            class="form-control"
-                            v-model="filters.startDate"
-                        />
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input
-                            type="datetime-local"
-                            class="form-control"
-                            v-model="filters.endDate"
-                        />
-                    </div>
-                    <div class="col-lg-1 col-md-12">
-                        <button class="btn btn-primary w-100" type="button" @click="applyFilters" :disabled="loading">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="login-history-header__actions">
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="loading"
+            @click="fetchHistory"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-clockwise me-2"
+            />
+            Làm mới
+          </button>
         </div>
-
-        <div class="card table-card">
-            <div class="card-body">
-                <LoadingState v-if="loading" />
-                <ErrorState 
-                    v-else-if="error" 
-                    :message="error"
-                    @retry="fetchHistory"
-                />
-                <EmptyState
-                    v-else-if="!history.length"
-                    title="Chưa có dữ liệu đăng nhập"
-                    message="Chưa có lịch sử đăng nhập nào được ghi nhận."
-                />
-                <div v-else>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Thời gian</th>
-                                    <th>Username</th>
-                                    <th>IP Address</th>
-                                    <th>Thiết bị</th>
-                                    <th>Kết quả</th>
-                                    <th>Thông điệp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="entry in history" :key="entry.id">
-                                    <td>{{ formatDateTime(entry.loginAt) }}</td>
-                                    <td>
-                                        <strong>{{ entry.username || '—' }}</strong>
-                                    </td>
-                                    <td>
-                                        <code class="text-muted">{{ entry.ipAddress || '—' }}</code>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">{{ entry.userAgent || '—' }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge" :class="entry.success ? 'bg-success' : 'bg-danger'">
-                                            {{ entry.success ? 'Thành công' : 'Thất bại' }}
-                                        </span>
-                                    </td>
-                                    <td>{{ entry.message || '—' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <div class="text-muted">
-                            Hiển thị {{ (page.number * page.size) + 1 }} - {{ Math.min((page.number + 1) * page.size, page.totalElements) }} 
-                            trong tổng số {{ page.totalElements }} bản ghi
-                        </div>
-                        <nav>
-                            <ul class="pagination mb-0">
-                                <li class="page-item" :class="{ disabled: page.number === 0 }">
-                                    <button class="page-link" @click="changePage(page.number - 1)" :disabled="page.number === 0">
-                                        Trước
-                                    </button>
-                                </li>
-                                <li class="page-item" v-for="pageNum in visiblePages" :key="pageNum" :class="{ active: pageNum === page.number + 1 }">
-                                    <button class="page-link" @click="changePage(pageNum - 1)">{{ pageNum }}</button>
-                                </li>
-                                <li class="page-item" :class="{ disabled: page.number + 1 >= page.totalPages }">
-                                    <button class="page-link" @click="changePage(page.number + 1)" :disabled="page.number + 1 >= page.totalPages">
-                                        Sau
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Tên người dùng</label>
+            <input
+              v-model="filters.username"
+              type="text"
+              class="form-control"
+              placeholder="Nhập username"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4">
+            <label class="form-label">Kết quả</label>
+            <select
+              v-model="filters.success"
+              class="form-select"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option value="true">
+                Thành công
+              </option>
+              <option value="false">
+                Thất bại
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="datetime-local"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="datetime-local"
+              class="form-control"
+            >
+          </div>
+          <div class="col-lg-1 col-md-12">
+            <button
+              class="btn btn-primary w-100"
+              type="button"
+              :disabled="loading"
+              @click="applyFilters"
+            >
+              <i class="bi bi-search" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <div class="card-body">
+        <LoadingState v-if="loading" />
+        <ErrorState
+          v-else-if="error"
+          :message="error"
+          @retry="fetchHistory"
+        />
+        <EmptyState
+          v-else-if="!history.length"
+          title="Chưa có dữ liệu đăng nhập"
+          message="Chưa có lịch sử đăng nhập nào được ghi nhận."
+        />
+        <div v-else>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Username</th>
+                  <th>IP Address</th>
+                  <th>Thiết bị</th>
+                  <th>Kết quả</th>
+                  <th>Thông điệp</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="entry in history"
+                  :key="entry.id"
+                >
+                  <td>{{ formatDateTime(entry.loginAt) }}</td>
+                  <td>
+                    <strong>{{ entry.username || '—' }}</strong>
+                  </td>
+                  <td>
+                    <code class="text-muted">{{ entry.ipAddress || '—' }}</code>
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ entry.userAgent || '—' }}</small>
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      :class="entry.success ? 'bg-success' : 'bg-danger'"
+                    >
+                      {{ entry.success ? 'Thành công' : 'Thất bại' }}
+                    </span>
+                  </td>
+                  <td>{{ entry.message || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted">
+              Hiển thị {{ (page.number * page.size) + 1 }} - {{ Math.min((page.number + 1) * page.size, page.totalElements) }}
+              trong tổng số {{ page.totalElements }} bản ghi
+            </div>
+            <nav>
+              <ul class="pagination mb-0">
+                <li
+                  class="page-item"
+                  :class="{ disabled: page.number === 0 }"
+                >
+                  <button
+                    class="page-link"
+                    :disabled="page.number === 0"
+                    @click="changePage(page.number - 1)"
+                  >
+                    Trước
+                  </button>
+                </li>
+                <li
+                  v-for="pageNum in visiblePages"
+                  :key="pageNum"
+                  class="page-item"
+                  :class="{ active: pageNum === page.number + 1 }"
+                >
+                  <button
+                    class="page-link"
+                    @click="changePage(pageNum - 1)"
+                  >
+                    {{ pageNum }}
+                  </button>
+                </li>
+                <li
+                  class="page-item"
+                  :class="{ disabled: page.number + 1 >= page.totalPages }"
+                >
+                  <button
+                    class="page-link"
+                    :disabled="page.number + 1 >= page.totalPages"
+                    @click="changePage(page.number + 1)"
+                  >
+                    Sau
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -169,7 +232,7 @@ const visiblePages = computed(() => {
     const pages = []
     const total = page.totalPages
     const current = page.number + 1
-    
+
     if (total <= 7) {
         for (let i = 1; i <= total; i++) {
             pages.push(i)
@@ -197,7 +260,7 @@ const visiblePages = computed(() => {
             pages.push(total)
         }
     }
-    
+
     return pages
 })
 
@@ -206,23 +269,23 @@ const buildParams = () => {
         page: page.number,
         size: page.size
     }
-    
+
     if (filters.username) {
         params.username = filters.username
     }
-    
+
     if (filters.success !== '') {
         params.success = filters.success === 'true'
     }
-    
+
     if (filters.startDate) {
         params.startDate = filters.startDate
     }
-    
+
     if (filters.endDate) {
         params.endDate = filters.endDate
     }
-    
+
     return params
 }
 

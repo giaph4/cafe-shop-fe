@@ -1,110 +1,145 @@
 <template>
-    <aside
-        ref="rootRef"
-        class="neo-sidebar"
-        :class="{
-            'is-collapsed': displayCollapsed,
-            'is-mobile': isMobile,
-            'is-open': isMobile && sidebarStore.isMobileOpen
-        }"
-        role="navigation"
-        aria-label="Điều hướng chính"
-    >
-        <div class="neo-sidebar__inner">
-            <header class="neo-sidebar__header">
-                <router-link class="neo-sidebar__brand" to="/" @click="handleNavigate({ id: null })">
-                    <span class="neo-sidebar__brand-icon">
-                        <img src="@/assets/logo.jpg" alt="GP Logo" class="neo-sidebar__logo" />
-                    </span>
-                    <span v-if="!displayCollapsed" class="neo-sidebar__brand-text">
-                        <strong>Coffee GP</strong>
-                        <small>Hệ thống quản lý</small>
-                    </span>
-                    <span v-else class="neo-sidebar__brand-text-collapsed">
-                        <strong>GP</strong>
-                    </span>
-                </router-link>
-
-                <button
-                    v-if="!isMobile && !displayCollapsed"
-                    class="neo-sidebar__collapse"
-                    type="button"
-                    aria-label="Thu gọn sidebar"
-                    @click="toggleCollapsed"
-                >
-                    <i class="bi" :class="sidebarIcons.collapse"></i>
-                </button>
-            </header>
-            
-            <!-- Nút mở rộng khi collapsed - hiển thị bên ngoài sidebar -->
-            <button
-                v-if="!isMobile && displayCollapsed"
-                class="neo-sidebar__expand-button"
-                type="button"
-                aria-label="Mở rộng sidebar"
-                @click="toggleCollapsed"
+  <aside
+    ref="rootRef"
+    class="neo-sidebar"
+    :class="{
+      'is-collapsed': displayCollapsed,
+      'is-mobile': isMobile,
+      'is-open': isMobile && sidebarStore.isMobileOpen
+    }"
+    role="navigation"
+    aria-label="Điều hướng chính"
+  >
+    <div class="neo-sidebar__inner">
+      <header class="neo-sidebar__header">
+        <router-link
+          class="neo-sidebar__brand"
+          to="/"
+          @click="handleNavigate({ id: null })"
+        >
+          <span class="neo-sidebar__brand-icon">
+            <img
+              src="@/assets/logo.jpg"
+              alt="GP Logo"
+              class="neo-sidebar__logo"
             >
-                <i class="bi bi-chevron-right"></i>
-            </button>
+          </span>
+          <span
+            v-if="!displayCollapsed"
+            class="neo-sidebar__brand-text"
+          >
+            <strong>Coffee GP</strong>
+            <small>Hệ thống quản lý</small>
+          </span>
+          <span
+            v-else
+            class="neo-sidebar__brand-text-collapsed"
+          >
+            <strong>GP</strong>
+          </span>
+        </router-link>
 
-            <nav class="neo-sidebar__sections" aria-label="Nhóm menu">
-                <section
-                    v-for="section in sections"
-                    :key="section.heading"
-                    class="neo-sidebar__section"
-                >
-                    <p v-if="!displayCollapsed" class="neo-sidebar__section-label">{{ section.heading }}</p>
+        <button
+          v-if="!isMobile && !displayCollapsed"
+          class="neo-sidebar__collapse"
+          type="button"
+          aria-label="Thu gọn sidebar"
+          @click="toggleCollapsed"
+        >
+          <i
+            class="bi"
+            :class="sidebarIcons.collapse"
+          />
+        </button>
+      </header>
 
-                    <ul class="neo-sidebar__items" role="menubar">
-                        <SidebarItem
-                            v-for="item in section.items"
-                            :key="item.id"
-                            :item="item"
-                            :icons="sidebarIcons"
-                            :collapsed="displayCollapsed"
-                            :active-id="activeItemId"
-                            :active-trail="activeTrail"
-                            :expanded-ids="expandedItems"
-                            @toggle="handleToggle"
-                            @navigate="handleNavigate"
-                            @hover-intent="handleHoverIntent"
-                            @hover-leave="handleHoverLeave"
-                        />
-                    </ul>
-                </section>
-            </nav>
+      <!-- Nút mở rộng khi collapsed - hiển thị bên ngoài sidebar -->
+      <button
+        v-if="!isMobile && displayCollapsed"
+        class="neo-sidebar__expand-button"
+        type="button"
+        aria-label="Mở rộng sidebar"
+        @click="toggleCollapsed"
+      >
+        <i class="bi bi-chevron-right" />
+      </button>
 
-            <footer v-if="!displayCollapsed" class="neo-sidebar__footer">
-                <button class="neo-sidebar__quick" type="button" @click="handleLogout">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Đăng xuất</span>
-                </button>
-            </footer>
-        </div>
+      <nav
+        class="neo-sidebar__sections"
+        aria-label="Nhóm menu"
+      >
+        <section
+          v-for="section in sections"
+          :key="section.heading"
+          class="neo-sidebar__section"
+        >
+          <p
+            v-if="!displayCollapsed"
+            class="neo-sidebar__section-label"
+          >
+            {{ section.heading }}
+          </p>
 
-        <SidebarFlyout
-            v-if="flyoutPayload"
-            :item="flyoutPayload.item"
-            :icons="sidebarIcons"
-            :anchor="flyoutPayload.anchor"
-            :active-id="activeItemId"
-            :active-trail="activeTrail"
-            :expanded-ids="expandedItems"
-            @navigate="handleNavigate"
-            @hover-enter="cancelHoverCleanup"
-            @hover-leave="scheduleHoverCleanup"
-        />
-    </aside>
+          <ul
+            class="neo-sidebar__items"
+            role="menubar"
+          >
+            <SidebarItem
+              v-for="item in section.items"
+              :key="item.id"
+              :item="item"
+              :icons="sidebarIcons"
+              :collapsed="displayCollapsed"
+              :active-id="activeItemId"
+              :active-trail="activeTrail"
+              :expanded-ids="expandedItems"
+              @toggle="handleToggle"
+              @navigate="handleNavigate"
+              @hover-intent="handleHoverIntent"
+              @hover-leave="handleHoverLeave"
+            />
+          </ul>
+        </section>
+      </nav>
+
+      <footer
+        v-if="!displayCollapsed"
+        class="neo-sidebar__footer"
+      >
+        <button
+          class="neo-sidebar__quick"
+          type="button"
+          @click="handleLogout"
+        >
+          <i class="bi bi-box-arrow-right" />
+          <span>Đăng xuất</span>
+        </button>
+      </footer>
+    </div>
+
+    <SidebarFlyout
+      v-if="flyoutPayload"
+      :item="flyoutPayload.item"
+      :icons="sidebarIcons"
+      :anchor="flyoutPayload.anchor"
+      :active-id="activeItemId"
+      :active-trail="activeTrail"
+      :expanded-ids="expandedItems"
+      @navigate="handleNavigate"
+      @hover-enter="cancelHoverCleanup"
+      @hover-leave="scheduleHoverCleanup"
+    />
+  </aside>
 </template>
 
 <script setup>
-import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {useRoute} from 'vue-router'
-import {storeToRefs} from 'pinia'
-import {useSidebarStore} from '@/store/sidebar'
-import {useAuthStore} from '@/store/auth'
-import {sidebarMenu} from '@/config/sidebar/menu'
-import {sidebarIcons} from '@/config/sidebar/icons'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useSidebarStore } from '@/store/sidebar'
+import { useAuthStore } from '@/store/auth'
+import { sidebarMenu } from '@/config/sidebar/menu'
+import { sidebarIcons } from '@/config/sidebar/icons'
 import SidebarItem from './sidebar/SidebarItem.vue'
 import SidebarFlyout from './sidebar/SidebarFlyout.vue'
 
@@ -211,7 +246,7 @@ const syncActiveFromRoute = () => {
     const match = findActiveMatch(sections.value, route.path)
     if (match) {
         sidebarStore.setActiveItem(match.id)
-        sidebarStore.ensureExpanded(match.parents, {persist: false})
+        sidebarStore.ensureExpanded(match.parents, { persist: false })
         activeTrail.value = match.parents
     } else {
         sidebarStore.setActiveItem(null)
@@ -225,7 +260,7 @@ watch(() => route.fullPath, () => {
     if (props.isMobile) {
         sidebarStore.closeMobile()
     }
-}, {immediate: true})
+}, { immediate: true })
 
 watch([sections, flattenedItems], () => {
     const validIds = new Set(flattenedItems.value.map((item) => item.id))
@@ -233,7 +268,7 @@ watch([sections, flattenedItems], () => {
     if (pruned.length !== expandedItems.value.length) {
         sidebarStore.setExpandedItems(pruned)
     }
-}, {deep: true})
+}, { deep: true })
 
 watch(displayCollapsed, (isNowCollapsed) => {
     if (!isNowCollapsed) {
@@ -243,7 +278,7 @@ watch(displayCollapsed, (isNowCollapsed) => {
 })
 
 watch(userRoles, () => {
-    sidebarStore.setExpandedItems([], {persist: false})
+    sidebarStore.setExpandedItems([], { persist: false })
     syncActiveFromRoute()
 })
 
@@ -258,7 +293,7 @@ onBeforeUnmount(() => {
     cancelHoverCleanup()
 })
 
-function filterMenu(menu, roles) {
+function filterMenu (menu, roles) {
     return menu
         .map((section) => ({
             heading: section.heading,
@@ -267,11 +302,11 @@ function filterMenu(menu, roles) {
         .filter((section) => section.items.length)
 }
 
-function filterItems(items, roles) {
+function filterItems (items, roles) {
     return items
         .map((item) => {
             if (!supportsRole(item, roles)) return null
-            if (!item.children) return {...item}
+            if (!item.children) return { ...item }
             const children = filterItems(item.children, roles)
             if (!children.length && !item.to) return null
             return {
@@ -282,19 +317,19 @@ function filterItems(items, roles) {
         .filter(Boolean)
 }
 
-function supportsRole(item, roles) {
+function supportsRole (item, roles) {
     if (!item.roles || !item.roles.length) return true
     return item.roles.some((role) => roles.includes(role))
 }
 
-function flattenMenu(sectionsInput) {
+function flattenMenu (sectionsInput) {
     const result = []
     sectionsInput.forEach((section) => {
         walk(section.items, [])
     })
-    function walk(items, parents) {
+    function walk (items, parents) {
         items.forEach((item) => {
-            result.push({...item, parents})
+            result.push({ ...item, parents })
             if (item.children?.length) {
                 walk(item.children, [...parents, item.id])
             }
@@ -303,13 +338,13 @@ function flattenMenu(sectionsInput) {
     return result
 }
 
-function normalizePath(path) {
+function normalizePath (path) {
     if (!path) return null
     if (path === '/') return '/'
     return path.replace(/\/+$/, '')
 }
 
-function findActiveMatch(sectionsInput, currentPath) {
+function findActiveMatch (sectionsInput, currentPath) {
     const normalized = normalizePath(currentPath)
     if (!normalized) return null
     for (const section of sectionsInput) {
@@ -319,7 +354,7 @@ function findActiveMatch(sectionsInput, currentPath) {
     return null
 }
 
-function searchItems(items, parents, targetPath) {
+function searchItems (items, parents, targetPath) {
     for (const item of items) {
         const nextParents = [...parents]
         if (item.children?.length) {

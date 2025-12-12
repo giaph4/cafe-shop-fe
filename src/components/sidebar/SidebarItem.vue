@@ -1,70 +1,110 @@
 <template>
-    <li
-        ref="itemRef"
-        :class="itemClasses"
-        :style="itemStyles"
-        @mouseenter="onMouseEnter"
-        @mouseleave="onMouseLeave"
+  <li
+    ref="itemRef"
+    :class="itemClasses"
+    :style="itemStyles"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+  >
+    <RouterLink
+      v-if="item.to && !hasChildren"
+      class="neo-item__link"
+      :class="linkClasses"
+      :to="item.to"
+      role="menuitem"
+      @click="emitNavigate"
+      @keydown="handleKeydown"
     >
-        <RouterLink
-            v-if="item.to && !hasChildren"
-            class="neo-item__link"
-            :class="linkClasses"
-            :to="item.to"
-            role="menuitem"
-            @click="emitNavigate"
-            @keydown="handleKeydown"
-        >
-            <span v-if="resolvedIcon" class="neo-item__icon">
-                <i :class="resolvedIcon" aria-hidden="true"></i>
-            </span>
-            <span v-if="!collapsed" class="neo-item__label">{{ item.label }}</span>
-            <span v-if="badge && !collapsed" class="neo-item__badge">{{ badge }}</span>
-            <span v-if="showTooltip" class="neo-item__tooltip" role="tooltip">{{ item.label }}</span>
-        </RouterLink>
-        <button
-            v-else
-            type="button"
-            class="neo-item__link neo-item__link--button"
-            :class="linkClasses"
-            role="menuitem"
-            @click="handleGroupClick"
-            @keydown="handleKeydown"
-        >
-            <span v-if="resolvedIcon" class="neo-item__icon">
-                <i :class="resolvedIcon" aria-hidden="true"></i>
-            </span>
-            <span v-if="!collapsed" class="neo-item__label">{{ item.label }}</span>
-            <span v-if="badge && !collapsed" class="neo-item__badge">{{ badge }}</span>
-            <i v-if="hasChildren && !collapsed" class="neo-item__caret bi" :class="caretClass"></i>
-            <span v-if="showTooltip" class="neo-item__tooltip" role="tooltip">{{ item.label }}</span>
-        </button>
+      <span
+        v-if="resolvedIcon"
+        class="neo-item__icon"
+      >
+        <i
+          :class="resolvedIcon"
+          aria-hidden="true"
+        />
+      </span>
+      <span
+        v-if="!collapsed"
+        class="neo-item__label"
+      >{{ item.label }}</span>
+      <span
+        v-if="badge && !collapsed"
+        class="neo-item__badge"
+      >{{ badge }}</span>
+      <span
+        v-if="showTooltip"
+        class="neo-item__tooltip"
+        role="tooltip"
+      >{{ item.label }}</span>
+    </RouterLink>
+    <button
+      v-else
+      type="button"
+      class="neo-item__link neo-item__link--button"
+      :class="linkClasses"
+      role="menuitem"
+      @click="handleGroupClick"
+      @keydown="handleKeydown"
+    >
+      <span
+        v-if="resolvedIcon"
+        class="neo-item__icon"
+      >
+        <i
+          :class="resolvedIcon"
+          aria-hidden="true"
+        />
+      </span>
+      <span
+        v-if="!collapsed"
+        class="neo-item__label"
+      >{{ item.label }}</span>
+      <span
+        v-if="badge && !collapsed"
+        class="neo-item__badge"
+      >{{ badge }}</span>
+      <i
+        v-if="hasChildren && !collapsed"
+        class="neo-item__caret bi"
+        :class="caretClass"
+      />
+      <span
+        v-if="showTooltip"
+        class="neo-item__tooltip"
+        role="tooltip"
+      >{{ item.label }}</span>
+    </button>
 
-        <transition name="neo-item-collapse">
-            <ul v-if="shouldRenderChildren" class="neo-item__children" role="group">
-                <SidebarItem
-                    v-for="child in item.children"
-                    :key="child.id"
-                    :item="child"
-                    :icons="icons"
-                    :collapsed="collapsed"
-                    :active-id="activeId"
-                    :active-trail="activeTrail"
-                    :expanded-ids="expandedIds"
-                    :depth="depth + 1"
-                    @toggle="$emit('toggle', $event)"
-                    @navigate="$emit('navigate', $event)"
-                    @hover-intent="$emit('hover-intent', $event)"
-                    @hover-leave="$emit('hover-leave', $event)"
-                />
-            </ul>
-        </transition>
-    </li>
+    <transition name="neo-item-collapse">
+      <ul
+        v-if="shouldRenderChildren"
+        class="neo-item__children"
+        role="group"
+      >
+        <SidebarItem
+          v-for="child in item.children"
+          :key="child.id"
+          :item="child"
+          :icons="icons"
+          :collapsed="collapsed"
+          :active-id="activeId"
+          :active-trail="activeTrail"
+          :expanded-ids="expandedIds"
+          :depth="depth + 1"
+          @toggle="$emit('toggle', $event)"
+          @navigate="$emit('navigate', $event)"
+          @hover-intent="$emit('hover-intent', $event)"
+          @hover-leave="$emit('hover-leave', $event)"
+        />
+      </ul>
+    </transition>
+  </li>
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue'
-import {RouterLink} from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
 
 defineOptions({ name: 'SidebarItem' })
 
@@ -103,7 +143,11 @@ const emit = defineEmits(['toggle', 'navigate', 'hover-intent', 'hover-leave'])
 
 const itemRef = ref(null)
 
-const badge = computed(() => props.item.badge ?? null)
+const badge = computed(() => {
+    if (props.item.badge) return props.item.badge
+    if (props.item.status === 'development') return 'Dev'
+    return null
+})
 const hasChildren = computed(() => Array.isArray(props.item.children) && props.item.children.length > 0)
 const resolvedIcon = computed(() => {
     const key = props.item.icon
@@ -165,7 +209,7 @@ const emitHoverIntent = () => {
     })
 }
 
-const handleMouseEnter = () => {
+const _handleMouseEnter = () => {
     if (!props.collapsed) return
     if (!hasChildren.value) {
         emit('hover-leave', { id: props.item.id, delay: 0 })
@@ -174,7 +218,7 @@ const handleMouseEnter = () => {
     emitHoverIntent()
 }
 
-const handleMouseLeave = () => {
+const _handleMouseLeave = () => {
     if (!props.collapsed) return
     emit('hover-leave', { id: props.item.id, delay: 140 })
 }
@@ -292,14 +336,27 @@ watch(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.65rem;
     font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-sans);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    margin-left: 6px;
+    line-height: 1.2;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.neo-item__link:hover .neo-item__badge {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #b45309;
 }
 
 .neo-item__caret {

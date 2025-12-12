@@ -1,15 +1,25 @@
 <template>
-    <header class="page-header">
-        <div class="page-header__content">
-            <div>
-                <h2 class="page-header__title">{{ title }}</h2>
-                <p v-if="subtitle" class="page-header__subtitle mb-0">{{ subtitle }}</p>
-            </div>
-            <div v-if="$slots.actions" class="page-header__actions">
-                <slot name="actions"></slot>
-            </div>
-        </div>
-    </header>
+  <header class="page-header">
+    <div class="page-header__content">
+      <div>
+        <h2 class="page-header__title">
+          {{ title }}
+        </h2>
+        <p
+          v-if="subtitle"
+          class="page-header__subtitle mb-0"
+        >
+          {{ subtitle }}
+        </p>
+      </div>
+      <div
+        v-if="$slots.actions"
+        class="page-header__actions"
+      >
+        <slot name="actions" />
+      </div>
+    </div>
+  </header>
 </template>
 
 <script setup>

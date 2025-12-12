@@ -1,10 +1,10 @@
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref } from 'vue'
 
 /**
  * Composable để quản lý hiệu ứng Noel (Christmas Tree Burst Effect)
  * Sử dụng để tạo hiệu ứng nổ cây thông Noel khi click button
  */
-export function useChristmasEffect() {
+export function useChristmasEffect () {
     const particles = ref([])
     const showMessage = ref(false)
 
@@ -26,7 +26,7 @@ export function useChristmasEffect() {
 
         // 2. Lấy vị trí button để hiệu ứng nổ ra từ đúng chỗ đó
         const rect = buttonElement.getBoundingClientRect()
-        
+
         // Tâm của button
         const centerX = rect.left + rect.width / 2
         const centerY = rect.top + rect.height / 2
@@ -55,9 +55,9 @@ export function useChristmasEffect() {
                 id,
                 x: centerX,
                 y: centerY,
-                tx: tx,
-                ty: ty,
-                r: r,
+                tx,
+                ty,
+                r,
                 char: icons[Math.floor(Math.random() * icons.length)]
             })
         }
@@ -78,15 +78,13 @@ export function useChristmasEffect() {
      * @param {Object} p - Particle object
      * @returns {Object} Style object
      */
-    const getParticleStyle = (p) => {
-        return {
-            left: p.x + 'px',
-            top: p.y + 'px',
-            '--tx': p.tx + 'px',
-            '--ty': p.ty + 'px',
-            '--r': p.r + 'deg'
-        }
-    }
+    const getParticleStyle = (p) => ({
+        left: `${p.x  }px`,
+        top: `${p.y  }px`,
+        '--tx': `${p.tx  }px`,
+        '--ty': `${p.ty  }px`,
+        '--r': `${p.r  }deg`
+    })
 
     return {
         particles,

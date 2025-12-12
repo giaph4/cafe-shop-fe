@@ -1,93 +1,129 @@
 <template>
-    <div class="performance-adjustment-stats-tab">
-        <div class="row g-4 mb-4">
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="metric-card metric-card--primary w-100">
-                    <div class="metric-card__icon">
-                        <i class="bi bi-list-check"></i>
-                    </div>
-                    <div class="metric-card__content">
-                        <div class="metric-label">Tổng điều chỉnh</div>
-                        <div class="metric-value">{{ totalAdjustments }}</div>
-                    </div>
-                </div>
+  <div class="performance-adjustment-stats-tab">
+    <div class="row g-4 mb-4">
+      <div class="col-md-3 col-sm-6 d-flex">
+        <div class="metric-card metric-card--primary w-100">
+          <div class="metric-card__icon">
+            <i class="bi bi-list-check" />
+          </div>
+          <div class="metric-card__content">
+            <div class="metric-label">
+              Tổng điều chỉnh
             </div>
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="metric-card metric-card--success w-100">
-                    <div class="metric-card__icon">
-                        <i class="bi bi-gift-fill"></i>
-                    </div>
-                    <div class="metric-card__content">
-                        <div class="metric-label">Tổng thưởng</div>
-                        <div class="metric-value">{{ formatCurrency(totalBonus) }}</div>
-                        <div class="metric-detail">{{ bonusCount }} điều chỉnh</div>
-                    </div>
-                </div>
+            <div class="metric-value">
+              {{ totalAdjustments }}
             </div>
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="metric-card metric-card--danger w-100">
-                    <div class="metric-card__icon">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                    </div>
-                    <div class="metric-card__content">
-                        <div class="metric-label">Tổng phạt</div>
-                        <div class="metric-value">{{ formatCurrency(totalPenalty) }}</div>
-                        <div class="metric-detail">{{ penaltyCount }} điều chỉnh</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 d-flex">
-                <div class="metric-card metric-card--warning w-100">
-                    <div class="metric-card__icon">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </div>
-                    <div class="metric-card__content">
-                        <div class="metric-label">Đã thu hồi</div>
-                        <div class="metric-value">{{ revokedCount }}</div>
-                        <div class="metric-detail">{{ revokedPercentage }}%</div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-
-        <div class="card table-card">
-            <div class="card-body">
-                <h5 class="card-title mb-3">Tổng hợp theo phân công</h5>
-                <LoadingState v-if="loading" />
-                <EmptyState
-                    v-else-if="!groupedByAssignment.length"
-                    title="Chưa có dữ liệu"
-                    message="Chưa có dữ liệu để thống kê."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Phân công</th>
-                            <th>Số điều chỉnh</th>
-                            <th>Tổng thưởng</th>
-                            <th>Tổng phạt</th>
-                            <th>Chênh lệch</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="group in groupedByAssignment" :key="group.assignmentId">
-                            <td>
-                                <div class="fw-semibold">Assignment #{{ group.assignmentId }}</div>
-                            </td>
-                            <td>{{ group.count }}</td>
-                            <td class="text-success">{{ formatCurrency(group.totalBonus) }}</td>
-                            <td class="text-danger">{{ formatCurrency(group.totalPenalty) }}</td>
-                            <td :class="group.net >= 0 ? 'text-success' : 'text-danger'">
-                                {{ group.net >= 0 ? '+' : '' }}{{ formatCurrency(group.net) }}
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+      </div>
+      <div class="col-md-3 col-sm-6 d-flex">
+        <div class="metric-card metric-card--success w-100">
+          <div class="metric-card__icon">
+            <i class="bi bi-gift-fill" />
+          </div>
+          <div class="metric-card__content">
+            <div class="metric-label">
+              Tổng thưởng
             </div>
+            <div class="metric-value">
+              {{ formatCurrency(totalBonus) }}
+            </div>
+            <div class="metric-detail">
+              {{ bonusCount }} điều chỉnh
+            </div>
+          </div>
         </div>
+      </div>
+      <div class="col-md-3 col-sm-6 d-flex">
+        <div class="metric-card metric-card--danger w-100">
+          <div class="metric-card__icon">
+            <i class="bi bi-exclamation-triangle-fill" />
+          </div>
+          <div class="metric-card__content">
+            <div class="metric-label">
+              Tổng phạt
+            </div>
+            <div class="metric-value">
+              {{ formatCurrency(totalPenalty) }}
+            </div>
+            <div class="metric-detail">
+              {{ penaltyCount }} điều chỉnh
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 d-flex">
+        <div class="metric-card metric-card--warning w-100">
+          <div class="metric-card__icon">
+            <i class="bi bi-arrow-counterclockwise" />
+          </div>
+          <div class="metric-card__content">
+            <div class="metric-label">
+              Đã thu hồi
+            </div>
+            <div class="metric-value">
+              {{ revokedCount }}
+            </div>
+            <div class="metric-detail">
+              {{ revokedPercentage }}%
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="card table-card">
+      <div class="card-body">
+        <h5 class="card-title mb-3">
+          Tổng hợp theo phân công
+        </h5>
+        <LoadingState v-if="loading" />
+        <EmptyState
+          v-else-if="!groupedByAssignment.length"
+          title="Chưa có dữ liệu"
+          message="Chưa có dữ liệu để thống kê."
+        />
+        <div
+          v-else
+          class="table-responsive"
+        >
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Phân công</th>
+                <th>Số điều chỉnh</th>
+                <th>Tổng thưởng</th>
+                <th>Tổng phạt</th>
+                <th>Chênh lệch</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="group in groupedByAssignment"
+                :key="group.assignmentId"
+              >
+                <td>
+                  <div class="fw-semibold">
+                    Assignment #{{ group.assignmentId }}
+                  </div>
+                </td>
+                <td>{{ group.count }}</td>
+                <td class="text-success">
+                  {{ formatCurrency(group.totalBonus) }}
+                </td>
+                <td class="text-danger">
+                  {{ formatCurrency(group.totalPenalty) }}
+                </td>
+                <td :class="group.net >= 0 ? 'text-success' : 'text-danger'">
+                  {{ group.net >= 0 ? '+' : '' }}{{ formatCurrency(group.net) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

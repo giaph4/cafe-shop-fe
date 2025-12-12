@@ -1,168 +1,273 @@
 <template>
-    <div class="customer-order-detail-page container-fluid" data-aos="fade-up">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-4">
-            <div>
-                <h2 class="text-primary mb-1">Lịch sử mua hàng</h2>
-                <p class="text-muted mb-0">Theo dõi lịch sử đơn hàng và doanh thu theo từng khách hàng.</p>
-            </div>
-            <div class="text-md-end" v-if="summary.customerName || summary.customerPhone">
-                <div class="fw-semibold">{{ summary.customerName || 'Khách hàng' }}</div>
-                <div class="text-muted small">{{ summary.customerPhone || '' }}</div>
-            </div>
+  <div
+    class="customer-order-detail-page container-fluid"
+    data-aos="fade-up"
+  >
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-4">
+      <div>
+        <h2 class="text-primary mb-1">
+          Lịch sử mua hàng
+        </h2>
+        <p class="text-muted mb-0">
+          Theo dõi lịch sử đơn hàng và doanh thu theo từng khách hàng.
+        </p>
+      </div>
+      <div
+        v-if="summary.customerName || summary.customerPhone"
+        class="text-md-end"
+      >
+        <div class="fw-semibold">
+          {{ summary.customerName || 'Khách hàng' }}
         </div>
-
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body">
-                <div class="row gy-3 gx-3 align-items-end">
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <label for="history-status-filter" class="form-label text-muted small fw-semibold">Trạng thái</label>
-                        <select
-                            id="history-status-filter"
-                            class="form-select"
-                            v-model="filters.status"
-                            @change="handleStatusChange"
-                        >
-                            <option value="">Tất cả trạng thái</option>
-                            <option v-for="option in STATUS_FILTER_OPTIONS" :key="option.value" :value="option.value">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <label for="history-start-date" class="form-label text-muted small fw-semibold">Ngày bắt đầu</label>
-                        <input
-                            id="history-start-date"
-                            type="date"
-                            class="form-control"
-                            v-model="filters.startDate"
-                            @change="handleDateChange('startDate')"
-                        />
-                    </div>
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <label for="history-end-date" class="form-label text-muted small fw-semibold">Ngày kết thúc</label>
-                        <input
-                            id="history-end-date"
-                            type="date"
-                            class="form-control"
-                            v-model="filters.endDate"
-                            @change="handleDateChange('endDate')"
-                        />
-                    </div>
-                    <div class="col-12 col-sm-6 col-lg-3 d-flex gap-2 justify-content-sm-end">
-                        <button
-                            class="btn btn-primary flex-fill flex-sm-grow-0"
-                            type="button"
-                            @click="triggerFetchFromFilterChange"
-                        >
-                            Áp dụng
-                        </button>
-                        <button
-                            class="btn btn-outline-secondary flex-fill flex-sm-grow-0"
-                            type="button"
-                            :disabled="!canResetFilters"
-                            @click="resetFilters"
-                        >
-                            Đặt lại
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="text-muted small">
+          {{ summary.customerPhone || '' }}
         </div>
-
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div v-if="loading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Đang tải...</span>
-                    </div>
-                </div>
-                <div v-else-if="error" class="alert alert-warning m-3 mb-0">
-                    {{ error }}
-                </div>
-                <div v-else>
-                    <div class="history-summary border-bottom px-3 px-md-4 py-3">
-                        <div class="row g-3">
-                            <div class="col-6 col-md-3">
-                                <div class="text-muted small text-uppercase mb-1">Số đơn</div>
-                                <div class="fs-5 fw-semibold">{{ summary.totalOrders }}</div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="text-muted small text-uppercase mb-1">Tổng chi tiêu</div>
-                                <div class="fs-5 fw-semibold">{{ formatCurrencySafe(summary.totalAmount) }}</div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="text-muted small text-uppercase mb-1">Giá trị TB/đơn</div>
-                                <div class="fs-5 fw-semibold">{{ formatCurrencySafe(summary.averageOrderValue) }}</div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="text-muted small text-uppercase mb-1">Đơn gần nhất</div>
-                                <div class="fs-6">{{ formatDate(summary.lastPurchaseDate) }}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-if="!orders.length" class="py-5 text-center text-muted">
-                        <i class="bi bi-receipt-cutoff fs-1 mb-3 d-block"></i>
-                        <p class="mb-0">Khách hàng chưa có đơn hàng nào trong khoảng thời gian đã chọn.</p>
-                    </div>
-                    <div v-else class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="text-uppercase small text-muted">Mã đơn</th>
-                                    <th class="text-uppercase small text-muted">Ngày tạo</th>
-                                    <th class="text-uppercase small text-muted d-none d-lg-table-cell">Thanh toán</th>
-                                    <th class="text-uppercase small text-muted">Trạng thái</th>
-                                    <th class="text-uppercase small text-muted d-none d-md-table-cell">Bàn</th>
-                                    <th class="text-uppercase small text-muted d-none d-md-table-cell">Nhân viên</th>
-                                    <th class="text-uppercase small text-muted text-end">Tạm tính</th>
-                                    <th class="text-uppercase small text-muted text-end d-none d-lg-table-cell">Giảm giá</th>
-                                    <th class="text-uppercase small text-muted text-end">Thành tiền</th>
-                                    <th class="text-uppercase small text-muted text-center">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="order in orders" :key="order.orderId">
-                                    <td class="fw-semibold">#{{ order.orderId }}</td>
-                                    <td>{{ formatDate(order.createdAt) }}</td>
-                                    <td class="d-none d-lg-table-cell">{{ formatDate(order.paidAt) }}</td>
-                                    <td>
-                                        <span :class="['status-pill', getStatusClass(order.status)]">
-                                            {{ getStatusLabel(order.status) }}
-                                        </span>
-                                    </td>
-                                    <td class="d-none d-md-table-cell">{{ order.tableName || '—' }}</td>
-                                    <td class="d-none d-md-table-cell">{{ order.staffUsername || '—' }}</td>
-                                    <td class="text-end">{{ formatCurrencySafe(order.subTotal) }}</td>
-                                    <td class="text-end d-none d-lg-table-cell">{{ formatCurrencySafe(order.discountAmount) }}</td>
-                                    <td class="text-end fw-semibold">{{ formatCurrencySafe(order.totalAmount) }}</td>
-                                    <td class="text-center">
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-secondary"
-                                            @click="openOrderDetail(order.orderId)"
-                                        >
-                                            Xem
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-white py-3" v-if="orders.length && pagination.totalPages > 1">
-                <Pagination
-                    mode="zero-based"
-                    :current-page="pagination.page"
-                    :total-pages="pagination.totalPages"
-                    @page-change="handlePageChange"
-                />
-            </div>
-        </div>
-
-        <OrderDetailModal ref="orderDetailModal" :order-id="selectedOrderId" />
+      </div>
     </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <div class="row gy-3 gx-3 align-items-end">
+          <div class="col-12 col-sm-6 col-lg-3">
+            <label
+              for="history-status-filter"
+              class="form-label text-muted small fw-semibold"
+            >Trạng thái</label>
+            <select
+              id="history-status-filter"
+              v-model="filters.status"
+              class="form-select"
+              @change="handleStatusChange"
+            >
+              <option value="">
+                Tất cả trạng thái
+              </option>
+              <option
+                v-for="option in STATUS_FILTER_OPTIONS"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <label
+              for="history-start-date"
+              class="form-label text-muted small fw-semibold"
+            >Ngày bắt đầu</label>
+            <input
+              id="history-start-date"
+              v-model="filters.startDate"
+              type="date"
+              class="form-control"
+              @change="handleDateChange('startDate')"
+            >
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <label
+              for="history-end-date"
+              class="form-label text-muted small fw-semibold"
+            >Ngày kết thúc</label>
+            <input
+              id="history-end-date"
+              v-model="filters.endDate"
+              type="date"
+              class="form-control"
+              @change="handleDateChange('endDate')"
+            >
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3 d-flex gap-2 justify-content-sm-end">
+            <button
+              class="btn btn-primary flex-fill flex-sm-grow-0"
+              type="button"
+              @click="triggerFetchFromFilterChange"
+            >
+              Áp dụng
+            </button>
+            <button
+              class="btn btn-outline-secondary flex-fill flex-sm-grow-0"
+              type="button"
+              :disabled="!canResetFilters"
+              @click="resetFilters"
+            >
+              Đặt lại
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div
+          v-if="loading"
+          class="text-center py-5"
+        >
+          <div
+            class="spinner-border text-primary"
+            role="status"
+          >
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
+        <div
+          v-else-if="error"
+          class="alert alert-warning m-3 mb-0"
+        >
+          {{ error }}
+        </div>
+        <div v-else>
+          <div class="history-summary border-bottom px-3 px-md-4 py-3">
+            <div class="row g-3">
+              <div class="col-6 col-md-3">
+                <div class="text-muted small text-uppercase mb-1">
+                  Số đơn
+                </div>
+                <div class="fs-5 fw-semibold">
+                  {{ summary.totalOrders }}
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="text-muted small text-uppercase mb-1">
+                  Tổng chi tiêu
+                </div>
+                <div class="fs-5 fw-semibold">
+                  {{ formatCurrencySafe(summary.totalAmount) }}
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="text-muted small text-uppercase mb-1">
+                  Giá trị TB/đơn
+                </div>
+                <div class="fs-5 fw-semibold">
+                  {{ formatCurrencySafe(summary.averageOrderValue) }}
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="text-muted small text-uppercase mb-1">
+                  Đơn gần nhất
+                </div>
+                <div class="fs-6">
+                  {{ formatDate(summary.lastPurchaseDate) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            v-if="!orders.length"
+            class="py-5 text-center text-muted"
+          >
+            <i class="bi bi-receipt-cutoff fs-1 mb-3 d-block" />
+            <p class="mb-0">
+              Khách hàng chưa có đơn hàng nào trong khoảng thời gian đã chọn.
+            </p>
+          </div>
+          <div
+            v-else
+            class="table-responsive"
+          >
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th class="text-uppercase small text-muted">
+                    Mã đơn
+                  </th>
+                  <th class="text-uppercase small text-muted">
+                    Ngày tạo
+                  </th>
+                  <th class="text-uppercase small text-muted d-none d-lg-table-cell">
+                    Thanh toán
+                  </th>
+                  <th class="text-uppercase small text-muted">
+                    Trạng thái
+                  </th>
+                  <th class="text-uppercase small text-muted d-none d-md-table-cell">
+                    Bàn
+                  </th>
+                  <th class="text-uppercase small text-muted d-none d-md-table-cell">
+                    Nhân viên
+                  </th>
+                  <th class="text-uppercase small text-muted text-end">
+                    Tạm tính
+                  </th>
+                  <th class="text-uppercase small text-muted text-end d-none d-lg-table-cell">
+                    Giảm giá
+                  </th>
+                  <th class="text-uppercase small text-muted text-end">
+                    Thành tiền
+                  </th>
+                  <th class="text-uppercase small text-muted text-center">
+                    Hành động
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="order in orders"
+                  :key="order.orderId"
+                >
+                  <td class="fw-semibold">
+                    #{{ order.orderId }}
+                  </td>
+                  <td>{{ formatDate(order.createdAt) }}</td>
+                  <td class="d-none d-lg-table-cell">
+                    {{ formatDate(order.paidAt) }}
+                  </td>
+                  <td>
+                    <span :class="['status-pill', getStatusClass(order.status)]">
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  </td>
+                  <td class="d-none d-md-table-cell">
+                    {{ order.tableName || '—' }}
+                  </td>
+                  <td class="d-none d-md-table-cell">
+                    {{ order.staffUsername || '—' }}
+                  </td>
+                  <td class="text-end">
+                    {{ formatCurrencySafe(order.subTotal) }}
+                  </td>
+                  <td class="text-end d-none d-lg-table-cell">
+                    {{ formatCurrencySafe(order.discountAmount) }}
+                  </td>
+                  <td class="text-end fw-semibold">
+                    {{ formatCurrencySafe(order.totalAmount) }}
+                  </td>
+                  <td class="text-center">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      @click="openOrderDetail(order.orderId)"
+                    >
+                      Xem
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div
+        v-if="orders.length && pagination.totalPages > 1"
+        class="card-footer bg-white py-3"
+      >
+        <Pagination
+          mode="zero-based"
+          :current-page="pagination.page"
+          :total-pages="pagination.totalPages"
+          @page-change="handlePageChange"
+        />
+      </div>
+    </div>
+
+    <OrderDetailModal
+      ref="orderDetailModal"
+      :order-id="selectedOrderId"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -222,9 +327,7 @@ const STATUS_METADATA = Object.freeze({
 
 const STATUS_FILTER_OPTIONS = Object.values(STATUS_METADATA)
 
-const canResetFilters = computed(() => {
-    return Boolean(filters.status) || Boolean(filters.startDate) || Boolean(filters.endDate)
-})
+const canResetFilters = computed(() => Boolean(filters.status) || Boolean(filters.startDate) || Boolean(filters.endDate))
 
 const formatCurrencySafe = (value) => {
     const numeric = Number(value)

@@ -1,127 +1,209 @@
 <template>
-    <div class="shift-assignment-list-tab">
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label">Ca làm <span class="text-danger">*</span></label>
-                        <select class="form-select" v-model.number="filters.shiftId" required>
-                            <option :value="null">Chọn ca làm</option>
-                            <option v-for="opt in shiftOptions" :key="opt.value" :value="opt.value">
-                                {{ opt.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" v-model="filters.status">
-                            <option value="">Tất cả</option>
-                            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Nhân viên</label>
-                        <select class="form-select" v-model.number="filters.userId">
-                            <option :value="null">Tất cả</option>
-                            <option v-for="opt in staffOptions" :key="opt.value" :value="opt.value">
-                                {{ opt.label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6 text-lg-end text-md-start">
-                        <button class="btn btn-outline-secondary" type="button" @click="handleResetFilters">Xóa bộ lọc</button>
-                    </div>
-                </div>
-            </div>
+  <div class="shift-assignment-list-tab">
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label">Ca làm <span class="text-danger">*</span></label>
+            <select
+              v-model.number="shiftId"
+              class="form-select"
+              required
+            >
+              <option :value="null">
+                Chọn ca làm
+              </option>
+              <option
+                v-for="opt in shiftOptions"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Trạng thái</label>
+            <select
+              v-model="status"
+              class="form-select"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option
+                v-for="option in statusOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Nhân viên</label>
+            <select
+              v-model.number="userId"
+              class="form-select"
+            >
+              <option :value="null">
+                Tất cả
+              </option>
+              <option
+                v-for="opt in staffOptions"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-2 col-md-6 text-lg-end text-md-start">
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              @click="handleResetFilters"
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
         </div>
-
-        <div class="card table-card">
-            <div class="card-body">
-                <LoadingState v-if="loading" />
-                <ErrorState 
-                    v-else-if="error" 
-                    :message="error"
-                />
-                <EmptyState
-                    v-else-if="!assignments.length"
-                    title="Chưa có phân công nào"
-                    message="Tạo phân công mới bằng nút ở góc trên bên phải."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Nhân viên</th>
-                            <th>Ca làm</th>
-                            <th>Thời gian</th>
-                            <th>Doanh thu</th>
-                            <th>Lương</th>
-                            <th>Trạng thái</th>
-                            <th class="text-end">Hành động</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="assignment in assignments" :key="assignment.id">
-                            <td>
-                                <div class="fw-semibold">{{ assignment.fullName || assignment.username }}</div>
-                                <div class="text-muted small">{{ assignment.username }}</div>
-                                <div class="text-muted small" v-if="assignment.roleName">Vai trò: {{ assignment.roleName }}</div>
-                            </td>
-                            <td>
-                                <div class="text-muted small">Shift #{{ assignment.shiftId }}</div>
-                            </td>
-                            <td>
-                                <div>{{ formatTime(assignment.plannedStart) }} - {{ formatTime(assignment.plannedEnd) }}</div>
-                                <div class="text-muted small">{{ assignment.plannedMinutes }} phút</div>
-                                <div class="text-muted small" v-if="assignment.actualMinutes">
-                                    Thực tế: {{ assignment.actualMinutes }} phút
-                                </div>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ formatCurrency(assignment.totalRevenue ?? 0) }}</div>
-                                <div class="text-muted small" v-if="assignment.totalOrders">
-                                    {{ assignment.totalOrders }} đơn
-                                </div>
-                            </td>
-                            <td>
-                                <div>{{ formatCurrency(assignment.hourlyRate ?? 0) }}/giờ</div>
-                                <div class="text-muted small" v-if="assignment.fixedAllowance">
-                                    Phụ cấp: {{ formatCurrency(assignment.fixedAllowance) }}
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge" :class="statusClass(assignment.status)">
-                                    {{ translateStatus(assignment.status) }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" @click="handleViewDetail(assignment)">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-secondary" @click="handleEdit(assignment)">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" @click="handleUpdateStatus(assignment)">
-                                        <i class="bi bi-arrow-repeat"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" @click="handleRemove(assignment)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="card table-card">
+      <div class="card-body">
+        <LoadingState v-if="loading" />
+        <ErrorState
+          v-else-if="error"
+          :message="error"
+        />
+        <EmptyState
+          v-else-if="!assignments.length"
+          title="Chưa có phân công nào"
+          message="Tạo phân công mới bằng nút ở góc trên bên phải."
+        />
+        <div
+          v-else
+          class="table-responsive"
+        >
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Nhân viên</th>
+                <th>Ca làm</th>
+                <th>Thời gian</th>
+                <th>Doanh thu</th>
+                <th>Lương</th>
+                <th>Trạng thái</th>
+                <th class="text-end">
+                  Hành động
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="assignment in assignments"
+                :key="assignment.id"
+              >
+                <td>
+                  <div class="fw-semibold">
+                    {{ assignment.fullName || assignment.username }}
+                  </div>
+                  <div class="text-muted small">
+                    {{ assignment.username }}
+                  </div>
+                  <div
+                    v-if="assignment.roleName"
+                    class="text-muted small"
+                  >
+                    Vai trò: {{ assignment.roleName }}
+                  </div>
+                </td>
+                <td>
+                  <div class="text-muted small">
+                    Shift #{{ assignment.shiftId }}
+                  </div>
+                </td>
+                <td>
+                  <div>{{ formatTime(assignment.plannedStart) }} - {{ formatTime(assignment.plannedEnd) }}</div>
+                  <div class="text-muted small">
+                    {{ assignment.plannedMinutes }} phút
+                  </div>
+                  <div
+                    v-if="assignment.actualMinutes"
+                    class="text-muted small"
+                  >
+                    Thực tế: {{ assignment.actualMinutes }} phút
+                  </div>
+                </td>
+                <td>
+                  <div class="fw-semibold">
+                    {{ formatCurrency(assignment.totalRevenue ?? 0) }}
+                  </div>
+                  <div
+                    v-if="assignment.totalOrders"
+                    class="text-muted small"
+                  >
+                    {{ assignment.totalOrders }} đơn
+                  </div>
+                </td>
+                <td>
+                  <div>{{ formatCurrency(assignment.hourlyRate ?? 0) }}/giờ</div>
+                  <div
+                    v-if="assignment.fixedAllowance"
+                    class="text-muted small"
+                  >
+                    Phụ cấp: {{ formatCurrency(assignment.fixedAllowance) }}
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    :class="statusClass(assignment.status)"
+                  >
+                    {{ translateStatus(assignment.status) }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-sm btn-outline-primary"
+                      @click="handleViewDetail(assignment)"
+                    >
+                      <i class="bi bi-eye" />
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-secondary"
+                      @click="handleEdit(assignment)"
+                    >
+                      <i class="bi bi-pencil" />
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-success"
+                      @click="handleUpdateStatus(assignment)"
+                    >
+                      <i class="bi bi-arrow-repeat" />
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      @click="handleRemove(assignment)"
+                    >
+                      <i class="bi bi-trash" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -143,8 +225,33 @@ const emit = defineEmits([
     'view-detail',
     'edit',
     'update-status',
-    'remove'
+    'remove',
+    'update:filters'
 ])
+
+const shiftId = computed({
+    get: () => props.filters.shiftId,
+    set: (value) => {
+        emit('update:filters', { ...props.filters, shiftId: value })
+        emit('filter')
+    }
+})
+
+const status = computed({
+    get: () => props.filters.status,
+    set: (value) => {
+        emit('update:filters', { ...props.filters, status: value })
+        emit('filter')
+    }
+})
+
+const userId = computed({
+    get: () => props.filters.userId,
+    set: (value) => {
+        emit('update:filters', { ...props.filters, userId: value })
+        emit('filter')
+    }
+})
 
 const formatTime = (time) => {
     if (!time) return '--:--'

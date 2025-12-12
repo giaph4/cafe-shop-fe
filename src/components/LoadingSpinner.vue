@@ -1,12 +1,14 @@
 <template>
-    <div class="route-loading">
-        <div class="route-loading__spinner">
-            <div class="spinner-ring"></div>
-            <div class="spinner-ring"></div>
-            <div class="spinner-ring"></div>
-        </div>
-        <p class="route-loading__text">Đang tải...</p>
+  <div class="route-loading">
+    <div class="route-loading__spinner">
+      <div class="spinner-ring" />
+      <div class="spinner-ring" />
+      <div class="spinner-ring" />
     </div>
+    <p class="route-loading__text">
+      Đang tải...
+    </p>
+  </div>
 </template>
 
 <script setup>

@@ -1,37 +1,47 @@
 <template>
-    <div class="classification-summary">
-        <div v-if="!classifications" class="text-muted text-center">
-            Chưa có dữ liệu
-        </div>
-        <div v-else class="classification-grid">
-            <div
-                v-for="cls in classificationList"
-                :key="cls.type"
-                class="classification-card"
-                :class="`classification-${cls.type.toLowerCase()}`"
-            >
-                <div class="classification-header">
-                    <div class="classification-icon">
-                        <i :class="cls.icon"></i>
-                    </div>
-                    <div class="classification-info">
-                        <div class="classification-label">{{ cls.label }}</div>
-                        <div class="classification-count">{{ cls.count }} sản phẩm</div>
-                    </div>
-                </div>
-                <div class="classification-metrics">
-                    <div class="metric-item">
-                        <span class="metric-label">Doanh thu:</span>
-                        <span class="metric-value">{{ formatCurrency(cls.revenue) }}</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">Lợi nhuận:</span>
-                        <span class="metric-value">{{ formatCurrency(cls.profit) }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="classification-summary">
+    <div
+      v-if="!classifications"
+      class="text-muted text-center"
+    >
+      Chưa có dữ liệu
     </div>
+    <div
+      v-else
+      class="classification-grid"
+    >
+      <div
+        v-for="cls in classificationList"
+        :key="cls.type"
+        class="classification-card"
+        :class="`classification-${cls.type.toLowerCase()}`"
+      >
+        <div class="classification-header">
+          <div class="classification-icon">
+            <i :class="cls.icon" />
+          </div>
+          <div class="classification-info">
+            <div class="classification-label">
+              {{ cls.label }}
+            </div>
+            <div class="classification-count">
+              {{ cls.count }} sản phẩm
+            </div>
+          </div>
+        </div>
+        <div class="classification-metrics">
+          <div class="metric-item">
+            <span class="metric-label">Doanh thu:</span>
+            <span class="metric-value">{{ formatCurrency(cls.revenue) }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Lợi nhuận:</span>
+            <span class="metric-value">{{ formatCurrency(cls.profit) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -47,7 +57,7 @@ const props = defineProps({
 
 const classificationList = computed(() => {
     if (!props.classifications) return []
-    
+
     return [
         {
             type: 'STAR',

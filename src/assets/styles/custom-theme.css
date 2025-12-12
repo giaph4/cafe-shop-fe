@@ -1,0 +1,266 @@
+/**
+ * Custom Theme & Dynamic Styles
+ * CSS cho custom themes, layout preferences, component styles
+ */
+
+/* ============================================
+   CUSTOM THEME VARIABLES
+   ============================================ */
+
+:root {
+  /* Custom theme colors - sẽ được override bởi JavaScript */
+  --color-custom-primary: var(--color-primary);
+  --color-custom-secondary: var(--color-secondary);
+  --color-custom-accent: var(--color-accent);
+  --color-custom-background: var(--color-background);
+  --color-custom-text: var(--color-text);
+  --color-custom-success: var(--color-success);
+  --color-custom-warning: var(--color-warning);
+  --color-custom-danger: var(--color-danger);
+}
+
+/* ============================================
+   LAYOUT PREFERENCES
+   ============================================ */
+
+/* Sidebar Width */
+:root {
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 80px;
+  --sidebar-width-expanded: 320px;
+}
+
+:root[data-sidebar-width="collapsed"] {
+  --sidebar-width: var(--sidebar-width-collapsed);
+}
+
+:root[data-sidebar-width="expanded"] {
+  --sidebar-width: var(--sidebar-width-expanded);
+}
+
+/* Spacing Multiplier */
+:root {
+  --spacing-multiplier: 1;
+}
+
+:root[data-spacing="compact"] {
+  --spacing-multiplier: 0.85;
+}
+
+:root[data-spacing="comfortable"] {
+  --spacing-multiplier: 1.15;
+}
+
+/* Font Size Multiplier */
+:root {
+  --font-size-multiplier: 1;
+}
+
+:root[data-font-size="small"] {
+  --font-size-multiplier: 0.9;
+}
+
+:root[data-font-size="large"] {
+  --font-size-multiplier: 1.1;
+}
+
+/* Border Radius */
+:root[data-border-radius="sharp"] {
+  --radius-base: 4px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+}
+
+:root[data-border-radius="rounded"] {
+  --radius-base: 16px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+}
+
+/* Animations */
+:root[data-animations="off"] {
+  --transition-base: 0s;
+  --transition-fast: 0s;
+  --transition-slow: 0s;
+  --transition-smooth: 0s;
+  --transition-all: 0s;
+}
+
+:root[data-animations="reduced"] {
+  --transition-base: 0.1s;
+  --transition-fast: 0.05s;
+  --transition-slow: 0.15s;
+  --transition-smooth: 0.1s;
+  --transition-all: 0.1s;
+}
+
+/* ============================================
+   COMPONENT STYLES
+   ============================================ */
+
+/* Button Styles */
+[data-button-style="flat"] .btn,
+[data-button-style="flat"] button {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+[data-button-style="flat"] .btn:hover,
+[data-button-style="flat"] button:hover {
+  background: var(--color-soft-primary);
+}
+
+[data-button-style="outlined"] .btn,
+[data-button-style="outlined"] button {
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+[data-button-style="outlined"] .btn:hover,
+[data-button-style="outlined"] button:hover {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+[data-button-style="filled"] .btn,
+[data-button-style="filled"] button {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border: 2px solid var(--color-primary);
+}
+
+[data-button-style="filled"] .btn:hover,
+[data-button-style="filled"] button:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+/* Table Styles */
+[data-table-style="minimal"] table {
+  border: none;
+}
+
+[data-table-style="minimal"] table th,
+[data-table-style="minimal"] table td {
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-table-style="bordered"] table {
+  border: 1px solid var(--color-border);
+}
+
+[data-table-style="bordered"] table th,
+[data-table-style="bordered"] table td {
+  border: 1px solid var(--color-border);
+}
+
+[data-table-style="striped"] table tbody tr:nth-child(even) {
+  background: var(--color-card-muted);
+}
+
+[data-table-style="striped"] table tbody tr:hover {
+  background: var(--color-table-hover);
+}
+
+/* Card Styles */
+/* Chỉ áp dụng cho element có class .card chính xác (Bootstrap card), không ảnh hưởng đến card-body, card-header, kpi-card, etc */
+:root[data-card-style="flat"] .card {
+  box-shadow: none !important;
+  border: none !important;
+  background: var(--color-card);
+}
+
+:root[data-card-style="elevated"] .card {
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+:root[data-card-style="bordered"] .card {
+  border: 2px solid var(--color-border) !important;
+  box-shadow: none !important;
+}
+
+/* Input Styles */
+[data-input-style="square"] input,
+[data-input-style="square"] textarea,
+[data-input-style="square"] select {
+  border-radius: 0;
+}
+
+[data-input-style="rounded"] input,
+[data-input-style="rounded"] textarea,
+[data-input-style="rounded"] select {
+  border-radius: var(--radius-md);
+}
+
+[data-input-style="outlined"] input,
+[data-input-style="outlined"] textarea,
+[data-input-style="outlined"] select {
+  background: transparent;
+  border-width: 2px;
+  border-radius: var(--radius-sm);
+}
+
+[data-input-style="outlined"] input:focus,
+[data-input-style="outlined"] textarea:focus,
+[data-input-style="outlined"] select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb, 13, 110, 253), 0.1);
+}
+
+/* ============================================
+   DARK MODE ADVANCED
+   ============================================ */
+
+.dark-mode-active {
+  /* Custom dark mode colors sẽ được apply qua JavaScript */
+}
+
+.dark-mode-active [data-theme] {
+  /* Override theme colors khi dark mode active */
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  :root[data-sidebar-width="expanded"] {
+    --sidebar-width: var(--sidebar-width-collapsed);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000000;
+    --color-border-strong: #000000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-base: 0s;
+    --transition-fast: 0s;
+    --transition-slow: 0s;
+    --transition-smooth: 0s;
+    --transition-all: 0s;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

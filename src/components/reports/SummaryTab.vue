@@ -1,271 +1,419 @@
 <template>
-    <div class="reports-summary">
-        <div class="summary-cards">
-            <div
-                v-for="card in summaryCards"
-                :key="card.key"
-                class="summary-card"
-            >
-                <div class="summary-card__icon" :class="card.variant">
-                    <i :class="card.icon"></i>
-                </div>
-                <div class="summary-card__meta">
-                    <span class="summary-card__label">{{ card.label }}</span>
-                    <strong class="summary-card__value">{{ card.displayValue }}</strong>
-                    <small v-if="card.subtitle" class="summary-card__subtitle">{{ card.subtitle }}</small>
-                </div>
-            </div>
+  <div class="reports-summary">
+    <div class="summary-cards">
+      <div
+        v-for="card in summaryCards"
+        :key="card.key"
+        class="summary-card"
+      >
+        <div
+          class="summary-card__icon"
+          :class="card.variant"
+        >
+          <i :class="card.icon" />
         </div>
-
-        <div class="summary-insights card" v-if="insightItems.length">
-            <div class="summary-insights__header">
-                <div>
-                    <h5 class="mb-1">Điểm nổi bật</h5>
-                    <p class="text-muted mb-0">Insights tổng hợp từ dữ liệu báo cáo.</p>
-                </div>
-            </div>
-            <div class="summary-insights__grid">
-                <div
-                    v-for="item in insightItems"
-                    :key="item.key"
-                    class="summary-insight"
-                    :class="item.variant"
-                >
-                    <div class="summary-insight__icon">
-                        <i :class="item.icon"></i>
-                    </div>
-                    <div class="summary-insight__content">
-                        <span class="summary-insight__title">{{ item.title }}</span>
-                        <strong class="summary-insight__value">{{ item.value }}</strong>
-                        <small v-if="item.detail" class="summary-insight__detail">{{ item.detail }}</small>
-                    </div>
-                </div>
-            </div>
+        <div class="summary-card__meta">
+          <span class="summary-card__label">{{ card.label }}</span>
+          <strong class="summary-card__value">{{ card.displayValue }}</strong>
+          <small
+            v-if="card.subtitle"
+            class="summary-card__subtitle"
+          >{{ card.subtitle }}</small>
         </div>
-
-        <div class="charts-grid">
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Xu hướng doanh thu</h5>
-                        <p class="text-muted mb-0">Tổng: {{ formatCurrency(revenueSummary.total) }} · TB/ngày: {{ formatCurrency(revenueSummary.average) }}</p>
-                    </div>
-                    <div class="chart-controls">
-                        <select class="form-select form-select-sm" v-model="revenueChartType">
-                            <option value="area">Area</option>
-                            <option value="line">Line</option>
-                            <option value="bar">Column</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart
-                        v-if="chartsReady && isValidSeries(revenueSeries) && computedRevenueOptions"
-                        :type="revenueChartType"
-                        height="320"
-                        :series="revenueSeries"
-                        :options="computedRevenueOptions"
-                    />
-                    <div v-else-if="!chartsReady" class="text-center text-muted py-4">
-                        <i class="bi bi-hourglass-split"></i>
-                        <p class="mb-0 mt-2">Đang tải dữ liệu...</p>
-                    </div>
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-graph-up"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                </div>
-            </div>
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Phân bổ phương thức thanh toán</h5>
-                        <p class="text-muted mb-0">{{ paymentMetricLabel }}</p>
-                    </div>
-                    <div class="chart-controls d-flex gap-2">
-                        <select class="form-select form-select-sm" v-model="paymentChartType">
-                            <option value="donut">Donut</option>
-                            <option value="pie">Pie</option>
-                            <option value="bar">Bar</option>
-                        </select>
-                        <select class="form-select form-select-sm" v-model="paymentMetric">
-                            <option value="orders">Theo số đơn</option>
-                            <option value="amount">Theo doanh thu</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <template v-if="paymentItems.length">
-                        <ApexChart
-                            v-if="isValidSeries(paymentChartSeries) && paymentChartOptions"
-                            :type="resolvedPaymentChartType"
-                            height="320"
-                            :series="paymentChartSeries"
-                            :options="paymentChartOptions"
-                        />
-                        <div v-else class="text-center text-muted py-4">
-                            <i class="bi bi-pie-chart"></i>
-                            <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                        </div>
-                    </template>
-                    <p v-else class="text-muted mb-0">Chưa có dữ liệu thanh toán trong khoảng thời gian đã chọn.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="analytics-grid">
-            <div class="card analytics-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">So sánh với kỳ trước</h5>
-                    <p class="text-muted mb-0">Theo doanh thu và số đơn</p>
-                </div>
-                <div class="card-body" v-if="salesComparison">
-                    <div class="comparison-grid">
-                        <div class="comparison-item">
-                            <span class="comparison-item__label">Doanh thu hiện tại</span>
-                            <strong>{{ formatCurrency(salesComparison.currentRevenue) }}</strong>
-                        </div>
-                        <div class="comparison-item">
-                            <span class="comparison-item__label">Doanh thu kỳ trước</span>
-                            <strong>{{ formatCurrency(salesComparison.previousRevenue) }}</strong>
-                        </div>
-                        <div class="comparison-item">
-                            <span class="comparison-item__label">Tăng trưởng doanh thu</span>
-                            <strong :class="salesComparison.growthAmount >= 0 ? 'text-success' : 'text-danger'">
-                                {{ formatCurrency(salesComparison.growthAmount) }}
-                            </strong>
-                            <small :class="salesComparison.growthPercentage >= 0 ? 'text-success' : 'text-danger'">
-                                {{ salesComparison.growthPercentage?.toFixed(2) ?? '0.00' }}%
-                            </small>
-                        </div>
-                        <div class="comparison-item">
-                            <span class="comparison-item__label">Số đơn</span>
-                            <strong>{{ formatNumber(salesComparison.currentOrders) }}</strong>
-                            <small>Trước: {{ formatNumber(salesComparison.previousOrders) }}</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body" v-else>
-                    <p class="text-muted mb-0">Chưa có dữ liệu so sánh cho giai đoạn này.</p>
-                </div>
-            </div>
-
-            <div class="card analytics-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Điểm nhấn lợi nhuận</h5>
-                    <p class="text-muted mb-0">Các chỉ số hiệu quả hoạt động chính</p>
-                </div>
-                <div class="card-body">
-                    <ul class="insight-list">
-                        <li>
-                            <span>Doanh thu giai đoạn</span>
-                            <strong>{{ formatCurrency(profit?.totalRevenue ?? 0) }}</strong>
-                        </li>
-                        <li>
-                            <span>Giá vốn hàng bán</span>
-                            <strong>{{ formatCurrency(profit?.totalCostOfGoodsSold ?? 0) }}</strong>
-                        </li>
-                        <li>
-                            <span>Lợi nhuận thuần</span>
-                            <strong>{{ formatCurrency(profit?.totalProfit ?? 0) }}</strong>
-                        </li>
-                        <li>
-                            <span>Biên lợi nhuận gộp</span>
-                            <strong>{{ ((profit?.grossMargin ?? 0) * 100).toFixed(2) }}%</strong>
-                        </li>
-                        <li>
-                            <span>Doanh thu ngày kết thúc</span>
-                            <strong>{{ formatCurrency(dailyRevenue?.totalRevenue ?? 0) }}</strong>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card analytics-card" v-if="inventoryHighlights.length">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Tổng quan tồn kho</h5>
-                    <p class="text-muted mb-0">Theo dõi nhanh trạng thái nguyên liệu</p>
-                </div>
-                <div class="card-body">
-                    <div class="inventory-overview">
-                        <div
-                            v-for="item in inventoryHighlights"
-                            :key="item.key"
-                            class="inventory-overview__item"
-                        >
-                            <div class="inventory-overview__meta">
-                                <span class="inventory-overview__label">{{ item.label }}</span>
-                                <strong class="inventory-overview__value">{{ item.display }}</strong>
-                            </div>
-                            <span v-if="item.badge" class="badge" :class="item.badge.variant">{{ item.badge.text }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="charts-grid">
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Top sản phẩm</h5>
-                        <p class="text-muted mb-0">Dựa trên {{ productMetric === 'revenue' ? 'doanh thu' : 'số lượng' }}</p>
-                    </div>
-                    <div class="chart-controls d-flex gap-2">
-                        <select class="form-select form-select-sm" v-model="productMetric">
-                            <option value="revenue">Doanh thu</option>
-                            <option value="quantity">Số lượng</option>
-                        </select>
-                        <select class="form-select form-select-sm" v-model="productChartType">
-                            <option value="bar">Bar</option>
-                            <option value="horizontalBar">Bar ngang</option>
-                            <option value="pie">Pie</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart
-                        v-if="topProductItems.length && isValidSeries(productChartSeries) && productChartOptions"
-                        :type="resolvedProductChartType"
-                        height="320"
-                        :series="productChartSeries"
-                        :options="productChartOptions"
-                    />
-                    <p v-else class="text-muted mb-0">Chưa có dữ liệu sản phẩm.</p>
-                </div>
-            </div>
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Top khách hàng</h5>
-                        <p class="text-muted mb-0">Theo tổng chi tiêu</p>
-                    </div>
-                    <div class="chart-controls d-flex gap-2">
-                        <select class="form-select form-select-sm" v-model="customerChartType">
-                            <option value="bar">Bar</option>
-                            <option value="horizontalBar">Bar ngang</option>
-                            <option value="pie">Pie</option>
-                        </select>
-                        <select class="form-select form-select-sm" v-model="customerTopLimit">
-                            <option value="5">Top 5</option>
-                            <option value="10">Top 10</option>
-                            <option value="all">Tất cả</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart
-                        v-if="topCustomerItems.length && isValidSeries(customerChartSeries) && customerChartOptions"
-                        :type="resolvedCustomerChartType"
-                        height="320"
-                        :series="customerChartSeries"
-                        :options="customerChartOptions"
-                    />
-                    <p v-else class="text-muted mb-0">Chưa có dữ liệu khách hàng.</p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div
+      v-if="insightItems.length"
+      class="summary-insights card"
+    >
+      <div class="summary-insights__header">
+        <div>
+          <h5 class="mb-1">
+            Điểm nổi bật
+          </h5>
+          <p class="text-muted mb-0">
+            Insights tổng hợp từ dữ liệu báo cáo.
+          </p>
+        </div>
+      </div>
+      <div class="summary-insights__grid">
+        <div
+          v-for="item in insightItems"
+          :key="item.key"
+          class="summary-insight"
+          :class="item.variant"
+        >
+          <div class="summary-insight__icon">
+            <i :class="item.icon" />
+          </div>
+          <div class="summary-insight__content">
+            <span class="summary-insight__title">{{ item.title }}</span>
+            <strong class="summary-insight__value">{{ item.value }}</strong>
+            <small
+              v-if="item.detail"
+              class="summary-insight__detail"
+            >{{ item.detail }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Xu hướng doanh thu
+            </h5>
+            <p class="text-muted mb-0">
+              Tổng: {{ formatCurrency(revenueSummary.total) }} · TB/ngày: {{ formatCurrency(revenueSummary.average) }}
+            </p>
+          </div>
+          <div class="chart-controls">
+            <select
+              v-model="revenueChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="area">
+                Area
+              </option>
+              <option value="line">
+                Line
+              </option>
+              <option value="bar">
+                Column
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="chartsReady && isValidSeries(revenueSeries) && computedRevenueOptions"
+            :type="revenueChartType"
+            height="320"
+            :series="revenueSeries"
+            :options="computedRevenueOptions"
+          />
+          <div
+            v-else-if="!chartsReady"
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-hourglass-split" />
+            <p class="mb-0 mt-2">
+              Đang tải dữ liệu...
+            </p>
+          </div>
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-graph-up" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Phân bổ phương thức thanh toán
+            </h5>
+            <p class="text-muted mb-0">
+              {{ paymentMetricLabel }}
+            </p>
+          </div>
+          <div class="chart-controls d-flex gap-2">
+            <select
+              v-model="paymentChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="donut">
+                Donut
+              </option>
+              <option value="pie">
+                Pie
+              </option>
+              <option value="bar">
+                Bar
+              </option>
+            </select>
+            <select
+              v-model="paymentMetric"
+              class="form-select form-select-sm"
+            >
+              <option value="orders">
+                Theo số đơn
+              </option>
+              <option value="amount">
+                Theo doanh thu
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <template v-if="paymentItems.length">
+            <ApexChart
+              v-if="isValidSeries(paymentChartSeries) && paymentChartOptions"
+              :type="resolvedPaymentChartType"
+              height="320"
+              :series="paymentChartSeries"
+              :options="paymentChartOptions"
+            />
+            <div
+              v-else
+              class="text-center text-muted py-4"
+            >
+              <i class="bi bi-pie-chart" />
+              <p class="mb-0 mt-2">
+                Chưa có dữ liệu để hiển thị
+              </p>
+            </div>
+          </template>
+          <p
+            v-else
+            class="text-muted mb-0"
+          >
+            Chưa có dữ liệu thanh toán trong khoảng thời gian đã chọn.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="card analytics-card">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            So sánh với kỳ trước
+          </h5>
+          <p class="text-muted mb-0">
+            Theo doanh thu và số đơn
+          </p>
+        </div>
+        <div
+          v-if="salesComparison"
+          class="card-body"
+        >
+          <div class="comparison-grid">
+            <div class="comparison-item">
+              <span class="comparison-item__label">Doanh thu hiện tại</span>
+              <strong>{{ formatCurrency(salesComparison.currentRevenue) }}</strong>
+            </div>
+            <div class="comparison-item">
+              <span class="comparison-item__label">Doanh thu kỳ trước</span>
+              <strong>{{ formatCurrency(salesComparison.previousRevenue) }}</strong>
+            </div>
+            <div class="comparison-item">
+              <span class="comparison-item__label">Tăng trưởng doanh thu</span>
+              <strong :class="salesComparison.growthAmount >= 0 ? 'text-success' : 'text-danger'">
+                {{ formatCurrency(salesComparison.growthAmount) }}
+              </strong>
+              <small :class="salesComparison.growthPercentage >= 0 ? 'text-success' : 'text-danger'">
+                {{ salesComparison.growthPercentage?.toFixed(2) ?? '0.00' }}%
+              </small>
+            </div>
+            <div class="comparison-item">
+              <span class="comparison-item__label">Số đơn</span>
+              <strong>{{ formatNumber(salesComparison.currentOrders) }}</strong>
+              <small>Trước: {{ formatNumber(salesComparison.previousOrders) }}</small>
+            </div>
+          </div>
+        </div>
+        <div
+          v-else
+          class="card-body"
+        >
+          <p class="text-muted mb-0">
+            Chưa có dữ liệu so sánh cho giai đoạn này.
+          </p>
+        </div>
+      </div>
+
+      <div class="card analytics-card">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Điểm nhấn lợi nhuận
+          </h5>
+          <p class="text-muted mb-0">
+            Các chỉ số hiệu quả hoạt động chính
+          </p>
+        </div>
+        <div class="card-body">
+          <ul class="insight-list">
+            <li>
+              <span>Doanh thu giai đoạn</span>
+              <strong>{{ formatCurrency(profit?.totalRevenue ?? 0) }}</strong>
+            </li>
+            <li>
+              <span>Giá vốn hàng bán</span>
+              <strong>{{ formatCurrency(profit?.totalCostOfGoodsSold ?? 0) }}</strong>
+            </li>
+            <li>
+              <span>Lợi nhuận thuần</span>
+              <strong>{{ formatCurrency(profit?.totalProfit ?? 0) }}</strong>
+            </li>
+            <li>
+              <span>Biên lợi nhuận gộp</span>
+              <strong>{{ ((profit?.grossMargin ?? 0) * 100).toFixed(2) }}%</strong>
+            </li>
+            <li>
+              <span>Doanh thu ngày kết thúc</span>
+              <strong>{{ formatCurrency(dailyRevenue?.totalRevenue ?? 0) }}</strong>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div
+        v-if="inventoryHighlights.length"
+        class="card analytics-card"
+      >
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Tổng quan tồn kho
+          </h5>
+          <p class="text-muted mb-0">
+            Theo dõi nhanh trạng thái nguyên liệu
+          </p>
+        </div>
+        <div class="card-body">
+          <div class="inventory-overview">
+            <div
+              v-for="item in inventoryHighlights"
+              :key="item.key"
+              class="inventory-overview__item"
+            >
+              <div class="inventory-overview__meta">
+                <span class="inventory-overview__label">{{ item.label }}</span>
+                <strong class="inventory-overview__value">{{ item.display }}</strong>
+              </div>
+              <span
+                v-if="item.badge"
+                class="badge"
+                :class="item.badge.variant"
+              >{{ item.badge.text }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Top sản phẩm
+            </h5>
+            <p class="text-muted mb-0">
+              Dựa trên {{ productMetric === 'revenue' ? 'doanh thu' : 'số lượng' }}
+            </p>
+          </div>
+          <div class="chart-controls d-flex gap-2">
+            <select
+              v-model="productMetric"
+              class="form-select form-select-sm"
+            >
+              <option value="revenue">
+                Doanh thu
+              </option>
+              <option value="quantity">
+                Số lượng
+              </option>
+            </select>
+            <select
+              v-model="productChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="bar">
+                Bar
+              </option>
+              <option value="horizontalBar">
+                Bar ngang
+              </option>
+              <option value="pie">
+                Pie
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="topProductItems.length && isValidSeries(productChartSeries) && productChartOptions"
+            :type="resolvedProductChartType"
+            height="320"
+            :series="productChartSeries"
+            :options="productChartOptions"
+          />
+          <p
+            v-else
+            class="text-muted mb-0"
+          >
+            Chưa có dữ liệu sản phẩm.
+          </p>
+        </div>
+      </div>
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Top khách hàng
+            </h5>
+            <p class="text-muted mb-0">
+              Theo tổng chi tiêu
+            </p>
+          </div>
+          <div class="chart-controls d-flex gap-2">
+            <select
+              v-model="customerChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="bar">
+                Bar
+              </option>
+              <option value="horizontalBar">
+                Bar ngang
+              </option>
+              <option value="pie">
+                Pie
+              </option>
+            </select>
+            <select
+              v-model="customerTopLimit"
+              class="form-select form-select-sm"
+            >
+              <option value="5">
+                Top 5
+              </option>
+              <option value="10">
+                Top 10
+              </option>
+              <option value="all">
+                Tất cả
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="topCustomerItems.length && isValidSeries(customerChartSeries) && customerChartOptions"
+            :type="resolvedCustomerChartType"
+            height="320"
+            :series="customerChartSeries"
+            :options="customerChartOptions"
+          />
+          <p
+            v-else
+            class="text-muted mb-0"
+          >
+            Chưa có dữ liệu khách hàng.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -481,7 +629,7 @@ const summaryCards = computed(() => {
         {
             key: 'todayRevenue',
             label: 'Doanh thu hôm nay: ',
-            value: s.todayRevenue ,
+            value: s.todayRevenue,
             icon: 'bi bi-cash-stack',
             variant: 'variant-primary'
         },
@@ -637,14 +785,14 @@ const paymentChartSeries = computed(() => {
     return [
         {
             name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
-            data: data
+            data
         }
     ]
 })
 
 const paymentChartOptions = computed(() => {
     const items = Array.isArray(paymentItems.value) ? paymentItems.value : []
-    const labels = items.length > 0 
+    const labels = items.length > 0
         ? items.map((item, index) => item?.label ?? `PTTT #${index + 1}`)
         : []
     const base = createBaseOptions(resolvedPaymentChartType.value, VIBRANT_PALETTE)
@@ -656,11 +804,11 @@ const paymentChartOptions = computed(() => {
             enabled: !isBar,
             formatter: (val) => `${Number(val).toFixed(1)}%`
         },
-        xaxis: isBar 
-            ? { 
+        xaxis: isBar
+            ? {
                 ...base.xaxis,
                 categories: labels.length > 0 ? labels : []
-            } 
+            }
             : base.xaxis,
         plotOptions: {
             bar: {
@@ -716,7 +864,7 @@ const productChartSeries = computed(() => {
 
 const productChartOptions = computed(() => {
     const items = Array.isArray(topProductItems.value) ? topProductItems.value : []
-    const labels = items.length > 0 
+    const labels = items.length > 0
         ? items.map((item, index) => item?.productName || `SP #${index + 1}`)
         : []
     const base = createBaseOptions(resolvedProductChartType.value, VIBRANT_PALETTE)
@@ -724,11 +872,11 @@ const productChartOptions = computed(() => {
     return mergeOptions(base, {
         labels: labels.length > 0 ? labels : undefined,
         dataLabels: { enabled: productChartType.value === 'pie' },
-        xaxis: resolvedProductChartType.value === 'bar' 
-            ? { 
+        xaxis: resolvedProductChartType.value === 'bar'
+            ? {
                 ...base.xaxis,
                 categories: labels.length > 0 ? labels : []
-            } 
+            }
             : base.xaxis,
         plotOptions: {
             bar: {
@@ -777,18 +925,18 @@ const customerChartSeries = computed(() => {
 
 const customerChartOptions = computed(() => {
     const items = Array.isArray(topCustomerItems.value) ? topCustomerItems.value : []
-    const labels = items.length > 0 
+    const labels = items.length > 0
         ? items.map((item, index) => item?.customerName ?? `Khách #${item?.customerId ?? index + 1}`)
         : []
     const base = createBaseOptions(resolvedCustomerChartType.value, VIBRANT_PALETTE)
 
     return mergeOptions(base, {
         labels: labels.length > 0 ? labels : undefined,
-        xaxis: resolvedCustomerChartType.value === 'bar' 
-            ? { 
+        xaxis: resolvedCustomerChartType.value === 'bar'
+            ? {
                 ...base.xaxis,
                 categories: labels.length > 0 ? labels : []
-            } 
+            }
             : base.xaxis,
         plotOptions: {
             bar: {
@@ -823,24 +971,48 @@ const customerChartOptions = computed(() => {
     align-items: center;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-card);
     transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--transition-base);
 }
 
 .summary-card:hover {
     background: var(--color-card-muted);
-    border-color: var(--color-primary);
+    border-color: var(--color-border-strong);
+}
+
+.summary-card:hover::before {
+    opacity: 0.7;
 }
 
 .summary-card__icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-sm);
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
     display: grid;
     place-items: center;
-    font-size: 24px;
+    font-size: 1.375rem;
+    flex-shrink: 0;
+    transition: transform var(--transition-base);
+}
+
+.summary-card:hover .summary-card__icon {
+    transform: scale(1.05);
 }
 
 .variant-primary { background: var(--color-soft-primary); color: var(--color-primary); }
@@ -851,10 +1023,12 @@ const customerChartOptions = computed(() => {
 .variant-rose { background: var(--color-soft-rose); color: var(--color-danger); }
 
 .summary-card__label {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
     font-family: var(--font-family-sans);
+    letter-spacing: 0.01em;
+    line-height: 1.4;
 }
 
 .summary-card__value {
@@ -862,12 +1036,15 @@ const customerChartOptions = computed(() => {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     font-family: var(--font-family-sans);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
 }
 
 .summary-card__subtitle {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     font-family: var(--font-family-sans);
+    line-height: 1.4;
 }
 
 .summary-insights {

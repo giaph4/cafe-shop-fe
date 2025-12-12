@@ -19,30 +19,23 @@ export const useOrderStore = defineStore('orders', () => {
     const lastUpdated = ref(null)
 
     // Computed: Get order by ID
-    const getOrderById = (id) => {
-        return ordersMap.value.get(id) || null
-    }
+    const getOrderById = (id) => ordersMap.value.get(id) || null
 
     // Computed: Get orders by status
-    const getOrdersByStatus = (status) => {
-        return orders.value.filter(order => order?.status === status)
-    }
+    const getOrdersByStatus = (status) => orders.value.filter(order => order?.status === status)
 
     // Computed: Get pending orders
-    const pendingOrders = computed(() => {
-        return orders.value.filter(order => order?.status === 'PENDING')
-    })
+    const pendingOrders = computed(() => orders.value.filter(order => order?.status === 'PENDING'))
 
     // Computed: Get paid orders
-    const paidOrders = computed(() => {
-        return orders.value.filter(order => order?.status === 'PAID')
-    })
+    const paidOrders = computed(() => orders.value.filter(order => order?.status === 'PAID'))
 
     /**
      * Load orders from API
      * @param {Object} params - Query parameters (page, size, status, etc.)
      * @param {boolean} force - Force reload
      */
+
     const loadOrders = async (params = {}, force = false) => {
         if (loading.value && !force) return
 
@@ -64,10 +57,10 @@ export const useOrderStore = defineStore('orders', () => {
             }
 
             const ordersArray = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
-            
+
             // Update orders list
             orders.value = ordersArray
-            
+
             // Update map
             ordersArray.forEach(order => {
                 if (order?.id) {
@@ -110,13 +103,13 @@ export const useOrderStore = defineStore('orders', () => {
             if (order?.id) {
                 // Update cache
                 ordersMap.value.set(order.id, order)
-                
+
                 // Update in list if exists
                 const index = orders.value.findIndex(o => o.id === order.id)
                 if (index !== -1) {
                     orders.value[index] = order
                 }
-                
+
                 lastUpdated.value = Date.now()
             }
             return order

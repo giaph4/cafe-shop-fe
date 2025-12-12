@@ -1,49 +1,81 @@
 <template>
-    <div class="staff-card card h-100">
-        <div class="card-body">
-            <div class="d-flex align-items-start gap-3">
-                <div class="avatar-wrapper">
-                    <img v-if="avatarUrl" :src="avatarUrl" class="avatar" :alt="staff.fullName || staff.username" />
-                    <div v-else class="avatar placeholder">{{ initials }}</div>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start gap-2">
-                        <div>
-                            <h5 class="mb-1">{{ staff.fullName || staff.username }}</h5>
-                            <p class="text-muted mb-1">@{{ staff.username }}</p>
-                        </div>
-                        <span :class="['status-badge', statusClass]">{{ staff.status }}</span>
-                    </div>
-                    <div class="text-muted small mb-2">
-                        <div v-if="staff.phone">{{ staff.phone }}</div>
-                        <div>{{ staff.email || 'Chưa có email' }}</div>
-                    </div>
-                    <div class="d-flex flex-wrap gap-1">
-                        <span v-for="role in staff.roles" :key="role.id" class="badge bg-soft">
-                            {{ formatRole(role.name) }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+  <div class="staff-card card h-100">
+    <div class="card-body">
+      <div class="d-flex align-items-start gap-3">
+        <div class="avatar-wrapper">
+          <img
+            v-if="avatarUrl"
+            :src="avatarUrl"
+            class="avatar"
+            :alt="staff.fullName || staff.username"
+          >
+          <div
+            v-else
+            class="avatar placeholder"
+          >
+            {{ initials }}
+          </div>
         </div>
-        <div class="card-footer d-flex justify-content-between align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-outline-primary" @click="$emit('detail', staff)">
-                <i class="bi bi-eye me-1"></i>Chi tiết
-            </button>
-            <div class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-outline-secondary" @click="$emit('edit', staff)">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="btn btn-outline-dark" @click="$emit('history', staff)">
-                    <i class="bi bi-clock-history"></i>
-                </button>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+              <h5 class="mb-1">
+                {{ staff.fullName || staff.username }}
+              </h5>
+              <p class="text-muted mb-1">
+                @{{ staff.username }}
+              </p>
             </div>
+            <span :class="['status-badge', statusClass]">{{ staff.status }}</span>
+          </div>
+          <div class="text-muted small mb-2">
+            <div v-if="staff.phone">
+              {{ staff.phone }}
+            </div>
+            <div>{{ staff.email || 'Chưa có email' }}</div>
+          </div>
+          <div class="d-flex flex-wrap gap-1">
+            <span
+              v-for="role in staff.roles"
+              :key="role.id"
+              class="badge bg-soft"
+            >
+              {{ formatRole(role.name) }}
+            </span>
+          </div>
         </div>
+      </div>
     </div>
+    <div class="card-footer d-flex justify-content-between align-items-center gap-2">
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-primary"
+        @click="$emit('detail', staff)"
+      >
+        <i class="bi bi-eye me-1" />Chi tiết
+      </button>
+      <div class="btn-group btn-group-sm">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          @click="$emit('edit', staff)"
+        >
+          <i class="bi bi-pencil" />
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-dark"
+          @click="$emit('history', staff)"
+        >
+          <i class="bi bi-clock-history" />
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import {computed} from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
     staff: {

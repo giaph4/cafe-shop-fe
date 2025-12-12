@@ -1,21 +1,23 @@
 <template>
-    <div class="profitability-matrix">
-        <apexchart
-            v-if="isMounted"
-            type="scatter"
-            height="400"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-    </div>
+  <div class="profitability-matrix">
+    <apexchart
+      v-if="isMounted"
+      type="scatter"
+      height="400"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+  </div>
 </template>
 
 <script setup>
 import { computed, ref, onMounted, nextTick } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
+import { useChartOptions } from '@/composables/useChartOptions'
 
 const apexchart = VueApexCharts
 const isMounted = ref(false)
+const { createComputedChartOptions } = useChartOptions()
 
 onMounted(async () => {
     await nextTick()
@@ -35,7 +37,7 @@ const chartSeries = computed(() => {
     const cashCows = []
     const questionMarks = []
     const dogs = []
-    
+
     props.products.forEach(product => {
         const dataPoint = {
             x: product.totalQuantity,
@@ -44,7 +46,7 @@ const chartSeries = computed(() => {
             product: product.name,
             classification: product.classification
         }
-        
+
         switch (product.classification) {
             case 'Star':
                 stars.push(dataPoint)
@@ -60,7 +62,7 @@ const chartSeries = computed(() => {
                 break
         }
     })
-    
+
     return [
         {
             name: 'Star',
@@ -85,17 +87,12 @@ const chartSeries = computed(() => {
     ]
 })
 
-const chartOptions = computed(() => ({
-    chart: {
-        type: 'scatter',
-        height: 400,
-        toolbar: {
-            show: true
-        },
-        zoom: {
-            enabled: true
-        }
-    },
+const chartOptions = createComputedChartOptions({
+    type: 'scatter',
+    height: 400,
+    colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+    hasLegend: true,
+    hasRotatedLabels: false,
     xaxis: {
         title: {
             text: 'Volume (Số lượng)',
@@ -105,19 +102,6 @@ const chartOptions = computed(() => ({
                 fontSize: '12px',
                 fontWeight: 600
             }
-        },
-        labels: {
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
-            }
-        },
-        axisBorder: {
-            color: 'var(--color-border)'
-        },
-        axisTicks: {
-            color: 'var(--color-border)'
         }
     },
     yaxis: {
@@ -131,12 +115,7 @@ const chartOptions = computed(() => ({
             }
         },
         labels: {
-            style: {
-                colors: 'var(--color-text)',
-                fontFamily: 'var(--font-family-sans)',
-                fontSize: '12px'
-            },
-            formatter: (val) => val.toFixed(0) + '%'
+            formatter: (val) => `${val.toFixed(0)}%`
         }
     },
     tooltip: {
@@ -153,18 +132,10 @@ const chartOptions = computed(() => ({
             `
         }
     },
-    legend: {
-        position: 'top',
-        horizontalAlign: 'right',
-        fontFamily: 'var(--font-family-sans)',
-        fontSize: '12px',
-        labels: {
-            colors: 'var(--color-text)'
+    chart: {
+        zoom: {
+            enabled: true
         }
-    },
-    grid: {
-        borderColor: 'var(--color-border)',
-        strokeDashArray: 4
     },
     markers: {
         size: 6,
@@ -172,7 +143,7 @@ const chartOptions = computed(() => ({
             size: 8
         }
     }
-}))
+})
 </script>
 
 <style scoped>

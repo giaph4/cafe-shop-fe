@@ -76,6 +76,8 @@ export const useChatSocket = () => {
             debug: import.meta.env.DEV ? logger.debug : undefined
         })
 
+        const subscriptions = {}
+
         const onConnect = () => {
             connected.value = true
             reconnecting.value = false
@@ -86,8 +88,6 @@ export const useChatSocket = () => {
                 chatStore.applyConversationUpdate(payload)
             })
         }
-
-        const subscriptions = {}
 
         instance.onConnect = onConnect
 
@@ -120,6 +120,8 @@ export const useChatSocket = () => {
         if (!instance) return
 
         client.value = instance
+
+        const subscriptions = {}
 
         const onConnect = () => {
             connected.value = true

@@ -1,82 +1,148 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade" ref="modalEl" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">Xem & chỉnh sửa ảnh đại diện</h5>
-                            <p class="text-muted mb-0">Bạn có thể phóng to/thu nhỏ cửa sổ và dùng cọ để vẽ ghi chú lên ảnh.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <div v-if="loading" class="text-center py-4">
-                            <span class="spinner-border text-primary"></span>
-                            <div class="text-muted small mt-2">Đang tải ảnh...</div>
-                        </div>
-                        <div v-else class="editor-wrapper">
-                            <div class="canvas-container">
-                                <canvas
-                                    ref="canvasEl"
-                                    width="640"
-                                    height="640"
-                                    @pointerdown="handlePointerDown"
-                                    @pointermove.prevent="handlePointerMove"
-                                    @pointerup="handlePointerUp"
-                                    @pointerleave="handlePointerUp"
-                                ></canvas>
-                                <div v-if="!imageLoaded" class="canvas-placeholder">
-                                    <i class="bi bi-image"></i>
-                                    <p class="mb-0">Chưa có ảnh hợp lệ để chỉnh sửa.</p>
-                                </div>
-                            </div>
-                            <div class="tool-panel">
-                                <div class="tool-group">
-                                    <label class="form-label">Màu cọ</label>
-                                    <input type="color" v-model="brushColor" class="form-control form-control-color" />
-                                </div>
-                                <div class="tool-group">
-                                    <label class="form-label">Kích thước cọ: {{ brushSize }} px</label>
-                                    <input type="range" min="2" max="60" step="1" v-model.number="brushSize" class="form-range" />
-                                </div>
-                                <div class="tool-actions btn-group flex-wrap" role="group">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" @click="resetDrawing" :disabled="!imageLoaded">
-                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Làm mới
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" @click="clearCanvas" :disabled="!imageLoaded">
-                                        <i class="bi bi-eraser me-1"></i>Xóa nét vẽ
-                                    </button>
-                                </div>
-                                <div class="alert alert-light mt-3 small">
-                                    <div class="fw-semibold mb-1">Mẹo:</div>
-                                    <ul class="mb-0 ps-3">
-                                        <li>Giữ chuột và kéo để vẽ.</li>
-                                        <li>Dùng nút "Làm mới" để tải lại ảnh gốc.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="hide">Đóng</button>
-                        <button type="button" class="btn btn-primary" @click="applyEdits" :disabled="!imageLoaded || applying">
-                            <span v-if="applying" class="spinner-border spinner-border-sm me-2"></span>
-                            Lưu chỉnh sửa
-                        </button>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modalEl"
+      class="modal fade"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title">
+                Xem & chỉnh sửa ảnh đại diện
+              </h5>
+              <p class="text-muted mb-0">
+                Bạn có thể phóng to/thu nhỏ cửa sổ và dùng cọ để vẽ ghi chú lên ảnh.
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hide"
+            />
+          </div>
+
+          <div class="modal-body">
+            <div
+              v-if="loading"
+              class="text-center py-4"
+            >
+              <span class="spinner-border text-primary" />
+              <div class="text-muted small mt-2">
+                Đang tải ảnh...
+              </div>
+            </div>
+            <div
+              v-else
+              class="editor-wrapper"
+            >
+              <div class="canvas-container">
+                <canvas
+                  ref="canvasEl"
+                  width="640"
+                  height="640"
+                  @pointerdown="handlePointerDown"
+                  @pointermove.prevent="handlePointerMove"
+                  @pointerup="handlePointerUp"
+                  @pointerleave="handlePointerUp"
+                />
+                <div
+                  v-if="!imageLoaded"
+                  class="canvas-placeholder"
+                >
+                  <i class="bi bi-image" />
+                  <p class="mb-0">
+                    Chưa có ảnh hợp lệ để chỉnh sửa.
+                  </p>
+                </div>
+              </div>
+              <div class="tool-panel">
+                <div class="tool-group">
+                  <label class="form-label">Màu cọ</label>
+                  <input
+                    v-model="brushColor"
+                    type="color"
+                    class="form-control form-control-color"
+                  >
+                </div>
+                <div class="tool-group">
+                  <label class="form-label">Kích thước cọ: {{ brushSize }} px</label>
+                  <input
+                    v-model.number="brushSize"
+                    type="range"
+                    min="2"
+                    max="60"
+                    step="1"
+                    class="form-range"
+                  >
+                </div>
+                <div
+                  class="tool-actions btn-group flex-wrap"
+                  role="group"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    :disabled="!imageLoaded"
+                    @click="resetDrawing"
+                  >
+                    <i class="bi bi-arrow-counterclockwise me-1" />Làm mới
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    :disabled="!imageLoaded"
+                    @click="clearCanvas"
+                  >
+                    <i class="bi bi-eraser me-1" />Xóa nét vẽ
+                  </button>
+                </div>
+                <div class="alert alert-light mt-3 small">
+                  <div class="fw-semibold mb-1">
+                    Mẹo:
+                  </div>
+                  <ul class="mb-0 ps-3">
+                    <li>Giữ chuột và kéo để vẽ.</li>
+                    <li>Dùng nút "Làm mới" để tải lại ảnh gốc.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="hide"
+            >
+              Đóng
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              :disabled="!imageLoaded || applying"
+              @click="applyEdits"
+            >
+              <span
+                v-if="applying"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Lưu chỉnh sửa
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import {Modal} from 'bootstrap'
-import {nextTick, onBeforeUnmount, onMounted, ref} from 'vue'
-import {toast} from 'vue3-toastify'
+import { Modal } from 'bootstrap'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { toast } from 'vue3-toastify'
 import api from '@/api/axios'
 import logger from '@/utils/logger'
 
@@ -97,7 +163,7 @@ let baseImage = null
 let fetchedObjectUrl = ''
 
 const isDrawing = ref(false)
-const lastPoint = ref({x: 0, y: 0})
+const lastPoint = ref({ x: 0, y: 0 })
 
 const initCanvasContext = () => {
     if (!canvasEl.value) return
@@ -230,20 +296,20 @@ const handlePointerDown = (event) => {
     if (!imageLoaded.value || !ctx) return
     isDrawing.value = true
     canvasEl.value.setPointerCapture(event.pointerId)
-    const {x, y} = getCanvasCoordinates(event)
-    lastPoint.value = {x, y}
+    const { x, y } = getCanvasCoordinates(event)
+    lastPoint.value = { x, y }
     ctx.beginPath()
     ctx.moveTo(x, y)
 }
 
 const handlePointerMove = (event) => {
     if (!isDrawing.value || !ctx) return
-    const {x, y} = getCanvasCoordinates(event)
+    const { x, y } = getCanvasCoordinates(event)
     ctx.strokeStyle = brushColor.value
     ctx.lineWidth = brushSize.value
     ctx.lineTo(x, y)
     ctx.stroke()
-    lastPoint.value = {x, y}
+    lastPoint.value = { x, y }
 }
 
 const handlePointerUp = (event) => {
@@ -294,9 +360,9 @@ const applyEdits = () => {
                 toast.error('Không thể lấy dữ liệu ảnh sau khi chỉnh sửa.')
                 return
             }
-            const file = new File([blob], `avatar-edit-${Date.now()}.png`, {type: 'image/png'})
+            const file = new File([blob], `avatar-edit-${Date.now()}.png`, { type: 'image/png' })
             const url = URL.createObjectURL(file)
-            emit('apply', {file, url})
+            emit('apply', { file, url })
             hide()
         },
         'image/png',
@@ -305,7 +371,7 @@ const applyEdits = () => {
 }
 
 onMounted(() => {
-    modalInstance = new Modal(modalEl.value, {backdrop: 'static'})
+    modalInstance = new Modal(modalEl.value, { backdrop: 'static' })
     modalEl.value.addEventListener('hidden.bs.modal', () => {
         isDrawing.value = false
         emit('closed')
@@ -321,7 +387,7 @@ onBeforeUnmount(() => {
     }
 })
 
-defineExpose({open, hide})
+defineExpose({ open, hide })
 </script>
 
 <style scoped>

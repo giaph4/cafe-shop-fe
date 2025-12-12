@@ -1,346 +1,534 @@
 <template>
   <div data-aos="fade-up">
     <Teleport to="body">
-        <div class="modal fade table-edit-modal" ref="modalElement" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">{{ isEditing ? 'Cập nhật bàn' : 'Thêm bàn mới' }}</h5>
-                            <p class="mb-0 text-muted small">Điền đầy đủ thông tin theo quy định backend.</p>
-                        </div>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            @click="closeModal"
-                            :disabled="createMutation.isPending.value || updateMutation.isPending.value"
-                            aria-label="Close"
-                        ></button>
-                    </div>
-
-                    <Form @submit="handleSubmit" :validation-schema="tableSchema" v-slot="{ errors, isSubmitting }">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Tên bàn <span class="text-danger">*</span></label>
-                                <Field
-                                    name="name"
-                                    type="text"
-                                    v-model="formData.name"
-                                    class="form-control"
-                                    :class="{'is-invalid': errors.name}"
-                                    autocomplete="off"
-                                    maxlength="60"
-                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
-                                />
-                                <ErrorMessage name="name" class="invalid-feedback"/>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Sức chứa (số chỗ) <span class="text-danger">*</span></label>
-                                <Field
-                                    name="capacity"
-                                    type="number"
-                                    v-model="formData.capacity"
-                                    class="form-control"
-                                    :class="{'is-invalid': errors.capacity}"
-                                    min="1"
-                                    max="50"
-                                    step="1"
-                                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
-                                />
-                                <ErrorMessage name="capacity" class="invalid-feedback"/>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                @click="closeModal"
-                                :disabled="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value"
-                            >
-                                <span v-if="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
-                                {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
-                            </button>
-                        </div>
-                    </Form>
-                </div>
+      <div
+        ref="modalElement"
+        class="modal fade table-edit-modal"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">
+                  {{ isEditing ? 'Cập nhật bàn' : 'Thêm bàn mới' }}
+                </h5>
+                <p class="mb-0 text-muted small">
+                  Điền đầy đủ thông tin theo quy định backend.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                aria-label="Close"
+                @click="closeModal"
+              />
             </div>
-        </div>
 
-        <div class="modal fade table-delete-modal" id="deleteTableModal" tabindex="-1" ref="deleteModalElement">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div>
-                            <h5 class="modal-title">Xóa bàn</h5>
-                            <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="deleteMutation.isPending.value" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-3">Bạn có chắc chắn muốn xóa bàn này không?</p>
-                        <div class="card" style="background: var(--color-card-muted); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <strong class="d-block mb-1" style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Tên bàn:</strong>
-                                    <span style="font-family: var(--font-family-sans); color: var(--color-heading);">{{ deleteTarget?.name || '—' }}</span>
-                                </div>
-                                <div class="mb-0">
-                                    <strong class="d-block mb-1" style="color: var(--color-text-muted); font-family: var(--font-family-sans);">Sức chứa:</strong>
-                                    <span style="font-family: var(--font-family-sans); color: var(--color-heading);">{{ deleteTarget?.capacity || '—' }} chỗ</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            @click="closeDeleteModal"
-                            :disabled="deleteMutation.isPending.value"
-                        >
-                            Hủy
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-danger"
-                            @click="handleDeleteConfirm"
-                            :disabled="deleteMutation.isPending.value"
-                        >
-                            <span v-if="deleteMutation.isPending.value" class="spinner-border spinner-border-sm me-2"></span>
-                            Xóa bàn
-                        </button>
-                    </div>
+            <Form
+              v-slot="{ errors, isSubmitting }"
+              :validation-schema="tableSchema"
+              @submit="handleSubmit"
+            >
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Tên bàn <span class="text-danger">*</span></label>
+                  <Field
+                    v-model="formData.name"
+                    name="name"
+                    type="text"
+                    class="form-control"
+                    :class="{'is-invalid': errors.name}"
+                    autocomplete="off"
+                    maxlength="60"
+                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                  />
+                  <ErrorMessage
+                    name="name"
+                    class="invalid-feedback"
+                  />
                 </div>
-            </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Sức chứa (số chỗ) <span class="text-danger">*</span></label>
+                  <Field
+                    v-model="formData.capacity"
+                    name="capacity"
+                    type="number"
+                    class="form-control"
+                    :class="{'is-invalid': errors.capacity}"
+                    min="1"
+                    max="50"
+                    step="1"
+                    :disabled="createMutation.isPending.value || updateMutation.isPending.value"
+                  />
+                  <ErrorMessage
+                    name="capacity"
+                    class="invalid-feedback"
+                  />
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  :disabled="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value"
+                  @click="closeModal"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value"
+                >
+                  <span
+                    v-if="isSubmitting || createMutation.isPending.value || updateMutation.isPending.value"
+                    class="spinner-border spinner-border-sm me-2"
+                  />
+                  {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
+                </button>
+              </div>
+            </Form>
+          </div>
         </div>
+      </div>
+
+      <div
+        id="deleteTableModal"
+        ref="deleteModalElement"
+        class="modal fade table-delete-modal"
+        tabindex="-1"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">
+                  Xóa bàn
+                </h5>
+                <p class="mb-0 text-muted small">
+                  Hành động này không thể hoàn tác.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                :disabled="deleteMutation.isPending.value"
+                aria-label="Close"
+                @click="closeDeleteModal"
+              />
+            </div>
+            <div class="modal-body">
+              <p class="mb-3">
+                Bạn có chắc chắn muốn xóa bàn này không?
+              </p>
+              <div
+                class="card"
+                style="background: var(--color-card-muted); border: 1px solid var(--color-border); border-radius: var(--radius-sm);"
+              >
+                <div class="card-body">
+                  <div class="mb-2">
+                    <strong
+                      class="d-block mb-1"
+                      style="color: var(--color-text-muted); font-family: var(--font-family-sans);"
+                    >Tên bàn:</strong>
+                    <span style="font-family: var(--font-family-sans); color: var(--color-heading);">{{ deleteTarget?.name || '—' }}</span>
+                  </div>
+                  <div class="mb-0">
+                    <strong
+                      class="d-block mb-1"
+                      style="color: var(--color-text-muted); font-family: var(--font-family-sans);"
+                    >Sức chứa:</strong>
+                    <span style="font-family: var(--font-family-sans); color: var(--color-heading);">{{ deleteTarget?.capacity || '—' }} chỗ</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :disabled="deleteMutation.isPending.value"
+                @click="closeDeleteModal"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                :disabled="deleteMutation.isPending.value"
+                @click="handleDeleteConfirm"
+              >
+                <span
+                  v-if="deleteMutation.isPending.value"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                Xóa bàn
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </Teleport>
 
-    <div class="page-container container-fluid" data-aos="fade-up" style="background: var(--color-body-bg); padding: var(--spacing-4);">
-        <header class="tables-header">
-            <div>
-                <h2>Quản lý bàn</h2>
-                <p class="text-muted mb-0">Xem trạng thái bàn, chỉnh sửa thông tin và quản lý bàn theo thời gian thực.</p>
+    <div
+      class="page-container container-fluid"
+      data-aos="fade-up"
+      style="background: var(--color-body-bg); padding: var(--spacing-4);"
+    >
+      <header class="tables-header">
+        <div>
+          <h2>Quản lý bàn</h2>
+          <p class="text-muted mb-0">
+            Xem trạng thái bàn, chỉnh sửa thông tin và quản lý bàn theo thời gian thực.
+          </p>
+        </div>
+        <div class="tables-header__actions">
+          <div
+            class="btn-group layout-toggle"
+            role="group"
+            aria-label="Chọn bố cục hiển thị"
+          >
+            <button
+              type="button"
+              class="btn btn-sm"
+              :class="layoutMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="layoutMode = 'table'"
+            >
+              <i class="bi bi-table me-2" />Bảng
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm"
+              :class="layoutMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="layoutMode = 'grid'"
+            >
+              <i class="bi bi-grid-3x3-gap me-2" />Thẻ
+            </button>
+          </div>
+          <button
+            v-if="canManage"
+            class="btn btn-primary btn-sm"
+            type="button"
+            @click="openModal()"
+          >
+            <i class="bi bi-plus-lg me-2" />Thêm bàn mới
+          </button>
+        </div>
+      </header>
+
+      <div class="card filter-card mb-4">
+        <div class="card-body">
+          <div class="filter-grid">
+            <div class="filter-item">
+              <label class="form-label">Tìm theo tên</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search" /></span>
+                <input
+                  v-model.trim="filterState.name"
+                  type="text"
+                  class="form-control"
+                  placeholder="Nhập tên bàn"
+                >
+              </div>
             </div>
-            <div class="tables-header__actions">
-                <div class="btn-group layout-toggle" role="group" aria-label="Chọn bố cục hiển thị">
-                    <button
-                        type="button"
-                        class="btn btn-sm"
-                        :class="layoutMode === 'table' ? 'btn-primary' : 'btn-outline-primary'"
-                        @click="layoutMode = 'table'"
-                    >
-                        <i class="bi bi-table me-2"></i>Bảng
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-sm"
-                        :class="layoutMode === 'grid' ? 'btn-primary' : 'btn-outline-primary'"
-                        @click="layoutMode = 'grid'"
-                    >
-                        <i class="bi bi-grid-3x3-gap me-2"></i>Thẻ
-                    </button>
-                </div>
-                <button v-if="canManage" class="btn btn-primary btn-sm" type="button" @click="openModal()">
-                    <i class="bi bi-plus-lg me-2"></i>Thêm bàn mới
+            <div class="filter-item">
+              <label class="form-label">Trạng thái</label>
+              <select
+                v-model="filterState.status"
+                class="form-select"
+              >
+                <option value="">
+                  Tất cả trạng thái
+                </option>
+                <option
+                  v-for="status in TABLE_STATUS_OPTIONS"
+                  :key="status.value"
+                  :value="status.value"
+                >
+                  {{ status.label }}
+                </option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label class="form-label">Sức chứa</label>
+              <select
+                v-model="filterState.capacity"
+                class="form-select"
+              >
+                <option value="">
+                  Tất cả
+                </option>
+                <option value="1-2">
+                  1 - 2 chỗ
+                </option>
+                <option value="3-4">
+                  3 - 4 chỗ
+                </option>
+                <option value="5-8">
+                  5 - 8 chỗ
+                </option>
+                <option value="9+">
+                  9+ chỗ
+                </option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label class="form-label">Sắp xếp</label>
+              <select
+                v-model="sortState"
+                class="form-select"
+              >
+                <option value="name-asc">
+                  Tên A → Z
+                </option>
+                <option value="name-desc">
+                  Tên Z → A
+                </option>
+                <option value="capacity-asc">
+                  Sức chứa tăng dần
+                </option>
+                <option value="capacity-desc">
+                  Sức chứa giảm dần
+                </option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                @click="resetFilters"
+              >
+                Đặt lại
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card tabs-card">
+        <div class="card-body">
+          <LoadingState
+            v-if="isLoading"
+            text="Đang tải danh sách bàn..."
+          />
+          <ErrorState
+            v-else-if="isError"
+            :message="error?.message || 'Không thể tải dữ liệu bàn. Vui lòng thử lại sau.'"
+            :show-retry="true"
+            :retry-handler="() => queryClient.invalidateQueries(['tables'])"
+          />
+          <template v-else>
+            <EmptyState
+              v-if="sortedTables.length === 0"
+              title="Không tìm thấy bàn"
+              :message="hasActiveFilters ? 'Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.' : 'Chưa có bàn nào. Hãy tạo bàn đầu tiên.'"
+            >
+              <template #icon>
+                <i class="bi bi-table" />
+              </template>
+              <template
+                v-if="!hasActiveFilters && canManage"
+                #action
+              >
+                <button
+                  class="btn btn-primary"
+                  @click="openModal()"
+                >
+                  <i class="bi bi-plus-lg me-2" />
+                  Tạo bàn đầu tiên
                 </button>
-            </div>
-        </header>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-            <div class="filter-grid">
-                <div class="filter-item">
-                    <label class="form-label">Tìm theo tên</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" placeholder="Nhập tên bàn" v-model.trim="filterState.name"/>
-                    </div>
-                </div>
-                <div class="filter-item">
-                    <label class="form-label">Trạng thái</label>
-                    <select class="form-select" v-model="filterState.status">
-                        <option value="">Tất cả trạng thái</option>
-                        <option v-for="status in TABLE_STATUS_OPTIONS" :key="status.value" :value="status.value">{{ status.label }}</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label class="form-label">Sức chứa</label>
-                    <select class="form-select" v-model="filterState.capacity">
-                        <option value="">Tất cả</option>
-                        <option value="1-2">1 - 2 chỗ</option>
-                        <option value="3-4">3 - 4 chỗ</option>
-                        <option value="5-8">5 - 8 chỗ</option>
-                        <option value="9+">9+ chỗ</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label class="form-label">Sắp xếp</label>
-                    <select class="form-select" v-model="sortState">
-                        <option value="name-asc">Tên A → Z</option>
-                        <option value="name-desc">Tên Z → A</option>
-                        <option value="capacity-asc">Sức chứa tăng dần</option>
-                        <option value="capacity-desc">Sức chứa giảm dần</option>
-                    </select>
-                </div>
-                <div class="filter-actions">
-                    <button class="btn btn-outline-secondary" type="button" @click="resetFilters">Đặt lại</button>
-                </div>
-            </div>
-            </div>
-        </div>
-
-        <div class="card tabs-card">
-            <div class="card-body">
-                <LoadingState v-if="isLoading" text="Đang tải danh sách bàn..." />
-                <ErrorState
-                    v-else-if="isError"
-                    :message="error?.message || 'Không thể tải dữ liệu bàn. Vui lòng thử lại sau.'"
-                    :show-retry="true"
-                    :retry-handler="() => queryClient.invalidateQueries(['tables'])"
-                />
-                <template v-else>
-                    <EmptyState
-                        v-if="sortedTables.length === 0"
-                        title="Không tìm thấy bàn"
-                        :message="hasActiveFilters ? 'Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.' : 'Chưa có bàn nào. Hãy tạo bàn đầu tiên.'"
+              </template>
+            </EmptyState>
+            <div v-else>
+              <!-- Table View -->
+              <div
+                v-if="layoutMode === 'table'"
+                class="table-responsive"
+              >
+                <table class="table align-middle table-hover">
+                  <thead>
+                    <tr>
+                      <th>Chỗ</th>
+                      <th>Tên bàn</th>
+                      <th>ID</th>
+                      <th>Sức chứa</th>
+                      <th>Trạng thái</th>
+                      <th class="text-center">
+                        Hành động
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="table in sortedTables"
+                      :key="table.id"
                     >
-                        <template #icon>
-                            <i class="bi bi-table"></i>
-                        </template>
-                        <template v-if="!hasActiveFilters && canManage" #action>
-                            <button class="btn btn-primary" @click="openModal()">
-                                <i class="bi bi-plus-lg me-2"></i>
-                                Tạo bàn đầu tiên
-                            </button>
-                        </template>
-                    </EmptyState>
-                    <div v-else>
-                        <!-- Table View -->
-                        <div v-if="layoutMode === 'table'" class="table-responsive">
-                            <table class="table align-middle table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Chỗ</th>
-                                        <th>Tên bàn</th>
-                                        <th>ID</th>
-                                        <th>Sức chứa</th>
-                                        <th>Trạng thái</th>
-                                        <th class="text-center">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="table in sortedTables" :key="table.id">
-                                        <td>
-                                            <div class="table-capacity-badge">
-                                                <i class="bi bi-people-fill"></i>
-                                                <strong>{{ table.capacity }}</strong>
-                                            </div>
-                                        </td>
-                                        <td class="fw-semibold">{{ table.name }}</td>
-                                        <td>
-                                            <span class="text-muted small">#{{ table.id }}</span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <i class="bi bi-people-fill text-muted"></i>
-                                                <span>{{ table.capacity }} chỗ</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <select 
-                                                    class="form-select form-select-sm" 
-                                                    :value="table.status"
-                                                    @change="handleStatusChange(table, $event.target.value)"
-                                                    :disabled="statusMutation.isPending.value"
-                                                    style="min-width: 150px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card); color: var(--color-heading); font-family: var(--font-family-sans);"
-                                                >
-                                                    <option v-for="status in TABLE_STATUS_OPTIONS" :key="status.value" :value="status.value">{{ status.label }}</option>
-                                                </select>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="action-grid" v-if="canManage">
-                                                <button class="action-button" type="button" @click="openModal(table)" title="Chỉnh sửa">
-                                                    <i class="bi bi-pencil"></i>
-                                                    <span>Chỉnh sửa</span>
-                                                </button>
-                                                <button class="action-button action-button--danger" type="button" @click="confirmDelete(table)" title="Xóa">
-                                                    <i class="bi bi-trash"></i>
-                                                    <span>Xóa</span>
-                                                </button>
-                                            </div>
-                                            <span v-else class="text-muted small">—</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                      <td>
+                        <div class="table-capacity-badge">
+                          <i class="bi bi-people-fill" />
+                          <strong>{{ table.capacity }}</strong>
                         </div>
-                        <!-- Grid View -->
-                        <div v-else class="tables-grid">
-                <article v-for="table in sortedTables" :key="table.id" class="table-card" :class="getStatusVariant(table.status)">
-                    <header class="table-card__header">
-                        <div>
-                            <h3>{{ table.name }}</h3>
-                            <p class="caption">ID: {{ table.id }}</p>
+                      </td>
+                      <td class="fw-semibold">
+                        {{ table.name }}
+                      </td>
+                      <td>
+                        <span class="text-muted small">#{{ table.id }}</span>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <i class="bi bi-people-fill text-muted" />
+                          <span>{{ table.capacity }} chỗ</span>
                         </div>
-                        <div class="actions" v-if="canManage">
-                            <button class="btn btn-icon" type="button" @click="openModal(table)" title="Chỉnh sửa">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-icon btn-icon--danger" type="button" @click="confirmDelete(table)" title="Xóa">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <select
+                            class="form-select form-select-sm"
+                            :value="table.status"
+                            :disabled="statusMutation.isPending.value"
+                            style="min-width: 150px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card); color: var(--color-heading); font-family: var(--font-family-sans);"
+                            @change="handleStatusChange(table, $event.target.value)"
+                          >
+                            <option
+                              v-for="status in TABLE_STATUS_OPTIONS"
+                              :key="status.value"
+                              :value="status.value"
+                            >
+                              {{ status.label }}
+                            </option>
+                          </select>
                         </div>
-                    </header>
-
-                    <div class="table-card__body">
-                        <div class="table-status-chip">
-                            <i class="bi" :class="getStatusMeta(table.status).icon"></i>
-                            <span>{{ getStatusMeta(table.status).label }}</span>
+                      </td>
+                      <td>
+                        <div
+                          v-if="canManage"
+                          class="action-grid"
+                        >
+                          <button
+                            class="action-button"
+                            type="button"
+                            title="Chỉnh sửa"
+                            @click="openModal(table)"
+                          >
+                            <i class="bi bi-pencil" />
+                            <span>Chỉnh sửa</span>
+                          </button>
+                          <button
+                            class="action-button action-button--danger"
+                            type="button"
+                            title="Xóa"
+                            @click="confirmDelete(table)"
+                          >
+                            <i class="bi bi-trash" />
+                            <span>Xóa</span>
+                          </button>
                         </div>
-                        <div class="table-capacity">
-                            <i class="bi bi-people-fill"></i>
-                            <strong>{{ table.capacity }}</strong>
-                            <span>chỗ</span>
-                        </div>
+                        <span
+                          v-else
+                          class="text-muted small"
+                        >—</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- Grid View -->
+              <div
+                v-else
+                class="tables-grid"
+              >
+                <article
+                  v-for="table in sortedTables"
+                  :key="table.id"
+                  class="table-card"
+                  :class="getStatusVariant(table.status)"
+                >
+                  <header class="table-card__header">
+                    <div>
+                      <h3>{{ table.name }}</h3>
+                      <p class="caption">
+                        ID: {{ table.id }}
+                      </p>
                     </div>
+                    <div
+                      v-if="canManage"
+                      class="actions"
+                    >
+                      <button
+                        class="btn btn-icon"
+                        type="button"
+                        title="Chỉnh sửa"
+                        @click="openModal(table)"
+                      >
+                        <i class="bi bi-pencil" />
+                      </button>
+                      <button
+                        class="btn btn-icon btn-icon--danger"
+                        type="button"
+                        title="Xóa"
+                        @click="confirmDelete(table)"
+                      >
+                        <i class="bi bi-trash" />
+                      </button>
+                    </div>
+                  </header>
 
-                    <footer class="table-card__footer">
-                        <label class="form-label">Cập nhật trạng thái</label>
-                        <select class="form-select form-select-sm" :value="table.status"
-                                @change="handleStatusChange(table, $event.target.value)"
-                                :disabled="statusMutation.isPending.value"
-                                style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card); color: var(--color-heading); font-family: var(--font-family-sans);">
-                            <option v-for="status in TABLE_STATUS_OPTIONS" :key="status.value" :value="status.value">{{ status.label }}</option>
-                        </select>
-                    </footer>
+                  <div class="table-card__body">
+                    <div class="table-status-chip">
+                      <i
+                        class="bi"
+                        :class="getStatusMeta(table.status).icon"
+                      />
+                      <span>{{ getStatusMeta(table.status).label }}</span>
+                    </div>
+                    <div class="table-capacity">
+                      <i class="bi bi-people-fill" />
+                      <strong>{{ table.capacity }}</strong>
+                      <span>chỗ</span>
+                    </div>
+                  </div>
+
+                  <footer class="table-card__footer">
+                    <label class="form-label">Cập nhật trạng thái</label>
+                    <select
+                      class="form-select form-select-sm"
+                      :value="table.status"
+                      :disabled="statusMutation.isPending.value"
+                      style="border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-card); color: var(--color-heading); font-family: var(--font-family-sans);"
+                      @change="handleStatusChange(table, $event.target.value)"
+                    >
+                      <option
+                        v-for="status in TABLE_STATUS_OPTIONS"
+                        :key="status.value"
+                        :value="status.value"
+                      >
+                        {{ status.label }}
+                      </option>
+                    </select>
+                  </footer>
                 </article>
-                        </div>
-                    </div>
-                </template>
+              </div>
             </div>
+          </template>
         </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref, nextTick} from 'vue'
-import {useQuery, useMutation, useQueryClient} from '@tanstack/vue-query'
-import {Modal} from 'bootstrap'
-import {Form, Field, ErrorMessage} from 'vee-validate'
-import {toast} from 'vue3-toastify'
+import { computed, onMounted, onUnmounted, reactive, ref, nextTick } from 'vue'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { Modal } from 'bootstrap'
+import { Form, Field, ErrorMessage } from 'vee-validate'
+import { toast } from 'vue3-toastify'
 import * as yup from 'yup'
-import {storeToRefs} from 'pinia'
-import {useAuthStore} from '@/store/auth'
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '@/store/auth'
 import {
     getTables,
     createTable,
@@ -355,7 +543,7 @@ import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const authStore = useAuthStore()
-const {userRoles} = storeToRefs(authStore)
+const { userRoles } = storeToRefs(authStore)
 const canManage = computed(() => userRoles.value.includes('ROLE_ADMIN') || userRoles.value.includes('ROLE_MANAGER'))
 
 const queryClient = useQueryClient()
@@ -389,7 +577,7 @@ const tableSchema = yup.object({
         .integer('Sức chứa phải là số nguyên')
 })
 
-const {data: tables, isLoading, isError, error} = useQuery({
+const { data: tables, isLoading, isError, error } = useQuery({
     queryKey: ['tables'],
     queryFn: getTables,
     select: (data) => Array.isArray(data) ? data : []
@@ -512,7 +700,7 @@ const resetFilters = () => {
 const handleSubmit = () => {
     const payload = buildTablePayload(formData)
     if (isEditing.value) {
-        updateMutation.mutate({id: formData.id, data: payload})
+        updateMutation.mutate({ id: formData.id, data: payload })
     } else {
         createMutation.mutate(payload)
     }
@@ -520,16 +708,14 @@ const handleSubmit = () => {
 
 const handleStatusChange = (table, newStatus) => {
     if (table.status === newStatus) return
-    statusMutation.mutate({id: table.id, status: newStatus})
+    statusMutation.mutate({ id: table.id, status: newStatus })
 }
 
 const deleteTarget = ref(null)
 const deleteModalElement = ref(null)
 let deleteModalInstance = null
 
-const hasActiveFilters = computed(() => {
-    return Boolean(filterState.name || filterState.status || filterState.capacity)
-})
+const hasActiveFilters = computed(() => Boolean(filterState.name || filterState.status || filterState.capacity))
 
 const confirmDelete = (table) => {
     if (!canManage.value) return
@@ -554,23 +740,23 @@ const closeDeleteModal = () => {
 const getStatusMeta = (status) => {
     switch (status) {
         case 'EMPTY':
-            return {label: 'Còn trống', icon: 'bi-check-circle', tone: 'success'}
+            return { label: 'Còn trống', icon: 'bi-check-circle', tone: 'success' }
         case 'AVAILABLE':
-            return {label: 'Sẵn sàng', icon: 'bi-arrow-repeat', tone: 'info'}
+            return { label: 'Sẵn sàng', icon: 'bi-arrow-repeat', tone: 'info' }
         case 'SERVING':
-            return {label: 'Đang phục vụ', icon: 'bi-cup-hot', tone: 'warning'}
+            return { label: 'Đang phục vụ', icon: 'bi-cup-hot', tone: 'warning' }
         case 'RESERVED':
-            return {label: 'Đã đặt trước', icon: 'bi-bookmark-check', tone: 'danger'}
+            return { label: 'Đã đặt trước', icon: 'bi-bookmark-check', tone: 'danger' }
         case 'PENDING':
-            return {label: 'Đang chờ', icon: 'bi-hourglass-split', tone: 'neutral'}
+            return { label: 'Đang chờ', icon: 'bi-hourglass-split', tone: 'neutral' }
         default:
-            return {label: status || 'Không xác định', icon: 'bi-question-circle', tone: 'neutral'}
+            return { label: status || 'Không xác định', icon: 'bi-question-circle', tone: 'neutral' }
     }
 }
 
 const getStatusVariant = (status) => `status-${getStatusMeta(status).tone}`
 
-function handleApiError(err) {
+function handleApiError (err) {
     const message = err?.response?.data?.message || err?.message
     if (!message) {
         toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
@@ -598,10 +784,10 @@ function handleApiError(err) {
 
 onMounted(() => {
     if (modalElement.value) {
-        bsModal.value = new Modal(modalElement.value, {backdrop: 'static'})
+        bsModal.value = new Modal(modalElement.value, { backdrop: 'static' })
     }
     if (deleteModalElement.value) {
-        deleteModalInstance = new Modal(deleteModalElement.value, {backdrop: 'static'})
+        deleteModalInstance = new Modal(deleteModalElement.value, { backdrop: 'static' })
     }
 })
 

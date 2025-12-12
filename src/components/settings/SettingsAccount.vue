@@ -1,101 +1,127 @@
 <template>
-    <div class="settings-section">
-        <header class="settings-section__header">
-            <div class="settings-section__title-group">
-                <i class="bi bi-person-circle settings-section__icon"></i>
-                <div>
-                    <h2 class="settings-section__title">Tài khoản</h2>
-                    <p class="settings-section__description">Quản lý thông tin tài khoản cá nhân của bạn</p>
-                </div>
-            </div>
-        </header>
-
-        <div class="settings-section__content">
-            <!-- User Profile Card -->
-            <div v-if="settingsStore.userProfile" class="settings-profile-card">
-                <div class="settings-profile-card__avatar">
-                    <img
-                        v-if="settingsStore.userProfile.avatarUrl"
-                        :src="settingsStore.userProfile.avatarUrl"
-                        alt="Avatar"
-                        class="settings-profile-card__avatar-img"
-                    />
-                    <div v-else class="settings-profile-card__avatar-placeholder">
-                        <i class="bi bi-person-circle"></i>
-                    </div>
-                </div>
-                <div class="settings-profile-card__info">
-                    <h3 class="settings-profile-card__name">
-                        {{ settingsStore.userProfile.fullName || settingsStore.userProfile.username }}
-                    </h3>
-                    <p class="settings-profile-card__email">{{ settingsStore.userProfile.email }}</p>
-                    <p class="settings-profile-card__username">@{{ settingsStore.userProfile.username }}</p>
-                </div>
-            </div>
-
-            <!-- Account Form -->
-            <Form
-                :validation-schema="accountSchema"
-                @submit="handleSaveAccount"
-                v-slot="{ errors, isSubmitting }"
-            >
-                <div class="settings-form">
-                    <div class="settings-form__group">
-                        <label class="settings-form__label">
-                            Họ tên <span class="text-danger">*</span>
-                        </label>
-                        <Field
-                            name="fullName"
-                            v-model="accountForm.fullName"
-                            as="input"
-                            type="text"
-                            class="form-control settings-form__input"
-                            :class="{ 'is-invalid': errors.fullName }"
-                            placeholder="Nhập họ tên của bạn"
-                        />
-                        <ErrorMessage name="fullName" class="settings-form__error" />
-                    </div>
-
-                    <div class="settings-form__group">
-                        <label class="settings-form__label">
-                            Email <span class="text-danger">*</span>
-                        </label>
-                        <Field
-                            name="email"
-                            v-model="accountForm.email"
-                            as="input"
-                            type="email"
-                            class="form-control settings-form__input"
-                            :class="{ 'is-invalid': errors.email }"
-                            placeholder="your.email@example.com"
-                        />
-                        <ErrorMessage name="email" class="settings-form__error" />
-                    </div>
-
-                    <div class="settings-form__actions">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            @click="handleResetAccountForm"
-                            :disabled="isSubmitting || savingAccount"
-                        >
-                            <i class="bi bi-arrow-counterclockwise me-2"></i>
-                            Đặt lại
-                        </button>
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                            :disabled="isSubmitting || savingAccount"
-                        >
-                            <span v-if="isSubmitting || savingAccount" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-check-lg me-2"></i>
-                            Lưu thay đổi
-                        </button>
-                    </div>
-                </div>
-            </Form>
+  <div class="settings-section">
+    <header class="settings-section__header">
+      <div class="settings-section__title-group">
+        <i class="bi bi-person-circle settings-section__icon" />
+        <div>
+          <h2 class="settings-section__title">
+            Tài khoản
+          </h2>
+          <p class="settings-section__description">
+            Quản lý thông tin tài khoản cá nhân của bạn
+          </p>
         </div>
+      </div>
+    </header>
+
+    <div class="settings-section__content">
+      <!-- User Profile Card -->
+      <div
+        v-if="settingsStore.userProfile"
+        class="settings-profile-card"
+      >
+        <div class="settings-profile-card__avatar">
+          <img
+            v-if="settingsStore.userProfile.avatarUrl"
+            :src="settingsStore.userProfile.avatarUrl"
+            alt="Avatar"
+            class="settings-profile-card__avatar-img"
+          >
+          <div
+            v-else
+            class="settings-profile-card__avatar-placeholder"
+          >
+            <i class="bi bi-person-circle" />
+          </div>
+        </div>
+        <div class="settings-profile-card__info">
+          <h3 class="settings-profile-card__name">
+            {{ settingsStore.userProfile.fullName || settingsStore.userProfile.username }}
+          </h3>
+          <p class="settings-profile-card__email">
+            {{ settingsStore.userProfile.email }}
+          </p>
+          <p class="settings-profile-card__username">
+            @{{ settingsStore.userProfile.username }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Account Form -->
+      <Form
+        v-slot="{ errors, isSubmitting }"
+        :validation-schema="accountSchema"
+        @submit="handleSaveAccount"
+      >
+        <div class="settings-form">
+          <div class="settings-form__group">
+            <label class="settings-form__label">
+              Họ tên <span class="text-danger">*</span>
+            </label>
+            <Field
+              v-model="accountForm.fullName"
+              name="fullName"
+              as="input"
+              type="text"
+              class="form-control settings-form__input"
+              :class="{ 'is-invalid': errors.fullName }"
+              placeholder="Nhập họ tên của bạn"
+            />
+            <ErrorMessage
+              name="fullName"
+              class="settings-form__error"
+            />
+          </div>
+
+          <div class="settings-form__group">
+            <label class="settings-form__label">
+              Email <span class="text-danger">*</span>
+            </label>
+            <Field
+              v-model="accountForm.email"
+              name="email"
+              as="input"
+              type="email"
+              class="form-control settings-form__input"
+              :class="{ 'is-invalid': errors.email }"
+              placeholder="your.email@example.com"
+            />
+            <ErrorMessage
+              name="email"
+              class="settings-form__error"
+            />
+          </div>
+
+          <div class="settings-form__actions">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="isSubmitting || savingAccount"
+              @click="handleResetAccountForm"
+            >
+              <i class="bi bi-arrow-counterclockwise me-2" />
+              Đặt lại
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="isSubmitting || savingAccount"
+            >
+              <span
+                v-if="isSubmitting || savingAccount"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-check-lg me-2"
+              />
+              Lưu thay đổi
+            </button>
+          </div>
+        </div>
+      </Form>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -172,83 +198,74 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.settings-section__icon-wrapper {
-    width: 64px;
-    height: 64px;
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+}
+
+.settings-section__header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-4);
+    margin-bottom: var(--spacing-3);
+}
+
+.settings-section__title-group {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--color-soft-primary) 0%, rgba(var(--color-primary-rgb, 13, 110, 253), 0.1) 100%);
-    border-radius: var(--radius-lg);
-    border: 2px solid var(--color-border-contrast);
-    flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb, 13, 110, 253), 0.15);
+    gap: var(--spacing-3);
 }
 
 .settings-section__icon {
-    font-size: var(--font-size-2xl);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 2px 4px rgba(var(--color-primary-rgb, 13, 110, 253), 0.2));
+    font-size: var(--font-size-xl);
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.settings-section__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin: 0 0 var(--spacing-1) 0;
+    font-family: var(--font-family-sans);
+}
+
+.settings-section__description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+    font-family: var(--font-family-sans);
+    line-height: var(--line-height-normal);
+}
+
+.settings-section__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
 }
 
 .settings-profile-card {
     display: flex;
     align-items: center;
-    gap: var(--spacing-5);
-    padding: var(--spacing-6);
-    background: linear-gradient(135deg, var(--color-card) 0%, var(--color-card-muted) 100%);
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    margin-bottom: var(--spacing-8);
-    box-shadow: var(--shadow-md);
-    position: relative;
-    overflow: hidden;
-}
-
-.settings-profile-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    border-radius: var(--radius-base);
+    margin-bottom: var(--spacing-5);
 }
 
 .settings-profile-card__avatar {
-    width: 100px;
-    height: 100px;
+    width: 64px;
+    height: 64px;
     border-radius: var(--radius-full);
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-    border: 4px solid var(--color-card);
+    background: var(--color-card-muted);
+    border: 2px solid var(--color-border);
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb, 13, 110, 253), 0.3);
-    position: relative;
-}
-
-.settings-profile-card__avatar::after {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: var(--radius-full);
-    padding: 4px;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.settings-profile-card:hover .settings-profile-card__avatar::after {
-    opacity: 1;
 }
 
 .settings-profile-card__avatar-img {
@@ -311,26 +328,6 @@ onMounted(() => {
 .settings-form__input {
     width: 100%;
     max-width: 500px;
-    padding: var(--spacing-3) var(--spacing-4);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-base);
-    background: var(--color-card);
-    color: var(--color-text);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
-    font-weight: var(--font-weight-medium);
-    transition: all 0.2s ease;
-}
-
-.settings-form__input:hover {
-    border-color: var(--color-border-strong);
-    box-shadow: 0 0 0 3px var(--color-soft-primary);
-}
-
-.settings-form__input:focus {
-    border-color: var(--color-primary);
-    outline: none;
-    box-shadow: 0 0 0 4px var(--color-soft-primary);
 }
 
 .settings-form__input.is-invalid {

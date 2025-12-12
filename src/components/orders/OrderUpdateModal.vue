@@ -1,114 +1,126 @@
 <template>
-    <Teleport to="body">
-        <div class="modal fade order-update-modal" ref="modalElement" tabindex="-1" aria-labelledby="orderUpdateModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="modal-header__content">
-                            <h5 class="modal-title" id="orderUpdateModalLabel">Cập nhật đơn hàng #{{ orderId }}</h5>
-                            <p class="modal-subtitle">Cập nhật thông tin khách hàng, bàn và trạng thái đơn hàng.</p>
-                        </div>
-                        <button type="button" class="btn-close" @click="hide" aria-label="Đóng"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form @submit.prevent="handleSubmit" class="order-update-form">
-                            <!-- Customer Selection -->
-                            <div class="form-group">
-                                <label class="form-label">Khách hàng</label>
-                                <select 
-                                    class="form-select" 
-                                    v-model="form.customerId"
-                                    :disabled="submitting"
-                                >
-                                    <option :value="null">Không có khách hàng</option>
-                                    <option 
-                                        v-for="customer in customers" 
-                                        :key="customer.id" 
-                                        :value="customer.id"
-                                    >
-                                        {{ customer.fullName }} ({{ customer.phone }})
-                                    </option>
-                                </select>
-                                <div class="form-text">Chọn khách hàng cho đơn hàng này</div>
-                            </div>
-
-                            <!-- Table Selection -->
-                            <div class="form-group">
-                                <label class="form-label">Bàn</label>
-                                <select 
-                                    class="form-select" 
-                                    v-model="form.tableId"
-                                    :disabled="submitting"
-                                >
-                                    <option :value="null">Không có bàn</option>
-                                    <option 
-                                        v-for="table in tables" 
-                                        :key="table.id" 
-                                        :value="table.id"
-                                    >
-                                        {{ table.name }} ({{ table.capacity }} chỗ)
-                                    </option>
-                                </select>
-                                <div class="form-text">Chọn bàn cho đơn hàng này</div>
-                            </div>
-
-                            <!-- Status -->
-                            <div class="form-group">
-                                <label class="form-label">Trạng thái</label>
-                                <select 
-                                    class="form-select" 
-                                    v-model="form.status"
-                                    :disabled="submitting"
-                                >
-                                    <option value="PENDING">Đang chờ</option>
-                                    <option value="PAID">Đã thanh toán</option>
-                                    <option value="CANCELLED">Đã hủy</option>
-                                    <option value="TRANSFERRED">Đã chuyển ca</option>
-                                </select>
-                            </div>
-
-                            <!-- Note -->
-                            <div class="form-group">
-                                <label class="form-label">Ghi chú</label>
-                                <textarea 
-                                    class="form-control" 
-                                    v-model="form.note"
-                                    rows="3"
-                                    :disabled="submitting"
-                                    placeholder="Nhập ghi chú cho đơn hàng..."
-                                ></textarea>
-                            </div>
-
-                            <!-- Error Message -->
-                            <div v-if="error" class="alert alert-danger">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                {{ error }}
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button 
-                            type="button" 
-                            class="btn btn-outline-secondary" 
-                            @click="hide"
-                            :disabled="submitting"
-                        >
-                            Hủy
-                        </button>
-                        <button 
-                            type="button" 
-                            class="btn btn-primary" 
-                            @click="handleSubmit"
-                            :disabled="submitting"
-                        >
-                            <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                            Lưu thay đổi
-                        </button>
-                    </div>
-                </div>
+  <Teleport to="body">
+    <div
+      ref="modalElement"
+      class="modal fade order-update-modal"
+      tabindex="-1"
+      aria-labelledby="orderUpdateModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5
+                id="orderUpdateModalLabel"
+                class="modal-title"
+              >
+                Cập nhật đơn hàng #{{ orderId }}
+              </h5>
+              <p class="modal-subtitle">
+                Cập nhật thông tin khách hàng và bàn cho đơn hàng đang chờ.
+              </p>
             </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="hide"
+            />
+          </div>
+          <div class="modal-body">
+            <form
+              class="order-update-form"
+              @submit.prevent="handleSubmit"
+            >
+              <!-- Customer Selection -->
+              <div class="form-group">
+                <label class="form-label">Khách hàng</label>
+                <select
+                  v-model="form.customerId"
+                  class="form-select"
+                  :disabled="submitting"
+                >
+                  <option :value="null">
+                    Không có khách hàng
+                  </option>
+                  <option
+                    v-for="customer in customers"
+                    :key="customer.id"
+                    :value="customer.id"
+                  >
+                    {{ customer.fullName }} ({{ customer.phone }})
+                  </option>
+                </select>
+                <div class="form-text">
+                  Chọn khách hàng cho đơn hàng này
+                </div>
+              </div>
+
+              <!-- Table Selection -->
+              <div class="form-group">
+                <label class="form-label">Bàn</label>
+                <select
+                  v-model="form.tableId"
+                  class="form-select"
+                  :disabled="submitting"
+                >
+                  <option :value="null">
+                    Không có bàn
+                  </option>
+                  <option
+                    v-for="table in tables"
+                    :key="table.id"
+                    :value="table.id"
+                  >
+                    {{ table.name }} ({{ table.capacity }} chỗ)
+                  </option>
+                </select>
+                <div class="form-text">
+                  Chọn bàn cho đơn hàng này
+                </div>
+              </div>
+
+              <!-- Note: Status và Note không thể cập nhật qua API này -->
+              <!-- Status chỉ có thể thay đổi qua các action: thanh toán, hủy đơn -->
+              <!-- Note không có trong Order entity, chỉ có trong OrderDetail -->
+
+              <!-- Error Message -->
+              <div
+                v-if="error"
+                class="alert alert-danger"
+              >
+                <i class="bi bi-exclamation-triangle me-2" />
+                {{ error }}
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="submitting"
+              @click="hide"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              :disabled="submitting"
+              @click="handleSubmit"
+            >
+              <span
+                v-if="submitting"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Lưu thay đổi
+            </button>
+          </div>
         </div>
-    </Teleport>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -138,9 +150,7 @@ let modalInstance = null
 
 const form = reactive({
     customerId: null,
-    tableId: null,
-    status: 'PENDING',
-    note: ''
+    tableId: null
 })
 
 const customers = ref([])
@@ -174,8 +184,6 @@ const initializeForm = () => {
     if (props.order) {
         form.customerId = props.order.customerId || null
         form.tableId = props.order.tableId || null
-        form.status = props.order.status || 'PENDING'
-        form.note = props.order.note || ''
     }
 }
 
@@ -197,12 +205,6 @@ const handleSubmit = async () => {
         }
         if (form.tableId !== undefined) {
             updateData.tableId = form.tableId
-        }
-        if (form.status !== undefined) {
-            updateData.status = form.status
-        }
-        if (form.note !== undefined) {
-            updateData.note = form.note
         }
 
         await updateOrder(props.orderId, updateData)

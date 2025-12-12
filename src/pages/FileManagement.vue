@@ -1,365 +1,482 @@
 <template>
-    <div class="page-container container-fluid file-management-page" data-aos="fade-up">
-        <div class="file-management-header">
-            <div class="file-management-header__content">
-                <div class="file-management-header__title-section">
-                    <h2 class="page-title">Quản lý File</h2>
-                    <p class="page-subtitle">Upload, xem và quản lý các file trong hệ thống.</p>
-                </div>
-                <div class="file-management-header__actions">
-                    <button class="btn btn-outline-primary" type="button" @click="toggleFileList" :disabled="fileListLoading">
-                        <i class="bi bi-list-ul me-2"></i>
-                        {{ showFileList ? 'Ẩn danh sách' : 'Xem danh sách files' }}
-                    </button>
-                    <button class="btn btn-outline-secondary" type="button" @click="resetForms" :disabled="uploading || deleting">
-                        <i class="bi bi-arrow-clockwise me-2"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
+  <div
+    class="page-container container-fluid file-management-page"
+    data-aos="fade-up"
+  >
+    <div class="file-management-header">
+      <div class="file-management-header__content">
+        <div class="file-management-header__title-section">
+          <h2 class="page-title">
+            Quản lý File
+          </h2>
+          <p class="page-subtitle">
+            Upload, xem và quản lý các file trong hệ thống.
+          </p>
         </div>
-
-        <div class="row g-4">
-            <!-- Upload Section -->
-            <div class="col-lg-6">
-                <div class="card upload-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-cloud-upload me-2"></i>Upload File
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-4">
-                            <label class="form-label">Upload một file</label>
-                            <input
-                                type="file"
-                                class="form-control"
-                                ref="singleFileInput"
-                                @change="handleSingleFileSelect"
-                                :disabled="uploading"
-                            />
-                            <small class="text-muted d-block mt-2">
-                                Chọn một file để upload lên hệ thống
-                            </small>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label">Upload nhiều file</label>
-                            <input
-                                type="file"
-                                class="form-control"
-                                multiple
-                                ref="multipleFileInput"
-                                @change="handleMultipleFileSelect"
-                                :disabled="uploading"
-                            />
-                            <small class="text-muted d-block mt-2">
-                                Chọn nhiều file cùng lúc (giữ Ctrl/Cmd để chọn nhiều)
-                            </small>
-                        </div>
-
-                        <div v-if="selectedFiles.length > 0" class="mb-3">
-                            <label class="form-label">Files đã chọn ({{ selectedFiles.length }})</label>
-                            <div class="list-group">
-                                <div
-                                    v-for="(file, index) in selectedFiles"
-                                    :key="index"
-                                    class="list-group-item d-flex justify-content-between align-items-center"
-                                >
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="bi bi-file-earmark"></i>
-                                        <div>
-                                            <div class="fw-semibold">{{ file.name }}</div>
-                                            <small class="text-muted">{{ formatFileSize(file.size) }}</small>
-                                        </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        @click="removeFile(index)"
-                                        :disabled="uploading"
-                                    >
-                                        <i class="bi bi-x"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            class="btn btn-primary w-100"
-                            type="button"
-                            @click="handleUpload"
-                            :disabled="uploading || selectedFiles.length === 0"
-                        >
-                            <span v-if="uploading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-cloud-upload me-2"></i>
-                            {{ uploading ? 'Đang upload...' : 'Upload File' }}
-                        </button>
-
-                        <div v-if="uploadError" class="alert alert-danger mt-3 mb-0">
-                            {{ uploadError }}
-                        </div>
-
-                        <div v-if="uploadSuccess.length > 0" class="mt-3">
-                            <div class="alert alert-success">
-                                <strong>Upload thành công!</strong>
-                                <ul class="mb-0 mt-2">
-                                    <li v-for="(file, index) in uploadSuccess" :key="index">
-                                        <a :href="file.fileUrl" target="_blank" class="text-decoration-none">
-                                            {{ file.fileName }}
-                                        </a>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-secondary ms-2"
-                                            @click="copyToClipboard(file.fileUrl)"
-                                        >
-                                            <i class="bi bi-clipboard"></i>
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Delete Section -->
-            <div class="col-lg-6">
-                <div class="card delete-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-trash me-2"></i>Xóa File
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Tên file hoặc URL</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                v-model="deleteFileName"
-                                placeholder="Nhập tên file hoặc URL đầy đủ"
-                                :disabled="deleting"
-                            />
-                            <small class="text-muted d-block mt-2">
-                                Nhập tên file (ví dụ: abc123.jpg) hoặc URL đầy đủ của file
-                            </small>
-                        </div>
-
-                        <button
-                            class="btn btn-danger w-100"
-                            type="button"
-                            @click="handleDelete"
-                            :disabled="deleting || !deleteFileName"
-                        >
-                            <span v-if="deleting" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-trash me-2"></i>
-                            {{ deleting ? 'Đang xóa...' : 'Xóa File' }}
-                        </button>
-
-                        <div v-if="deleteError" class="alert alert-danger mt-3 mb-0">
-                            {{ deleteError }}
-                        </div>
-
-                        <div v-if="deleteSuccess" class="alert alert-success mt-3 mb-0">
-                            File đã được xóa thành công!
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="file-management-header__actions">
+          <button
+            class="btn btn-outline-primary"
+            type="button"
+            :disabled="fileListLoading"
+            @click="toggleFileList"
+          >
+            <i class="bi bi-list-ul me-2" />
+            {{ showFileList ? 'Ẩn danh sách' : 'Xem danh sách files' }}
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            :disabled="uploading || deleting"
+            @click="resetForms"
+          >
+            <i class="bi bi-arrow-clockwise me-2" />
+            Làm mới
+          </button>
         </div>
-
-        <!-- File List Section -->
-        <div v-if="showFileList" class="card mt-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-files me-2"></i>Danh sách Files
-                </h5>
-                <div class="d-flex gap-2 align-items-center">
-                    <div class="input-group input-group-sm" style="max-width: 300px;">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input
-                            type="text"
-                            class="form-control"
-                            v-model="fileListKeyword"
-                            placeholder="Tìm kiếm file..."
-                            @keyup.enter="handleFileListSearch"
-                            :disabled="fileListLoading"
-                        />
-                        <button
-                            class="btn btn-outline-secondary"
-                            type="button"
-                            @click="handleFileListSearch"
-                            :disabled="fileListLoading"
-                        >
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                    <button
-                        class="btn btn-sm btn-outline-secondary"
-                        type="button"
-                        @click="fetchFileList"
-                        :disabled="fileListLoading"
-                    >
-                        <span v-if="fileListLoading" class="spinner-border spinner-border-sm me-1"></span>
-                        <i v-else class="bi bi-arrow-repeat me-1"></i>
-                        Làm mới
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <LoadingState v-if="fileListLoading" />
-                <ErrorState 
-                    v-else-if="fileListError" 
-                    :message="fileListError"
-                    @retry="fetchFileList"
-                />
-                <EmptyState
-                    v-else-if="fileList.length === 0"
-                    title="Không có file nào"
-                    message="Không có file nào trong hệ thống."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tên file</th>
-                                <th>Kích thước</th>
-                                <th>Loại</th>
-                                <th>Ngày upload</th>
-                                <th>URL</th>
-                                <th class="text-end">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(file, index) in fileList" :key="index">
-                                <td>
-                                    <i class="bi bi-file-earmark me-2"></i>
-                                    {{ file.fileName || file.name || 'N/A' }}
-                                </td>
-                                <td>{{ formatFileSize(file.fileSize || file.size) }}</td>
-                                <td>
-                                    <span class="badge bg-secondary">{{ file.fileType || file.type || 'N/A' }}</span>
-                                </td>
-                                <td>
-                                    <span v-if="file.uploadedAt || file.createdAt">
-                                        {{ formatDateTime(file.uploadedAt || file.createdAt) }}
-                                    </span>
-                                    <span v-else class="text-muted">N/A</span>
-                                </td>
-                                <td>
-                                    <a :href="file.fileUrl || file.url" target="_blank" class="text-decoration-none">
-                                        <i class="bi bi-link-45deg me-1"></i>Xem
-                                    </a>
-                                </td>
-                                <td class="text-end">
-                                    <button
-                                        class="btn btn-sm btn-outline-danger"
-                                        @click="deleteFileFromList(file.fileName || file.name, index)"
-                                        :disabled="deleting"
-                                    >
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Uploads (if any) -->
-        <div v-if="recentUploads.length > 0" class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history me-2"></i>Files vừa upload
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tên file</th>
-                                <th>Kích thước</th>
-                                <th>Loại</th>
-                                <th>URL</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(file, index) in recentUploads" :key="index">
-                                <td>
-                                    <i class="bi bi-file-earmark me-2"></i>
-                                    {{ file.fileName }}
-                                </td>
-                                <td>{{ formatFileSize(file.fileSize) }}</td>
-                                <td>
-                                    <span class="badge bg-secondary">{{ file.fileType || 'N/A' }}</span>
-                                </td>
-                                <td>
-                                    <a :href="file.fileUrl" target="_blank" class="text-decoration-none">
-                                        <i class="bi bi-link-45deg me-1"></i>Xem
-                                    </a>
-                                </td>
-                                <td>
-                                    <button
-                                        class="btn btn-sm btn-outline-danger"
-                                        @click="deleteRecentFile(file.fileName, index)"
-                                        :disabled="deleting"
-                                    >
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <Teleport to="body">
-            <!-- Delete Confirmation Modal -->
-            <div 
-                class="modal fade" 
-                id="deleteFileModal" 
-                tabindex="-1" 
-                ref="deleteConfirmModal" 
-                aria-labelledby="deleteFileModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteFileModalLabel">Xác nhận xóa</h5>
-                            <button type="button" class="btn-close" @click="deleteConfirmModal?.hide()" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa file này không?</p>
-                            <div class="alert alert-warning mt-3">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                Hành động này không thể hoàn tác.
-                            </div>
-                            <div v-if="deleteConfirmFileName" class="card mt-3">
-                                <div class="card-body">
-                                    <p class="mb-0"><strong>Tên file:</strong> {{ deleteConfirmFileName }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click="deleteConfirmModal?.hide()">
-                                Hủy
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="confirmDeleteFile" :disabled="deleting">
-                                <span v-if="deleting" class="spinner-border spinner-border-sm me-2"></span>
-                                Xóa
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+      </div>
     </div>
+
+    <div class="row g-4">
+      <!-- Upload Section -->
+      <div class="col-lg-6">
+        <div class="card upload-card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-cloud-upload me-2" />Upload File
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-4">
+              <label class="form-label">Upload một file</label>
+              <input
+                ref="singleFileInput"
+                type="file"
+                class="form-control"
+                :disabled="uploading"
+                @change="handleSingleFileSelect"
+              >
+              <small class="text-muted d-block mt-2">
+                Chọn một file để upload lên hệ thống
+              </small>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Upload nhiều file</label>
+              <input
+                ref="multipleFileInput"
+                type="file"
+                class="form-control"
+                multiple
+                :disabled="uploading"
+                @change="handleMultipleFileSelect"
+              >
+              <small class="text-muted d-block mt-2">
+                Chọn nhiều file cùng lúc (giữ Ctrl/Cmd để chọn nhiều)
+              </small>
+            </div>
+
+            <div
+              v-if="selectedFiles.length > 0"
+              class="mb-3"
+            >
+              <label class="form-label">Files đã chọn ({{ selectedFiles.length }})</label>
+              <div class="list-group">
+                <div
+                  v-for="(file, index) in selectedFiles"
+                  :key="index"
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark" />
+                    <div>
+                      <div class="fw-semibold">
+                        {{ file.name }}
+                      </div>
+                      <small class="text-muted">{{ formatFileSize(file.size) }}</small>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    :disabled="uploading"
+                    @click="removeFile(index)"
+                  >
+                    <i class="bi bi-x" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              class="btn btn-primary w-100"
+              type="button"
+              :disabled="uploading || selectedFiles.length === 0"
+              @click="handleUpload"
+            >
+              <span
+                v-if="uploading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-cloud-upload me-2"
+              />
+              {{ uploading ? 'Đang upload...' : 'Upload File' }}
+            </button>
+
+            <div
+              v-if="uploadError"
+              class="alert alert-danger mt-3 mb-0"
+            >
+              {{ uploadError }}
+            </div>
+
+            <div
+              v-if="uploadSuccess.length > 0"
+              class="mt-3"
+            >
+              <div class="alert alert-success">
+                <strong>Upload thành công!</strong>
+                <ul class="mb-0 mt-2">
+                  <li
+                    v-for="(file, index) in uploadSuccess"
+                    :key="index"
+                  >
+                    <a
+                      :href="file.fileUrl"
+                      target="_blank"
+                      class="text-decoration-none"
+                    >
+                      {{ file.fileName }}
+                    </a>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary ms-2"
+                      @click="copyToClipboard(file.fileUrl)"
+                    >
+                      <i class="bi bi-clipboard" />
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Section -->
+      <div class="col-lg-6">
+        <div class="card delete-card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-trash me-2" />Xóa File
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label">Tên file hoặc URL</label>
+              <input
+                v-model="deleteFileName"
+                type="text"
+                class="form-control"
+                placeholder="Nhập tên file hoặc URL đầy đủ"
+                :disabled="deleting"
+              >
+              <small class="text-muted d-block mt-2">
+                Nhập tên file (ví dụ: abc123.jpg) hoặc URL đầy đủ của file
+              </small>
+            </div>
+
+            <button
+              class="btn btn-danger w-100"
+              type="button"
+              :disabled="deleting || !deleteFileName"
+              @click="handleDelete"
+            >
+              <span
+                v-if="deleting"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-trash me-2"
+              />
+              {{ deleting ? 'Đang xóa...' : 'Xóa File' }}
+            </button>
+
+            <div
+              v-if="deleteError"
+              class="alert alert-danger mt-3 mb-0"
+            >
+              {{ deleteError }}
+            </div>
+
+            <div
+              v-if="deleteSuccess"
+              class="alert alert-success mt-3 mb-0"
+            >
+              File đã được xóa thành công!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File List Section -->
+    <div
+      v-if="showFileList"
+      class="card mt-4"
+    >
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="bi bi-files me-2" />Danh sách Files
+        </h5>
+        <div class="d-flex gap-2 align-items-center">
+          <div
+            class="input-group input-group-sm"
+            style="max-width: 300px;"
+          >
+            <span class="input-group-text"><i class="bi bi-search" /></span>
+            <input
+              v-model="fileListKeyword"
+              type="text"
+              class="form-control"
+              placeholder="Tìm kiếm file..."
+              :disabled="fileListLoading"
+              @keyup.enter="handleFileListSearch"
+            >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              :disabled="fileListLoading"
+              @click="handleFileListSearch"
+            >
+              <i class="bi bi-search" />
+            </button>
+          </div>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            type="button"
+            :disabled="fileListLoading"
+            @click="fetchFileList"
+          >
+            <span
+              v-if="fileListLoading"
+              class="spinner-border spinner-border-sm me-1"
+            />
+            <i
+              v-else
+              class="bi bi-arrow-repeat me-1"
+            />
+            Làm mới
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <LoadingState v-if="fileListLoading" />
+        <ErrorState
+          v-else-if="fileListError"
+          :message="fileListError"
+          @retry="fetchFileList"
+        />
+        <EmptyState
+          v-else-if="fileList.length === 0"
+          title="Không có file nào"
+          message="Không có file nào trong hệ thống."
+        />
+        <div
+          v-else
+          class="table-responsive"
+        >
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Tên file</th>
+                <th>Kích thước</th>
+                <th>Loại</th>
+                <th>Ngày upload</th>
+                <th>URL</th>
+                <th class="text-end">
+                  Thao tác
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(file, index) in fileList"
+                :key="index"
+              >
+                <td>
+                  <i class="bi bi-file-earmark me-2" />
+                  {{ file.fileName || file.name || 'N/A' }}
+                </td>
+                <td>{{ formatFileSize(file.fileSize || file.size) }}</td>
+                <td>
+                  <span class="badge bg-secondary">{{ file.fileType || file.type || 'N/A' }}</span>
+                </td>
+                <td>
+                  <span v-if="file.uploadedAt || file.createdAt">
+                    {{ formatDateTime(file.uploadedAt || file.createdAt) }}
+                  </span>
+                  <span
+                    v-else
+                    class="text-muted"
+                  >N/A</span>
+                </td>
+                <td>
+                  <a
+                    :href="file.fileUrl || file.url"
+                    target="_blank"
+                    class="text-decoration-none"
+                  >
+                    <i class="bi bi-link-45deg me-1" />Xem
+                  </a>
+                </td>
+                <td class="text-end">
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    :disabled="deleting"
+                    @click="deleteFileFromList(file.fileName || file.name, index)"
+                  >
+                    <i class="bi bi-trash" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Uploads (if any) -->
+    <div
+      v-if="recentUploads.length > 0"
+      class="card mt-4"
+    >
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="bi bi-clock-history me-2" />Files vừa upload
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Tên file</th>
+                <th>Kích thước</th>
+                <th>Loại</th>
+                <th>URL</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(file, index) in recentUploads"
+                :key="index"
+              >
+                <td>
+                  <i class="bi bi-file-earmark me-2" />
+                  {{ file.fileName }}
+                </td>
+                <td>{{ formatFileSize(file.fileSize) }}</td>
+                <td>
+                  <span class="badge bg-secondary">{{ file.fileType || 'N/A' }}</span>
+                </td>
+                <td>
+                  <a
+                    :href="file.fileUrl"
+                    target="_blank"
+                    class="text-decoration-none"
+                  >
+                    <i class="bi bi-link-45deg me-1" />Xem
+                  </a>
+                </td>
+                <td>
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    :disabled="deleting"
+                    @click="deleteRecentFile(file.fileName, index)"
+                  >
+                    <i class="bi bi-trash" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <Teleport to="body">
+      <!-- Delete Confirmation Modal -->
+      <div
+        id="deleteFileModal"
+        ref="deleteConfirmModal"
+        class="modal fade"
+        tabindex="-1"
+        aria-labelledby="deleteFileModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                id="deleteFileModalLabel"
+                class="modal-title"
+              >
+                Xác nhận xóa
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="deleteConfirmModal?.hide()"
+              />
+            </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa file này không?</p>
+              <div class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle me-2" />
+                Hành động này không thể hoàn tác.
+              </div>
+              <div
+                v-if="deleteConfirmFileName"
+                class="card mt-3"
+              >
+                <div class="card-body">
+                  <p class="mb-0">
+                    <strong>Tên file:</strong> {{ deleteConfirmFileName }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="deleteConfirmModal?.hide()"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                :disabled="deleting"
+                @click="confirmDeleteFile"
+              >
+                <span
+                  v-if="deleting"
+                  class="spinner-border spinner-border-sm me-2"
+                />
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -401,7 +518,7 @@ const formatFileSize = (bytes) => {
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+    return `${Math.round(bytes / Math.pow(k, i) * 100) / 100  } ${  sizes[i]}`
 }
 
 const handleSingleFileSelect = (event) => {
@@ -436,7 +553,7 @@ const handleUpload = async () => {
 
     try {
         let results = []
-        
+
         if (selectedFiles.value.length === 1) {
             const result = await uploadFile(selectedFiles.value[0])
             results = [result]
@@ -446,7 +563,7 @@ const handleUpload = async () => {
 
         uploadSuccess.value = results
         recentUploads.value.unshift(...results)
-        
+
         // Giữ tối đa 20 files gần nhất
         if (recentUploads.value.length > 20) {
             recentUploads.value = recentUploads.value.slice(0, 20)
@@ -455,7 +572,7 @@ const handleUpload = async () => {
         selectedFiles.value = []
         singleFileInput.value.value = ''
         multipleFileInput.value.value = ''
-        
+
         toast.success(`Đã upload thành công ${results.length} file(s).`)
     } catch (err) {
         uploadError.value = err.response?.data?.message || 'Không thể upload file. Vui lòng thử lại.'
@@ -478,7 +595,7 @@ const handleDelete = async () => {
     try {
         const fileName = extractFileName(deleteFileName.value) || deleteFileName.value
         await deleteFile(fileName)
-        
+
         // Xóa khỏi recent uploads nếu có
         const index = recentUploads.value.findIndex(f => f.fileName === fileName)
         if (index !== -1) {
@@ -488,7 +605,7 @@ const handleDelete = async () => {
         deleteFileName.value = ''
         deleteSuccess.value = true
         toast.success('File đã được xóa thành công.')
-        
+
         setTimeout(() => {
             deleteSuccess.value = false
         }, 3000)
@@ -505,20 +622,20 @@ const deleteFileFromList = async (fileName, index) => {
         toast.warning('Tên file không hợp lệ.')
         return
     }
-    
+
     deleteConfirmFileName.value = fileName
     deleteConfirmIndex.value = index
     deleteConfirmModal.value?.show()
-    
+
     deleting.value = true
     deleteError.value = ''
     deleteSuccess.value = false
-    
+
     try {
         await deleteFile(fileName)
         deleteSuccess.value = true
         toast.success('File đã được xóa thành công!')
-        
+
         // Remove from file list
         if (index !== undefined && index >= 0) {
             fileList.value.splice(index, 1)
@@ -526,9 +643,9 @@ const deleteFileFromList = async (fileName, index) => {
             // Refresh file list
             await fetchFileList()
         }
-        
+
         // Also remove from recent uploads if exists
-        const recentIndex = recentUploads.value.findIndex(f => 
+        const recentIndex = recentUploads.value.findIndex(f =>
             (f.fileName || f.name) === fileName
         )
         if (recentIndex !== -1) {
@@ -552,7 +669,7 @@ const deleteRecentFile = async (fileName, index) => {
         await deleteFile(fileName)
         recentUploads.value.splice(index, 1)
         toast.success('File đã được xóa thành công.')
-        
+
         // Also refresh file list if it's visible
         if (showFileList.value) {
             await fetchFileList()
@@ -568,7 +685,7 @@ const copyToClipboard = async (text) => {
     try {
         await navigator.clipboard.writeText(text)
         toast.success('Đã copy URL vào clipboard!')
-    } catch (err) {
+    } catch (error) {
         toast.error('Không thể copy URL.')
     }
 }
@@ -593,7 +710,7 @@ const fetchFileList = async () => {
         if (fileListKeyword.value && fileListKeyword.value.trim()) {
             params.keyword = fileListKeyword.value.trim()
         }
-        
+
         const data = await listFiles(params)
         fileList.value = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
     } catch (err) {
@@ -619,16 +736,16 @@ const confirmDeleteFile = async () => {
     const fileName = deleteConfirmFileName.value
     const index = deleteConfirmIndex.value
     deleteConfirmModal.value?.hide()
-    
+
     deleting.value = true
     deleteError.value = ''
     deleteSuccess.value = false
-    
+
     try {
         await deleteFile(fileName)
         deleteSuccess.value = true
         toast.success('File đã được xóa thành công!')
-        
+
         // Remove from file list
         if (index !== undefined && index >= 0) {
             fileList.value.splice(index, 1)
@@ -636,9 +753,9 @@ const confirmDeleteFile = async () => {
             // Refresh file list
             await fetchFileList()
         }
-        
+
         // Also remove from recent uploads if exists
-        const recentIndex = recentUploads.value.findIndex(f => 
+        const recentIndex = recentUploads.value.findIndex(f =>
             (f.fileName || f.name) === fileName
         )
         if (recentIndex !== -1) {

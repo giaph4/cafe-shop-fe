@@ -8,41 +8,41 @@ export const useRevenueForecastStore = defineStore('revenueForecast', () => {
     const error = ref(null)
     const forecastData = ref(null)
     const comparisonData = ref(null)
-    
-    const hasForecast = computed(() => !!forecastData.value)
-    const hasComparison = computed(() => !!comparisonData.value)
-    
+
+    const hasForecast = computed(() => Boolean(forecastData.value))
+    const hasComparison = computed(() => Boolean(comparisonData.value))
+
     const totalForecast = computed(() => {
         if (!forecastData.value) return 0
         return forecastData.value.metrics?.totalForecast || 0
     })
-    
+
     const avgForecast = computed(() => {
         if (!forecastData.value) return 0
         return forecastData.value.metrics?.avgForecast || 0
     })
-    
+
     const growthRate = computed(() => {
         if (!forecastData.value) return 0
         return forecastData.value.metrics?.growthRate || 0
     })
-    
+
     const forecastAccuracy = computed(() => {
         if (!comparisonData.value) return null
         return comparisonData.value.accuracy || null
     })
-    
+
     const generateForecast = async ({ startDate, endDate, forecastDays = 7 }) => {
         loading.value = true
         error.value = null
-        
+
         try {
             const data = await revenueForecastService.generateRevenueForecast({
                 startDate,
                 endDate,
                 forecastDays
             })
-            
+
             forecastData.value = data
             logger.log('[RevenueForecast] Forecast generated successfully', data.meta)
             return data
@@ -54,19 +54,19 @@ export const useRevenueForecastStore = defineStore('revenueForecast', () => {
             loading.value = false
         }
     }
-    
+
     const getComparison = async ({ startDate, endDate, actualStartDate, actualEndDate }) => {
         loading.value = true
         error.value = null
-        
+
         try {
             const data = await revenueForecastService.getForecastComparison({
                 startDate,
-            endDate,
-            actualStartDate,
-            actualEndDate
+                endDate,
+                actualStartDate,
+                actualEndDate
             })
-            
+
             comparisonData.value = data
             logger.log('[RevenueForecast] Comparison generated successfully', { accuracy: data.accuracy })
             return data
@@ -78,12 +78,12 @@ export const useRevenueForecastStore = defineStore('revenueForecast', () => {
             loading.value = false
         }
     }
-    
+
     const exportForecast = async () => {
         if (!forecastData.value) {
             throw new Error('Chưa có dữ liệu dự báo để xuất')
         }
-        
+
         try {
             const exportData = await revenueForecastService.exportForecastToExcel(forecastData.value)
             return exportData
@@ -92,13 +92,13 @@ export const useRevenueForecastStore = defineStore('revenueForecast', () => {
             throw err
         }
     }
-    
+
     const reset = () => {
         forecastData.value = null
         comparisonData.value = null
         error.value = null
     }
-    
+
     return {
         loading,
         error,

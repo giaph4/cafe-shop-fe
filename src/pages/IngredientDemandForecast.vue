@@ -1,248 +1,336 @@
 <template>
-    <div class="ingredient-demand-forecast-page page-container container-fluid" data-aos="fade-up">
-        <PageHeader
-            title="Dự báo Nhu cầu Nguyên liệu"
-            subtitle="Dự báo nhu cầu nguyên liệu dựa trên đơn hàng và xu hướng"
+  <div
+    class="ingredient-demand-forecast-page page-container container-fluid"
+    data-aos="fade-up"
+  >
+    <PageHeader
+      title="Dự báo Nhu cầu Nguyên liệu"
+      subtitle="Dự báo nhu cầu nguyên liệu dựa trên đơn hàng và xu hướng"
+    >
+      <template #actions>
+        <button
+          class="btn-flat btn-flat--outline"
+          :disabled="loading"
+          @click="handleRefresh"
         >
-            <template #actions>
-                <button
-                    class="btn-flat btn-flat--outline"
-                    @click="handleRefresh"
-                    :disabled="loading"
-                >
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                    Làm mới
-                </button>
-                <button
-                    v-if="hasData"
-                    class="btn-flat btn-flat--outline"
-                    @click="handleExport"
-                    :disabled="exporting"
-                >
-                    <span v-if="exporting" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="bi bi-download me-2"></i>
-                    Xuất Excel
-                </button>
-            </template>
-        </PageHeader>
-
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Từ ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.startDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Đến ngày</label>
-                        <input
-                            type="date"
-                            class="form-control clean-input"
-                            v-model="filters.endDate"
-                            @change="validateDates"
-                        />
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Dự báo (ngày)</label>
-                        <select class="form-select clean-input" v-model="filters.forecastDays">
-                            <option :value="7">7 ngày</option>
-                            <option :value="14">14 ngày</option>
-                            <option :value="30">30 ngày</option>
-                            <option :value="60">60 ngày</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select clean-input" v-model="filters.status">
-                            <option value="">Tất cả</option>
-                            <option value="critical">Critical</option>
-                            <option value="warning">Warning</option>
-                            <option value="attention">Attention</option>
-                            <option value="stable">Ổn định</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label">Khoảng thời gian</label>
-                        <div class="btn-group w-100" role="group">
-                            <button
-                                v-for="preset in presets"
-                                :key="preset.value"
-                                type="button"
-                                class="btn btn-flat"
-                                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
-                                @click="applyPreset(preset.value)"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <button
-                            class="btn btn-flat btn-flat--primary w-100"
-                            @click="handleAnalyze"
-                            :disabled="loading || !canAnalyze"
-                        >
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-graph-up-arrow me-2"></i>
-                            Phân tích
-                        </button>
-                    </div>
-                </div>
-                <div v-if="validationError" class="alert alert-warning mt-3 mb-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    {{ validationError }}
-                </div>
-            </div>
-        </div>
-
-        <LoadingState v-if="loading" text="Đang phân tích nhu cầu nguyên liệu..." />
-        <ErrorState
-            v-else-if="error"
-            :message="error"
-            @retry="handleAnalyze"
-        />
-
-        <div v-else-if="hasData" class="forecast-content">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--danger">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Critical</div>
-                            <div class="kpi-card__value">{{ critical.length }}</div>
-                            <div class="kpi-card__subtitle">Cần đặt hàng ngay</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--warning">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-exclamation-circle"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Warning</div>
-                            <div class="kpi-card__value">{{ warning.length }}</div>
-                            <div class="kpi-card__subtitle">Cần chú ý</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--info">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-info-circle"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Attention</div>
-                            <div class="kpi-card__value">{{ attention.length }}</div>
-                            <div class="kpi-card__subtitle">Theo dõi</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--success">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Tổng nguyên liệu</div>
-                            <div class="kpi-card__value">{{ summary?.totalIngredients || 0 }}</div>
-                            <div class="kpi-card__subtitle">Đã phân tích</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-lg-8">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Xu hướng tiêu thụ</h5>
-                        </div>
-                        <div class="card-body">
-                            <ConsumptionChart
-                                v-if="selectedIngredient"
-                                :ingredient="selectedIngredient"
-                            />
-                            <EmptyState
-                                v-else
-                                title="Chọn nguyên liệu"
-                                message="Chọn một nguyên liệu từ bảng để xem biểu đồ tiêu thụ"
-                            >
-                                <template #icon>
-                                    <i class="bi bi-graph-up"></i>
-                                </template>
-                            </EmptyState>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Dự báo tổng quan</h5>
-                        </div>
-                        <div class="card-body">
-                            <ForecastSummary :summary="summary" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card standard-card">
-                <div class="card-header standard-card-header">
-                    <h5 class="card-title">Danh sách nguyên liệu</h5>
-                    <div class="d-flex gap-2">
-                        <input
-                            type="text"
-                            class="form-control form-control-sm clean-input"
-                            style="width: 200px;"
-                            placeholder="Tìm kiếm..."
-                            v-model="searchQuery"
-                        />
-                    </div>
-                </div>
-                <div class="card-body">
-                    <IngredientList
-                        :ingredients="filteredIngredients"
-                        :loading="loading"
-                        @view="showIngredientDetail"
-                        @create-po="showCreatePO"
-                        @select="handleSelectIngredientFromList"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <EmptyState
+          <span
+            v-if="loading"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
             v-else
-            title="Chưa có dữ liệu"
-            message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+            class="bi bi-arrow-clockwise me-2"
+          />
+          Làm mới
+        </button>
+        <button
+          v-if="hasData"
+          class="btn-flat btn-flat--outline"
+          :disabled="exporting"
+          @click="handleExport"
         >
-            <template #icon>
-                <i class="bi bi-graph-up-arrow"></i>
-            </template>
-        </EmptyState>
+          <span
+            v-if="exporting"
+            class="spinner-border spinner-border-sm me-2"
+          />
+          <i
+            v-else
+            class="bi bi-download me-2"
+          />
+          Xuất Excel
+        </button>
+      </template>
+    </PageHeader>
 
-        <IngredientDetailModal
-            v-if="selectedIngredient"
-            :ingredient="selectedIngredient"
-            @close="selectedIngredient = null"
-            @select="handleSelectIngredient"
-        />
-
-        <CreatePurchaseOrderModal
-            v-if="showPO"
-            :ingredients="poIngredients"
-            @close="showPO = false"
-        />
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Từ ngày</label>
+            <input
+              v-model="filters.startDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Đến ngày</label>
+            <input
+              v-model="filters.endDate"
+              type="date"
+              class="form-control clean-input"
+              @change="validateDates"
+            >
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Dự báo (ngày)</label>
+            <select
+              v-model="filters.forecastDays"
+              class="form-select clean-input"
+            >
+              <option :value="7">
+                7 ngày
+              </option>
+              <option :value="14">
+                14 ngày
+              </option>
+              <option :value="30">
+                30 ngày
+              </option>
+              <option :value="60">
+                60 ngày
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-2 col-md-4 col-sm-6">
+            <label class="form-label">Trạng thái</label>
+            <select
+              v-model="filters.status"
+              class="form-select clean-input"
+            >
+              <option value="">
+                Tất cả
+              </option>
+              <option value="critical">
+                Critical
+              </option>
+              <option value="warning">
+                Warning
+              </option>
+              <option value="attention">
+                Attention
+              </option>
+              <option value="stable">
+                Ổn định
+              </option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label">Khoảng thời gian</label>
+            <div
+              class="btn-group w-100"
+              role="group"
+            >
+              <button
+                v-for="preset in presets"
+                :key="preset.value"
+                type="button"
+                class="btn btn-flat"
+                :class="selectedPreset === preset.value ? 'btn-flat--active' : 'btn-flat--outline'"
+                @click="applyPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-1 col-md-6">
+            <label class="form-label">&nbsp;</label>
+            <button
+              class="btn btn-flat btn-flat--primary w-100"
+              :disabled="loading || !canAnalyze"
+              @click="handleAnalyze"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-graph-up-arrow me-2"
+              />
+              Phân tích
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="validationError"
+          class="alert alert-warning mt-3 mb-0"
+        >
+          <i class="bi bi-exclamation-triangle me-2" />
+          {{ validationError }}
+        </div>
+      </div>
     </div>
+
+    <LoadingState
+      v-if="loading"
+      text="Đang phân tích nhu cầu nguyên liệu..."
+    />
+    <ErrorState
+      v-else-if="error"
+      :message="error"
+      @retry="handleAnalyze"
+    />
+
+    <div
+      v-else-if="hasData"
+      class="forecast-content"
+    >
+      <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--danger">
+            <div class="kpi-card__icon">
+              <i class="bi bi-exclamation-triangle" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Critical
+              </div>
+              <div class="kpi-card__value">
+                {{ critical.length }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Cần đặt hàng ngay
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--warning">
+            <div class="kpi-card__icon">
+              <i class="bi bi-exclamation-circle" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Warning
+              </div>
+              <div class="kpi-card__value">
+                {{ warning.length }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Cần chú ý
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <i class="bi bi-info-circle" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Attention
+              </div>
+              <div class="kpi-card__value">
+                {{ attention.length }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Theo dõi
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+              <i class="bi bi-check-circle" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Tổng nguyên liệu
+              </div>
+              <div class="kpi-card__value">
+                {{ summary?.totalIngredients || 0 }}
+              </div>
+              <div class="kpi-card__subtitle">
+                Đã phân tích
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Xu hướng tiêu thụ
+              </h5>
+            </div>
+            <div class="card-body">
+              <ConsumptionChart
+                v-if="selectedIngredient"
+                :ingredient="selectedIngredient"
+              />
+              <EmptyState
+                v-else
+                title="Chọn nguyên liệu"
+                message="Chọn một nguyên liệu từ bảng để xem biểu đồ tiêu thụ"
+              >
+                <template #icon>
+                  <i class="bi bi-graph-up" />
+                </template>
+              </EmptyState>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Dự báo tổng quan
+              </h5>
+            </div>
+            <div class="card-body">
+              <ForecastSummary :summary="summary" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card standard-card">
+        <div class="card-header standard-card-header">
+          <h5 class="card-title">
+            Danh sách nguyên liệu
+          </h5>
+          <div class="d-flex gap-2">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="form-control form-control-sm clean-input"
+              style="width: 200px;"
+              placeholder="Tìm kiếm..."
+            >
+          </div>
+        </div>
+        <div class="card-body">
+          <IngredientList
+            :ingredients="filteredIngredients"
+            :loading="loading"
+            @view="showIngredientDetail"
+            @create-po="showCreatePO"
+            @select="handleSelectIngredientFromList"
+          />
+        </div>
+      </div>
+    </div>
+
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Chọn khoảng thời gian và nhấn 'Phân tích' để bắt đầu"
+    >
+      <template #icon>
+        <i class="bi bi-graph-up-arrow" />
+      </template>
+    </EmptyState>
+
+    <IngredientDetailModal
+      v-if="selectedIngredient"
+      :ingredient="selectedIngredient"
+      @close="selectedIngredient = null"
+      @select="handleSelectIngredient"
+    />
+
+    <CreatePurchaseOrderModal
+      v-if="showPO"
+      :ingredients="poIngredients"
+      @close="showPO = false"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -258,6 +346,7 @@ import IngredientList from '@/components/ingredient-demand-forecast/IngredientLi
 import IngredientDetailModal from '@/components/ingredient-demand-forecast/IngredientDetailModal.vue'
 import CreatePurchaseOrderModal from '@/components/ingredient-demand-forecast/CreatePurchaseOrderModal.vue'
 import * as XLSX from 'xlsx'
+import logger from '@/utils/logger'
 
 const store = useIngredientDemandForecastStore()
 
@@ -291,25 +380,23 @@ const presets = [
     { value: '90d', label: '90 ngày', days: 90 }
 ]
 
-const canAnalyze = computed(() => {
-    return filters.value.startDate && filters.value.endDate && !validationError.value
-})
+const canAnalyze = computed(() => filters.value.startDate && filters.value.endDate && !validationError.value)
 
 const filteredIngredients = computed(() => {
     let result = ingredients.value
-    
+
     if (filters.value.status) {
         result = result.filter(i => i.status === filters.value.status)
     }
-    
+
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
-        result = result.filter(i => 
+        result = result.filter(i =>
             i.name.toLowerCase().includes(query) ||
             i.unit.toLowerCase().includes(query)
         )
     }
-    
+
     return result
 })
 
@@ -317,11 +404,11 @@ const applyPreset = (preset) => {
     selectedPreset.value = preset
     const presetConfig = presets.find(p => p.value === preset)
     if (!presetConfig) return
-    
+
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - presetConfig.days)
-    
+
     filters.value.endDate = endDate.toISOString().split('T')[0]
     filters.value.startDate = startDate.toISOString().split('T')[0]
     validateDates()
@@ -329,30 +416,29 @@ const applyPreset = (preset) => {
 
 const validateDates = () => {
     validationError.value = ''
-    
+
     if (!filters.value.startDate || !filters.value.endDate) {
         return
     }
-    
+
     const start = new Date(filters.value.startDate)
     const end = new Date(filters.value.endDate)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     if (start > end) {
         validationError.value = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
         return
     }
-    
+
     if (end > today) {
         validationError.value = 'Ngày kết thúc không được vượt quá hôm nay'
-        return
     }
 }
 
 const handleAnalyze = async () => {
     if (!canAnalyze.value || validationError.value) return
-    
+
     try {
         await store.analyzeDemand({
             startDate: filters.value.startDate,
@@ -360,7 +446,7 @@ const handleAnalyze = async () => {
             forecastDays: filters.value.forecastDays
         })
     } catch (err) {
-        console.error('Failed to analyze', err)
+        logger.error('Không thể phân tích nhu cầu nguyên liệu:', err)
     }
 }
 
@@ -370,18 +456,18 @@ const handleRefresh = () => {
 
 const handleExport = async () => {
     if (!hasData.value) return
-    
+
     exporting.value = true
     try {
         const exportData = await store.exportReport()
-        
+
         const ws = XLSX.utils.aoa_to_sheet(exportData.data)
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, exportData.sheetName)
-        
+
         XLSX.writeFile(wb, exportData.filename)
     } catch (err) {
-        console.error('Failed to export', err)
+        logger.error('Không thể xuất báo cáo dự báo nguyên liệu:', err)
         alert('Không thể xuất file. Vui lòng thử lại.')
     } finally {
         exporting.value = false

@@ -1,47 +1,56 @@
 <template>
-    <Teleport to="body">
-        <div
-            v-if="shouldRender"
-            class="neo-flyout"
-            :style="flyoutStyle"
-            role="dialog"
-            @mouseenter="handleMouseEnter"
-            @mouseleave="handleMouseLeave"
+  <Teleport to="body">
+    <div
+      v-if="shouldRender"
+      class="neo-flyout"
+      :style="flyoutStyle"
+      role="dialog"
+      @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave"
+    >
+      <header class="neo-flyout__header">
+        <span
+          v-if="resolvedIcon"
+          class="neo-flyout__icon"
         >
-            <header class="neo-flyout__header">
-                <span v-if="resolvedIcon" class="neo-flyout__icon">
-                    <i :class="resolvedIcon" aria-hidden="true"></i>
-                </span>
-                <div class="neo-flyout__meta">
-                    <strong>{{ item.label }}</strong>
-                    <small v-if="item.description">{{ item.description }}</small>
-                </div>
-            </header>
-            <div class="neo-flyout__content">
-                <ul class="neo-flyout__list" role="menu">
-                    <SidebarItem
-                        v-for="child in item.children"
-                        :key="child.id"
-                        :item="child"
-                        :icons="icons"
-                        :collapsed="false"
-                        :active-id="activeId"
-                        :active-trail="derivedActiveTrail"
-                        :expanded-ids="derivedExpandedIds"
-                        :depth="1"
-                        @toggle="$emit('toggle', $event)"
-                        @navigate="handleNavigate"
-                        @hover-intent="$emit('hover-intent', $event)"
-                        @hover-leave="$emit('hover-leave', $event)"
-                    />
-                </ul>
-            </div>
+          <i
+            :class="resolvedIcon"
+            aria-hidden="true"
+          />
+        </span>
+        <div class="neo-flyout__meta">
+          <strong>{{ item.label }}</strong>
+          <small v-if="item.description">{{ item.description }}</small>
         </div>
-    </Teleport>
+      </header>
+      <div class="neo-flyout__content">
+        <ul
+          class="neo-flyout__list"
+          role="menu"
+        >
+          <SidebarItem
+            v-for="child in item.children"
+            :key="child.id"
+            :item="child"
+            :icons="icons"
+            :collapsed="false"
+            :active-id="activeId"
+            :active-trail="derivedActiveTrail"
+            :expanded-ids="derivedExpandedIds"
+            :depth="1"
+            @toggle="$emit('toggle', $event)"
+            @navigate="handleNavigate"
+            @hover-intent="$emit('hover-intent', $event)"
+            @hover-leave="$emit('hover-leave', $event)"
+          />
+        </ul>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import {computed, toRefs} from 'vue'
+import { computed, toRefs } from 'vue'
 import SidebarItem from './SidebarItem.vue'
 
 const props = defineProps({

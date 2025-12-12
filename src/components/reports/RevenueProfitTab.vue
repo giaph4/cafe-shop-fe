@@ -1,239 +1,369 @@
 <template>
-    <div class="revenue-profit">
-        <div class="chart-grid">
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Doanh thu theo ngày</h5>
-                        <p class="text-muted mb-0">Tổng: {{ formatCurrency(revenueSummary.total) }} · TB/ngày: {{ formatCurrency(revenueSummary.average) }}</p>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <select class="form-select form-select-sm" v-model="revenueChartType">
-                            <option value="area">Area</option>
-                            <option value="line">Line</option>
-                            <option value="bar">Column</option>
-                        </select>
-                        <button
-                            class="btn btn-outline-primary btn-sm"
-                            type="button"
-                            @click="handleExportOrders"
-                            :disabled="ordersExporting"
-                        >
-                            <span v-if="ordersExporting" class="spinner-border spinner-border-sm me-2"></span>
-                            Xuất đơn hàng
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart 
-                        v-if="isValidSeries(normalizedRevenueSeries) && computedRevenueOptions"
-                        :type="revenueChartType" 
-                        height="320" 
-                        :series="normalizedRevenueSeries" 
-                        :options="computedRevenueOptions" 
-                    />
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-graph-up"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card chart-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Lợi nhuận gộp</h5>
-                        <p class="text-muted mb-0">So sánh doanh thu và lợi nhuận trong kỳ</p>
-                    </div>
-                    <div class="chart-controls">
-                        <select class="form-select form-select-sm" v-model="profitChartType">
-                            <option value="bar">Column</option>
-                            <option value="line">Line</option>
-                            <option value="radar">Radar</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <ApexChart 
-                        v-if="isValidSeries(normalizedProfitSeries) && computedProfitOptions"
-                        :type="resolvedProfitChartType" 
-                        height="320" 
-                        :series="normalizedProfitSeries" 
-                        :options="computedProfitOptions" 
-                    />
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-bar-chart"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                    <ul class="insight-list">
-                        <li>
-                            <span>Tổng doanh thu</span>
-                            <strong>{{ formatCurrency(profit?.totalRevenue ?? 0) }}</strong>
-                        </li>
-                        <li>
-                            <span>Giá vốn</span>
-                            <strong>{{ formatCurrency(profit?.totalCostOfGoodsSold ?? 0) }}</strong>
-                        </li>
-                        <li>
-                            <span>Lợi nhuận</span>
-                            <strong>{{ formatCurrency(profit?.totalProfit ?? 0) }}</strong>
-                        </li>
-                        <li>
-                            <span>Biên lợi nhuận gộp</span>
-                            <strong>{{ ((profit?.grossMargin ?? 0) * 100).toFixed(2) }}%</strong>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+  <div class="revenue-profit">
+    <div class="chart-grid">
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Doanh thu theo ngày
+            </h5>
+            <p class="text-muted mb-0">
+              Tổng: {{ formatCurrency(revenueSummary.total) }} · TB/ngày: {{ formatCurrency(revenueSummary.average) }}
+            </p>
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            <select
+              v-model="revenueChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="area">
+                Area
+              </option>
+              <option value="line">
+                Line
+              </option>
+              <option value="bar">
+                Column
+              </option>
+            </select>
+            <button
+              class="btn btn-outline-primary btn-sm"
+              type="button"
+              :disabled="ordersExporting"
+              @click="handleExportOrders"
+            >
+              <span
+                v-if="ordersExporting"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Xuất đơn hàng
+            </button>
+          </div>
         </div>
-
-        <div class="analytics-grid">
-            <div class="card analytic-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Phân bổ phương thức thanh toán</h5>
-                        <p class="text-muted mb-0">Theo số đơn hoặc doanh thu</p>
-                    </div>
-                    <div class="chart-controls d-flex gap-2">
-                        <select class="form-select form-select-sm" v-model="paymentChartType">
-                            <option value="donut">Donut</option>
-                            <option value="pie">Pie</option>
-                            <option value="bar">Bar</option>
-                        </select>
-                        <select class="form-select form-select-sm" v-model="paymentMetric">
-                            <option value="orders">Số đơn</option>
-                            <option value="amount">Doanh thu</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body" v-if="paymentStats?.length">
-                    <ApexChart 
-                        v-if="isValidSeries(paymentChartSeries) && paymentChartOptions"
-                        :type="resolvedPaymentChartType" 
-                        height="280" 
-                        :series="paymentChartSeries" 
-                        :options="paymentChartOptions" 
-                    />
-                    <div v-else class="text-center text-muted py-4">
-                        <i class="bi bi-pie-chart"></i>
-                        <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                    </div>
-                    <div class="payment-list">
-                        <div v-for="item in paymentStats" :key="item.paymentMethod" class="payment-item">
-                            <div class="payment-item__meta">
-                                <span class="payment-item__label">{{ item.label || item.paymentMethod }}</span>
-                                <span class="payment-item__orders">{{ formatNumber(item.orderCount) }} đơn</span>
-                            </div>
-                            <div class="payment-item__metrics">
-                                <strong>{{ formatCurrency(item.totalAmount) }}</strong>
-                                <span class="badge bg-primary-subtle text-primary">{{ item.percentageByOrders.toFixed(1) }}% đơn</span>
-                                <span class="badge bg-success-subtle text-success">{{ item.percentageByAmount.toFixed(1) }}% doanh thu</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body" v-else>
-                    <p class="text-muted mb-0">Chưa có dữ liệu thanh toán cho giai đoạn này.</p>
-                </div>
-            </div>
-
-            <div class="card analytic-card hourly-sales-card">
-                <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Phân tích theo khung giờ</h5>
-                        <p class="text-muted mb-0">Phân tích doanh thu và số đơn theo từng giờ trong ngày</p>
-                    </div>
-                    <div class="hourly-legend">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #f0f9ff; border-color: #e0f2fe"></span>
-                            <span class="legend-label">Thấp</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #bfdbfe; border-color: #7dd3fc"></span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #60a5fa; border-color: #0ea5e9"></span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #3b82f6; border-color: #0284c7"></span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #1e40af; border-color: #0c4a6e"></span>
-                            <span class="legend-label">Cao</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div v-if="fullHourlyData?.length" class="hourly-content">
-                        <!-- Chart Section -->
-                        <div class="hourly-chart-section">
-                            <ApexChart 
-                                v-if="isValidSeries(hourlyChartSeries) && hourlyChartOptions"
-                                type="line" 
-                                height="280" 
-                                :series="hourlyChartSeries"
-                                :options="hourlyChartOptions" 
-                            />
-                            <div v-else class="text-center text-muted py-4">
-                                <i class="bi bi-clock-history"></i>
-                                <p class="mb-0 mt-2">Chưa có dữ liệu để hiển thị</p>
-                            </div>
-                        </div>
-
-                        <!-- Heatmap Grid -->
-                        <div class="hourly-grid">
-                            <div 
-                                v-for="bucket in fullHourlyData" 
-                                :key="bucket.hour" 
-                                class="hourly-card"
-                                :class="getHeatmapClass(bucket)" 
-                                :style="getHeatmapStyle(bucket)"
-                            >
-                                <span class="hourly-card__hour">{{ bucket.hour }}h</span>
-                                <strong class="hourly-card__revenue">{{ formatCurrency(bucket.revenue) }}</strong>
-                                <span class="hourly-card__orders">{{ bucket.orderCount }} đơn</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p v-else class="text-muted mb-0">Chưa có thống kê theo giờ.</p>
-                </div>
-            </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="isValidSeries(normalizedRevenueSeries) && computedRevenueOptions"
+            :type="revenueChartType"
+            height="320"
+            :series="normalizedRevenueSeries"
+            :options="computedRevenueOptions"
+          />
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-graph-up" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div class="card table-card">
-            <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-1">Doanh thu theo danh mục</h5>
-                    <p class="text-muted mb-0">Phân bổ doanh thu theo nhóm sản phẩm</p>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Danh mục</th>
-                            <th class="text-end">Số lượng</th>
-                            <th class="text-end">Doanh thu</th>
-                            <th class="text-end">Tỷ trọng</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in categorySales" :key="item.categoryId || item.categoryName">
-                            <td>{{ item.categoryName }}</td>
-                            <td class="text-end">{{ formatNumber(item.totalQuantitySold) }}</td>
-                            <td class="text-end">{{ formatCurrency(item.totalRevenue) }}</td>
-                            <td class="text-end">
-                                <span class="badge bg-light text-dark">{{ (item.revenuePercentage ?? 0).toFixed(2) }}%</span>
-                            </td>
-                        </tr>
-                        <tr v-if="!categorySales?.length">
-                            <td colspan="4" class="text-center text-muted py-4">Chưa có dữ liệu doanh thu theo danh mục.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+      <div class="card chart-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Lợi nhuận gộp
+            </h5>
+            <p class="text-muted mb-0">
+              So sánh doanh thu và lợi nhuận trong kỳ
+            </p>
+          </div>
+          <div class="chart-controls">
+            <select
+              v-model="profitChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="bar">
+                Column
+              </option>
+              <option value="line">
+                Line
+              </option>
+              <option value="radar">
+                Radar
+              </option>
+            </select>
+          </div>
         </div>
+        <div class="card-body">
+          <ApexChart
+            v-if="isValidSeries(normalizedProfitSeries) && computedProfitOptions"
+            :type="resolvedProfitChartType"
+            height="320"
+            :series="normalizedProfitSeries"
+            :options="computedProfitOptions"
+          />
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-bar-chart" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
+          <ul class="insight-list">
+            <li>
+              <span>Tổng doanh thu</span>
+              <strong>{{ formatCurrency(profit?.totalRevenue ?? 0) }}</strong>
+            </li>
+            <li>
+              <span>Giá vốn</span>
+              <strong>{{ formatCurrency(profit?.totalCostOfGoodsSold ?? 0) }}</strong>
+            </li>
+            <li>
+              <span>Lợi nhuận</span>
+              <strong>{{ formatCurrency(profit?.totalProfit ?? 0) }}</strong>
+            </li>
+            <li>
+              <span>Biên lợi nhuận gộp</span>
+              <strong>{{ ((profit?.grossMargin ?? 0) * 100).toFixed(2) }}%</strong>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
+
+    <div class="analytics-grid">
+      <div class="card analytic-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Phân bổ phương thức thanh toán
+            </h5>
+            <p class="text-muted mb-0">
+              Theo số đơn hoặc doanh thu
+            </p>
+          </div>
+          <div class="chart-controls d-flex gap-2">
+            <select
+              v-model="paymentChartType"
+              class="form-select form-select-sm"
+            >
+              <option value="donut">
+                Donut
+              </option>
+              <option value="pie">
+                Pie
+              </option>
+              <option value="bar">
+                Bar
+              </option>
+            </select>
+            <select
+              v-model="paymentMetric"
+              class="form-select form-select-sm"
+            >
+              <option value="orders">
+                Số đơn
+              </option>
+              <option value="amount">
+                Doanh thu
+              </option>
+            </select>
+          </div>
+        </div>
+        <div
+          v-if="paymentStats?.length"
+          class="card-body"
+        >
+          <ApexChart
+            v-if="isValidSeries(paymentChartSeries) && paymentChartOptions"
+            :type="resolvedPaymentChartType"
+            height="280"
+            :series="paymentChartSeries"
+            :options="paymentChartOptions"
+          />
+          <div
+            v-else
+            class="text-center text-muted py-4"
+          >
+            <i class="bi bi-pie-chart" />
+            <p class="mb-0 mt-2">
+              Chưa có dữ liệu để hiển thị
+            </p>
+          </div>
+          <div class="payment-list">
+            <div
+              v-for="item in paymentStats"
+              :key="item.paymentMethod"
+              class="payment-item"
+            >
+              <div class="payment-item__meta">
+                <span class="payment-item__label">{{ item.label || item.paymentMethod }}</span>
+                <span class="payment-item__orders">{{ formatNumber(item.orderCount) }} đơn</span>
+              </div>
+              <div class="payment-item__metrics">
+                <strong>{{ formatCurrency(item.totalAmount) }}</strong>
+                <span class="badge bg-primary-subtle text-primary">{{ item.percentageByOrders.toFixed(1) }}% đơn</span>
+                <span class="badge bg-success-subtle text-success">{{ item.percentageByAmount.toFixed(1) }}% doanh thu</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          v-else
+          class="card-body"
+        >
+          <p class="text-muted mb-0">
+            Chưa có dữ liệu thanh toán cho giai đoạn này.
+          </p>
+        </div>
+      </div>
+
+      <div class="card analytic-card hourly-sales-card">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              Phân tích theo khung giờ
+            </h5>
+            <p class="text-muted mb-0">
+              Phân tích doanh thu và số đơn theo từng giờ trong ngày
+            </p>
+          </div>
+          <div class="hourly-legend">
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #f0f9ff; border-color: #e0f2fe"
+              />
+              <span class="legend-label">Thấp</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #bfdbfe; border-color: #7dd3fc"
+              />
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #60a5fa; border-color: #0ea5e9"
+              />
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #3b82f6; border-color: #0284c7"
+              />
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #1e40af; border-color: #0c4a6e"
+              />
+              <span class="legend-label">Cao</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div
+            v-if="fullHourlyData?.length"
+            class="hourly-content"
+          >
+            <!-- Chart Section -->
+            <div class="hourly-chart-section">
+              <ApexChart
+                v-if="isValidSeries(hourlyChartSeries) && hourlyChartOptions"
+                type="line"
+                height="280"
+                :series="hourlyChartSeries"
+                :options="hourlyChartOptions"
+              />
+              <div
+                v-else
+                class="text-center text-muted py-4"
+              >
+                <i class="bi bi-clock-history" />
+                <p class="mb-0 mt-2">
+                  Chưa có dữ liệu để hiển thị
+                </p>
+              </div>
+            </div>
+
+            <!-- Heatmap Grid -->
+            <div class="hourly-grid">
+              <div
+                v-for="bucket in fullHourlyData"
+                :key="bucket.hour"
+                class="hourly-card"
+                :class="getHeatmapClass(bucket)"
+                :style="getHeatmapStyle(bucket)"
+              >
+                <span class="hourly-card__hour">{{ bucket.hour }}h</span>
+                <strong class="hourly-card__revenue">{{ formatCurrency(bucket.revenue) }}</strong>
+                <span class="hourly-card__orders">{{ bucket.orderCount }} đơn</span>
+              </div>
+            </div>
+          </div>
+          <p
+            v-else
+            class="text-muted mb-0"
+          >
+            Chưa có thống kê theo giờ.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <div class="card-header border-0 d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-1">
+            Doanh thu theo danh mục
+          </h5>
+          <p class="text-muted mb-0">
+            Phân bổ doanh thu theo nhóm sản phẩm
+          </p>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Danh mục</th>
+              <th class="text-end">
+                Số lượng
+              </th>
+              <th class="text-end">
+                Doanh thu
+              </th>
+              <th class="text-end">
+                Tỷ trọng
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in categorySales"
+              :key="item.categoryId || item.categoryName"
+            >
+              <td>{{ item.categoryName }}</td>
+              <td class="text-end">
+                {{ formatNumber(item.totalQuantitySold) }}
+              </td>
+              <td class="text-end">
+                {{ formatCurrency(item.totalRevenue) }}
+              </td>
+              <td class="text-end">
+                <span class="badge bg-light text-dark">{{ (item.revenuePercentage ?? 0).toFixed(2) }}%</span>
+              </td>
+            </tr>
+            <tr v-if="!categorySales?.length">
+              <td
+                colspan="4"
+                class="text-center text-muted py-4"
+              >
+                Chưa có dữ liệu doanh thu theo danh mục.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -491,13 +621,9 @@ const fullHourlyData = computed(() => {
 })
 
 // Calculate max values for heatmap intensity
-const maxRevenue = computed(() => {
-    return Math.max(...fullHourlyData.value.map(b => b.revenue), 1)
-})
+const maxRevenue = computed(() => Math.max(...fullHourlyData.value.map(b => b.revenue), 1))
 
-const maxOrders = computed(() => {
-    return Math.max(...fullHourlyData.value.map(b => b.orderCount), 1)
-})
+const _maxOrders = computed(() => Math.max(...fullHourlyData.value.map(b => b.orderCount), 1))
 
 // Get heatmap intensity level (0-8) based on revenue
 const getHeatmapIntensity = (bucket) => {
@@ -545,7 +671,7 @@ const getHeatmapStyle = (bucket) => {
         '#1e40af', // 7
         '#1e3a8a'  // 8
     ]
-    
+
     return {
         backgroundColor: colors[intensity],
         borderColor: borderColors[intensity],
@@ -669,7 +795,7 @@ const paymentChartSeries = computed(() => {
     return [
         {
             name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
-            data: data
+            data
         }
     ]
 })
@@ -712,7 +838,7 @@ const hourlyChartSeries = computed(() => {
     }
     const revenues = data.map(b => Number(b?.revenue) || 0)
     const orders = data.map(b => Number(b?.orderCount) || 0)
-    
+
     return [
         {
             name: 'Doanh thu',
@@ -733,9 +859,9 @@ const hourlyChartOptions = computed(() => {
     const successColor = getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim() || '#10b981'
     const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280'
     const headingColor = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#1f2937'
-    
+
     const hours = fullHourlyData.value.map(b => `${b.hour.toString().padStart(2, '0')}:00`)
-    
+
     return {
         chart: {
             type: 'line',
@@ -813,7 +939,7 @@ const hourlyChartOptions = computed(() => {
             {
                 title: {
                     text: 'Doanh thu (₫)',
-                    style: { 
+                    style: {
                         color: primaryColor,
                         fontSize: '13px',
                         fontFamily: 'var(--font-family-sans)',
@@ -822,7 +948,7 @@ const hourlyChartOptions = computed(() => {
                 },
                 labels: {
                     formatter: (val) => formatCurrency(val),
-                    style: { 
+                    style: {
                         colors: textMuted,
                         fontSize: '11px',
                         fontFamily: 'var(--font-family-sans)'
@@ -837,7 +963,7 @@ const hourlyChartOptions = computed(() => {
                 opposite: true,
                 title: {
                     text: 'Số đơn',
-                    style: { 
+                    style: {
                         color: successColor,
                         fontSize: '13px',
                         fontFamily: 'var(--font-family-sans)',
@@ -845,7 +971,7 @@ const hourlyChartOptions = computed(() => {
                     }
                 },
                 labels: {
-                    style: { 
+                    style: {
                         colors: textMuted,
                         fontSize: '11px',
                         fontFamily: 'var(--font-family-sans)'

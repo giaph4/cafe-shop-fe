@@ -1,165 +1,245 @@
 <template>
-    <div class="revenue">
-        <div class="revenue__grid">
-            <div class="card">
-                <div class="card-header">
-                    <div>
-                        <h5 class="card-title">Doanh thu theo ngày</h5>
-                        <p class="card-subtitle">Trực quan hóa doanh thu trong giai đoạn đã chọn</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <apexchart v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
-                        type="area" height="320" :series="revenueSeries" :options="revenueOptions" />
-                    <EmptyState v-else message="Chưa có dữ liệu doanh thu" />
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div>
-                        <h5 class="card-title">Lợi nhuận</h5>
-                        <p class="card-subtitle">So sánh doanh thu và lợi nhuận trong kỳ</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <apexchart v-if="isMounted && profitSeries && profitSeries.length > 0 && profitOptions" type="bar"
-                        height="320" :series="profitSeries" :options="profitOptions" />
-                    <EmptyState v-else message="Chưa có dữ liệu lợi nhuận" />
-                </div>
-            </div>
+  <div class="revenue">
+    <div class="revenue__grid">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h5 class="card-title">
+              Doanh thu theo ngày
+            </h5>
+            <p class="card-subtitle">
+              Trực quan hóa doanh thu trong giai đoạn đã chọn
+            </p>
+          </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div>
-                    <h5 class="card-title">Doanh thu theo danh mục</h5>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Danh mục</th>
-                                <th class="text-end">Số lượng</th>
-                                <th class="text-end">Doanh thu</th>
-                                <th class="text-end">Tỷ trọng</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="item in categorySales" :key="item.categoryName">
-                                <td>{{ item.categoryName }}</td>
-                                <td class="text-end">{{ item.totalQuantity }}</td>
-                                <td class="text-end">{{ formatCurrency(item.totalRevenue) }}</td>
-                                <td class="text-end">
-                                    <span class="badge bg-dark">{{ item.revenuePercentage?.toFixed(2) ?? 0 }}%</span>
-                                </td>
-                            </tr>
-                            <tr v-if="!categorySales?.length">
-                                <td colspan="4">
-                                    <EmptyState message="Chưa có doanh thu theo danh mục" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="card-body">
+          <apexchart
+            v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
+            type="area"
+            height="320"
+            :series="revenueSeries"
+            :options="revenueOptions"
+          />
+          <EmptyState
+            v-else
+            message="Chưa có dữ liệu doanh thu"
+          />
         </div>
+      </div>
 
-        <div class="card hourly-sales-card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <div>
-                        <h5 class="card-title">Doanh thu theo khung giờ ({{ hourlySalesTitle }})</h5>
-                        <p class="card-subtitle">Phân tích doanh thu và số đơn theo từng giờ trong ngày</p>
-                    </div>
-                    <div class="hourly-legend">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #f0f9ff; border-color: #e0f2fe"></span>
-                            <span class="legend-label">Thấp</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #bfdbfe; border-color: #7dd3fc"></span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #60a5fa; border-color: #0ea5e9"></span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #3b82f6; border-color: #0284c7"></span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #1e40af; border-color: #0c4a6e"></span>
-                            <span class="legend-label">Cao</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div v-if="hourlySales?.length" class="hourly-content">
-                    <!-- Chart Section -->
-                    <div class="hourly-chart-section">
-                        <apexchart 
-                            v-if="isMounted" 
-                            type="line" 
-                            height="280" 
-                            :series="hourlyChartSeries"
-                            :options="hourlyChartOptions" 
-                        />
-                    </div>
-
-                    <!-- Heatmap Grid -->
-                    <div class="hourly-grid">
-                        <div 
-                            v-for="bucket in fullHourlyData" 
-                            :key="bucket.hour" 
-                            class="hourly-card"
-                            :class="getHeatmapClass(bucket)" 
-                            :style="getHeatmapStyle(bucket)"
-                        >
-                            <span class="hourly-card__hour">{{ bucket.hour }}h</span>
-                            <strong class="hourly-card__revenue">{{ formatCurrency(bucket.revenue) }}</strong>
-                            <span class="hourly-card__orders">{{ bucket.orderCount }} đơn</span>
-                        </div>
-                    </div>
-                </div>
-                <EmptyState v-else message="Chưa có thống kê theo giờ" />
-            </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h5 class="card-title">
+              Lợi nhuận
+            </h5>
+            <p class="card-subtitle">
+              So sánh doanh thu và lợi nhuận trong kỳ
+            </p>
+          </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div>
-                    <h5 class="card-title">Sản phẩm bán chạy</h5>
-                    <p class="card-subtitle">Tổng kết doanh số theo sản phẩm</p>
-                </div>
-            </div>
-            <div class="card-body">
-                <div v-if="productSummary" class="product-summary">
-                    <div class="product-summary__headline">
-                        <div>
-                            <span>Tổng số lượng</span>
-                            <strong>{{ productSummary.totalQuantitySold }}</strong>
-                        </div>
-                        <div>
-                            <span>Tổng doanh thu</span>
-                            <strong>{{ formatCurrency(productSummary.totalRevenueGenerated) }}</strong>
-                        </div>
-                    </div>
-                    <div class="product-summary__list">
-                        <div v-for="product in topProducts" :key="product.productId" class="product-summary__item">
-                            <div class="product-summary__name">{{ product.productName }}</div>
-                            <div class="product-summary__metrics">
-                                <span>{{ product.totalQuantitySold }} sp</span>
-                                <strong>{{ formatCurrency(product.totalRevenueGenerated) }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <EmptyState v-else message="Chưa có dữ liệu sản phẩm" />
-            </div>
+        <div class="card-body">
+          <apexchart
+            v-if="isMounted && profitSeries && profitSeries.length > 0 && profitOptions"
+            type="bar"
+            height="320"
+            :series="profitSeries"
+            :options="profitOptions"
+          />
+          <EmptyState
+            v-else
+            message="Chưa có dữ liệu lợi nhuận"
+          />
         </div>
+      </div>
     </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h5 class="card-title">
+            Doanh thu theo danh mục
+          </h5>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Danh mục</th>
+                <th class="text-end">
+                  Số lượng
+                </th>
+                <th class="text-end">
+                  Doanh thu
+                </th>
+                <th class="text-end">
+                  Tỷ trọng
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="item in categorySales"
+                :key="item.categoryName"
+              >
+                <td>{{ item.categoryName }}</td>
+                <td class="text-end">
+                  {{ item.totalQuantity }}
+                </td>
+                <td class="text-end">
+                  {{ formatCurrency(item.totalRevenue) }}
+                </td>
+                <td class="text-end">
+                  <span class="badge bg-dark">{{ item.revenuePercentage?.toFixed(2) ?? 0 }}%</span>
+                </td>
+              </tr>
+              <tr v-if="!categorySales?.length">
+                <td colspan="4">
+                  <EmptyState message="Chưa có doanh thu theo danh mục" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card hourly-sales-card">
+      <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <h5 class="card-title">
+              Doanh thu theo khung giờ ({{ hourlySalesTitle }})
+            </h5>
+            <p class="card-subtitle">
+              Phân tích doanh thu và số đơn theo từng giờ trong ngày
+            </p>
+          </div>
+          <div class="hourly-legend">
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #f0f9ff; border-color: #e0f2fe"
+              />
+              <span class="legend-label">Thấp</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #bfdbfe; border-color: #7dd3fc"
+              />
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #60a5fa; border-color: #0ea5e9"
+              />
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #3b82f6; border-color: #0284c7"
+              />
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: #1e40af; border-color: #0c4a6e"
+              />
+              <span class="legend-label">Cao</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div
+          v-if="hourlySales?.length"
+          class="hourly-content"
+        >
+          <!-- Chart Section -->
+          <div class="hourly-chart-section">
+            <apexchart
+              v-if="isMounted"
+              type="line"
+              height="280"
+              :series="hourlyChartSeries"
+              :options="hourlyChartOptions"
+            />
+          </div>
+
+          <!-- Heatmap Grid -->
+          <div class="hourly-grid">
+            <div
+              v-for="bucket in fullHourlyData"
+              :key="bucket.hour"
+              class="hourly-card"
+              :class="getHeatmapClass(bucket)"
+              :style="getHeatmapStyle(bucket)"
+            >
+              <span class="hourly-card__hour">{{ bucket.hour }}h</span>
+              <strong class="hourly-card__revenue">{{ formatCurrency(bucket.revenue) }}</strong>
+              <span class="hourly-card__orders">{{ bucket.orderCount }} đơn</span>
+            </div>
+          </div>
+        </div>
+        <EmptyState
+          v-else
+          message="Chưa có thống kê theo giờ"
+        />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h5 class="card-title">
+            Sản phẩm bán chạy
+          </h5>
+          <p class="card-subtitle">
+            Tổng kết doanh số theo sản phẩm
+          </p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div
+          v-if="productSummary"
+          class="product-summary"
+        >
+          <div class="product-summary__headline">
+            <div>
+              <span>Tổng số lượng</span>
+              <strong>{{ productSummary.totalQuantitySold }}</strong>
+            </div>
+            <div>
+              <span>Tổng doanh thu</span>
+              <strong>{{ formatCurrency(productSummary.totalRevenueGenerated) }}</strong>
+            </div>
+          </div>
+          <div class="product-summary__list">
+            <div
+              v-for="product in topProducts"
+              :key="product.productId"
+              class="product-summary__item"
+            >
+              <div class="product-summary__name">
+                {{ product.productName }}
+              </div>
+              <div class="product-summary__metrics">
+                <span>{{ product.totalQuantitySold }} sp</span>
+                <strong>{{ formatCurrency(product.totalRevenueGenerated) }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <EmptyState
+          v-else
+          message="Chưa có dữ liệu sản phẩm"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -222,13 +302,9 @@ const fullHourlyData = computed(() => {
 })
 
 // Calculate max values for heatmap intensity
-const maxRevenue = computed(() => {
-    return Math.max(...fullHourlyData.value.map(b => b.revenue), 1)
-})
+const maxRevenue = computed(() => Math.max(...fullHourlyData.value.map(b => b.revenue), 1))
 
-const maxOrders = computed(() => {
-    return Math.max(...fullHourlyData.value.map(b => b.orderCount), 1)
-})
+const _maxOrders = computed(() => Math.max(...fullHourlyData.value.map(b => b.orderCount), 1))
 
 // Get heatmap intensity level (0-8) based on revenue - Cải thiện để rõ ràng hơn
 const getHeatmapIntensity = (bucket) => {
@@ -278,7 +354,7 @@ const getHeatmapStyle = (bucket) => {
         '#1e40af', // 7
         '#1e3a8a'  // 8
     ]
-    
+
     return {
         backgroundColor: colors[intensity],
         borderColor: borderColors[intensity],
@@ -290,7 +366,7 @@ const getHeatmapStyle = (bucket) => {
 const hourlyChartSeries = computed(() => {
     const revenues = fullHourlyData.value.map(b => b.revenue)
     const orders = fullHourlyData.value.map(b => b.orderCount)
-    
+
     return [
         {
             name: 'Doanh thu',
@@ -311,9 +387,9 @@ const hourlyChartOptions = computed(() => {
     const successColor = getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim() || '#10b981'
     const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280'
     const headingColor = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#1f2937'
-    
+
     const hours = fullHourlyData.value.map(b => `${b.hour.toString().padStart(2, '0')}:00`)
-    
+
     return {
         chart: {
             type: 'line',
@@ -391,7 +467,7 @@ const hourlyChartOptions = computed(() => {
             {
                 title: {
                     text: 'Doanh thu (₫)',
-                    style: { 
+                    style: {
                         color: primaryColor,
                         fontSize: '13px',
                         fontFamily: 'var(--font-family-sans)',
@@ -400,7 +476,7 @@ const hourlyChartOptions = computed(() => {
                 },
                 labels: {
                     formatter: (val) => formatCurrency(val),
-                    style: { 
+                    style: {
                         colors: textMuted,
                         fontSize: '11px',
                         fontFamily: 'var(--font-family-sans)'
@@ -415,7 +491,7 @@ const hourlyChartOptions = computed(() => {
                 opposite: true,
                 title: {
                     text: 'Số đơn',
-                    style: { 
+                    style: {
                         color: successColor,
                         fontSize: '13px',
                         fontFamily: 'var(--font-family-sans)',
@@ -423,7 +499,7 @@ const hourlyChartOptions = computed(() => {
                     }
                 },
                 labels: {
-                    style: { 
+                    style: {
                         colors: textMuted,
                         fontSize: '11px',
                         fontFamily: 'var(--font-family-sans)'

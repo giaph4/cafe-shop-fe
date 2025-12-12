@@ -1,18 +1,18 @@
 <template>
-    <div class="monthly-pattern-chart">
-        <apexchart
-            v-if="isMounted && monthlyPattern.length > 0"
-            type="bar"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-        <EmptyState
-            v-else
-            title="Chưa có dữ liệu"
-            message="Không có dữ liệu pattern theo tháng"
-        />
-    </div>
+  <div class="monthly-pattern-chart">
+    <apexchart
+      v-if="isMounted && monthlyPattern.length > 0"
+      type="bar"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Không có dữ liệu pattern theo tháng"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -36,14 +36,12 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Doanh thu TB',
-            data: props.monthlyPattern.map(d => d.avg)
-        }
-    ]
-})
+const chartSeries = computed(() => [
+    {
+        name: 'Doanh thu TB',
+        data: props.monthlyPattern.map(d => d.avg)
+    }
+])
 
 const chartOptions = computed(() => ({
     chart: {
@@ -63,8 +61,8 @@ const chartOptions = computed(() => ({
     dataLabels: {
         enabled: true,
         formatter: (value) => {
-            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
-            if (value >= 1000) return (value / 1000).toFixed(1) + 'K'
+            if (value >= 1000000) return `${(value / 1000000).toFixed(1)  }M`
+            if (value >= 1000) return `${(value / 1000).toFixed(1)  }K`
             return value.toFixed(0)
         }
     },
@@ -87,8 +85,8 @@ const chartOptions = computed(() => ({
     yaxis: {
         labels: {
             formatter: (value) => {
-                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
-                if (value >= 1000) return (value / 1000).toFixed(1) + 'K'
+                if (value >= 1000000) return `${(value / 1000000).toFixed(1)  }M`
+                if (value >= 1000) return `${(value / 1000).toFixed(1)  }K`
                 return value.toFixed(0)
             },
             style: {
@@ -111,12 +109,10 @@ const chartOptions = computed(() => ({
         shared: true,
         intersect: false,
         y: {
-            formatter: (value) => {
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(value)
-            }
+            formatter: (value) => new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(value)
         }
     },
     legend: {

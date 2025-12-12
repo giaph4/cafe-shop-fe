@@ -1,37 +1,45 @@
 <template>
-    <div class="shift-calendar">
-        <div class="calendar-grid">
-            <div
-                v-for="day in calendarDays"
-                :key="day.date"
-                class="calendar-day"
-                :class="getDayClass(day)"
-            >
-                <div class="day-header">
-                    <div class="day-date">{{ formatDayDate(day.date) }}</div>
-                    <div class="day-name">{{ formatDayName(day.date) }}</div>
-                </div>
-                <div class="day-shifts">
-                    <div
-                        v-for="shift in day.shifts"
-                        :key="shift.shiftId"
-                        class="shift-item"
-                        :class="getShiftEfficiencyClass(shift.efficiencyScore)"
-                        @click="$emit('select', shift)"
-                        :title="`${shift.shiftName}: ${shift.efficiencyScore.toFixed(1)} điểm`"
-                    >
-                        <div class="shift-time">{{ formatTime(shift.startTime) }}</div>
-                        <div class="shift-score">{{ shift.efficiencyScore.toFixed(0) }}</div>
-                    </div>
-                </div>
-            </div>
+  <div class="shift-calendar">
+    <div class="calendar-grid">
+      <div
+        v-for="day in calendarDays"
+        :key="day.date"
+        class="calendar-day"
+        :class="getDayClass(day)"
+      >
+        <div class="day-header">
+          <div class="day-date">
+            {{ formatDayDate(day.date) }}
+          </div>
+          <div class="day-name">
+            {{ formatDayName(day.date) }}
+          </div>
         </div>
+        <div class="day-shifts">
+          <div
+            v-for="shift in day.shifts"
+            :key="shift.shiftId"
+            class="shift-item"
+            :class="getShiftEfficiencyClass(shift.efficiencyScore)"
+            :title="`${shift.shiftName}: ${shift.efficiencyScore.toFixed(1)} điểm`"
+            @click="$emit('select', shift)"
+          >
+            <div class="shift-time">
+              {{ formatTime(shift.startTime) }}
+            </div>
+            <div class="shift-score">
+              {{ shift.efficiencyScore.toFixed(0) }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { formatDate, formatTime } from '@/utils/formatters'
+import { formatTime } from '@/utils/formatters'
 
 const props = defineProps({
     shifts: {
@@ -45,7 +53,7 @@ defineEmits(['select'])
 
 const calendarDays = computed(() => {
     const daysMap = new Map()
-    
+
     props.shifts.forEach(shift => {
         const dateKey = shift.date
         if (!daysMap.has(dateKey)) {
@@ -56,7 +64,7 @@ const calendarDays = computed(() => {
         }
         daysMap.get(dateKey).shifts.push(shift)
     })
-    
+
     return Array.from(daysMap.values())
         .sort((a, b) => a.date.localeCompare(b.date))
         .slice(0, 14)

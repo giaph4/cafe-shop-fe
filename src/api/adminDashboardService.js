@@ -1,6 +1,5 @@
 import api from './axios'
 import { cleanParams } from './utils'
-import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/admin/dashboard'
 

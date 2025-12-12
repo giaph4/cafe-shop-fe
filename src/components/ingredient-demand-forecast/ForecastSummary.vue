@@ -1,27 +1,49 @@
 <template>
-    <div class="forecast-summary">
-        <div v-if="!summary" class="text-muted text-center">
-            Chưa có dữ liệu
-        </div>
-        <div v-else class="summary-stats">
-            <div class="stat-item">
-                <div class="stat-label">Tổng nguyên liệu</div>
-                <div class="stat-value">{{ summary.totalIngredients }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Critical</div>
-                <div class="stat-value stat-critical">{{ summary.criticalCount }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Warning</div>
-                <div class="stat-value stat-warning">{{ summary.warningCount }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Attention</div>
-                <div class="stat-value stat-info">{{ summary.attentionCount }}</div>
-            </div>
-        </div>
+  <div class="forecast-summary">
+    <div
+      v-if="!summary"
+      class="text-muted text-center"
+    >
+      Chưa có dữ liệu
     </div>
+    <div
+      v-else
+      class="summary-stats"
+    >
+      <div class="stat-item">
+        <div class="stat-label">
+          Tổng nguyên liệu
+        </div>
+        <div class="stat-value">
+          {{ summary.totalIngredients }}
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">
+          Critical
+        </div>
+        <div class="stat-value stat-critical">
+          {{ summary.criticalCount }}
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">
+          Warning
+        </div>
+        <div class="stat-value stat-warning">
+          {{ summary.warningCount }}
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">
+          Attention
+        </div>
+        <div class="stat-value stat-info">
+          {{ summary.attentionCount }}
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>

@@ -1,88 +1,138 @@
 <template>
-    <div class="shift-assignment-my-tab">
-        <div class="card table-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h5 class="card-title mb-1">Phân công của tôi</h5>
-                        <p class="text-muted mb-0">Danh sách các ca làm bạn đã được phân công.</p>
-                    </div>
-                    <button class="btn btn-outline-primary btn-sm" type="button" @click="handleRefresh" :disabled="loading">
-                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                        Làm mới
-                    </button>
-                </div>
-
-                <LoadingState v-if="loading" />
-                <ErrorState 
-                    v-else-if="error" 
-                    :message="error"
-                />
-                <EmptyState
-                    v-else-if="!assignments.length"
-                    title="Chưa có phân công nào"
-                    message="Bạn chưa được phân công vào ca làm nào."
-                />
-                <div v-else class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Ca làm</th>
-                            <th>Thời gian</th>
-                            <th>Doanh thu</th>
-                            <th>Lương</th>
-                            <th>Thưởng/Phạt</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="assignment in assignments" :key="assignment.id">
-                            <td>
-                                <div class="fw-semibold">Shift #{{ assignment.shiftId }}</div>
-                                <div class="text-muted small" v-if="assignment.roleName">Vai trò: {{ assignment.roleName }}</div>
-                            </td>
-                            <td>
-                                <div>{{ formatTime(assignment.plannedStart) }} - {{ formatTime(assignment.plannedEnd) }}</div>
-                                <div class="text-muted small">{{ assignment.plannedMinutes }} phút</div>
-                                <div class="text-muted small" v-if="assignment.actualMinutes">
-                                    Thực tế: {{ assignment.actualMinutes }} phút
-                                </div>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ formatCurrency(assignment.totalRevenue ?? 0) }}</div>
-                                <div class="text-muted small" v-if="assignment.totalOrders">
-                                    {{ assignment.totalOrders }} đơn
-                                </div>
-                            </td>
-                            <td>
-                                <div>{{ formatCurrency(assignment.hourlyRate ?? 0) }}/giờ</div>
-                                <div class="text-muted small" v-if="assignment.fixedAllowance">
-                                    Phụ cấp: {{ formatCurrency(assignment.fixedAllowance) }}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="text-success" v-if="assignment.bonusAmount">
-                                    + {{ formatCurrency(assignment.bonusAmount) }}
-                                </div>
-                                <div class="text-danger" v-if="assignment.penaltyAmount">
-                                    - {{ formatCurrency(assignment.penaltyAmount) }}
-                                </div>
-                                <div v-if="!assignment.bonusAmount && !assignment.penaltyAmount" class="text-muted small">
-                                    Không có
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge text-light" :class="statusClass(assignment.status)">
-                                    {{ translateStatus(assignment.status) }}
-                                </span>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+  <div class="shift-assignment-my-tab">
+    <div class="card table-card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="card-title mb-1">
+              Phân công của tôi
+            </h5>
+            <p class="text-muted mb-0">
+              Danh sách các ca làm bạn đã được phân công.
+            </p>
+          </div>
+          <button
+            class="btn btn-outline-primary btn-sm"
+            type="button"
+            :disabled="loading"
+            @click="handleRefresh"
+          >
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            Làm mới
+          </button>
         </div>
+
+        <LoadingState v-if="loading" />
+        <ErrorState
+          v-else-if="error"
+          :message="error"
+        />
+        <EmptyState
+          v-else-if="!assignments.length"
+          title="Chưa có phân công nào"
+          message="Bạn chưa được phân công vào ca làm nào."
+        />
+        <div
+          v-else
+          class="table-responsive"
+        >
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Ca làm</th>
+                <th>Thời gian</th>
+                <th>Doanh thu</th>
+                <th>Lương</th>
+                <th>Thưởng/Phạt</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="assignment in assignments"
+                :key="assignment.id"
+              >
+                <td>
+                  <div class="fw-semibold">
+                    Shift #{{ assignment.shiftId }}
+                  </div>
+                  <div
+                    v-if="assignment.roleName"
+                    class="text-muted small"
+                  >
+                    Vai trò: {{ assignment.roleName }}
+                  </div>
+                </td>
+                <td>
+                  <div>{{ formatTime(assignment.plannedStart) }} - {{ formatTime(assignment.plannedEnd) }}</div>
+                  <div class="text-muted small">
+                    {{ assignment.plannedMinutes }} phút
+                  </div>
+                  <div
+                    v-if="assignment.actualMinutes"
+                    class="text-muted small"
+                  >
+                    Thực tế: {{ assignment.actualMinutes }} phút
+                  </div>
+                </td>
+                <td>
+                  <div class="fw-semibold">
+                    {{ formatCurrency(assignment.totalRevenue ?? 0) }}
+                  </div>
+                  <div
+                    v-if="assignment.totalOrders"
+                    class="text-muted small"
+                  >
+                    {{ assignment.totalOrders }} đơn
+                  </div>
+                </td>
+                <td>
+                  <div>{{ formatCurrency(assignment.hourlyRate ?? 0) }}/giờ</div>
+                  <div
+                    v-if="assignment.fixedAllowance"
+                    class="text-muted small"
+                  >
+                    Phụ cấp: {{ formatCurrency(assignment.fixedAllowance) }}
+                  </div>
+                </td>
+                <td>
+                  <div
+                    v-if="assignment.bonusAmount"
+                    class="text-success"
+                  >
+                    + {{ formatCurrency(assignment.bonusAmount) }}
+                  </div>
+                  <div
+                    v-if="assignment.penaltyAmount"
+                    class="text-danger"
+                  >
+                    - {{ formatCurrency(assignment.penaltyAmount) }}
+                  </div>
+                  <div
+                    v-if="!assignment.bonusAmount && !assignment.penaltyAmount"
+                    class="text-muted small"
+                  >
+                    Không có
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="badge text-light"
+                    :class="statusClass(assignment.status)"
+                  >
+                    {{ translateStatus(assignment.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -91,7 +141,7 @@ import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { formatCurrency } from '@/utils/formatters'
 
-const props = defineProps({
+defineProps({
     assignments: { type: Array, default: () => [] },
     loading: { type: Boolean, default: false },
     error: { type: String, default: null }

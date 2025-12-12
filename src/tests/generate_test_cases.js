@@ -1,16 +1,16 @@
-import XLSX from 'xlsx';
-import fs from 'fs';
+import XLSX from 'xlsx'
+import fs from 'fs'
 
 // Danh sách testers
-const testers = ['Pho', 'Nhật', 'Mai', 'Thịnh', 'Quân'];
+const testers = ['Pho', 'Nhật', 'Mai', 'Thịnh', 'Quân']
 
 // Helper để lấy tester xoay vòng (chia đều công việc)
-let testerIndex = 0;
+let testerIndex = 0
 const getTester = () => {
-    const tester = testers[testerIndex % testers.length];
-    testerIndex++;
-    return tester;
-};
+    const tester = testers[testerIndex % testers.length]
+    testerIndex++
+    return tester
+}
 
 // Helper tạo đối tượng Test Case chuẩn để tránh lặp code
 const createTC = (id, summary, preCond, testData, steps, expResult, note = 'Test chính thức') => ({
@@ -25,10 +25,10 @@ const createTC = (id, summary, preCond, testData, steps, expResult, note = 'Test
     'Notes': note,
     'Test Date': '',
     'Tester': getTester()
-});
+})
 
 // 1. Module Đăng ký/Đăng nhập (AUTH)
-function createAuthTestCases() {
+function createAuthTestCases () {
     const cases = [
         createTC('TC_AUTH_01', 'Kiểm tra hiển thị trang đăng nhập', 'Truy cập vào hệ thống, chưa đăng nhập', 'URL: http://localhost:5173/login', '1. Mở trình duyệt\n2. Truy cập URL đăng nhập\n3. Quan sát giao diện', '• Hiển thị form đăng nhập với 2 trường: Tên đăng nhập và Mật khẩu\n• Hiển thị nút "Đăng nhập"\n• Hiển thị checkbox "Ghi nhớ lần đăng nhập này"\n• Hiển thị thông tin tài khoản demo (admin_demo, manager_demo, staff_demo)'),
         createTC('TC_AUTH_02', 'Kiểm tra đăng nhập thành công với tài khoản admin', 'Có tài khoản admin hợp lệ (username: admin_demo, password: Admindemo1234.)', 'Username: admin_demo\nPassword: Admindemo1234.', '1. Nhập username: admin_demo\n2. Nhập password: Admindemo1234.\n3. Click nút "Đăng nhập"', '• Đăng nhập thành công\n• Chuyển hướng đến trang Dashboard\n• Hiển thị thông tin user admin ở header\n• Có quyền truy cập tất cả các module'),
@@ -47,12 +47,12 @@ function createAuthTestCases() {
         createTC('TC_AUTH_15', 'Kiểm tra đăng ký nhân viên với nhiều quyền (roles)', 'Đã đăng nhập với quyền ADMIN', 'FullName: Trần Thị B\nUsername: ttb001\nRoleIds: [1, 2] (STAFF và MANAGER)', '1. Mở form đăng ký nhân viên\n2. Điền thông tin\n3. Chọn nhiều quyền (STAFF và MANAGER)\n4. Click "Lưu"', '• Tạo tài khoản thành công\n• Nhân viên có cả 2 quyền\n• Có thể truy cập các module của cả 2 roles'),
         createTC('TC_AUTH_16', 'Kiểm tra validation khi đăng ký không chọn quyền (roleIds rỗng)', 'Đã đăng nhập với quyền ADMIN', 'Các trường khác hợp lệ nhưng không chọn role nào', '1. Mở form đăng ký nhân viên\n2. Điền thông tin nhưng không chọn quyền\n3. Click "Lưu"', '• Hiển thị thông báo lỗi "Phải chọn ít nhất một quyền" hoặc tương tự\n• Không tạo được tài khoản\n• Form vẫn hiển thị để sửa'),
         createTC('TC_AUTH_17', 'Kiểm tra STAFF không thể đăng ký nhân viên mới', 'Đã đăng nhập với quyền STAFF', 'User có role STAFF', '1. Truy cập trang Quản lý Nhân viên\n2. Quan sát giao diện', '• Không hiển thị nút "Thêm nhân viên mới"\n• Nếu truy cập trực tiếp API sẽ bị từ chối (403 Forbidden)')
-    ];
-    return cases;
+    ]
+    return cases
 }
 
 // 2. Module Đơn hàng/Bán hàng (POS)
-function createOrderTestCases() {
+function createOrderTestCases () {
     const cases = [
         createTC('TC_ORDER_01', 'Kiểm tra hiển thị danh sách đơn hàng', 'Đã đăng nhập với quyền STAFF/MANAGER/ADMIN\nCó ít nhất 1 đơn hàng trong hệ thống', 'Truy cập trang Quản lý Hoá đơn', '1. Click vào menu "Quản lý Hoá đơn"\n2. Quan sát danh sách đơn hàng', '• Hiển thị danh sách đơn hàng với các cột: Mã đơn, Khách hàng, Tổng tiền, Trạng thái, Ngày tạo\n• Có phân trang\n• Có bộ lọc theo trạng thái, ngày tháng\n• Có nút tìm kiếm'),
         createTC('TC_ORDER_02', 'Kiểm tra tạo đơn hàng mới tại POS (chọn bàn trước)', 'Đã đăng nhập với quyền STAFF\nCó bàn trống (status: EMPTY)\nCó sản phẩm trong hệ thống', 'Table: Bàn 1\nProducts: [Cà phê đen x2, Bánh mì x1]', '1. Truy cập trang POS\n2. Chọn "Xem sơ đồ bàn"\n3. Click vào Bàn 1\n4. Chọn sản phẩm: Cà phê đen (số lượng 2)\n5. Chọn sản phẩm: Bánh mì (số lượng 1)\n6. Click "Tạo đơn hàng"', '• Tạo đơn hàng thành công\n• Bàn 1 chuyển sang trạng thái SERVING\n• Hiển thị thông tin đơn hàng trong giỏ hàng\n• Tổng tiền được tính đúng\n• Đơn hàng có trạng thái PENDING'),
@@ -72,12 +72,12 @@ function createOrderTestCases() {
         createTC('TC_ORDER_16', 'Kiểm tra tính tổng tiền đơn hàng với nhiều sản phẩm', 'Có đơn hàng PENDING', 'Cà phê đen: 50,000 x 2 = 100,000\nBánh mì: 30,000 x 1 = 30,000\nTrà đá: 20,000 x 3 = 60,000', '1. Tạo đơn hàng mới\n2. Thêm các sản phẩm với số lượng như trên\n3. Quan sát tổng tiền', '• Tổng tiền = 100,000 + 30,000 + 60,000 = 190,000 VNĐ\n• Hiển thị đúng số tiền\n• Có thể áp dụng voucher để giảm giá'),
         createTC('TC_ORDER_17', 'Kiểm tra không thể thanh toán đơn hàng rỗng (không có sản phẩm)', 'Có đơn hàng PENDING nhưng chưa có sản phẩm nào', 'OrderID: 7 (không có sản phẩm)', '1. Mở đơn hàng PENDING rỗng\n2. Click nút "Thanh toán"', '• Hiển thị thông báo lỗi "Đơn hàng không có sản phẩm nào" hoặc tương tự\n• Không cho phép thanh toán\n• Nút thanh toán bị vô hiệu hóa'),
         createTC('TC_ORDER_18', 'Kiểm tra chọn món trước tại POS', 'Đã đăng nhập với quyền STAFF\nCó sản phẩm trong hệ thống', 'Products: [Cà phê đen x1]', '1. Truy cập trang POS\n2. Click nút "Chọn món trước"\n3. Chọn sản phẩm: Cà phê đen\n4. Sau đó chọn bàn hoặc tạo đơn mang về', '• Có thể chọn sản phẩm trước\n• Sau đó mới chọn bàn hoặc tạo đơn mang về\n• Đơn hàng được tạo thành công')
-    ];
-    return cases;
+    ]
+    return cases
 }
 
 // 3. Module Quản lý Bàn (TABLE)
-function createTableTestCases() {
+function createTableTestCases () {
     const cases = [
         createTC('TC_TABLE_01', 'Kiểm tra hiển thị danh sách bàn', 'Đã đăng nhập với quyền STAFF/MANAGER/ADMIN\nCó ít nhất 1 bàn trong hệ thống', 'Truy cập trang Quản lý Bàn', '1. Click vào menu "Quản lý Bàn"\n2. Quan sát danh sách bàn', '• Hiển thị danh sách bàn với các thông tin: Tên bàn, Sức chứa, Trạng thái\n• Có thể xem dạng danh sách\n• Có bộ lọc theo trạng thái\n• Có nút tìm kiếm'),
         createTC('TC_TABLE_02', 'Kiểm tra tạo bàn mới với thông tin hợp lệ', 'Đã đăng nhập với quyền MANAGER/ADMIN', 'Name: Bàn 10\nCapacity: 4', '1. Click nút "Thêm bàn mới"\n2. Nhập tên: Bàn 10\n3. Nhập sức chứa: 4\n4. Click "Lưu"', '• Tạo bàn thành công\n• Hiển thị thông báo "Đã tạo bàn mới"\n• Bàn mới xuất hiện trong danh sách với trạng thái EMPTY\n• Có thể chọn bàn này tại POS'),
@@ -94,12 +94,12 @@ function createTableTestCases() {
         createTC('TC_TABLE_13', 'Kiểm tra hiển thị sơ đồ bàn tại POS', 'Đã đăng nhập với quyền STAFF\nCó nhiều bàn trong hệ thống', 'Truy cập POS, chọn "Xem sơ đồ bàn"', '1. Truy cập trang POS\n2. Click "Xem sơ đồ bàn"\n3. Quan sát sơ đồ', '• Hiển thị sơ đồ bàn với layout rõ ràng\n• Mỗi bàn hiển thị tên và trạng thái\n• Màu sắc khác nhau cho các trạng thái (EMPTY, SERVING, RESERVED)\n• Có thể click vào bàn để chọn'),
         createTC('TC_TABLE_14', 'Kiểm tra validation sức chứa bàn phải lớn hơn 0', 'Đã đăng nhập với quyền MANAGER/ADMIN', 'Name: Bàn 11\nCapacity: 0 hoặc -1', '1. Click nút "Thêm bàn mới"\n2. Nhập tên: Bàn 11\n3. Nhập sức chứa: 0 hoặc -1\n4. Click "Lưu"', '• Hiển thị thông báo lỗi "Sức chứa phải lớn hơn 0" hoặc tương tự\n• Không tạo được bàn\n• Form vẫn hiển thị để sửa'),
         createTC('TC_TABLE_15', 'Kiểm tra không thể chọn bàn đang SERVING cho đơn hàng mới', 'Có bàn "Bàn 4" với trạng thái SERVING', 'TableID: 4 (Status: SERVING)', '1. Truy cập trang POS\n2. Chọn "Xem sơ đồ bàn"\n3. Thử click vào bàn "Bàn 4"', '• Bàn "Bàn 4" bị vô hiệu hóa hoặc hiển thị cảnh báo\n• Không thể chọn bàn này cho đơn hàng mới\n• Hiển thị thông báo "Bàn đang phục vụ"')
-    ];
-    return cases;
+    ]
+    return cases
 }
 
 // 4. Module Quản lý Nhân viên (STAFF)
-function createStaffTestCases() {
+function createStaffTestCases () {
     const cases = [
         createTC('TC_STAFF_01', 'Xem danh sách nhân viên', 'Quyền Admin', 'Page: Staff', '1. Vào trang Staff', 'Hiện list: Tên, Role, Phone, Status'),
         createTC('TC_STAFF_02', 'Tìm kiếm nhân viên', 'Quyền Admin', 'Keyword: "Nam"', '1. Nhập tên Nam', 'Hiện các nhân viên tên Nam'),
@@ -116,12 +116,12 @@ function createStaffTestCases() {
         createTC('TC_STAFF_13', 'Validate Email không hợp lệ', 'Quyền Admin', 'Email: abc.com', '1. Nhập email sai định dạng', 'Báo lỗi "Email sai định dạng"'),
         createTC('TC_STAFF_14', 'Staff xem profile bản thân', 'Login Staff', 'Page: Profile', '1. Vào profile', 'Xem được thông tin cá nhân'),
         createTC('TC_STAFF_15', 'Staff đổi mật khẩu', 'Login Staff', 'OldPass, NewPass', '1. Nhập pass cũ/mới\n2. Lưu', 'Đổi pass thành công, login lại ok')
-    ];
-    return cases;
+    ]
+    return cases
 }
 
 // 5. Module Quản lý Khách hàng (CUSTOMER)
-function createCustomerTestCases() {
+function createCustomerTestCases () {
     const cases = [
         createTC('TC_CUST_01', 'Xem danh sách khách hàng', 'Login Staff', 'Page: Customer', '1. Vào trang Khách hàng', 'Hiện list: Tên, Phone, Điểm, Tổng chi'),
         createTC('TC_CUST_02', 'Thêm khách hàng mới', 'Login Staff', 'Full info', '1. Nhập info\n2. Lưu', 'Khách hàng mới được tạo'),
@@ -138,12 +138,12 @@ function createCustomerTestCases() {
         createTC('TC_CUST_13', 'Hiển thị tổng chi tiêu đúng', 'Sau thanh toán', 'Bill: 500k', '1. Check lại tổng chi tiêu', 'Tổng chi tiêu tăng thêm 500k'),
         createTC('TC_CUST_14', 'Ghi chú sở thích khách', 'Detail', 'Note: Ít đường', '1. Thêm ghi chú', 'Ghi chú được lưu lại'),
         createTC('TC_CUST_15', 'Staff không xóa được khách', 'Quyền Staff', 'Delete button', '1. Tìm nút xóa', 'Nút xóa ẩn hoặc disable')
-    ];
-    return cases;
+    ]
+    return cases
 }
 
 // 6. Module Quản lý Voucher (VOUCHER) - Mới bổ sung
-function createVoucherTestCases() {
+function createVoucherTestCases () {
     const cases = [
         createTC('TC_VOUCHER_01', 'Xem danh sách Voucher', 'Quyền Manager', 'Page: Voucher', '1. Vào trang Voucher', 'Hiện list: Mã, Giảm giá, Ngày hết hạn, Trạng thái'),
         createTC('TC_VOUCHER_02', 'Tạo Voucher giảm theo %', 'Quyền Manager', 'Code: SALE10, Val: 10%', '1. Tạo voucher %\n2. Lưu', 'Tạo thành công'),
@@ -160,12 +160,12 @@ function createVoucherTestCases() {
         createTC('TC_VOUCHER_13', 'Tìm kiếm Voucher', 'Page: Voucher', 'Search: SALE', '1. Tìm kiếm', 'Hiện voucher có chữ SALE'),
         createTC('TC_VOUCHER_14', 'Voucher giảm giá tối đa (Max cap)', 'Form Create', '10% max 20k', '1. Tạo voucher có max cap', 'Hệ thống ghi nhận giới hạn giảm'),
         createTC('TC_VOUCHER_15', 'Check logic giảm giá Max cap', 'POS', 'Bill 500k, 10% max 20k', '1. Tính: 50k > 20k', 'Chỉ giảm 20k (đúng logic)')
-    ];
-    return cases;
+    ]
+    return cases
 }
 
 // 7. Module Quản lý Kho (INVENTORY) - Mới bổ sung
-function createInventoryTestCases() {
+function createInventoryTestCases () {
     const cases = [
         createTC('TC_INV_01', 'Xem danh sách nguyên liệu', 'Quyền Manager', 'Page: Ingredients', '1. Vào trang Kho', 'Hiện list: Tên, Đơn vị, Tồn kho, Giá vốn'),
         createTC('TC_INV_02', 'Tạo nguyên liệu mới', 'Quyền Manager', 'Name: Sữa, Unit: ml', '1. Nhập info\n2. Lưu', 'Nguyên liệu mới xuất hiện, tồn kho = 0'),
@@ -183,14 +183,14 @@ function createInventoryTestCases() {
         createTC('TC_INV_14', 'Xuất báo cáo tồn kho', 'Report', 'Action: Export', '1. Xuất file', 'File excel hiện tồn đầu, nhập, xuất, tồn cuối'),
         createTC('TC_INV_15', 'Xóa nguyên liệu chưa dùng', 'Ingredient', 'No Transaction', '1. Xóa', 'Xóa thành công'),
         createTC('TC_INV_16', 'Không xóa nguyên liệu đã có giao dịch', 'Ingredient', 'Has History', '1. Xóa', 'Báo lỗi "Nguyên liệu đã phát sinh dữ liệu"')
-    ];
-    return cases;
+    ]
+    return cases
 }
 
 // --- Main Execution ---
-function generateExcel() {
+function generateExcel () {
     // Tạo Workbook mới
-    const workbook = XLSX.utils.book_new();
+    const workbook = XLSX.utils.book_new()
 
     // Tổng hợp các module
     const modules = [
@@ -200,17 +200,17 @@ function generateExcel() {
         { name: '4. Staff', fn: createStaffTestCases },
         { name: '5. Customer', fn: createCustomerTestCases },
         { name: '6. Voucher', fn: createVoucherTestCases },
-        { name: '7. Inventory', fn: createInventoryTestCases },
-    ];
+        { name: '7. Inventory', fn: createInventoryTestCases }
+    ]
 
-    let totalCases = 0;
+    let totalCases = 0
 
     // Duyệt qua từng module để tạo sheet
     modules.forEach(mod => {
-        const data = mod.fn();
-        totalCases += data.length;
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        
+        const data = mod.fn()
+        totalCases += data.length
+        const worksheet = XLSX.utils.json_to_sheet(data)
+
         // Set độ rộng cột cho dễ nhìn
         const colWidths = [
             { wch: 15 }, // ID
@@ -224,22 +224,22 @@ function generateExcel() {
             { wch: 15 }, // Notes
             { wch: 12 }, // Date
             { wch: 10 }  // Tester
-        ];
-        worksheet['!cols'] = colWidths;
+        ]
+        worksheet['!cols'] = colWidths
 
-        XLSX.utils.book_append_sheet(workbook, worksheet, mod.name);
-    });
+        XLSX.utils.book_append_sheet(workbook, worksheet, mod.name)
+    })
 
     // Xuất file
-    const fileName = 'TestCases_CafeShop_Full.xlsx';
-    XLSX.writeFile(workbook, fileName);
-    
-    console.log('================================================');
-    console.log(`✅ Đã tạo file thành công: ${fileName}`);
-    console.log(`📊 Tổng số Test Cases: ${totalCases}`);
-    console.log(`👥 Testers tham gia: ${testers.join(', ')}`);
-    console.log('================================================');
+    const fileName = 'TestCases_CafeShop_Full.xlsx'
+    XLSX.writeFile(workbook, fileName)
+
+    console.log('================================================')
+    console.log(`✅ Đã tạo file thành công: ${fileName}`)
+    console.log(`📊 Tổng số Test Cases: ${totalCases}`)
+    console.log(`👥 Testers tham gia: ${testers.join(', ')}`)
+    console.log('================================================')
 }
 
 // Chạy hàm tạo file
-generateExcel();
+generateExcel()

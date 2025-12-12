@@ -1,22 +1,36 @@
 <template>
-    <div class="error-state" :class="containerClass">
-        <div class="error-state__icon">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-        </div>
-        <h5 v-if="title" class="error-state__title">{{ title }}</h5>
-        <p class="error-state__message">{{ message }}</p>
-        <div v-if="showRetry && retryHandler" class="error-state__actions">
-            <button class="btn btn-primary error-state__retry-btn" @click="handleRetry">
-                <i class="bi bi-arrow-clockwise me-2"></i>
-                Thử lại
-            </button>
-        </div>
+  <div
+    class="error-state"
+    :class="containerClass"
+  >
+    <div class="error-state__icon">
+      <i class="bi bi-exclamation-triangle-fill" />
     </div>
+    <h5
+      v-if="title"
+      class="error-state__title"
+    >
+      {{ title }}
+    </h5>
+    <p class="error-state__message">
+      {{ message }}
+    </p>
+    <div
+      v-if="showRetry && retryHandler"
+      class="error-state__actions"
+    >
+      <button
+        class="btn btn-primary error-state__retry-btn"
+        @click="handleRetry"
+      >
+        <i class="bi bi-arrow-clockwise me-2" />
+        Thử lại
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-
 const props = defineProps({
     /**
      * Error message to display

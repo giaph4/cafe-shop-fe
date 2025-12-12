@@ -1,78 +1,109 @@
 <template>
-    <div class="shift-report-list-tab">
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label">Work Shift ID <span class="text-danger">*</span></label>
-                        <input
-                            type="number"
-                            class="form-control"
-                            v-model.number="workShiftIdInput"
-                            min="1"
-                            placeholder="Nhập ID ca mẫu"
-                            required
-                        />
-                    </div>
-                    <div class="col-lg-8 col-md-6 text-lg-end text-md-start">
-                        <button class="btn btn-primary" type="button" @click="handleFetch" :disabled="loading">
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i class="bi bi-search me-2"></i>Lấy danh sách
-                        </button>
-                    </div>
-                </div>
-            </div>
+  <div class="shift-report-list-tab">
+    <div class="card filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label">Work Shift ID <span class="text-danger">*</span></label>
+            <input
+              v-model.number="workShiftIdInput"
+              type="number"
+              class="form-control"
+              min="1"
+              placeholder="Nhập ID ca mẫu"
+              required
+            >
+          </div>
+          <div class="col-lg-8 col-md-6 text-lg-end text-md-start">
+            <button
+              class="btn btn-primary"
+              type="button"
+              :disabled="loading"
+              @click="handleFetch"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i class="bi bi-search me-2" />Lấy danh sách
+            </button>
+          </div>
         </div>
-
-        <div v-if="error" class="alert alert-danger mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
-        </div>
-
-        <div v-if="reports.length" class="row g-4">
-            <div class="col-md-6 col-lg-4" v-for="item in reports" :key="item.reportId">
-                <div class="card report-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h6 class="card-title mb-1">#{{ item.reportId }}</h6>
-                                <small class="text-muted">Session {{ item.sessionId }}</small>
-                            </div>
-                            <span class="badge" :class="statusClass(item.status)">{{ statusLabelFor(item.status) }}</span>
-                        </div>
-                        <dl class="report-details">
-                            <div>
-                                <dt>Bắt đầu</dt>
-                                <dd>{{ formatDateTime(item.startAt) }}</dd>
-                            </div>
-                            <div>
-                                <dt>Kết thúc</dt>
-                                <dd>{{ item.endAt ? formatDateTime(item.endAt) : 'Chưa kết thúc' }}</dd>
-                            </div>
-                            <div>
-                                <dt>Doanh thu đã thanh toán</dt>
-                                <dd class="text-success">{{ formatCurrency(item.totalPaidAmount) }}</dd>
-                            </div>
-                            <div>
-                                <dt>Giá trị chưa thanh toán</dt>
-                                <dd class="text-danger">{{ formatCurrency(item.totalUnpaidAmount) }}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div v-else-if="!loading" class="text-center text-muted py-5">
-            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-            <p>Chưa có báo cáo nào tương ứng.</p>
-        </div>
+      </div>
     </div>
+
+    <div
+      v-if="error"
+      class="alert alert-danger mb-4"
+      role="alert"
+    >
+      <i class="bi bi-exclamation-triangle me-2" />{{ error }}
+    </div>
+
+    <div
+      v-if="reports.length"
+      class="row g-4"
+    >
+      <div
+        v-for="item in reports"
+        :key="item.reportId"
+        class="col-md-6 col-lg-4"
+      >
+        <div class="card report-card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h6 class="card-title mb-1">
+                  #{{ item.reportId }}
+                </h6>
+                <small class="text-muted">Session {{ item.sessionId }}</small>
+              </div>
+              <span
+                class="badge"
+                :class="statusClass(item.status)"
+              >{{ statusLabelFor(item.status) }}</span>
+            </div>
+            <dl class="report-details">
+              <div>
+                <dt>Bắt đầu</dt>
+                <dd>{{ formatDateTime(item.startAt) }}</dd>
+              </div>
+              <div>
+                <dt>Kết thúc</dt>
+                <dd>{{ item.endAt ? formatDateTime(item.endAt) : 'Chưa kết thúc' }}</dd>
+              </div>
+              <div>
+                <dt>Doanh thu đã thanh toán</dt>
+                <dd class="text-success">
+                  {{ formatCurrency(item.totalPaidAmount) }}
+                </dd>
+              </div>
+              <div>
+                <dt>Giá trị chưa thanh toán</dt>
+                <dd class="text-danger">
+                  {{ formatCurrency(item.totalUnpaidAmount) }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      v-else-if="!loading"
+      class="text-center text-muted py-5"
+    >
+      <i class="bi bi-inbox fs-1 d-block mb-3" />
+      <p>Chưa có báo cáo nào tương ứng.</p>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 
-const props = defineProps({
+defineProps({
     reports: { type: Array, default: () => [] },
     loading: { type: Boolean, default: false },
     error: { type: String, default: '' }

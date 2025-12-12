@@ -1,6 +1,5 @@
 import api from './axios'
 import { cleanParams } from './utils'
-import { buildApiError } from '@/utils/errorHandler'
 import { createFormData, createFileFormData, getMultipartHeaders } from './helpers'
 
 const BASE_URL = '/api/v1/products'
@@ -9,7 +8,7 @@ const BASE_URL = '/api/v1/products'
  * 4.1 Tạo sản phẩm mới (không có ảnh)
  */
 export const createProduct = async (productData) => {
-    const {data} = await api.post(BASE_URL, productData)
+    const { data } = await api.post(BASE_URL, productData)
     return data
 }
 
@@ -18,8 +17,8 @@ export const createProduct = async (productData) => {
  */
 export const createProductWithImage = async (productData, image) => {
     const formData = createFormData(productData, 'product', image, 'image')
-    const {data} = await api.post(BASE_URL, formData, {
-        headers: getMultipartHeaders(),
+    const { data } = await api.post(BASE_URL, formData, {
+        headers: getMultipartHeaders()
     })
     return data
 }
@@ -29,7 +28,7 @@ export const createProductWithImage = async (productData, image) => {
  */
 export const getProducts = async (filters = {}) => {
     const params = cleanParams(filters)
-    const {data} = await api.get(BASE_URL, {params})
+    const { data } = await api.get(BASE_URL, { params })
     return data
 }
 
@@ -37,7 +36,7 @@ export const getProducts = async (filters = {}) => {
  * 4.4 Lấy chi tiết sản phẩm
  */
 export const getProductById = async (id) => {
-    const {data} = await api.get(`${BASE_URL}/${id}`)
+    const { data } = await api.get(`${BASE_URL}/${id}`)
     return data
 }
 
@@ -45,17 +44,21 @@ export const getProductById = async (id) => {
  * 4.5 Cập nhật sản phẩm
  */
 export const updateProduct = async (id, productData) => {
-    const {data} = await api.put(`${BASE_URL}/${id}`, productData)
+    const { data } = await api.put(`${BASE_URL}/${id}`, productData)
     return data
 }
 
 /**
  * 4.6 Cập nhật sản phẩm với ảnh (Multipart)
+ * LƯU Ý: Backend nhận @RequestPart(value = "request") cho JSON, không phải "product"
  */
 export const updateProductWithImage = async (id, productData, image) => {
+    // Backend ProductController nhận @RequestPart(value = "request") cho JSON
+    // Nhưng cũng hỗ trợ @RequestPart(value = "product") cho multipart
+    // Giữ nguyên 'product' để tương thích với cả hai cách
     const formData = createFormData(productData, 'product', image, 'image')
-    const {data} = await api.put(`${BASE_URL}/${id}`, formData, {
-        headers: getMultipartHeaders(),
+    const { data } = await api.put(`${BASE_URL}/${id}`, formData, {
+        headers: getMultipartHeaders()
     })
     return data
 }
@@ -63,10 +66,10 @@ export const updateProductWithImage = async (id, productData, image) => {
 /**
  * 4.7 Upload ảnh cho sản phẩm
  */
-export const uploadProductImage = async ({id, image}) => {
+export const uploadProductImage = async ({ id, image }) => {
     const formData = createFileFormData(image, 'image')
-    const {data} = await api.post(`${BASE_URL}/${id}/image`, formData, {
-        headers: getMultipartHeaders(),
+    const { data } = await api.post(`${BASE_URL}/${id}/image`, formData, {
+        headers: getMultipartHeaders()
     })
     return data
 }
@@ -75,7 +78,7 @@ export const uploadProductImage = async ({id, image}) => {
  * 4.8 Xóa ảnh sản phẩm
  */
 export const deleteProductImage = async (id) => {
-    const {data} = await api.delete(`${BASE_URL}/${id}/image`)
+    const { data } = await api.delete(`${BASE_URL}/${id}/image`)
     return data
 }
 
@@ -83,7 +86,7 @@ export const deleteProductImage = async (id) => {
  * 4.9 Bật/tắt trạng thái sản phẩm
  */
 export const toggleProductAvailability = async (id) => {
-    const {data} = await api.patch(`${BASE_URL}/${id}/toggle-availability`)
+    const { data } = await api.patch(`${BASE_URL}/${id}/toggle-availability`)
     return data
 }
 
@@ -98,7 +101,7 @@ export const deleteProduct = async (id) => {
  * 5.1 Lấy công thức sản phẩm
  */
 export const getProductRecipe = async (productId) => {
-    const {data} = await api.get(`${BASE_URL}/${productId}/recipe`)
+    const { data } = await api.get(`${BASE_URL}/${productId}/recipe`)
     return data
 }
 
@@ -106,6 +109,6 @@ export const getProductRecipe = async (productId) => {
  * 5.2 Cập nhật công thức sản phẩm
  */
 export const updateProductRecipe = async (productId, recipeDTO) => {
-    const {data} = await api.put(`${BASE_URL}/${productId}/recipe`, recipeDTO)
+    const { data } = await api.put(`${BASE_URL}/${productId}/recipe`, recipeDTO)
     return data
 }

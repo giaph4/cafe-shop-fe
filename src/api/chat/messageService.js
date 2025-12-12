@@ -43,7 +43,7 @@ export const sendAttachmentMessage = async (conversationId, messageText, files) 
     files.forEach(file => {
         formData.append('files', file)
     })
-    
+
     const { data } = await api.post(
         `${BASE_URL}/conversations/${conversationId}/messages/attachments`,
         formData,

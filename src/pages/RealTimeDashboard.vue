@@ -1,222 +1,291 @@
 <template>
-    <div class="realtime-dashboard-page page-container container-fluid" data-aos="fade-up">
-        <PageHeader
-            title="Dashboard Thời gian Thực"
-            subtitle="Theo dõi hoạt động và hiệu suất theo thời gian thực"
-        >
-            <template #actions>
-                <div class="header-controls">
-                    <div class="control-group" v-if="lastRefreshTime">
-                        <div class="refresh-status" :class="isRefreshing ? 'status-active' : 'status-idle'">
-                            <span class="status-text">Cập nhật: {{ formatTime(lastRefreshTime) }}</span>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <div class="form-check form-switch">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="auto-refresh-toggle"
-                                v-model="autoRefreshEnabled"
-                                @change="handleAutoRefreshChange"
-                            />
-                            <label class="form-check-label" for="auto-refresh-toggle">
-                                Tự động làm mới
-                            </label>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <button
-                            class="btn btn-flat btn-flat--outline"
-                            @click="handleRefresh"
-                            :disabled="loading"
-                        >
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-arrow-clockwise me-2"></i>
-                            Làm mới
-                        </button>
-                    </div>
-                </div>
-            </template>
-        </PageHeader>
-
-        <div v-if="criticalAlerts.length > 0" class="alerts-section mb-4">
+  <div
+    class="realtime-dashboard-page page-container container-fluid"
+    data-aos="fade-up"
+  >
+    <PageHeader
+      title="Dashboard Thời gian Thực"
+      subtitle="Theo dõi hoạt động và hiệu suất theo thời gian thực"
+    >
+      <template #actions>
+        <div class="header-controls">
+          <div
+            v-if="lastRefreshTime"
+            class="control-group"
+          >
             <div
-                v-for="alert in criticalAlerts"
-                :key="alert.title"
-                class="alert alert-critical"
+              class="refresh-status"
+              :class="isRefreshing ? 'status-active' : 'status-idle'"
             >
-                <div class="d-flex align-items-center gap-3">
-                    <i class="bi bi-exclamation-triangle-fill alert-icon"></i>
-                    <div class="flex-grow-1">
-                        <div class="alert-title">{{ alert.title }}</div>
-                        <div class="alert-message">{{ alert.message }}</div>
-                    </div>
-                    <button
-                        v-if="alert.action"
-                        class="btn btn-flat btn-flat--outline btn-sm"
-                        @click="handleAlertAction(alert)"
-                    >
-                        {{ alert.action }}
-                    </button>
-                </div>
+              <span class="status-text">Cập nhật: {{ formatTime(lastRefreshTime) }}</span>
             </div>
+          </div>
+          <div class="control-group">
+            <div class="form-check form-switch">
+              <input
+                id="auto-refresh-toggle"
+                v-model="autoRefreshEnabled"
+                class="form-check-input"
+                type="checkbox"
+                @change="handleAutoRefreshChange"
+              >
+              <label
+                class="form-check-label"
+                for="auto-refresh-toggle"
+              >
+                Tự động làm mới
+              </label>
+            </div>
+          </div>
+          <div class="control-group">
+            <button
+              class="btn btn-flat btn-flat--outline"
+              :disabled="loading"
+              @click="handleRefresh"
+            >
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-arrow-clockwise me-2"
+              />
+              Làm mới
+            </button>
+          </div>
         </div>
+      </template>
+    </PageHeader>
 
-        <LoadingState v-if="loading && !hasData" text="Đang tải dữ liệu dashboard..." />
-        <ErrorState
-            v-else-if="error"
-            :message="error"
-            @retry="handleRefresh"
-        />
-
-        <div v-if="hasData" class="dashboard-content">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--success">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-cash-stack"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Doanh thu hôm nay</div>
-                            <div class="kpi-card__value">{{ formatCurrency(kpis?.revenueToday || 0) }}</div>
-                            <div class="kpi-card__subtitle">
-                                <HistoricalComparison
-                                    type="revenue"
-                                    :compare-type="compareType"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--primary">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-cart"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Đơn hàng hôm nay</div>
-                            <div class="kpi-card__value">{{ formatNumber(kpis?.ordersToday || 0) }}</div>
-                            <div class="kpi-card__subtitle">
-                                <HistoricalComparison
-                                    type="orders"
-                                    :compare-type="compareType"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--info">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-table"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Bàn đang dùng</div>
-                            <div class="kpi-card__value">{{ formatNumber(kpis?.activeTables || 0) }}</div>
-                            <div class="kpi-card__subtitle">/ {{ tables.length }} bàn</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="kpi-card kpi-card--warning">
-                        <div class="kpi-card__icon">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div class="kpi-card__content">
-                            <div class="kpi-card__label">Nhân viên ca</div>
-                            <div class="kpi-card__value">{{ formatNumber(kpis?.staffOnDuty || 0) }}</div>
-                            <div class="kpi-card__subtitle">
-                                <span v-if="currentShift">{{ currentShift.name }}</span>
-                                <span v-else>Chưa có ca</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div
+      v-if="criticalAlerts.length > 0"
+      class="alerts-section mb-4"
+    >
+      <div
+        v-for="alert in criticalAlerts"
+        :key="alert.title"
+        class="alert alert-critical"
+      >
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-exclamation-triangle-fill alert-icon" />
+          <div class="flex-grow-1">
+            <div class="alert-title">
+              {{ alert.title }}
             </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-lg-8">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Doanh thu theo giờ hôm nay</h5>
-                            <div class="d-flex gap-2">
-                                <select
-                                    class="form-select form-select-sm clean-input"
-                                    style="width: auto;"
-                                    v-model="compareType"
-                                    @change="handleCompareTypeChange"
-                                >
-                                    <option value="yesterday">So với hôm qua</option>
-                                    <option value="lastWeek">So với tuần trước</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <HourlyRevenueChart :hourly-revenue="hourlyRevenue" />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Cảnh báo</h5>
-                            <span class="badge badge-soft" :class="alerts.length > 0 ? 'badge-warning' : 'badge-success'">
-                                {{ alerts.length }}
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <AlertsPanel :alerts="alerts" @action="handleAlertAction" />
-                        </div>
-                    </div>
-                </div>
+            <div class="alert-message">
+              {{ alert.message }}
             </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-lg-6">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Đơn hàng đang chờ</h5>
-                            <span class="badge badge-soft badge-warning">{{ pendingOrders.length }}</span>
-                        </div>
-                        <div class="card-body">
-                            <PendingOrdersList :orders="pendingOrders" />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card standard-card">
-                        <div class="card-header standard-card-header">
-                            <h5 class="card-title">Nguyên liệu sắp hết</h5>
-                            <span class="badge badge-soft badge-danger">{{ lowStockItems.length }}</span>
-                        </div>
-                        <div class="card-body">
-                            <LowStockList :items="lowStockItems" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card standard-card">
-                <div class="card-header standard-card-header">
-                    <h5 class="card-title">Trạng thái bàn</h5>
-                </div>
-                <div class="card-body">
-                    <TablesStatusGrid :tables="tables" />
-                </div>
-            </div>
+          </div>
+          <button
+            v-if="alert.action"
+            class="btn btn-flat btn-flat--outline btn-sm"
+            @click="handleAlertAction(alert)"
+          >
+            {{ alert.action }}
+          </button>
         </div>
-
-        <EmptyState
-            v-else-if="!loading"
-            title="Chưa có dữ liệu"
-            message="Nhấn 'Làm mới' để tải dữ liệu dashboard"
-        >
-            <template #icon>
-                <i class="bi bi-speedometer2"></i>
-            </template>
-        </EmptyState>
+      </div>
     </div>
+
+    <LoadingState
+      v-if="loading && !hasData"
+      text="Đang tải dữ liệu dashboard..."
+    />
+    <ErrorState
+      v-else-if="error"
+      :message="error"
+      @retry="handleRefresh"
+    />
+
+    <div
+      v-if="hasData"
+      class="dashboard-content"
+    >
+      <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+              <i class="bi bi-cash-stack" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Doanh thu hôm nay
+              </div>
+              <div class="kpi-card__value">
+                {{ formatCurrency(kpis?.revenueToday || 0) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                <HistoricalComparison
+                  type="revenue"
+                  :compare-type="compareType"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--primary">
+            <div class="kpi-card__icon">
+              <i class="bi bi-cart" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Đơn hàng hôm nay
+              </div>
+              <div class="kpi-card__value">
+                {{ formatNumber(kpis?.ordersToday || 0) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                <HistoricalComparison
+                  type="orders"
+                  :compare-type="compareType"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <i class="bi bi-table" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Bàn đang dùng
+              </div>
+              <div class="kpi-card__value">
+                {{ formatNumber(kpis?.activeTables || 0) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                / {{ tables.length }} bàn
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="kpi-card kpi-card--warning">
+            <div class="kpi-card__icon">
+              <i class="bi bi-people" />
+            </div>
+            <div class="kpi-card__content">
+              <div class="kpi-card__label">
+                Nhân viên ca
+              </div>
+              <div class="kpi-card__value">
+                {{ formatNumber(kpis?.staffOnDuty || 0) }}
+              </div>
+              <div class="kpi-card__subtitle">
+                <span v-if="currentShift">{{ currentShift.name }}</span>
+                <span v-else>Chưa có ca</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Doanh thu theo giờ hôm nay
+              </h5>
+              <div class="d-flex gap-2">
+                <select
+                  v-model="compareType"
+                  class="form-select form-select-sm clean-input"
+                  style="width: auto;"
+                  @change="handleCompareTypeChange"
+                >
+                  <option value="yesterday">
+                    So với hôm qua
+                  </option>
+                  <option value="lastWeek">
+                    So với tuần trước
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <HourlyRevenueChart :hourly-revenue="hourlyRevenue" />
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Cảnh báo
+              </h5>
+              <span
+                class="badge badge-soft"
+                :class="alerts.length > 0 ? 'badge-warning' : 'badge-success'"
+              >
+                {{ alerts.length }}
+              </span>
+            </div>
+            <div class="card-body">
+              <AlertsPanel
+                :alerts="alerts"
+                @action="handleAlertAction"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Đơn hàng đang chờ
+              </h5>
+              <span class="badge badge-soft badge-warning">{{ pendingOrders.length }}</span>
+            </div>
+            <div class="card-body">
+              <PendingOrdersList :orders="pendingOrders" />
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card standard-card">
+            <div class="card-header standard-card-header">
+              <h5 class="card-title">
+                Nguyên liệu sắp hết
+              </h5>
+              <span class="badge badge-soft badge-danger">{{ lowStockItems.length }}</span>
+            </div>
+            <div class="card-body">
+              <LowStockList :items="lowStockItems" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card standard-card">
+        <div class="card-header standard-card-header">
+          <h5 class="card-title">
+            Trạng thái bàn
+          </h5>
+        </div>
+        <div class="card-body">
+          <TablesStatusGrid :tables="tables" />
+        </div>
+      </div>
+    </div>
+
+    <EmptyState
+      v-else-if="!loading"
+      title="Chưa có dữ liệu"
+      message="Nhấn 'Làm mới' để tải dữ liệu dashboard"
+    >
+      <template #icon>
+        <i class="bi bi-speedometer2" />
+      </template>
+    </EmptyState>
+  </div>
 </template>
 
 <script setup>
@@ -234,6 +303,7 @@ import LowStockList from '@/components/realtime-dashboard/LowStockList.vue'
 import TablesStatusGrid from '@/components/realtime-dashboard/TablesStatusGrid.vue'
 import HistoricalComparison from '@/components/realtime-dashboard/HistoricalComparison.vue'
 import { formatCurrency, formatNumber, formatTime } from '@/utils/formatters'
+import logger from '@/utils/logger'
 
 const store = useRealTimeDashboardStore()
 const router = useRouter()
@@ -264,7 +334,7 @@ const handleRefresh = async () => {
     try {
         await store.refreshDashboard()
     } catch (err) {
-        console.error('Failed to refresh', err)
+        logger.error('Không thể làm mới dashboard thời gian thực:', err)
     } finally {
         isRefreshing.value = false
     }
@@ -424,7 +494,7 @@ onUnmounted(() => {
 .kpi-card {
     background: var(--color-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     padding: var(--spacing-4);
     display: flex;
     align-items: center;
@@ -432,6 +502,36 @@ onUnmounted(() => {
     transition: all var(--transition-base);
     min-height: 100px;
     height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.kpi-card--success::before {
+    background: var(--color-success);
+}
+
+.kpi-card--primary::before {
+    background: var(--color-primary);
+}
+
+.kpi-card--info::before {
+    background: var(--color-info);
+}
+
+.kpi-card--warning::before {
+    background: var(--color-warning);
 }
 
 .kpi-card:hover {
@@ -439,15 +539,24 @@ onUnmounted(() => {
     border-color: var(--color-border-strong);
 }
 
+.kpi-card:hover::before {
+    opacity: 0.7;
+}
+
 .kpi-card__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-sm);
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 1.25rem;
     flex-shrink: 0;
+    transition: transform var(--transition-base);
+}
+
+.kpi-card:hover .kpi-card__icon {
+    transform: scale(1.05);
 }
 
 .kpi-card--success .kpi-card__icon {
@@ -481,6 +590,8 @@ onUnmounted(() => {
     color: var(--color-text-muted);
     margin-bottom: var(--spacing-1);
     font-family: var(--font-family-sans);
+    letter-spacing: 0.01em;
+    line-height: 1.4;
 }
 
 .kpi-card__value {
@@ -489,12 +600,15 @@ onUnmounted(() => {
     color: var(--color-heading);
     font-family: var(--font-family-sans);
     margin-bottom: var(--spacing-1);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
 }
 
 .kpi-card__subtitle {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     font-family: var(--font-family-sans);
+    line-height: 1.4;
 }
 
 .badge-soft {

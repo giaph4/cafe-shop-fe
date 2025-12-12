@@ -1,222 +1,287 @@
 <template>
-    <div class="pos-product-menu">
-        <!-- Header -->
-        <div class="pos-product-menu__header">
-            <button class="btn btn-link btn-back" @click="$emit('back-to-tables')">
-                <i class="bi bi-arrow-left"></i> Quay lại
-            </button>
-            <h2 class="pos-product-menu__title">Chọn sản phẩm</h2>
-            <div class="pos-product-menu__search-hint">
-                <kbd>/</kbd> <span class="search-hint-text">để tìm kiếm</span>
-            </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="pos-product-menu__search">
-            <div class="input-group input-group-lg">
-                <span class="input-group-text">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input
-                    ref="searchInputRef"
-                    type="text"
-                    class="form-control"
-                    placeholder="Tìm sản phẩm nhanh (nhấn / để focus)..."
-                    v-model="filters.name"
-                    @keydown.escape="clearSearch"
-                >
-                <button
-                    v-if="filters.name"
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="clearSearch"
-                >
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Category Filters -->
-        <div class="pos-product-menu__categories">
-            <button
-                class="category-pill"
-                :class="!filters.categoryId || filters.categoryId === '' ? 'category-pill--active' : ''"
-                @click="filters.categoryId = ''"
-            >
-                Tất cả
-            </button>
-            <button
-                v-for="category in categoriesList"
-                :key="category.id"
-                class="category-pill"
-                :class="String(filters.categoryId) === String(category.id) ? 'category-pill--active' : ''"
-                @click="filters.categoryId = category.id"
-            >
-                {{ category.name }}
-            </button>
-        </div>
-
-        <!-- Advanced Filters -->
-        <div class="pos-product-menu__advanced-filters">
-            <div class="row g-2">
-                <div class="col-md-3 col-6">
-                    <label class="form-label small">Giá từ (₫)</label>
-                    <input
-                        v-model.number="filters.priceMin"
-                        type="number"
-                        class="form-control form-control-sm"
-                        placeholder="Từ"
-                        min="0"
-                        step="1000"
-                    />
-                </div>
-                <div class="col-md-3 col-6">
-                    <label class="form-label small">Giá đến (₫)</label>
-                    <input
-                        v-model.number="filters.priceMax"
-                        type="number"
-                        class="form-control form-control-sm"
-                        placeholder="Đến"
-                        min="0"
-                        step="1000"
-                    />
-                </div>
-                <div class="col-md-3 col-6">
-                    <label class="form-label small">Bán chạy</label>
-                    <select class="form-select form-select-sm" v-model="filters.bestseller">
-                        <option :value="null">Tất cả</option>
-                        <option :value="true">Chỉ bán chạy</option>
-                        <option :value="false">Không bán chạy</option>
-                    </select>
-                </div>
-                <div class="col-md-3 col-6">
-                    <label class="form-label small">Sắp xếp</label>
-                    <select class="form-select form-select-sm" v-model="sortState">
-                        <option value="">Mặc định</option>
-                        <option value="name-asc">Tên A-Z</option>
-                        <option value="name-desc">Tên Z-A</option>
-                        <option value="price-asc">Giá tăng dần</option>
-                        <option value="price-desc">Giá giảm dần</option>
-                        <option value="bestseller-desc">Bán chạy nhất</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Product List Header -->
-        <div class="pos-product-menu__list-header">
-            <span class="pos-product-menu__count">
-                Tìm thấy <strong>{{ paginatedProducts.length }}</strong> sản phẩm
-                <span v-if="totalFiltered > paginatedProducts.length" class="text-muted">
-                    ({{ totalFiltered }} tổng cộng)
-                </span>
-            </span>
-            <div class="pos-product-menu__view-toggle">
-                <button
-                    class="view-toggle-btn"
-                    :class="{ 'view-toggle-btn--active': viewMode === 'grid' }"
-                    @click="viewMode = 'grid'"
-                    title="Lưới"
-                >
-                    <i class="bi bi-grid-3x3"></i>
-                </button>
-                <button
-                    class="view-toggle-btn"
-                    :class="{ 'view-toggle-btn--active': viewMode === 'list' }"
-                    @click="viewMode = 'list'"
-                    title="Danh sách"
-                >
-                    <i class="bi bi-list-ul"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Product List -->
-        <div class="pos-product-menu__content">
-            <LoadingState v-if="isLoading" text="Đang tải sản phẩm..." />
-            <ErrorState
-                v-else-if="isError"
-                message="Không thể tải sản phẩm. Vui lòng thử lại."
-                :show-retry="true"
-                :retry-handler="refetch"
-            />
-            <EmptyState
-                v-else-if="filteredProducts.length === 0"
-                title="Không tìm thấy sản phẩm"
-                message="Không tìm thấy sản phẩm nào phù hợp với bộ lọc hiện tại."
-            >
-                <template #icon>
-                    <i class="bi bi-search"></i>
-                </template>
-            </EmptyState>
-            <div v-else class="pos-product-menu__products" :class="`view-${viewMode}`">
-                <div
-                    v-for="product in paginatedProducts"
-                    :key="product.id"
-                    class="product-card"
-                    :class="{ 'product-card--unavailable': !product.available }"
-                    @click="selectProduct(product)"
-                    @keydown.enter="selectProduct(product)"
-                    tabindex="0"
-                >
-                    <div class="product-card__image">
-                        <img
-                            :src="product.imageUrl || '/placeholder.png'"
-                            :alt="product.name"
-                            @error="handleImageError"
-                        >
-                        <div v-if="!product.available" class="product-card__badge">
-                            <i class="bi bi-slash-circle"></i> Ngừng bán
-                        </div>
-                    </div>
-                    <div class="product-card__body">
-                        <h6 class="product-card__title">{{ product.name }}</h6>
-                        <div class="product-card__price">{{ formatCurrency(product.price) }}</div>
-                        <div v-if="product.description" class="product-card__description">
-                            {{ product.description }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="pos-product-menu__pagination">
-            <nav aria-label="Phân trang sản phẩm">
-                <ul class="pagination pagination-sm justify-content-center mb-0">
-                    <li class="page-item" :class="{ disabled: currentPage === 0 }">
-                        <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage === 0">
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-                    </li>
-                    <li
-                        v-for="page in visiblePages"
-                        :key="page"
-                        class="page-item"
-                        :class="{ active: page === currentPage + 1 }"
-                    >
-                        <button
-                            v-if="page !== '...'"
-                            class="page-link"
-                            @click="goToPage(page - 1)"
-                        >
-                            {{ page }}
-                        </button>
-                        <span v-else class="page-link">{{ page }}</span>
-                    </li>
-                    <li class="page-item" :class="{ disabled: currentPage >= totalPages - 1 }">
-                        <button
-                            class="page-link"
-                            @click="goToPage(currentPage + 1)"
-                            :disabled="currentPage >= totalPages - 1"
-                        >
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+  <div class="pos-product-menu">
+    <!-- Header -->
+    <div class="pos-product-menu__header">
+      <button
+        class="btn"
+        @click="$emit('back-to-tables')"
+      >
+        <i class="bi bi-arrow-left" /> Quay lại
+      </button>
+      <h2 class="pos-product-menu__title">
+        Chọn sản phẩm
+      </h2>
+      <div class="pos-product-menu__search-hint">
+        <kbd>/</kbd> <span class="search-hint-text">để tìm kiếm</span>
+      </div>
     </div>
+
+    <!-- Search Bar -->
+    <div class="pos-product-menu__search">
+      <div class="input-group input-group-lg">
+        <span class="input-group-text">
+          <i class="bi bi-search" />
+        </span>
+        <input
+          ref="searchInputRef"
+          v-model="filters.name"
+          type="text"
+          class="form-control"
+          placeholder="Tìm sản phẩm nhanh (nhấn / để focus)..."
+          @keydown.escape="clearSearch"
+        >
+        <button
+          v-if="filters.name"
+          class="btn btn-outline-secondary"
+          type="button"
+          @click="clearSearch"
+        >
+          <i class="bi bi-x-lg" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="pos-product-menu__categories">
+      <button
+        class="category-pill"
+        :class="!filters.categoryId || filters.categoryId === '' ? 'category-pill--active' : ''"
+        @click="filters.categoryId = ''"
+      >
+        Tất cả
+      </button>
+      <button
+        v-for="category in categoriesList"
+        :key="category.id"
+        class="category-pill"
+        :class="String(filters.categoryId) === String(category.id) ? 'category-pill--active' : ''"
+        @click="filters.categoryId = category.id"
+      >
+        {{ category.name }}
+      </button>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="pos-product-menu__advanced-filters">
+      <div class="row g-2">
+        <div class="col-md-3 col-6">
+          <label class="form-label small">Giá từ (₫)</label>
+          <input
+            v-model.number="filters.priceMin"
+            type="number"
+            class="form-control form-control-sm"
+            placeholder="Từ"
+            min="0"
+            step="1000"
+          >
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="form-label small">Giá đến (₫)</label>
+          <input
+            v-model.number="filters.priceMax"
+            type="number"
+            class="form-control form-control-sm"
+            placeholder="Đến"
+            min="0"
+            step="1000"
+          >
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="form-label small">Bán chạy</label>
+          <select
+            v-model="filters.bestseller"
+            class="form-select form-select-sm"
+          >
+            <option :value="null">
+              Tất cả
+            </option>
+            <option :value="true">
+              Chỉ bán chạy
+            </option>
+            <option :value="false">
+              Không bán chạy
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="form-label small">Sắp xếp</label>
+          <select
+            v-model="sortState"
+            class="form-select form-select-sm"
+          >
+            <option value="">
+              Mặc định
+            </option>
+            <option value="name-asc">
+              Tên A-Z
+            </option>
+            <option value="name-desc">
+              Tên Z-A
+            </option>
+            <option value="price-asc">
+              Giá tăng dần
+            </option>
+            <option value="price-desc">
+              Giá giảm dần
+            </option>
+            <option value="bestseller-desc">
+              Bán chạy nhất
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product List Header -->
+    <div class="pos-product-menu__list-header">
+      <span class="pos-product-menu__count">
+        Tìm thấy <strong>{{ paginatedProducts.length }}</strong> sản phẩm
+        <span
+          v-if="totalFiltered > paginatedProducts.length"
+          class="text-muted"
+        >
+          ({{ totalFiltered }} tổng cộng)
+        </span>
+      </span>
+      <div class="pos-product-menu__view-toggle">
+        <button
+          class="view-toggle-btn"
+          :class="{ 'view-toggle-btn--active': viewMode === 'grid' }"
+          title="Lưới"
+          @click="viewMode = 'grid'"
+        >
+          <i class="bi bi-grid-3x3" />
+        </button>
+        <button
+          class="view-toggle-btn"
+          :class="{ 'view-toggle-btn--active': viewMode === 'list' }"
+          title="Danh sách"
+          @click="viewMode = 'list'"
+        >
+          <i class="bi bi-list-ul" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Product List -->
+    <div class="pos-product-menu__content">
+      <LoadingState
+        v-if="isLoading"
+        text="Đang tải sản phẩm..."
+      />
+      <ErrorState
+        v-else-if="isError"
+        message="Không thể tải sản phẩm. Vui lòng thử lại."
+        :show-retry="true"
+        :retry-handler="refetch"
+      />
+      <EmptyState
+        v-else-if="filteredProducts.length === 0"
+        title="Không tìm thấy sản phẩm"
+        message="Không tìm thấy sản phẩm nào phù hợp với bộ lọc hiện tại."
+      >
+        <template #icon>
+          <i class="bi bi-search" />
+        </template>
+      </EmptyState>
+      <div
+        v-else
+        class="pos-product-menu__products"
+        :class="`view-${viewMode}`"
+      >
+        <div
+          v-for="product in paginatedProducts"
+          :key="product.id"
+          class="product-card"
+          :class="{ 'product-card--unavailable': !product.available }"
+          tabindex="0"
+          @click="selectProduct(product)"
+          @keydown.enter="selectProduct(product)"
+        >
+          <div class="product-card__image">
+            <img
+              :src="product.imageUrl || '/placeholder.png'"
+              :alt="product.name"
+              @error="handleImageError"
+            >
+            <div
+              v-if="!product.available"
+              class="product-card__badge"
+            >
+              <i class="bi bi-slash-circle" /> Ngừng bán
+            </div>
+          </div>
+          <div class="product-card__body">
+            <h6 class="product-card__title">
+              {{ product.name }}
+            </h6>
+            <div class="product-card__price">
+              {{ formatCurrency(product.price) }}
+            </div>
+            <div
+              v-if="product.description"
+              class="product-card__description"
+            >
+              {{ product.description }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div
+      v-if="totalPages > 1"
+      class="pos-product-menu__pagination"
+    >
+      <nav aria-label="Phân trang sản phẩm">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          <li
+            class="page-item"
+            :class="{ disabled: currentPage === 0 }"
+          >
+            <button
+              class="page-link"
+              :disabled="currentPage === 0"
+              @click="goToPage(currentPage - 1)"
+            >
+              <i class="bi bi-chevron-left" />
+            </button>
+          </li>
+          <li
+            v-for="page in visiblePages"
+            :key="page"
+            class="page-item"
+            :class="{ active: page === currentPage + 1 }"
+          >
+            <button
+              v-if="page !== '...'"
+              class="page-link"
+              @click="goToPage(page - 1)"
+            >
+              {{ page }}
+            </button>
+            <span
+              v-else
+              class="page-link"
+            >{{ page }}</span>
+          </li>
+          <li
+            class="page-item"
+            :class="{ disabled: currentPage >= totalPages - 1 }"
+          >
+            <button
+              class="page-link"
+              :disabled="currentPage >= totalPages - 1"
+              @click="goToPage(currentPage + 1)"
+            >
+              <i class="bi bi-chevron-right" />
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -226,6 +291,7 @@ import { getProducts } from '@/api/productService.js'
 import { getCategories } from '@/api/categoryService.js'
 import * as reportService from '@/api/reportService.js'
 import { formatCurrency } from '@/utils/formatters.js'
+import logger from '@/utils/logger'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -242,7 +308,7 @@ const filters = ref({
     priceMax: null,
     bestseller: null,
     page: 0,
-    size: 1000, // Lấy nhiều để filter client-side
+    size: 1000 // Lấy nhiều để filter client-side
 })
 
 const sortState = ref('')
@@ -265,19 +331,19 @@ const { data: products, isLoading, isError, refetch } = useQuery({
             page: filters.value.page,
             size: filters.value.size
         }
-        
+
         // Chỉ thêm name nếu có giá trị
         if (filters.value.name && filters.value.name.trim()) {
             params.name = filters.value.name.trim()
         }
-        
+
         // Chỉ thêm categoryId nếu có giá trị (không phải empty string)
         if (filters.value.categoryId && filters.value.categoryId !== '') {
             params.categoryId = filters.value.categoryId
         }
-        
+
         return getProducts(params)
-    },
+    }
 })
 
 const productList = computed(() => {
@@ -289,7 +355,7 @@ const productList = computed(() => {
 
 const { data: categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: getCategories,
+    queryFn: getCategories
 })
 
 const categoriesList = computed(() => {
@@ -305,17 +371,17 @@ const fetchBestsellerData = async () => {
         const endDate = new Date()
         const startDate = new Date()
         startDate.setDate(startDate.getDate() - 30)
-        
+
         const bestsellerResponse = await reportService.getBestSellers(
             startDate.toISOString().split('T')[0],
             endDate.toISOString().split('T')[0],
             100,
             'quantity'
         )
-        
+
         const ids = new Set()
         const dataMap = {}
-        
+
         if (bestsellerResponse?.items) {
             bestsellerResponse.items.forEach((item) => {
                 if (item.productId) {
@@ -328,17 +394,17 @@ const fetchBestsellerData = async () => {
                 }
             })
         }
-        
+
         bestsellerProductIds.value = ids
         bestsellerData.value = dataMap
     } catch (error) {
-        console.warn('Không thể tải dữ liệu bán chạy:', error)
+        logger.warn('Không thể tải dữ liệu bán chạy:', error)
     }
 }
 
 const filteredProducts = computed(() => {
     let result = [...productList.value]
-    
+
     // Filter theo giá
     if (filters.value.priceMin !== null && filters.value.priceMin !== undefined && filters.value.priceMin > 0) {
         result = result.filter((p) => (p.price || 0) >= filters.value.priceMin)
@@ -346,7 +412,7 @@ const filteredProducts = computed(() => {
     if (filters.value.priceMax !== null && filters.value.priceMax !== undefined && filters.value.priceMax > 0) {
         result = result.filter((p) => (p.price || 0) <= filters.value.priceMax)
     }
-    
+
     // Filter theo bestseller
     if (filters.value.bestseller !== null && filters.value.bestseller !== undefined) {
         if (filters.value.bestseller === true) {
@@ -355,19 +421,19 @@ const filteredProducts = computed(() => {
             result = result.filter((p) => !bestsellerProductIds.value.has(p.id))
         }
     }
-    
+
     // Sort: available products first, then by sortState
     result.sort((a, b) => {
         // Available first
         if (a.available && !b.available) return -1
         if (!a.available && b.available) return 1
-        
+
         // Then by sortState
         if (sortState.value) {
             const [field, order] = sortState.value.split('-')
             const isAsc = order === 'asc'
             let comparison = 0
-            
+
             if (field === 'name') {
                 comparison = (a.name || '').localeCompare(b.name || '', 'vi')
             } else if (field === 'price') {
@@ -383,13 +449,13 @@ const filteredProducts = computed(() => {
                     comparison = bSales - aSales
                 }
             }
-            
+
             return isAsc ? comparison : -comparison
         }
-        
+
         return 0
     })
-    
+
     return result
 })
 
@@ -406,7 +472,7 @@ const visiblePages = computed(() => {
     const pages = []
     const total = totalPages.value
     const current = currentPage.value + 1
-    
+
     if (total <= 7) {
         for (let i = 1; i <= total; i++) {
             pages.push(i)
@@ -428,7 +494,7 @@ const visiblePages = computed(() => {
             pages.push(total)
         }
     }
-    
+
     return pages
 })
 

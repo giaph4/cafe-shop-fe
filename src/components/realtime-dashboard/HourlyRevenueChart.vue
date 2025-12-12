@@ -1,18 +1,18 @@
 <template>
-    <div class="hourly-revenue-chart">
-        <apexchart
-            v-if="isMounted && hourlyRevenue.length > 0"
-            type="area"
-            height="300"
-            :options="chartOptions"
-            :series="chartSeries"
-        />
-        <EmptyState
-            v-else
-            title="Chưa có dữ liệu"
-            message="Không có dữ liệu doanh thu theo giờ"
-        />
-    </div>
+  <div class="hourly-revenue-chart">
+    <apexchart
+      v-if="isMounted && hourlyRevenue.length > 0"
+      type="area"
+      height="300"
+      :options="chartOptions"
+      :series="chartSeries"
+    />
+    <EmptyState
+      v-else
+      title="Chưa có dữ liệu"
+      message="Không có dữ liệu doanh thu theo giờ"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -36,14 +36,12 @@ const props = defineProps({
     }
 })
 
-const chartSeries = computed(() => {
-    return [
-        {
-            name: 'Doanh thu',
-            data: props.hourlyRevenue.map(h => h.revenue)
-        }
-    ]
-})
+const chartSeries = computed(() => [
+    {
+        name: 'Doanh thu',
+        data: props.hourlyRevenue.map(h => h.revenue)
+    }
+])
 
 const chartOptions = computed(() => ({
     chart: {
@@ -93,8 +91,8 @@ const chartOptions = computed(() => ({
     yaxis: {
         labels: {
             formatter: (value) => {
-                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
-                if (value >= 1000) return (value / 1000).toFixed(1) + 'K'
+                if (value >= 1000000) return `${(value / 1000000).toFixed(1)  }M`
+                if (value >= 1000) return `${(value / 1000).toFixed(1)  }K`
                 return value.toFixed(0)
             },
             style: {
@@ -115,12 +113,10 @@ const chartOptions = computed(() => ({
     },
     tooltip: {
         y: {
-            formatter: (value) => {
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(value)
-            }
+            formatter: (value) => new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(value)
         }
     },
     legend: {
@@ -128,7 +124,13 @@ const chartOptions = computed(() => ({
     },
     grid: {
         borderColor: 'var(--color-border)',
-        strokeDashArray: 4
+        strokeDashArray: 4,
+        padding: {
+            top: 8,
+            bottom: 20,
+            left: 12,
+            right: 12
+        }
     },
     colors: ['var(--color-success)'],
     markers: {

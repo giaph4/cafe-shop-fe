@@ -1,109 +1,146 @@
 <template>
-    <div class="customer-overview-tab">
-        <div class="row g-3 mb-4">
-            <div class="col-lg-3 col-md-6" v-for="(stat, index) in stats" :key="stat.label">
-                <div class="stat-card" :class="getCardClass(index)">
-                    <div class="stat-icon" :class="getIconClass(index)">
-                            <i :class="stat.icon"></i>
-                        </div>
-                    <div class="stat-content">
-                            <div class="stat-label">{{ stat.label }}</div>
-                            <div class="stat-value">{{ stat.value }}</div>
-                    </div>
-                </div>
+  <div class="customer-overview-tab">
+    <div class="row g-3 mb-4">
+      <div
+        v-for="(stat, index) in stats"
+        :key="stat.label"
+        class="col-lg-3 col-md-6"
+      >
+        <div
+          class="stat-card"
+          :class="getCardClass(index)"
+        >
+          <div
+            class="stat-icon"
+            :class="getIconClass(index)"
+          >
+            <i :class="stat.icon" />
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">
+              {{ stat.label }}
             </div>
+            <div class="stat-value">
+              {{ stat.value }}
+            </div>
+          </div>
         </div>
-
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-people me-2"></i>
-                            Khách hàng mới gần đây
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <EmptyState
-                            v-if="recentCustomers.length === 0"
-                            title="Chưa có khách hàng mới"
-                            message="Chưa có khách hàng mới được tạo."
-                        >
-                            <template #icon>
-                                <i class="bi bi-inbox"></i>
-                            </template>
-                        </EmptyState>
-                        <div v-else class="list-group list-group-flush">
-                            <div
-                                v-for="customer in recentCustomers"
-                                :key="customer.id"
-                                class="list-group-item d-flex justify-content-between align-items-center"
-                            >
-                                <div>
-                                    <div class="fw-semibold">{{ customer.fullName }}</div>
-                                    <small class="text-muted">{{ customer.phone }}</small>
-                                </div>
-                                    <div class="text-end">
-                                    <div class="badge" style="background: var(--color-soft-primary); border: 1px solid var(--color-primary); color: var(--color-primary);">
-                                        {{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm
-                                    </div>
-                                    <div class="small text-muted mt-1" style="font-family: var(--font-family-sans);">{{ formatDate(customer.createdAt) }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-star me-2"></i>
-                            Khách hàng VIP (Điểm cao nhất)
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <EmptyState
-                            v-if="topCustomers.length === 0"
-                            title="Chưa có khách hàng VIP"
-                            message="Chưa có khách hàng VIP nào."
-                        >
-                            <template #icon>
-                                <i class="bi bi-trophy"></i>
-                            </template>
-                        </EmptyState>
-                        <div v-else class="list-group list-group-flush">
-                            <div
-                                v-for="(customer, index) in topCustomers"
-                                :key="customer.id"
-                                class="list-group-item d-flex justify-content-between align-items-center"
-                            >
-                                <div class="d-flex align-items-center">
-                                    <div class="rank-badge me-3">{{ index + 1 }}</div>
-                                    <div>
-                                        <div class="fw-semibold">{{ customer.fullName }}</div>
-                                        <small class="text-muted">{{ customer.phone }}</small>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="badge fw-semibold" style="background: var(--color-soft-amber); border: 1px solid var(--color-warning); color: var(--color-warning);">
-                                        {{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-people me-2" />
+              Khách hàng mới gần đây
+            </h5>
+          </div>
+          <div class="card-body">
+            <EmptyState
+              v-if="recentCustomers.length === 0"
+              title="Chưa có khách hàng mới"
+              message="Chưa có khách hàng mới được tạo."
+            >
+              <template #icon>
+                <i class="bi bi-inbox" />
+              </template>
+            </EmptyState>
+            <div
+              v-else
+              class="list-group list-group-flush"
+            >
+              <div
+                v-for="customer in recentCustomers"
+                :key="customer.id"
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  <div class="fw-semibold">
+                    {{ customer.fullName }}
+                  </div>
+                  <small class="text-muted">{{ customer.phone }}</small>
+                </div>
+                <div class="text-end">
+                  <div
+                    class="badge"
+                    style="background: var(--color-soft-primary); border: 1px solid var(--color-primary); color: var(--color-primary);"
+                  >
+                    {{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm
+                  </div>
+                  <div
+                    class="small text-muted mt-1"
+                    style="font-family: var(--font-family-sans);"
+                  >
+                    {{ formatDate(customer.createdAt) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-star me-2" />
+              Khách hàng VIP (Điểm cao nhất)
+            </h5>
+          </div>
+          <div class="card-body">
+            <EmptyState
+              v-if="topCustomers.length === 0"
+              title="Chưa có khách hàng VIP"
+              message="Chưa có khách hàng VIP nào."
+            >
+              <template #icon>
+                <i class="bi bi-trophy" />
+              </template>
+            </EmptyState>
+            <div
+              v-else
+              class="list-group list-group-flush"
+            >
+              <div
+                v-for="(customer, index) in topCustomers"
+                :key="customer.id"
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <div class="d-flex align-items-center">
+                  <div class="rank-badge me-3">
+                    {{ index + 1 }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold">
+                      {{ customer.fullName }}
+                    </div>
+                    <small class="text-muted">{{ customer.phone }}</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div
+                    class="badge fw-semibold"
+                    style="background: var(--color-soft-amber); border: 1px solid var(--color-warning); color: var(--color-warning);"
+                  >
+                    {{ formatLoyaltyPoints(customer.loyaltyPoints) }} điểm
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { formatDateTime, formatNumber } from '@/utils/formatters'
 import EmptyState from '@/components/common/EmptyState.vue'
 
-const props = defineProps({
+defineProps({
     stats: {
         type: Array,
         default: () => []
@@ -294,7 +331,7 @@ const getIconClass = (index) => {
         text-align: center;
         min-height: auto;
     }
-    
+
     .stat-icon {
         width: 48px;
         height: 48px;

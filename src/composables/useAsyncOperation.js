@@ -43,20 +43,20 @@ export const useAsyncOperation = (options = {}) => {
 
         try {
             const result = await operation()
-            
+
             if (onSuccess && typeof onSuccess === 'function') {
                 onSuccess(result)
             }
-            
+
             return result
         } catch (err) {
             const errorMessage = handleApiError(err)
             error.value = errorMessage
-            
+
             if (onError && typeof onError === 'function') {
                 onError(err, errorMessage)
             }
-            
+
             throw err
         } finally {
             loading.value = false
@@ -86,7 +86,7 @@ export const useAsyncOperation = (options = {}) => {
     /**
      * Check if there is an error
      */
-    const hasError = computed(() => !!error.value)
+    const hasError = computed(() => Boolean(error.value))
 
     return {
         loading,

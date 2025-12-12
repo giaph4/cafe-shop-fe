@@ -1,228 +1,246 @@
 <template>
-    <div class="attendance-statistics">
-        <LoadingState v-if="loading" />
-        <EmptyState
-            v-else-if="!statistics"
-            title="Chưa có dữ liệu"
-            message="Chưa có dữ liệu thống kê trong khoảng thời gian đã chọn."
-        />
-        <div v-else>
-            <div class="stats-cards mb-4">
-                <div class="row g-3">
-                    <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card w-100">
-                            <div class="stat-card__icon bg-primary-light">
-                                <i class="bi bi-calendar-check"></i>
-                            </div>
-                            <div class="stat-card__meta">
-                                <span class="stat-card__label">Tổng số lần</span>
-                                <strong class="stat-card__value">{{ statistics.totalRecords }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card w-100">
-                            <div class="stat-card__icon bg-emerald-light">
-                                <i class="bi bi-box-arrow-in-right"></i>
-                            </div>
-                            <div class="stat-card__meta">
-                                <span class="stat-card__label">Đã check-in</span>
-                                <strong class="stat-card__value">{{ statistics.checkedIn }}</strong>
-                                <small class="stat-card__subtitle">
-                                    {{ statistics.totalRecords > 0 ? ((statistics.checkedIn / statistics.totalRecords) * 100).toFixed(1) : 0 }}%
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card w-100">
-                            <div class="stat-card__icon bg-sky-light">
-                                <i class="bi bi-box-arrow-right"></i>
-                            </div>
-                            <div class="stat-card__meta">
-                                <span class="stat-card__label">Đã check-out</span>
-                                <strong class="stat-card__value">{{ statistics.checkedOut }}</strong>
-                                <small class="stat-card__subtitle">
-                                    {{ statistics.checkedIn > 0 ? ((statistics.checkedOut / statistics.checkedIn) * 100).toFixed(1) : 0 }}%
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 d-flex">
-                        <div class="stat-card w-100">
-                            <div class="stat-card__icon bg-amber-light">
-                                <i class="bi bi-graph-up-arrow"></i>
-                            </div>
-                            <div class="stat-card__meta">
-                                <span class="stat-card__label">Tỷ lệ đúng giờ</span>
-                                <strong class="stat-card__value">{{ statistics.onTimeRate }}%</strong>
-                                <small class="stat-card__subtitle">Tổng số lần</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <div class="attendance-statistics">
+    <LoadingState v-if="loading" />
+    <EmptyState
+      v-else-if="!statistics"
+      title="Chưa có dữ liệu"
+      message="Chưa có dữ liệu thống kê trong khoảng thời gian đã chọn."
+    />
+    <div v-else>
+      <div class="stats-cards mb-4">
+        <div class="row g-3">
+          <div class="col-lg-3 col-md-6 d-flex">
+            <div class="stat-card w-100">
+              <div class="stat-card__icon bg-primary-light">
+                <i class="bi bi-calendar-check" />
+              </div>
+              <div class="stat-card__meta">
+                <span class="stat-card__label">Tổng số lần</span>
+                <strong class="stat-card__value">{{ statistics.totalRecords }}</strong>
+              </div>
             </div>
-
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card analytics-card">
-                        <div class="card-header border-0">
-                            <h5 class="mb-1">Thống kê đi muộn</h5>
-                            <p class="text-muted mb-0">Phân tích tình trạng đi muộn</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="analytics-item">
-                                <div class="analytics-item__label">
-                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
-                                    Số lần đi muộn
-                                </div>
-                                <div class="analytics-item__value">
-                                    <strong>{{ statistics.lateCount }}</strong>
-                                    <small class="text-muted ms-2">
-                                        / {{ statistics.totalRecords }} lần
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="analytics-item">
-                                <div class="analytics-item__label">
-                                    <i class="bi bi-clock-history text-warning me-2"></i>
-                                    Tổng số phút muộn
-                                </div>
-                                <div class="analytics-item__value">
-                                    <strong>{{ statistics.totalLateMinutes }}</strong>
-                                    <small class="text-muted ms-2">phút</small>
-                                </div>
-                            </div>
-                            <div class="analytics-item">
-                                <div class="analytics-item__label">
-                                    <i class="bi bi-calculator text-warning me-2"></i>
-                                    Trung bình muộn
-                                </div>
-                                <div class="analytics-item__value">
-                                    <strong>{{ statistics.avgLateMinutes }}</strong>
-                                    <small class="text-muted ms-2">phút/lần</small>
-                                </div>
-                            </div>
-                            <div class="progress mt-3" v-if="statistics.totalRecords > 0">
-                                <div 
-                                    class="progress-bar bg-warning" 
-                                    role="progressbar" 
-                                    :style="{ width: `${(statistics.lateCount / statistics.totalRecords) * 100}%` }"
-                                >
-                                    {{ ((statistics.lateCount / statistics.totalRecords) * 100).toFixed(1) }}%
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-6">
-                    <div class="card analytics-card">
-                        <div class="card-header border-0">
-                            <h5 class="mb-1">Thống kê về sớm</h5>
-                            <p class="text-muted mb-0">Phân tích tình trạng về sớm</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="analytics-item">
-                                <div class="analytics-item__label">
-                                    <i class="bi bi-exclamation-triangle text-info me-2"></i>
-                                    Số lần về sớm
-                                </div>
-                                <div class="analytics-item__value">
-                                    <strong>{{ statistics.earlyLeaveCount }}</strong>
-                                    <small class="text-muted ms-2">
-                                        / {{ statistics.checkedOut }} lần check-out
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="analytics-item">
-                                <div class="analytics-item__label">
-                                    <i class="bi bi-clock-history text-info me-2"></i>
-                                    Tổng số phút về sớm
-                                </div>
-                                <div class="analytics-item__value">
-                                    <strong>{{ statistics.totalEarlyLeaveMinutes }}</strong>
-                                    <small class="text-muted ms-2">phút</small>
-                                </div>
-                            </div>
-                            <div class="analytics-item">
-                                <div class="analytics-item__label">
-                                    <i class="bi bi-calculator text-info me-2"></i>
-                                    Trung bình về sớm
-                                </div>
-                                <div class="analytics-item__value">
-                                    <strong>{{ statistics.avgEarlyLeaveMinutes }}</strong>
-                                    <small class="text-muted ms-2">phút/lần</small>
-                                </div>
-                            </div>
-                            <div class="progress mt-3" v-if="statistics.checkedOut > 0">
-                                <div 
-                                    class="progress-bar bg-info" 
-                                    role="progressbar" 
-                                    :style="{ width: `${(statistics.earlyLeaveCount / statistics.checkedOut) * 100}%` }"
-                                >
-                                    {{ ((statistics.earlyLeaveCount / statistics.checkedOut) * 100).toFixed(1) }}%
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          </div>
+          <div class="col-lg-3 col-md-6 d-flex">
+            <div class="stat-card w-100">
+              <div class="stat-card__icon bg-emerald-light">
+                <i class="bi bi-box-arrow-in-right" />
+              </div>
+              <div class="stat-card__meta">
+                <span class="stat-card__label">Đã check-in</span>
+                <strong class="stat-card__value">{{ statistics.checkedIn }}</strong>
+                <small class="stat-card__subtitle">
+                  {{ statistics.totalRecords > 0 ? ((statistics.checkedIn / statistics.totalRecords) * 100).toFixed(1) : 0 }}%
+                </small>
+              </div>
             </div>
-
-            <div class="card summary-card mt-4">
-                <div class="card-header border-0">
-                    <h5 class="mb-1">Tóm tắt</h5>
-                    <p class="text-muted mb-0">Tổng hợp các chỉ số chấm công</p>
-                </div>
-                <div class="card-body">
-                    <div class="summary-grid">
-                        <div class="summary-item">
-                            <div class="summary-item__icon bg-success">
-                                <i class="bi bi-check-circle"></i>
-                            </div>
-                            <div class="summary-item__content">
-                                <span class="summary-item__label">Tỷ lệ đúng giờ</span>
-                                <strong class="summary-item__value">{{ statistics.onTimeRate }}%</strong>
-                            </div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-item__icon bg-warning">
-                                <i class="bi bi-clock"></i>
-                            </div>
-                            <div class="summary-item__content">
-                                <span class="summary-item__label">Tỷ lệ đi muộn</span>
-                                <strong class="summary-item__value">
-                                    {{ statistics.totalRecords > 0 ? ((statistics.lateCount / statistics.totalRecords) * 100).toFixed(1) : 0 }}%
-                                </strong>
-                            </div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-item__icon bg-info">
-                                <i class="bi bi-clock-history"></i>
-                            </div>
-                            <div class="summary-item__content">
-                                <span class="summary-item__label">Tỷ lệ về sớm</span>
-                                <strong class="summary-item__value">
-                                    {{ statistics.checkedOut > 0 ? ((statistics.earlyLeaveCount / statistics.checkedOut) * 100).toFixed(1) : 0 }}%
-                                </strong>
-                            </div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-item__icon bg-primary">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                            <div class="summary-item__content">
-                                <span class="summary-item__label">Tỷ lệ hoàn thành</span>
-                                <strong class="summary-item__value">
-                                    {{ statistics.checkedIn > 0 ? ((statistics.checkedOut / statistics.checkedIn) * 100).toFixed(1) : 0 }}%
-                                </strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          </div>
+          <div class="col-lg-3 col-md-6 d-flex">
+            <div class="stat-card w-100">
+              <div class="stat-card__icon bg-sky-light">
+                <i class="bi bi-box-arrow-right" />
+              </div>
+              <div class="stat-card__meta">
+                <span class="stat-card__label">Đã check-out</span>
+                <strong class="stat-card__value">{{ statistics.checkedOut }}</strong>
+                <small class="stat-card__subtitle">
+                  {{ statistics.checkedIn > 0 ? ((statistics.checkedOut / statistics.checkedIn) * 100).toFixed(1) : 0 }}%
+                </small>
+              </div>
             </div>
+          </div>
+          <div class="col-lg-3 col-md-6 d-flex">
+            <div class="stat-card w-100">
+              <div class="stat-card__icon bg-amber-light">
+                <i class="bi bi-graph-up-arrow" />
+              </div>
+              <div class="stat-card__meta">
+                <span class="stat-card__label">Tỷ lệ đúng giờ</span>
+                <strong class="stat-card__value">{{ statistics.onTimeRate }}%</strong>
+                <small class="stat-card__subtitle">Tổng số lần</small>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card analytics-card">
+            <div class="card-header border-0">
+              <h5 class="mb-1">
+                Thống kê đi muộn
+              </h5>
+              <p class="text-muted mb-0">
+                Phân tích tình trạng đi muộn
+              </p>
+            </div>
+            <div class="card-body">
+              <div class="analytics-item">
+                <div class="analytics-item__label">
+                  <i class="bi bi-exclamation-triangle text-warning me-2" />
+                  Số lần đi muộn
+                </div>
+                <div class="analytics-item__value">
+                  <strong>{{ statistics.lateCount }}</strong>
+                  <small class="text-muted ms-2">
+                    / {{ statistics.totalRecords }} lần
+                  </small>
+                </div>
+              </div>
+              <div class="analytics-item">
+                <div class="analytics-item__label">
+                  <i class="bi bi-clock-history text-warning me-2" />
+                  Tổng số phút muộn
+                </div>
+                <div class="analytics-item__value">
+                  <strong>{{ statistics.totalLateMinutes }}</strong>
+                  <small class="text-muted ms-2">phút</small>
+                </div>
+              </div>
+              <div class="analytics-item">
+                <div class="analytics-item__label">
+                  <i class="bi bi-calculator text-warning me-2" />
+                  Trung bình muộn
+                </div>
+                <div class="analytics-item__value">
+                  <strong>{{ statistics.avgLateMinutes }}</strong>
+                  <small class="text-muted ms-2">phút/lần</small>
+                </div>
+              </div>
+              <div
+                v-if="statistics.totalRecords > 0"
+                class="progress mt-3"
+              >
+                <div
+                  class="progress-bar bg-warning"
+                  role="progressbar"
+                  :style="{ width: `${(statistics.lateCount / statistics.totalRecords) * 100}%` }"
+                >
+                  {{ ((statistics.lateCount / statistics.totalRecords) * 100).toFixed(1) }}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card analytics-card">
+            <div class="card-header border-0">
+              <h5 class="mb-1">
+                Thống kê về sớm
+              </h5>
+              <p class="text-muted mb-0">
+                Phân tích tình trạng về sớm
+              </p>
+            </div>
+            <div class="card-body">
+              <div class="analytics-item">
+                <div class="analytics-item__label">
+                  <i class="bi bi-exclamation-triangle text-info me-2" />
+                  Số lần về sớm
+                </div>
+                <div class="analytics-item__value">
+                  <strong>{{ statistics.earlyLeaveCount }}</strong>
+                  <small class="text-muted ms-2">
+                    / {{ statistics.checkedOut }} lần check-out
+                  </small>
+                </div>
+              </div>
+              <div class="analytics-item">
+                <div class="analytics-item__label">
+                  <i class="bi bi-clock-history text-info me-2" />
+                  Tổng số phút về sớm
+                </div>
+                <div class="analytics-item__value">
+                  <strong>{{ statistics.totalEarlyLeaveMinutes }}</strong>
+                  <small class="text-muted ms-2">phút</small>
+                </div>
+              </div>
+              <div class="analytics-item">
+                <div class="analytics-item__label">
+                  <i class="bi bi-calculator text-info me-2" />
+                  Trung bình về sớm
+                </div>
+                <div class="analytics-item__value">
+                  <strong>{{ statistics.avgEarlyLeaveMinutes }}</strong>
+                  <small class="text-muted ms-2">phút/lần</small>
+                </div>
+              </div>
+              <div
+                v-if="statistics.checkedOut > 0"
+                class="progress mt-3"
+              >
+                <div
+                  class="progress-bar bg-info"
+                  role="progressbar"
+                  :style="{ width: `${(statistics.earlyLeaveCount / statistics.checkedOut) * 100}%` }"
+                >
+                  {{ ((statistics.earlyLeaveCount / statistics.checkedOut) * 100).toFixed(1) }}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card summary-card mt-4">
+        <div class="card-header border-0">
+          <h5 class="mb-1">
+            Tóm tắt
+          </h5>
+          <p class="text-muted mb-0">
+            Tổng hợp các chỉ số chấm công
+          </p>
+        </div>
+        <div class="card-body">
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="summary-item__icon bg-success">
+                <i class="bi bi-check-circle" />
+              </div>
+              <div class="summary-item__content">
+                <span class="summary-item__label">Tỷ lệ đúng giờ</span>
+                <strong class="summary-item__value">{{ statistics.onTimeRate }}%</strong>
+              </div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-item__icon bg-warning">
+                <i class="bi bi-clock" />
+              </div>
+              <div class="summary-item__content">
+                <span class="summary-item__label">Tỷ lệ đi muộn</span>
+                <strong class="summary-item__value">
+                  {{ statistics.totalRecords > 0 ? ((statistics.lateCount / statistics.totalRecords) * 100).toFixed(1) : 0 }}%
+                </strong>
+              </div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-item__icon bg-info">
+                <i class="bi bi-clock-history" />
+              </div>
+              <div class="summary-item__content">
+                <span class="summary-item__label">Tỷ lệ về sớm</span>
+                <strong class="summary-item__value">
+                  {{ statistics.checkedOut > 0 ? ((statistics.earlyLeaveCount / statistics.checkedOut) * 100).toFixed(1) : 0 }}%
+                </strong>
+              </div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-item__icon bg-primary">
+                <i class="bi bi-graph-up" />
+              </div>
+              <div class="summary-item__content">
+                <span class="summary-item__label">Tỷ lệ hoàn thành</span>
+                <strong class="summary-item__value">
+                  {{ statistics.checkedIn > 0 ? ((statistics.checkedOut / statistics.checkedIn) * 100).toFixed(1) : 0 }}%
+                </strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>

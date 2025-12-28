@@ -4,11 +4,11 @@ import { useSidebarStore } from '@/store/sidebar'
 import { toast } from 'vue3-toastify'
 
 /**
- * Composable để quản lý keyboard shortcuts
- * @param {Object} options - Options
- * @param {string} options.page - Page name để load page-specific shortcuts
- * @param {Object} options.shortcuts - Custom shortcuts cho page này
- * @param {boolean} options.enabled - Enable/disable shortcuts
+ * Composable quản lý keyboard shortcuts
+ * @param {Object} options - Tùy chọn cấu hình
+ * @param {string} options.page - Tên trang để load page-specific shortcuts
+ * @param {Object} options.shortcuts - Custom shortcuts cho trang này
+ * @param {boolean} options.enabled - Bật/tắt shortcuts
  */
 export const useKeyboardShortcuts = (options = {}) => {
     const {
@@ -23,7 +23,7 @@ export const useKeyboardShortcuts = (options = {}) => {
     const isEnabled = ref(enabled)
 
     /**
-     * Parse key string thành key và modifiers
+     * Phân tích chuỗi key thành key và modifiers
      */
     const parseKey = (keyString) => {
         const parts = keyString.toLowerCase().split('+').map(s => s.trim())
@@ -33,7 +33,7 @@ export const useKeyboardShortcuts = (options = {}) => {
     }
 
     /**
-     * Check if event matches shortcut
+     * Kiểm tra event có khớp với shortcut không
      */
     const matchesShortcut = (event, shortcut) => {
         if (!shortcut) return false
@@ -42,15 +42,15 @@ export const useKeyboardShortcuts = (options = {}) => {
         const eventKey = event.key.toLowerCase()
         const eventCode = event.code.toLowerCase()
 
-        // Check key match
+        // Kiểm tra key match
         const keyMatch = eventKey === key ||
-                       eventCode === key ||
-                       (key === ' ' && eventCode === 'space') ||
-                       (key === 'escape' && eventKey === 'escape')
+            eventCode === key ||
+            (key === ' ' && eventCode === 'space') ||
+            (key === 'escape' && eventKey === 'escape')
 
         if (!keyMatch) return false
 
-        // Check modifiers
+        // Kiểm tra modifiers
         const requiredModifiers = shortcut.modifiers || []
         const hasCtrl = requiredModifiers.includes('ctrl') || requiredModifiers.includes('meta')
         const hasShift = requiredModifiers.includes('shift')
@@ -64,13 +64,12 @@ export const useKeyboardShortcuts = (options = {}) => {
     }
 
     /**
-     * Handle global shortcuts
+     * Xử lý global shortcuts
      */
     const handleGlobalShortcut = (event, action) => {
         switch (action) {
             case 'command-palette':
                 event.preventDefault()
-                // Will be handled by CommandPalette component
                 window.dispatchEvent(new CustomEvent('shortcut:command-palette'))
                 break
 
@@ -96,7 +95,7 @@ export const useKeyboardShortcuts = (options = {}) => {
                 break
 
             case 'close-modal': {
-                // Close any open modals
+                // Đóng tất cả modals đang mở
                 const modals = document.querySelectorAll('.modal.show')
                 modals.forEach(modal => {
                     // eslint-disable-next-line no-undef
@@ -113,7 +112,7 @@ export const useKeyboardShortcuts = (options = {}) => {
     }
 
     /**
-     * Handle page-specific shortcuts
+     * Xử lý page-specific shortcuts
      */
     const handlePageShortcut = (event, _action, handler) => {
         if (handler && typeof handler === 'function') {
@@ -124,22 +123,22 @@ export const useKeyboardShortcuts = (options = {}) => {
     }
 
     /**
-     * Main keyboard event handler
+     * Handler chính cho keyboard event
      */
     const handleKeyDown = (event) => {
         if (!isEnabled.value) return
 
-        // Ignore if typing in input/textarea
+        // Bỏ qua nếu đang nhập trong input/textarea
         const target = event.target
         if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
-            // Allow some shortcuts even in inputs
+            // Chỉ cho phép một số shortcuts trong input
             const allowedInInput = ['Escape', 'Enter']
             if (!allowedInInput.includes(event.key)) {
                 return
             }
         }
 
-        // Check global shortcuts first
+        // Kiểm tra global shortcuts trước
         const globalShortcuts = shortcutsStore.getCategoryShortcuts('global')
         for (const [action, config] of Object.entries(globalShortcuts)) {
             if (matchesShortcut(event, config)) {
@@ -148,7 +147,7 @@ export const useKeyboardShortcuts = (options = {}) => {
             }
         }
 
-        // Check page-specific shortcuts
+        // Kiểm tra page-specific shortcuts
         if (page) {
             const pageShortcuts = shortcutsStore.getCategoryShortcuts(page)
             for (const [action, config] of Object.entries(pageShortcuts)) {
@@ -160,7 +159,7 @@ export const useKeyboardShortcuts = (options = {}) => {
             }
         }
 
-        // Check custom shortcuts passed in
+        // Kiểm tra custom shortcuts được truyền vào
         for (const [_action, config] of Object.entries(shortcuts)) {
             if (typeof config === 'object' && config.key) {
                 if (matchesShortcut(event, config)) {
@@ -175,14 +174,14 @@ export const useKeyboardShortcuts = (options = {}) => {
     }
 
     /**
-     * Enable shortcuts
+     * Bật shortcuts
      */
     const enable = () => {
         isEnabled.value = true
     }
 
     /**
-     * Disable shortcuts
+     * Tắt shortcuts
      */
     const disable = () => {
         isEnabled.value = false
@@ -195,7 +194,7 @@ export const useKeyboardShortcuts = (options = {}) => {
         isEnabled.value = !isEnabled.value
     }
 
-    // Setup event listeners
+    // Đăng ký event listeners
     onMounted(() => {
         window.addEventListener('keydown', handleKeyDown)
     })
@@ -212,4 +211,3 @@ export const useKeyboardShortcuts = (options = {}) => {
         handleKeyDown
     }
 }
-

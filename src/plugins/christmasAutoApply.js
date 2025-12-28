@@ -32,9 +32,8 @@ export default {
                 if (globalSpawnEffect) {
                     globalSpawnEffect(target)
                 }
-            } catch (error) {
-                // Ignore errors
-                console.debug('Christmas effect error:', error)
+            } catch {
+                // Bỏ qua lỗi khi áp dụng hiệu ứng Noel
             }
         }
 

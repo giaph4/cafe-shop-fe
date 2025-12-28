@@ -1,7 +1,7 @@
 <template>
   <div class="sales-analysis">
     <div class="filters card card-inline">
-      <div class="card-body d-flex flex-wrap gap-3 align-items-end">
+      <div class="card-body d-flex flex-wrap gap-4 align-items-end">
         <div>
           <label class="form-label mb-1">Xếp hạng theo</label>
           <select
@@ -33,42 +33,7 @@
             </option>
           </select>
         </div>
-        <div>
-          <label class="form-label mb-1">Loại biểu đồ</label>
-          <select
-            class="form-select"
-            :value="productChartType"
-            @change="onProductChartType($event.target.value)"
-          >
-            <option value="bar">
-              Bar
-            </option>
-            <option value="horizontalBar">
-              Bar ngang
-            </option>
-            <option value="radar">
-              Radar
-            </option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label mb-1">Loại biểu đồ danh mục</label>
-          <select
-            class="form-select"
-            :value="categoryChartType"
-            @change="onCategoryChartType($event.target.value)"
-          >
-            <option value="donut">
-              Donut
-            </option>
-            <option value="pie">
-              Pie
-            </option>
-            <option value="bar">
-              Bar
-            </option>
-          </select>
-        </div>
+        <!-- Dropdown "Loại biểu đồ" đã được ẩn - sử dụng mặc định horizontalBar cho Top sản phẩm và donut cho Danh mục -->
         <div>
           <label class="form-label mb-1">Sắp xếp chi tiết</label>
           <select
@@ -187,7 +152,7 @@
               :key="item.productId"
             >
               <td><span class="badge bg-primary-subtle text-primary">#{{ item.rank }}</span></td>
-              <td class="fw-semibold">
+              <td class="fw-semibold product-name-cell">
                 {{ item.productName }}
               </td>
               <td class="text-end">
@@ -210,35 +175,7 @@
       </div>
     </div>
 
-    <div class="chart-grid alternating-grid">
-      <div class="card chart-card">
-        <div class="card-header border-0">
-          <h5 class="mb-1">
-            Doanh thu theo sản phẩm (stacked vs tổng)
-          </h5>
-          <p class="text-muted mb-0">
-            So sánh top sản phẩm với phần còn lại
-          </p>
-        </div>
-        <div class="card-body">
-          <ApexChart
-            v-if="stackedChartReady && safeStackedSeries && safeStackedOptions"
-            type="bar"
-            height="320"
-            :series="safeStackedSeries"
-            :options="safeStackedOptions"
-          />
-          <div
-            v-else
-            class="text-center text-muted py-4"
-          >
-            <i class="bi bi-bar-chart" />
-            <p class="mb-0 mt-2">
-              Chưa có dữ liệu để hiển thị
-            </p>
-          </div>
-        </div>
-      </div>
+    <div class="chart-grid">
       <div class="card chart-card">
         <div class="card-header border-0">
           <h5 class="mb-1">
@@ -297,7 +234,6 @@ const { isDark } = useThemePreference()
 // Chart ready flags - separate for each chart to prevent conflicts
 const productChartReady = ref(false)
 const categoryChartReady = ref(false)
-const stackedChartReady = ref(false)
 const hourlyChartReady = ref(false)
 
 // Chart keys for force re-render
@@ -309,8 +245,6 @@ const safeProductSeries = ref(null)
 const safeProductOptions = ref(null)
 const safeCategorySeries = ref(null)
 const safeCategoryOptions = ref(null)
-const safeStackedSeries = ref(null)
-const safeStackedOptions = ref(null)
 const safeHourlySeries = ref(null)
 const safeHourlyOptions = ref(null)
 
@@ -342,7 +276,7 @@ const validateSeries = (series, chartType) => {
     const first = series[0]
     if (first === undefined || first === null) return false
 
-    // For pie/donut - array of numbers
+    // Với pie/donut - mảng số
     if (chartType === 'pie' || chartType === 'donut') {
         return series.every(v => {
             const num = Number(v)
@@ -350,7 +284,7 @@ const validateSeries = (series, chartType) => {
         }) && series.some(v => Number(v) > 0)
     }
 
-    // For bar/line/area/radar - array of objects with data
+    // Với bar/line/area/radar - mảng objects với data
     if (typeof first === 'object') {
         return series.every(item => {
             if (!item || typeof item !== 'object') return false
@@ -385,7 +319,7 @@ const createSafeSeries = (rawSeries, chartType) => {
             return [{ name: 'Doanh thu', data: [0] }]
         }
 
-        // For pie/donut
+        // Với pie/donut
         if (chartType === 'pie' || chartType === 'donut') {
             const numbers = rawSeries
                 .map(v => {
@@ -396,7 +330,7 @@ const createSafeSeries = (rawSeries, chartType) => {
             return numbers.length > 0 ? numbers : [0]
         }
 
-        // For bar/line/area/radar
+        // Với bar/line/area/radar
         const objects = rawSeries.map(item => {
             if (!item || typeof item !== 'object') {
                 return { name: 'Doanh thu', data: [0] }
@@ -438,10 +372,10 @@ const createSafeOptions = (rawOptions, chartType) => {
 
         // Handle xaxis based on chart type
         if (chartType === 'pie' || chartType === 'donut') {
-            // Remove xaxis completely for pie/donut
+            // Xóa xaxis hoàn toàn cho pie/donut
             delete options.xaxis
         } else {
-            // For bar/line/area/radar, ensure xaxis.categories is array
+            // Với bar/line/area/radar, đảm bảo xaxis.categories là mảng
             if (!options.xaxis) options.xaxis = {}
             if (!Array.isArray(options.xaxis.categories)) {
                 options.xaxis.categories = []
@@ -464,8 +398,8 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
     const base = {
         chart: {
             type,
-            toolbar: { show: true },
-            foreColor: dark ? '#e2e8f0' : '#475569',
+            toolbar: { show: false }, // Ẩn toolbar để giao diện chuyên nghiệp hơn
+            foreColor: dark ? '#EFF2F6' : '#475569',
             background: 'transparent'
         },
         stroke: isCircular
@@ -474,13 +408,13 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
         dataLabels: { enabled: false },
         grid: {
             strokeDashArray: 4,
-            borderColor: dark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.35)',
+            borderColor: dark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.35)',
             padding: { top: 8, bottom: 8, left: 12, right: 12 }
         },
         colors,
         legend: {
             position: 'bottom',
-            labels: { colors: dark ? '#cbd5f5' : '#475569' }
+            labels: { colors: dark ? '#EFF2F6' : '#475569', fontWeight: dark ? 500 : 400 }
         },
         tooltip: {
             theme: dark ? 'dark' : 'light',
@@ -493,23 +427,27 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
         base.xaxis = {
             categories: [],
             labels: {
-                colors: dark ? '#cbd5f5' : '#64748b',
+                colors: dark ? '#EFF2F6' : '#64748b',
                 fontSize: '12px',
+                fontWeight: dark ? 500 : 400,
                 rotate: 0
             },
             axisBorder: {
-                color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: dark ? 1.5 : 1
             },
             axisTicks: {
-                color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: dark ? 1.5 : 1
             }
         }
     }
 
     base.yaxis = {
         labels: {
-            colors: dark ? '#cbd5f5' : '#64748b',
+            colors: dark ? '#EFF2F6' : '#64748b',
             fontSize: '12px',
+            fontWeight: dark ? 500 : 400,
             formatter: (value) => value ?? 0
         }
     }
@@ -548,14 +486,16 @@ const tableSort = computed({
     set: (value) => emit('update:tableSort', value)
 })
 
+// Cố định biểu đồ Top sản phẩm là horizontalBar để tránh text nghiêng
 const productChartType = computed({
-    get: () => props.productChartType ?? 'bar',
-    set: (value) => emit('update:productChartType', value)
+    get: () => 'horizontalBar', // Cố định horizontalBar
+    set: (value) => {} // Không cho phép thay đổi
 })
 
+// Cố định biểu đồ danh mục là donut
 const categoryChartType = computed({
-    get: () => props.categoryChartType ?? 'donut',
-    set: (value) => emit('update:categoryChartType', value)
+    get: () => 'donut', // Cố định donut
+    set: (value) => {} // Không cho phép thay đổi
 })
 
 const resolvedProductChartType = computed(() => {
@@ -612,7 +552,8 @@ const productChartOptions = computed(() => {
             : []
 
         const isRevenue = props.sortBy === 'revenue'
-        const base = createBaseOptions(resolvedProductChartType.value, isRevenue ? ['#1d4ed8'] : ['#16a34a'])
+        // Sử dụng màu xanh dương chủ đạo (primary color) thay vì xanh lá
+        const base = createBaseOptions(resolvedProductChartType.value, ['#2563eb'])
         const formatter = (val) => {
             const num = Number(val)
             return Number.isFinite(num) && !isNaN(num)
@@ -639,7 +580,9 @@ const productChartOptions = computed(() => {
                 ...base.plotOptions,
                 bar: {
                     ...base.plotOptions.bar,
-                    horizontal: productChartType.value === 'horizontalBar'
+                    horizontal: productChartType.value === 'horizontalBar',
+                    columnWidth: productChartType.value === 'horizontalBar' ? '75%' : '55%', // Tăng độ dày bar ngang
+                    barHeight: productChartType.value === 'horizontalBar' ? '70%' : undefined // Tăng chiều cao bar ngang
                 }
             }
         }
@@ -648,12 +591,33 @@ const productChartOptions = computed(() => {
         if (isRadar) {
             delete options.xaxis
         } else {
+            // Với ApexCharts, categories luôn ở xaxis, dù horizontal hay vertical
+            // Khi horizontal=true, ApexCharts tự động hiển thị categories trên trục Y
             options.xaxis = {
                 ...base.xaxis,
                 categories: Array.isArray(categories) ? categories : [],
                 labels: {
                     ...base.xaxis.labels,
-                    rotate: -35
+                    rotate: productChartType.value === 'horizontalBar' ? 0 : -35, // Không rotate cho horizontal bar
+                    style: {
+                        ...base.xaxis.labels.style,
+                        fontSize: productChartType.value === 'horizontalBar' ? '13px' : '12px' // Tăng font size cho horizontal bar
+                    },
+                    // Với horizontal bar, formatter cho trục X (giá trị)
+                    formatter: productChartType.value === 'horizontalBar' ? formatter : undefined
+                }
+            }
+            // Với horizontal bar, tăng font size cho yaxis (labels sản phẩm)
+            if (productChartType.value === 'horizontalBar') {
+                options.yaxis = {
+                    ...base.yaxis,
+                    labels: {
+                        ...base.yaxis.labels,
+                        style: {
+                            ...base.yaxis.labels.style,
+                            fontSize: '13px' // Tăng font size cho dễ đọc
+                        }
+                    }
                 }
             }
         }
@@ -933,25 +897,7 @@ const updateCategoryChart = async () => {
     }
 }
 
-const updateStackedChart = async () => {
-    stackedChartReady.value = false
-
-    await nextTick()
-
-    const series = createSafeSeries(stackedChartSeries.value, 'bar')
-    const options = createSafeOptions(stackedChartOptions.value, 'bar')
-
-    if (validateSeries(series, 'bar')) {
-        safeStackedSeries.value = deepClone(series)
-        safeStackedOptions.value = deepClone(options)
-
-        await nextTick()
-        stackedChartReady.value = true
-    } else {
-        safeStackedSeries.value = null
-        safeStackedOptions.value = null
-    }
-}
+// Biểu đồ Stacked đã được xóa vì không mang lại giá trị thông tin
 
 const updateHourlyChart = async () => {
     hourlyChartReady.value = false
@@ -984,10 +930,7 @@ watch(() => [categoryChartSeries.value, categoryChartOptions.value, resolvedCate
     { deep: true }
 )
 
-watch(() => [stackedChartSeries.value, stackedChartOptions.value],
-    () => updateStackedChart(),
-    { deep: true }
-)
+// Watch cho stacked chart đã được xóa
 
 watch(() => [hourlyChartSeries.value, hourlyChartOptions.value],
     () => updateHourlyChart(),
@@ -1000,7 +943,6 @@ onMounted(async () => {
     await Promise.all([
         updateProductChart(),
         updateCategoryChart(),
-        updateStackedChart(),
         updateHourlyChart()
     ])
 })
@@ -1174,6 +1116,8 @@ const onTableSort = (value) => {
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-3);
     font-family: var(--font-family-sans);
+    line-height: 1.6; /* Tăng line-height để text không bị cắt */
+    vertical-align: middle; /* Căn giữa theo chiều dọc */
 }
 
 .table-card :global(.table tbody tr:last-child td) {
@@ -1187,6 +1131,14 @@ const onTableSort = (value) => {
 .table-card :global(.fw-semibold) {
     font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-sans);
+}
+
+.product-name-cell {
+    line-height: 1.6;
+    min-height: 2.5rem; /* Đảm bảo chiều cao tối thiểu */
+    display: flex;
+    align-items: center; /* Căn giữa theo chiều dọc */
+    word-break: break-word; /* Tự động xuống dòng nếu tên quá dài */
 }
 
 .insight-card__value {

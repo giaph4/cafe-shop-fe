@@ -2,10 +2,10 @@ import { computed, ref } from 'vue'
 import logger from '@/utils/logger'
 
 /**
- * Composable for bulk actions and batch operations
- * @param {Object} options - Options
- * @param {Function} options.onBulkAction - Callback when bulk action is executed
- * @param {Number} options.maxBatchSize - Maximum items per batch
+ * Composable quản lý bulk actions và batch operations
+ * @param {Object} options - Tùy chọn cấu hình
+ * @param {Function} options.onBulkAction - Callback khi bulk action được thực thi
+ * @param {Number} options.maxBatchSize - Số lượng items tối đa mỗi batch
  */
 export function useBulkActions (options = {}) {
     const { onBulkAction, maxBatchSize = 100 } = options
@@ -15,18 +15,22 @@ export function useBulkActions (options = {}) {
     const isProcessing = ref(false)
     const operationHistory = ref([])
 
-    // Computed
+    // Computed properties
     const selectedCount = computed(() => selectedItems.value.size)
     const hasSelection = computed(() => selectedCount.value > 0)
     const canSelectAll = computed(() => maxBatchSize === -1 || selectedCount.value < maxBatchSize)
 
-    // Selection methods
+    // Các phương thức chọn items
+
+    /**
+     * Toggle trạng thái chọn của item
+     */
     const toggleSelection = (itemId) => {
         if (selectedItems.value.has(itemId)) {
             selectedItems.value.delete(itemId)
         } else {
             if (maxBatchSize > 0 && selectedItems.value.size >= maxBatchSize) {
-                logger.warn(`[useBulkActions] Maximum selection limit reached: ${maxBatchSize}`)
+                logger.warn(`[useBulkActions] Đã đạt giới hạn chọn tối đa: ${maxBatchSize}`)
                 return false
             }
             selectedItems.value.add(itemId)
@@ -35,6 +39,9 @@ export function useBulkActions (options = {}) {
         return true
     }
 
+    /**
+     * Chọn một item
+     */
     const selectItem = (itemId) => {
         if (maxBatchSize > 0 && selectedItems.value.size >= maxBatchSize) {
             return false
@@ -44,11 +51,17 @@ export function useBulkActions (options = {}) {
         return true
     }
 
+    /**
+     * Bỏ chọn một item
+     */
     const deselectItem = (itemId) => {
         selectedItems.value.delete(itemId)
         isSelectAll.value = false
     }
 
+    /**
+     * Chọn tất cả items
+     */
     const selectAll = (allItems) => {
         if (!allItems || allItems.length === 0) return
 
@@ -64,6 +77,9 @@ export function useBulkActions (options = {}) {
         isSelectAll.value = selectedItems.value.size === allItems.length
     }
 
+    /**
+     * Chọn items theo điều kiện filter
+     */
     const selectByFilter = (items, filterFn) => {
         if (!items || !filterFn) return
 
@@ -82,6 +98,9 @@ export function useBulkActions (options = {}) {
         isSelectAll.value = false
     }
 
+    /**
+     * Chọn items trong khoảng index
+     */
     const selectRange = (items, startIndex, endIndex) => {
         if (!items || startIndex < 0 || endIndex >= items.length) return
 
@@ -100,24 +119,32 @@ export function useBulkActions (options = {}) {
         isSelectAll.value = false
     }
 
+    /**
+     * Xóa tất cả selection
+     */
     const clearSelection = () => {
         selectedItems.value.clear()
         isSelectAll.value = false
     }
 
+    /**
+     * Kiểm tra item có được chọn không
+     */
     const isSelected = (itemId) => selectedItems.value.has(itemId)
 
-    // Bulk action execution
+    /**
+     * Thực thi bulk action
+     */
     const executeBulkAction = async (action, actionFn, options = {}) => {
         if (selectedItems.value.size === 0) {
-            logger.warn('[useBulkActions] No items selected')
+            logger.warn('[useBulkActions] Không có item nào được chọn')
             return { success: false, message: 'Không có item nào được chọn' }
         }
 
         const { confirm = true, onProgress, onComplete } = options
 
         if (confirm && !options.skipConfirm) {
-            // Confirmation will be handled by the component
+            // Xác nhận sẽ được xử lý bởi component
             return { needsConfirm: true, selectedIds: Array.from(selectedItems.value) }
         }
 
@@ -131,7 +158,7 @@ export function useBulkActions (options = {}) {
         }
 
         try {
-            // Process in batches
+            // Xử lý theo từng batch
             for (let i = 0; i < selectedIds.length; i += batchSize) {
                 const batch = selectedIds.slice(i, i + batchSize)
 
@@ -154,13 +181,13 @@ export function useBulkActions (options = {}) {
                         results.failed++
                         results.errors.push({
                             id: batch[index],
-                            error: result.reason?.message || 'Unknown error'
+                            error: result.reason?.message || 'Lỗi không xác định'
                         })
                     }
                 })
             }
 
-            // Log operation
+            // Ghi lại lịch sử thao tác
             const operation = {
                 id: Date.now().toString(),
                 action,
@@ -176,7 +203,7 @@ export function useBulkActions (options = {}) {
                 operationHistory.value = operationHistory.value.slice(0, 50)
             }
 
-            // Callback
+            // Gọi callback
             if (onBulkAction) {
                 onBulkAction(action, selectedIds, results)
             }
@@ -185,7 +212,7 @@ export function useBulkActions (options = {}) {
                 onComplete(results)
             }
 
-            // Clear selection if all succeeded
+            // Xóa selection nếu tất cả thành công
             if (options.clearOnSuccess && results.failed === 0) {
                 clearSelection()
             }
@@ -196,10 +223,10 @@ export function useBulkActions (options = {}) {
                 operation
             }
         } catch (err) {
-            logger.error('[useBulkActions] Bulk action failed', err)
+            logger.error('[useBulkActions] Bulk action thất bại', err)
             return {
                 success: false,
-                message: err.message || 'Bulk action failed',
+                message: err.message || 'Bulk action thất bại',
                 results
             }
         } finally {
@@ -207,11 +234,13 @@ export function useBulkActions (options = {}) {
         }
     }
 
-    // Undo operation
+    /**
+     * Hoàn tác thao tác
+     */
     const undoOperation = async (operationId, undoFn) => {
         const operation = operationHistory.value.find(op => op.id === operationId)
         if (!operation) {
-            return { success: false, message: 'Operation not found' }
+            return { success: false, message: 'Không tìm thấy thao tác' }
         }
 
         try {
@@ -219,18 +248,20 @@ export function useBulkActions (options = {}) {
                 await undoFn(operation)
             }
 
-            // Mark as undone
+            // Đánh dấu đã hoàn tác
             operation.undone = true
             operation.undoneAt = new Date().toISOString()
 
             return { success: true, operation }
         } catch (err) {
-            logger.error('[useBulkActions] Undo failed', err)
-            return { success: false, message: err.message || 'Undo failed' }
+            logger.error('[useBulkActions] Hoàn tác thất bại', err)
+            return { success: false, message: err.message || 'Hoàn tác thất bại' }
         }
     }
 
-    // Get operation history
+    /**
+     * Lấy lịch sử thao tác
+     */
     const getOperationHistory = (limit = 10) => operationHistory.value.slice(0, limit)
 
     return {
@@ -243,7 +274,7 @@ export function useBulkActions (options = {}) {
         hasSelection,
         canSelectAll,
 
-        // Selection methods
+        // Các phương thức chọn
         toggleSelection,
         selectItem,
         deselectItem,
@@ -259,4 +290,3 @@ export function useBulkActions (options = {}) {
         getOperationHistory
     }
 }
-

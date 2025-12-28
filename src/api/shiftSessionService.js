@@ -1,5 +1,5 @@
 import api from '@/api/axios'
-import { cleanParams } from '@/api/utils'
+import { cleanParams } from '@/api/helpers'
 import { buildApiError } from '@/utils/errorHandler'
 
 const BASE_URL = '/api/v1/shifts/sessions'

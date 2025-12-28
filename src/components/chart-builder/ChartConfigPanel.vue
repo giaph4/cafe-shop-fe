@@ -199,39 +199,39 @@ const updateConfig = () => {
 }
 
 const addColor = () => {
-    // Convert CSS variable to hex if needed, otherwise use default blue
+    // Chuyển đổi CSS variable sang hex nếu cần, nếu không dùng màu xanh mặc định
     const defaultColor = '#2563eb'
     localConfig.value.colors.push(defaultColor)
     updateConfig()
 }
 
-// Convert CSS variable colors to hex when component mounts
+// Chuyển đổi màu CSS variable sang hex khi component mount
 const convertCssVarToHex = (color) => {
     if (!color || typeof color !== 'string') return '#2563eb'
     if (color.startsWith('var(--')) {
-        // Try to get computed value from document
+        // Thử lấy giá trị computed từ document
         if (typeof document !== 'undefined') {
             const tempEl = document.createElement('div')
             tempEl.style.color = color
             document.body.appendChild(tempEl)
             const computedColor = window.getComputedStyle(tempEl).color
             document.body.removeChild(tempEl)
-            // Convert rgb/rgba to hex
+            // Chuyển đổi rgb/rgba sang hex
             if (computedColor.startsWith('rgb')) {
                 const rgb = computedColor.match(/\d+/g)
                 if (rgb && rgb.length >= 3) {
-                    return '#' + rgb.slice(0, 3).map(x => {
+                    return `#${  rgb.slice(0, 3).map(x => {
                         const hex = parseInt(x).toString(16)
-                        return hex.length === 1 ? '0' + hex : hex
-                    }).join('')
+                        return hex.length === 1 ? `0${  hex}` : hex
+                    }).join('')}`
                 }
             }
         }
-        return '#2563eb' // Fallback to default
+        return '#2563eb' // Giá trị mặc định
     }
-    // If already hex or valid color, return as is
+    // Nếu đã là hex hoặc màu hợp lệ, trả về nguyên
     if (color.startsWith('#')) return color
-    return '#2563eb' // Fallback
+    return '#2563eb' // Giá trị mặc định
 }
 
 const removeColor = (index) => {
@@ -243,14 +243,14 @@ const removeColor = (index) => {
 
 watch(() => props.config, (newConfig) => {
     const convertedConfig = { ...newConfig }
-    // Convert any CSS variable colors to hex
+    // Chuyển đổi các màu CSS variable sang hex
     if (convertedConfig.colors && Array.isArray(convertedConfig.colors)) {
         convertedConfig.colors = convertedConfig.colors.map(convertCssVarToHex)
     }
     localConfig.value = convertedConfig
 }, { deep: true })
 
-// Convert colors on mount
+// Chuyển đổi màu khi component mount
 onMounted(() => {
     if (localConfig.value.colors && Array.isArray(localConfig.value.colors)) {
         localConfig.value.colors = localConfig.value.colors.map(convertCssVarToHex)

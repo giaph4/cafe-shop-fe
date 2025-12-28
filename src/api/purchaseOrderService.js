@@ -1,10 +1,10 @@
 import api from './axios'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 
 const BASE_URL = '/api/v1/purchase-orders'
 
 /**
- * 12.1 Tạo phiếu nhập hàng
+ * Tạo phiếu nhập hàng
  */
 export const createPurchaseOrder = async (orderData) => {
     const { data } = await api.post(BASE_URL, orderData)
@@ -12,7 +12,7 @@ export const createPurchaseOrder = async (orderData) => {
 }
 
 /**
- * 12.2 Lấy danh sách phiếu nhập (có lọc)
+ * Lấy danh sách phiếu nhập (có lọc)
  */
 export const getPurchaseOrders = async (filters = {}) => {
     const params = cleanParams({
@@ -29,7 +29,7 @@ export const getPurchaseOrders = async (filters = {}) => {
 }
 
 /**
- * 12.3 Lấy chi tiết phiếu nhập
+ * Lấy chi tiết phiếu nhập
  */
 export const getPurchaseOrderById = async (id) => {
     const { data } = await api.get(`${BASE_URL}/${id}`)
@@ -37,7 +37,7 @@ export const getPurchaseOrderById = async (id) => {
 }
 
 /**
- * 12.4 Hoàn thành phiếu nhập
+ * Hoàn thành phiếu nhập
  */
 export const markOrderAsCompleted = async (id) => {
     const { data } = await api.post(`${BASE_URL}/${id}/complete`)
@@ -45,7 +45,7 @@ export const markOrderAsCompleted = async (id) => {
 }
 
 /**
- * 12.5 Hủy phiếu nhập
+ * Hủy phiếu nhập
  */
 export const cancelPurchaseOrder = async (id) => {
     const { data } = await api.post(`${BASE_URL}/${id}/cancel`)
@@ -53,7 +53,7 @@ export const cancelPurchaseOrder = async (id) => {
 }
 
 /**
- * 12.6 Cập nhật phiếu nhập hàng
+ * Cập nhật phiếu nhập hàng
  * @deprecated Backend KHÔNG hỗ trợ endpoint PUT /api/v1/purchase-orders/{id}
  * PurchaseOrderController chỉ có các endpoint:
  * - POST /api/v1/purchase-orders (create)
@@ -61,7 +61,7 @@ export const cancelPurchaseOrder = async (id) => {
  * - GET /api/v1/purchase-orders/{id} (get by id)
  * - POST /api/v1/purchase-orders/{id}/complete (complete)
  * - POST /api/v1/purchase-orders/{id}/cancel (cancel)
- * 
+ *
  * Nếu cần cập nhật purchase order, cần tạo endpoint mới trong backend
  * @param {string|number} id - ID của phiếu nhập cần cập nhật
  * @param {Object} updateData - Dữ liệu cần cập nhật

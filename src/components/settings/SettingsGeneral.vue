@@ -101,6 +101,35 @@
           </label>
         </div>
       </div>
+
+      <!-- Show DEV/DEMO Features -->
+      <div class="settings-item">
+        <div class="settings-item__header">
+          <div class="settings-item__info">
+            <label class="settings-item__label">
+              <i class="bi bi-code-slash me-2" />
+              Hiển thị chức năng DEV/DEMO
+            </label>
+            <p class="settings-item__description">
+              Bật/tắt hiển thị các chức năng đang phát triển hoặc demo trong menu
+            </p>
+          </div>
+        </div>
+        <div class="settings-item__control">
+          <label class="settings-toggle">
+            <input
+              v-model="localSettings.showDevDemoFeatures"
+              type="checkbox"
+              class="settings-toggle__input"
+              @change="handleShowDevDemoFeaturesChange"
+            >
+            <span class="settings-toggle__slider" />
+            <span class="settings-toggle__label">
+              {{ localSettings.showDevDemoFeatures ? 'Đã bật' : 'Đã tắt' }}
+            </span>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -115,7 +144,8 @@ const settingsStore = useSettingsStore()
 const localSettings = reactive({
     language: settingsStore.language,
     notificationSound: settingsStore.notificationSound,
-    christmasEffect: settingsStore.christmasEffectEnabled
+    christmasEffect: settingsStore.christmasEffectEnabled,
+    showDevDemoFeatures: settingsStore.showDevDemoFeatures
 })
 
 const handleLanguageChange = () => {
@@ -133,7 +163,16 @@ const handleChristmasEffectChange = () => {
     toast.success(`Hiệu ứng Noel đã ${localSettings.christmasEffect ? 'bật' : 'tắt'}`)
 }
 
-// Sync with store changes
+const handleShowDevDemoFeaturesChange = () => {
+    settingsStore.setShowDevDemoFeatures(localSettings.showDevDemoFeatures)
+    toast.success(`Hiển thị chức năng DEV/DEMO đã ${localSettings.showDevDemoFeatures ? 'bật' : 'tắt'}`)
+    // Reload để áp dụng thay đổi menu
+    setTimeout(() => {
+        window.location.reload()
+    }, 500)
+}
+
+// Đồng bộ với thay đổi từ store
 watch(() => settingsStore.language, (newVal) => {
     localSettings.language = newVal
 })
@@ -144,6 +183,10 @@ watch(() => settingsStore.notificationSound, (newVal) => {
 
 watch(() => settingsStore.christmasEffectEnabled, (newVal) => {
     localSettings.christmasEffect = newVal
+})
+
+watch(() => settingsStore.showDevDemoFeatures, (newVal) => {
+    localSettings.showDevDemoFeatures = newVal
 })
 </script>
 

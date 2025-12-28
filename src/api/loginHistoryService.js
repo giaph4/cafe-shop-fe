@@ -1,5 +1,5 @@
 import api from './axios'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 
 export const getLoginHistory = async (params = {}) => {
     const query = cleanParams(params)

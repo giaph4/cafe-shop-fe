@@ -25,6 +25,12 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 800,
+    // Sử dụng esbuild để minify (mặc định, nhanh hơn terser)
+    minify: 'esbuild',
+    // Xóa console.log và debugger trong production
+    esbuild: {
+      drop: ['console', 'debugger']
+    }
   }
 })

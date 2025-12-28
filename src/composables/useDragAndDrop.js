@@ -25,13 +25,13 @@ export const useDragAndDrop = (options = {}) => {
         draggedItem.value = item
         isDragging.value = true
 
-        // Set drag data
+        // Thiết lập dữ liệu drag
         if (event.dataTransfer) {
             event.dataTransfer.effectAllowed = 'move'
             event.dataTransfer.setData('text/plain', JSON.stringify(item))
         }
 
-        // Add dragging class to element
+        // Thêm class kéo thả cho element
         if (event.target) {
             event.target.classList.add('dragging')
         }
@@ -45,7 +45,7 @@ export const useDragAndDrop = (options = {}) => {
      * Handle drag end
      */
     const handleDragEnd = (event) => {
-        // Remove dragging class
+        // Xóa class kéo thả
         if (event.target) {
             event.target.classList.remove('dragging')
         }
@@ -116,14 +116,14 @@ export const useDragAndDrop = (options = {}) => {
         event.preventDefault()
         event.stopPropagation()
 
-        // Remove drag-over class
+        // Xóa class drag-over
         if (event.target) {
             event.target.classList.remove('drag-over')
         }
 
         let droppedData = draggedItem.value
 
-        // Try to get data from dataTransfer
+        // Thử lấy dữ liệu từ dataTransfer
         if (event.dataTransfer) {
             try {
                 const data = event.dataTransfer.getData('text/plain')
@@ -131,7 +131,7 @@ export const useDragAndDrop = (options = {}) => {
                     droppedData = JSON.parse(data)
                 }
             } catch (e) {
-                console.warn('Failed to parse drag data:', e)
+                // Không thể parse dữ liệu drag, sử dụng giá trị mặc định
             }
         }
 

@@ -749,9 +749,9 @@ const getCurrencyRate = (fromCode, toCode) => {
     if (!fromCurr || !toCurr) return 1
 
     // Convert through VND as base
-    // If converting from VND to other: use other's rate
-    // If converting from other to VND: use 1/other's rate
-    // If converting between two non-VND: convert through VND
+    // Nếu chuyển từ VND sang tiền khác: dùng tỷ giá tiền khác
+    // Nếu chuyển từ tiền khác sang VND: dùng 1/tỷ giá tiền khác
+    // Nếu chuyển giữa hai tiền không phải VND: chuyển qua VND
 
     if (fromCode === 'VND') {
         return toCurr.rate
@@ -798,8 +798,8 @@ const calculateCurrency = () => {
 }
 
 const calculateCurrencyReverse = () => {
-    // This is readonly, but we can use it for reverse calculation if needed
-    // For now, we only calculate from -> to
+    // Đây là chế độ chỉ đọc, nhưng có thể dùng cho tính ngược nếu cần
+    // Hiện tại, chỉ tính từ -> đến
 }
 
 const formatCurrencyAmount = (amount, code) => {

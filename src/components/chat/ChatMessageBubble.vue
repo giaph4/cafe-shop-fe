@@ -101,6 +101,7 @@
                 <a
                   :href="file.storedUrl"
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="ms-2"
                   @click.stop
                 >

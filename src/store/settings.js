@@ -27,6 +27,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const language = ref(localStorage.getItem('language') || 'vi')
     const notificationSound = ref(localStorage.getItem('notificationSound') !== 'false')
     const christmasEffectEnabled = ref(localStorage.getItem('christmasEffectEnabled') === 'true')
+    const showDevDemoFeatures = ref(localStorage.getItem('showDevDemoFeatures') !== 'false')
 
     // Custom Theme & Appearance Settings
     const customThemes = ref(loadCustomThemes())
@@ -70,6 +71,11 @@ export const useSettingsStore = defineStore('settings', () => {
         localStorage.setItem('christmasEffectEnabled', String(value))
     }
 
+    const setShowDevDemoFeatures = (value) => {
+        showDevDemoFeatures.value = value
+        localStorage.setItem('showDevDemoFeatures', String(value))
+    }
+
     const updateProfile = async (profileData) => {
         // Cập nhật profile: gọi API để cập nhật profile
         // Ví dụ: await updateUserProfile(profileData)
@@ -82,12 +88,12 @@ export const useSettingsStore = defineStore('settings', () => {
         }
     }
 
-    const changePassword = async () => {
+    const changePassword = async () =>
         // Đổi mật khẩu: gọi API để đổi mật khẩu
         // Ví dụ: await changeUserPassword({ currentPassword, newPassword })
         // Tạm thời chỉ return success
-        return Promise.resolve({ success: true })
-    }
+        Promise.resolve({ success: true })
+
 
     // Custom Theme Actions
     const saveCustomTheme = (themeData) => {
@@ -212,6 +218,7 @@ export const useSettingsStore = defineStore('settings', () => {
         language,
         notificationSound,
         christmasEffectEnabled,
+        showDevDemoFeatures,
         userProfile,
         customThemes,
         layoutPreferences,
@@ -222,6 +229,7 @@ export const useSettingsStore = defineStore('settings', () => {
         setLanguage,
         setNotificationSound,
         setChristmasEffect,
+        setShowDevDemoFeatures,
         updateProfile,
         changePassword,
         // Custom Theme Actions

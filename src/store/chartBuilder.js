@@ -9,16 +9,16 @@ import { formatDate } from '@/utils/formatters'
 const toISODate = (date) => {
     if (!date) return null
     try {
-        // If already in ISO format, return as is
+        // Nếu đã ở định dạng ISO, trả về nguyên
         if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
             return date
         }
-        // If in dd/MM/yyyy format, convert
+        // Nếu ở định dạng dd/MM/yyyy, chuyển đổi
         if (typeof date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
             const [day, month, year] = date.split('/')
             return `${year}-${month}-${day}`
         }
-        // If Date object, convert to ISO
+        // Nếu là Date object, chuyển sang ISO
         const d = new Date(date)
         if (isNaN(d.getTime())) return null
         return d.toISOString().split('T')[0]
@@ -69,8 +69,8 @@ export const useChartBuilderStore = defineStore('chartBuilder', () => {
                 case 'profit': {
                     const data = await reportService.getProfitReport(isoStartDate, isoEndDate)
                     // Profit report returns {totalRevenue, totalCostOfGoodsSold, totalProfit}
-                    // For time series, we need to get daily profit data
-                    // For now, return summary as single data point
+                    // Với time series, cần lấy dữ liệu lợi nhuận hàng ngày
+                    // Hiện tại, trả về summary dưới dạng điểm dữ liệu đơn
                     return {
                         labels: ['Tổng doanh thu', 'Tổng chi phí', 'Tổng lợi nhuận'],
                         values: [

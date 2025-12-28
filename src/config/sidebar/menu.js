@@ -10,13 +10,6 @@ export const sidebarMenu = [
                 roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
             },
             {
-                id: 'role-dashboards',
-                label: 'Dashboard theo vai trò',
-                icon: 'roleDashboards',
-                to: '/role-dashboards',
-                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
-            },
-            {
                 id: 'chat',
                 label: 'Trò chuyện',
                 icon: 'chat',
@@ -85,13 +78,6 @@ export const sidebarMenu = [
                         to: '/reports',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     },
-                    {
-                        id: 'admin-analytics',
-                        label: 'Phân tích AI',
-                        icon: 'adminAnalytics',
-                        to: '/admin-analytics',
-                        roles: ['ROLE_ADMIN']
-                    }
                 ]
             }
         ]
@@ -153,20 +139,6 @@ export const sidebarMenu = [
                         label: 'Báo cáo tồn kho',
                         icon: 'inventoryReport',
                         to: '/inventory-report',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'smart-inventory',
-                        label: 'Tồn kho thông minh',
-                        icon: 'smartInventory',
-                        to: '/smart-inventory',
-                        roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-                    },
-                    {
-                        id: 'ingredient-demand-forecast',
-                        label: 'Dự báo Nhu cầu',
-                        icon: 'ingredientDemandForecast',
-                        to: '/ingredient-demand-forecast',
                         roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
                     },
                     {
@@ -280,6 +252,35 @@ export const sidebarMenu = [
         ]
     },
     {
+        heading: 'DEV',
+        items: [
+            {
+                id: 'role-dashboards',
+                label: 'Dashboard theo vai trò',
+                icon: 'roleDashboards',
+                to: '/role-dashboards',
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF'],
+                status: 'development'
+            },
+            {
+                id: 'admin-analytics',
+                label: 'Phân tích AI',
+                icon: 'adminAnalytics',
+                to: '/admin-analytics',
+                roles: ['ROLE_ADMIN'],
+                status: 'development'
+            },
+            {
+                id: 'ingredient-demand-forecast',
+                label: 'Dự báo Nhu cầu',
+                icon: 'ingredientDemandForecast',
+                to: '/ingredient-demand-forecast',
+                roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+                status: 'development'
+            }
+        ]
+    },
+    {
         heading: 'Khác',
         items: [
             {
@@ -289,20 +290,7 @@ export const sidebarMenu = [
                 to: '/profile',
                 roles: ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']
             },
-            {
-                id: 'login-history',
-                label: 'Lịch sử đăng nhập',
-                icon: 'loginHistory',
-                to: '/login-history',
-                roles: ['ROLE_ADMIN']
-            },
-            {
-                id: 'file-management',
-                label: 'Quản lý File',
-                icon: 'fileManagement',
-                to: '/file-management',
-                roles: ['ROLE_ADMIN', 'ROLE_MANAGER']
-            }
+
         ]
     }
 ]

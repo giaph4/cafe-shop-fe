@@ -87,7 +87,7 @@ const calculateSuggestedQuantity = (consumptionRate, daysRemaining, leadTime = 7
     if (!isFinite(daysRemaining) || daysRemaining === null) {
         return Math.max(safetyStock, 10) // Tối thiểu 10 đơn vị
     }
-    
+
     const daysToOrder = Math.max(leadTime, daysRemaining - 2)
     const suggestedQuantity = (consumptionRate * daysToOrder) + safetyStock
     return Math.ceil(Math.max(suggestedQuantity, 1)) // Tối thiểu 1 đơn vị
@@ -127,11 +127,11 @@ export const analyzeInventory = async ({ includeStable = false } = {}) => {
 
                 const leadTime = 7
                 const safetyStock = reorderLevel * 0.5
-                
+
                 // Nếu không có consumption rate, đề xuất dựa trên reorderLevel hoặc currentStock
                 let suggestedQuantity
                 let reason
-                
+
                 if (hasConsumption && daysRemaining !== null && isFinite(daysRemaining)) {
                     suggestedQuantity = calculateSuggestedQuantity(
                         consumptionRate,
@@ -144,10 +144,10 @@ export const analyzeInventory = async ({ includeStable = false } = {}) => {
                     // Không có dữ liệu tiêu thụ, đề xuất dựa trên reorderLevel hoặc currentStock
                     if (reorderLevel > 0) {
                         suggestedQuantity = Math.max(reorderLevel * 2, currentStock * 0.5)
-                        reason = `Không có dữ liệu tiêu thụ. Đề xuất dựa trên mức đặt lại hàng`
+                        reason = 'Không có dữ liệu tiêu thụ. Đề xuất dựa trên mức đặt lại hàng'
                     } else {
                         suggestedQuantity = Math.max(currentStock, 10) // Tối thiểu 10 đơn vị
-                        reason = `Không có dữ liệu tiêu thụ. Đề xuất dựa trên tồn kho hiện tại`
+                        reason = 'Không có dữ liệu tiêu thụ. Đề xuất dựa trên tồn kho hiện tại'
                     }
                 }
 
@@ -164,8 +164,8 @@ export const analyzeInventory = async ({ includeStable = false } = {}) => {
                     currentStock,
                     reorderLevel,
                     consumptionRate: Math.round(consumptionRate * 100) / 100,
-                    daysRemaining: daysRemaining !== null && isFinite(daysRemaining) 
-                        ? Math.round(daysRemaining * 10) / 10 
+                    daysRemaining: daysRemaining !== null && isFinite(daysRemaining)
+                        ? Math.round(daysRemaining * 10) / 10
                         : null,
                     alert,
                     suggestion: {
@@ -231,14 +231,14 @@ const getLastPurchaseOrderForIngredient = async (ingredientId) => {
         for (const order of ordersList) {
             // Backend trả về Set<PurchaseOrderDetailResponseDTO> nên cần convert sang Array
             let details = order.purchaseOrderDetails || order.items || order.details || []
-            
+
             // Nếu là Set, convert sang Array
             if (details instanceof Set) {
                 details = Array.from(details)
             } else if (!Array.isArray(details)) {
                 details = []
             }
-            
+
             if (details.length === 0) continue
 
             const detail = details.find(
@@ -320,14 +320,14 @@ export const getStockLevelHistory = async (ingredientId, days = 30, fallbackData
             if (orderOnDate) {
                 // Backend trả về Set<PurchaseOrderDetailResponseDTO> nên cần convert sang Array
                 let details = orderOnDate.purchaseOrderDetails || orderOnDate.items || orderOnDate.details || []
-                
+
                 // Nếu là Set, convert sang Array
                 if (details instanceof Set) {
                     details = Array.from(details)
                 } else if (!Array.isArray(details)) {
                     details = []
                 }
-                
+
                 const detail = details.find(
                     d => d.ingredientId === ingredientId || d.ingredient?.id === ingredientId
                 )
@@ -388,14 +388,14 @@ export const getSuppliersForIngredient = async (ingredientId) => {
         for (const order of ordersList) {
             // Backend trả về Set<PurchaseOrderDetailResponseDTO> nên cần convert sang Array
             let details = order.purchaseOrderDetails || order.items || order.details || []
-            
+
             // Nếu là Set, convert sang Array
             if (details instanceof Set) {
                 details = Array.from(details)
             } else if (!Array.isArray(details)) {
                 details = []
             }
-            
+
             if (details.length === 0) continue
 
             const detail = details.find(
@@ -404,10 +404,10 @@ export const getSuppliersForIngredient = async (ingredientId) => {
 
             if (detail && order.supplierId) {
                 const supplierId = order.supplierId
-                
+
                 if (!supplierMap.has(supplierId)) {
                     supplierMap.set(supplierId, {
-                        supplierId: supplierId,
+                        supplierId,
                         supplierName: order.supplier?.name || order.supplierName || 'N/A',
                         lastOrderDate: order.orderDate || order.createdAt,
                         lastQuantity: toNumber(detail.quantity),

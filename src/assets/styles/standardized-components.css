@@ -28,7 +28,7 @@
 .btn-flat:hover:not(:disabled) {
     background: var(--color-card-muted);
     border-color: var(--color-border-strong);
-    color: var(--color-heading);
+    /* Giữ nguyên màu chữ */
 }
 
 .btn-flat:focus {
@@ -50,7 +50,13 @@
 .btn-flat--primary:hover:not(:disabled) {
     background: var(--color-primary-hover);
     border-color: var(--color-primary-hover);
-    color: var(--color-primary-contrast);
+    color: var(--color-primary-contrast) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-flat--primary:active:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: var(--color-primary-contrast) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-flat--outline {
@@ -62,7 +68,13 @@
 .btn-flat--outline:hover:not(:disabled) {
     background: var(--color-card-muted);
     border-color: var(--color-primary);
-    color: var(--color-primary);
+    color: var(--color-text) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-flat--outline:active:not(:disabled) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-text) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-flat--active {
@@ -74,6 +86,13 @@
 .btn-flat--active:hover:not(:disabled) {
     background: var(--color-primary-hover);
     border-color: var(--color-primary-hover);
+    color: var(--color-primary-contrast) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-flat--active:active:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: var(--color-primary-contrast) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-flat.btn-sm {
@@ -246,6 +265,185 @@
 }
 
 /* ============================================
+   ACTION BUTTONS - Chuẩn hóa nút thao tác
+   ============================================ */
+/* Container cho nhóm action buttons */
+.action-buttons,
+.action-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    justify-content: flex-end;
+}
+
+/* Base Action Button Style */
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    background: var(--color-card);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.action-button i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Nút Xem chi tiết - Info */
+.action-button--info {
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+    background: var(--color-card);
+}
+
+.action-button--info:hover:not(:disabled) {
+    background: rgba(14, 165, 233, 0.18);
+    color: #0ea5e9 !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #0ea5e9;
+}
+
+.action-button--info:active:not(:disabled) {
+    background: rgba(14, 165, 233, 0.25);
+    color: #0ea5e9 !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #0ea5e9;
+}
+
+/* Nút Chỉnh sửa - Primary */
+.action-button--primary {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    background: var(--color-card);
+}
+
+.action-button--primary:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.18);
+    color: #3b82f6 !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #3b82f6;
+}
+
+.action-button--primary:active:not(:disabled) {
+    background: rgba(59, 130, 246, 0.25);
+    color: #3b82f6 !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #3b82f6;
+}
+
+/* Nút Bật/Tắt - Warning */
+.action-button--warning {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background: var(--color-card);
+}
+
+.action-button--warning:hover:not(:disabled) {
+    background: #f59e0b;
+    color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #f59e0b;
+}
+
+.action-button--warning:active:not(:disabled) {
+    background: #d97706;
+    color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #d97706;
+}
+
+/* Nút Xóa - Danger */
+.action-button--danger {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: var(--color-card);
+}
+
+.action-button--danger:hover:not(:disabled) {
+    background: #ef4444;
+    color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #ef4444;
+}
+
+.action-button--danger:active:not(:disabled) {
+    background: #dc2626;
+    color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
+    border-color: #dc2626;
+}
+
+/* ============================================
+   PRIMARY BUTTON - Nút "Thêm mới"
+   ============================================ */
+.btn.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border: 1px solid var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.btn.btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn.btn-primary:active:not(:disabled) {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn.btn-primary i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Đảm bảo spacing đúng cho các nút có icon */
+.btn i,
+.action-button i {
+    line-height: 1;
+    margin-right: 0;
+}
+
+/* Spacing mặc định cho các nút (icon cách text 6px) */
+.btn:not(.btn-primary),
+.action-button {
+    gap: 6px;
+}
+
+/* Nút primary "Thêm mới" - icon cách text 8px */
+.btn.btn-primary {
+    gap: 8px;
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
@@ -267,6 +465,16 @@
     .table-minimal thead th,
     .table-minimal tbody td {
         padding: var(--spacing-2) var(--spacing-3);
+    }
+
+    /* Mobile: Action buttons có thể full width hoặc chỉ hiện icon */
+    .action-button {
+        min-width: 36px;
+    }
+
+    .action-buttons,
+    .action-grid {
+        justify-content: center;
     }
 }
 

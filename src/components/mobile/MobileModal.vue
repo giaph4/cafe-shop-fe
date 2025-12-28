@@ -102,7 +102,7 @@ defineExpose({
 
 <style scoped>
 .mobile-modal {
-    z-index: 1055;
+    /* z-index được quản lý bởi base.css */
 }
 
 .mobile-modal--fullscreen :deep(.modal-dialog) {

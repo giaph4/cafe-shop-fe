@@ -138,6 +138,7 @@ import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useSidebarStore } from '@/store/sidebar'
 import { useAuthStore } from '@/store/auth'
+import { useSettingsStore } from '@/store/settings'
 import { sidebarMenu } from '@/config/sidebar/menu'
 import { sidebarIcons } from '@/config/sidebar/icons'
 import SidebarItem from './sidebar/SidebarItem.vue'
@@ -155,13 +156,15 @@ const props = defineProps({
 const route = useRoute()
 const sidebarStore = useSidebarStore()
 const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
 const rootRef = ref(null)
 
 const { isCollapsed, activeItem, hoverItem, expandedItems } = storeToRefs(sidebarStore)
 
 const userRoles = computed(() => authStore.userRoles ?? [])
+const showDevDemoFeatures = computed(() => settingsStore.showDevDemoFeatures)
 
-const sections = computed(() => filterMenu(sidebarMenu, userRoles.value))
+const sections = computed(() => filterMenu(sidebarMenu, userRoles.value, showDevDemoFeatures.value))
 const flattenedItems = computed(() => flattenMenu(sections.value))
 
 const activeItemId = computed(() => activeItem.value)
@@ -293,21 +296,25 @@ onBeforeUnmount(() => {
     cancelHoverCleanup()
 })
 
-function filterMenu (menu, roles) {
+function filterMenu (menu, roles, showDevDemo) {
     return menu
         .map((section) => ({
             heading: section.heading,
-            items: filterItems(section.items, roles)
+            items: filterItems(section.items, roles, showDevDemo)
         }))
         .filter((section) => section.items.length)
 }
 
-function filterItems (items, roles) {
+function filterItems (items, roles, showDevDemo) {
     return items
         .map((item) => {
             if (!supportsRole(item, roles)) return null
+            // Ẩn các items có status development hoặc demo nếu showDevDemo = false
+            if (!showDevDemo && (item.status === 'development' || item.status === 'demo')) {
+                return null
+            }
             if (!item.children) return { ...item }
-            const children = filterItems(item.children, roles)
+            const children = filterItems(item.children, roles, showDevDemo)
             if (!children.length && !item.to) return null
             return {
                 ...item,
@@ -531,11 +538,9 @@ function searchItems (items, parents, targetPath) {
 
 .neo-sidebar__collapse:hover,
 .neo-sidebar__collapse:focus-visible {
-    background: rgba(44, 120, 115, 0.1);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    box-shadow: 0 2px 6px rgba(44, 120, 115, 0.15);
-    transform: scale(1.05);
+    background: var(--color-card);
+    border-color: var(--color-border-strong);
+    color: var(--color-heading);
 }
 
 .neo-sidebar__expand-button {
@@ -562,11 +567,9 @@ function searchItems (items, parents, targetPath) {
 
 .neo-sidebar__expand-button:hover,
 .neo-sidebar__expand-button:focus-visible {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    box-shadow: 4px 0 16px rgba(44, 120, 115, 0.25);
-    transform: translateY(-50%) translateX(3px);
+    background: var(--color-card-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-heading);
 }
 
 .neo-sidebar__expand-button i {
@@ -621,9 +624,9 @@ function searchItems (items, parents, targetPath) {
     justify-content: center;
     padding: var(--spacing-3) var(--spacing-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-danger);
-    background: linear-gradient(135deg, rgba(var(--color-danger-rgb, 220, 53, 69), 0.1) 0%, var(--color-card-muted) 100%);
-    color: var(--color-danger);
+    border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
+    color: var(--color-text-muted);
     font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-sans);
     font-size: var(--font-size-base);
@@ -633,11 +636,9 @@ function searchItems (items, parents, targetPath) {
 
 .neo-sidebar__quick:hover,
 .neo-sidebar__quick:focus-visible {
-    background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger-dark) 100%);
+    background: var(--color-card);
     border-color: var(--color-danger);
-    color: var(--color-text-inverse);
-    box-shadow: 0 4px 12px rgba(var(--color-danger-rgb, 220, 53, 69), 0.3);
-    transform: translateY(-2px);
+    color: var(--color-danger);
 }
 
 .neo-sidebar__quick:active {
@@ -654,7 +655,7 @@ function searchItems (items, parents, targetPath) {
 }
 
 .neo-sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.45);
+    background: rgba(148, 163, 184, 0.5);
 }
 
 @media (max-width: 992px) {

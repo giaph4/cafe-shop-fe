@@ -14,85 +14,88 @@
       DESIGN TOKENS - Core System
       ============================================ */
 :root {
-  /* Typography */
+  /* Typography - Refined for readability and personality */
   --font-family-sans: "Roboto", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  --font-size-xs: 0.6875rem; /* 11px - giảm từ 12px */
-  --font-size-sm: 0.8125rem; /* 13px - giảm từ 14px */
-  --font-size-base: 0.875rem; /* 14px - giảm từ 15px */
-  --font-size-md: 0.9375rem; /* 15px - giảm từ 16px */
-  --font-size-lg: 1rem; /* 16px - giảm từ 18px */
-  --font-size-xl: 1.125rem; /* 18px - giảm từ 20px */
-  --font-size-2xl: 1.375rem; /* 22px - giảm từ 24px */
-  --font-size-3xl: 1.75rem; /* 28px - giảm từ 30px */
+  --font-size-xs: 0.6875rem; /* 11px */
+  --font-size-sm: 0.875rem; /* 14px - tăng từ 13px để dễ đọc hơn */
+  --font-size-base: 0.9375rem; /* 15px - tăng từ 14px để dễ đọc hơn */
+  --font-size-md: 0.9375rem; /* 15px */
+  --font-size-lg: 1rem; /* 16px */
+  --font-size-xl: 1.125rem; /* 18px */
+  --font-size-2xl: 1.375rem; /* 22px */
+  --font-size-3xl: 1.75rem; /* 28px */
 
   --font-weight-normal: 400;
+  --font-weight-book: 450; /* Human touch: weight mềm mại cho body text */
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
   --line-height-tight: 1.3;
   --line-height-normal: 1.5;
-  --line-height-relaxed: 1.6;
+  --line-height-relaxed: 1.65; /* Minimalist: nhiều không khí hơn */
   --line-height-base: 1.5;
 
   --letter-spacing-tight: -0.01em;
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.05em;
 
-  /* Spacing Scale - Giảm ~10-15% */
+  /* Spacing Scale - Minimalist: tăng 15-20% để có nhiều khoảng trắng */
   --spacing-0: 0;
   --spacing-1: 0.25rem; /* 4px */
-  --spacing-2: 0.4375rem; /* 7px - giảm từ 8px */
-  --spacing-3: 0.6875rem; /* 11px - giảm từ 12px */
-  --spacing-4: 0.875rem; /* 14px - giảm từ 16px */
-  --spacing-5: 1.125rem; /* 18px - giảm từ 20px */
-  --spacing-6: 1.3125rem; /* 21px - giảm từ 24px */
-  --spacing-8: 1.75rem; /* 28px - giảm từ 32px */
-  --spacing-10: 2.25rem; /* 36px - giảm từ 40px */
-  --spacing-12: 2.625rem; /* 42px - giảm từ 48px */
-  --spacing-16: 3.5rem; /* 56px - giảm từ 64px */
+  --spacing-2: 0.4375rem; /* 7px */
+  --spacing-3: 0.6875rem; /* 11px */
+  --spacing-4: 1rem; /* 16px - tăng từ 14px */
+  --spacing-5: 1.25rem; /* 20px - tăng từ 18px */
+  --spacing-6: 1.5rem; /* 24px - tăng từ 21px */
+  --spacing-7: 1.75rem; /* 28px - thêm mới cho flexibility */
+  --spacing-8: 1.75rem; /* 28px */
+  --spacing-9: 2rem; /* 32px - thêm mới cho flexibility */
+  --spacing-10: 2.25rem; /* 36px */
+  --spacing-12: 2.625rem; /* 42px */
+  --spacing-16: 3.5rem; /* 56px */
 
-  /* Border Radius - Refined & Natural: 6-12px */
+  /* Border Radius - Human touch: variation nhẹ, không hoàn toàn đều */
   --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 12px;
-  --radius-2xl: 12px;
+  --radius-sm: 7px; /* Human variation: hơi khác một chút từ 8px */
+  --radius-md: 9px; /* Human variation: hơi khác một chút từ 10px */
+  --radius-lg: 11px; /* Human variation: hơi khác một chút từ 12px */
+  --radius-xl: 11px; /* Giữ consistency */
+  --radius-2xl: 11px; /* Giữ consistency */
   --radius-full: 9999px;
-  --radius-base: 10px;
+  --radius-base: 9px; /* Cập nhật theo radius-md */
 
-  /* Shadows - Subtle & Natural */
-  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.14);
-  --shadow-2xl: 0 12px 24px rgba(0, 0, 0, 0.16);
-  --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-base: 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-modal: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.06);
+  /* Shadows - Mềm mại và tự nhiên: giảm opacity, tăng blur radius */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04); /* Mềm hơn */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06); /* Tăng blur, giảm opacity */
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08); /* Tăng blur nhẹ */
+  --shadow-lg: 0 6px 14px rgba(0, 0, 0, 0.1); /* Tăng blur nhẹ */
+  --shadow-xl: 0 8px 18px rgba(0, 0, 0, 0.12); /* Tăng blur nhẹ */
+  --shadow-2xl: 0 12px 28px rgba(0, 0, 0, 0.14); /* Tăng blur nhẹ */
+  --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.04); /* Mềm hơn */
+  --shadow-base: 0 2px 6px rgba(0, 0, 0, 0.06); /* Tăng blur, giảm opacity */
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.08); /* Tăng blur, giảm opacity */
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.06); /* Tăng blur, giảm opacity */
+  --shadow-modal: 0 8px 28px rgba(0, 0, 0, 0.12); /* Tăng blur, giảm opacity */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.05); /* Tăng blur nhẹ */
 
-  /* Transitions - Smooth and Natural */
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Transitions - Mượt và tự nhiên: timing functions tự nhiên hơn, variation trong durations */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* Nhanh hơn một chút */
+  --transition-base: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Ease-out-back nhẹ cho tự nhiên */
   --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-all: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Ease-in-out-quad cho mượt */
+  --transition-all: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Cập nhật theo transition-base */
 
   /* Gradients - Removed (no gradients allowed) */
   --gradient-top: transparent;
   --gradient-bottom: transparent;
 
-  /* Component Tokens - Giảm padding */
+  /* Component Tokens - Minimalist: padding tăng nhẹ để thoáng hơn */
   --component-radius: var(--radius-lg);
   --component-radius-sm: var(--radius-md);
   --component-radius-lg: var(--radius-xl);
-  --component-padding: var(--spacing-5);
+  --component-padding: var(--spacing-6); /* Tăng từ spacing-5 */
   --component-padding-sm: var(--spacing-3);
   --component-padding-lg: var(--spacing-6);
   --component-gap: var(--spacing-4);
@@ -151,26 +154,26 @@
   --color-soft-fuchsia: rgba(155, 89, 182, 0.12);
   --color-soft-orange: rgba(212, 165, 116, 0.12);
   --color-soft-neutral: #F5F7F8;
-  /* Background: Kem ấm nhẹ, thanh lịch */
-  --color-body-bg: #FAFBFC;
+  /* Background: Kem ấm nhẹ, thanh lịch - Làm sáng một chút để ấm và dễ nhìn hơn */
+  --color-body-bg: #FCFDFE; /* Sáng hơn nhẹ từ #FAFBFC */
   --color-surface: #ffffff;
   --color-surface-muted: #F5F7F8;
   --color-elevated: #ffffff;
   --color-card: #ffffff;
-  --color-card-muted: #FAFBFC;
+  --color-card-muted: #F8F9FA; /* Human touch: có chút variation từ #FAFBFC */
   --color-backdrop: rgba(0, 0, 0, 0.3);
   --color-modal-bg: #ffffff;
   --color-dropdown-bg: #ffffff;
-  --color-table-header: rgba(107, 142, 159, 0.06);
+  --color-table-header: rgba(107, 142, 159, 0.04); /* Nhẹ hơn từ 0.06 để không quá nổi bật */
   --color-table-hover: rgba(107, 142, 159, 0.04);
   --color-input-bg: #ffffff;
   --color-input-border: #E5E8EB;
   --color-input-focus: #6B8E9F;
-  --color-border: #E5E8EB;
+  --color-border: #E8EBED; /* Mềm hơn từ #E5E8EB */
   --color-border-strong: #D1D5DB;
   --color-border-contrast: rgba(90, 122, 138, 0.35);
-  /* Typography: Xám dịu, dễ đọc, hài hòa */
-  --color-text: #4B5563;
+  /* Typography: Xám dịu, dễ đọc, hài hòa - Điều chỉnh để contrast tốt hơn */
+  --color-text: #3F4751; /* Đậm hơn nhẹ từ #4B5563 để contrast tốt */
   --color-text-muted: #6B7280;
   --color-text-subtle: #9CA3AF;
   --color-text-inverse: #ffffff;
@@ -387,23 +390,27 @@
       THEME: DARK - Refined Minimalism
       ============================================ */
 :root.dark-theme {
-  /* Primary Color: Soft Blue (Dịu mắt trong dark mode) */
-  --color-primary: #60A5FA;
-  --color-primary-dark: #3B82F6;
-  --color-primary-hover: #3B82F6;
-  --color-primary-light: #7FC3FF;
-  --color-primary-contrast: #0F172A;
-  --color-secondary: #64748B;
-  --color-secondary-hover: #475569;
+  /* Primary Color: Blue - không quá sáng, không quá tối */
+  --color-primary: #4A90E2;
+  --color-primary-dark: #357ABD;
+  --color-primary-hover: #357ABD;
+  --color-primary-light: #6BA3E8;
+  --color-primary-contrast: #FFFFFF;
+  --color-secondary: #6B7A8F;
+  --color-secondary-hover: #5A6A7F;
   --color-secondary-light: #7C8BA1;
-  --color-secondary-contrast: #F1F5F9;
-  --color-success: #34D399;
-  --color-success-hover: #10B981;
-  --color-warning: #FBBF24;
-  --color-warning-hover: #F59E0B;
-  --color-danger: #F87171;
-  --color-danger-hover: #EF4444;
-  --color-info: #60A5FA;
+  --color-secondary-contrast: #FFFFFF;
+  /* Success: Green - vừa phải */
+  --color-success: #2ECC71;
+  --color-success-hover: #27AE60;
+  /* Warning: Amber - vừa phải */
+  --color-warning: #F39C12;
+  --color-warning-hover: #E67E22;
+  /* Danger: Red - vừa phải */
+  --color-danger: #E74C3C;
+  --color-danger-hover: #C0392B;
+  /* Info: Blue - vừa phải */
+  --color-info: #4A90E2;
   --color-pill-active-bg: rgba(96, 165, 250, 0.2);
   --color-pill-active-text: #93C5FD;
   --color-pill-active-overlay-bg: #60A5FA;
@@ -416,9 +423,10 @@
   --color-pill-inactive-overlay-border: rgba(15, 23, 42, 0.2);
   --color-badge-soft-bg: rgba(96, 165, 250, 0.2);
   --color-badge-soft-text: #93C5FD;
-  --color-button-muted-bg: #1E293B;
-  --color-button-muted-hover: #334155;
-  --color-card-accent: #0F172A;
+  --color-button-muted-bg: #2A3242;
+  --color-button-muted-hover: #343B4A;
+  --color-button-text: #EFF2F6;
+  --color-card-accent: #1E2432;
   --color-soft-primary: rgba(96, 165, 250, 0.15);
   --color-soft-indigo: rgba(96, 165, 250, 0.15);
   --color-soft-amber: rgba(251, 191, 36, 0.15);
@@ -427,38 +435,43 @@
   --color-soft-emerald: rgba(52, 211, 153, 0.15);
   --color-soft-fuchsia: rgba(155, 89, 182, 0.15);
   --color-soft-orange: rgba(251, 191, 36, 0.15);
-  --color-soft-neutral: #1E293B;
-  /* Background: Dark xanh nhẹ, không quá đen */
-  --color-body-bg: #0F172A;
-  --color-surface: #1E293B;
-  --color-surface-muted: #334155;
-  --color-elevated: #1E293B;
-  --color-card: #1E293B;
-  --color-card-muted: #334155;
-  --color-backdrop: rgba(0, 0, 0, 0.7);
-  --color-modal-bg: #1E293B;
-  --color-dropdown-bg: #1E293B;
-  --color-table-header: rgba(96, 165, 250, 0.1);
-  --color-table-hover: rgba(96, 165, 250, 0.08);
-  --color-input-bg: #334155;
-  --color-input-border: rgba(148, 163, 184, 0.3);
+  --color-soft-neutral: #2A3242;
+  /* Background: Sáng hơn để nổi bật bố cục, không quá tối */
+  --color-body-bg: #1E2432;
+  --color-surface: #2A3242;
+  --color-surface-muted: #343B4A;
+  --color-elevated: #2A3242;
+  --color-card: #2A3242;
+  --color-card-muted: #343B4A;
+  /* Card với màu accent nhẹ */
+  --color-card-primary: rgba(74, 144, 226, 0.08);
+  --color-card-success: rgba(46, 204, 113, 0.08);
+  --color-card-warning: rgba(243, 156, 18, 0.08);
+  --color-card-danger: rgba(231, 76, 60, 0.08);
+  --color-backdrop: rgba(0, 0, 0, 0.65);
+  --color-modal-bg: #2A3242;
+  --color-dropdown-bg: #2A3242;
+  --color-table-header: rgba(96, 165, 250, 0.18);
+  --color-table-hover: rgba(96, 165, 250, 0.15);
+  --color-input-bg: #343B4A;
+  --color-input-border: rgba(148, 163, 184, 0.6);
   --color-input-focus: #60A5FA;
-  --color-border: rgba(148, 163, 184, 0.3);
-  --color-border-strong: rgba(148, 163, 184, 0.5);
-  --color-border-contrast: rgba(148, 163, 184, 0.4);
-  /* Typography: Xám sáng, dễ đọc */
-  --color-text: #E2E8F0;
-  --color-text-muted: #94A3B8;
-  --color-text-subtle: #64748B;
+  --color-border: rgba(148, 163, 184, 0.6);
+  --color-border-strong: rgba(148, 163, 184, 0.8);
+  --color-border-contrast: rgba(148, 163, 184, 0.7);
+  /* Typography: Màu chữ luôn luôn là trắng */
+  --color-text: #FFFFFF;
+  --color-text-muted: #E0E0E0;
+  --color-text-subtle: #B0B0B0;
   --color-text-inverse: #0F172A;
-  --color-text-light: #CBD5E1;
-  --color-heading: #F1F5F9;
-  --color-placeholder: rgba(148, 163, 184, 0.5);
-  --color-glass: #1E293B;
+  --color-text-light: #F0F0F0;
+  --color-heading: #FFFFFF;
+  --color-placeholder: rgba(255, 255, 255, 0.6);
+  --color-glass: #2A3242;
   --color-scrollbar: rgba(96, 165, 250, 0.3);
   --color-scrollbar-hover: rgba(96, 165, 250, 0.5);
-  --color-bg: #1E293B;
-  --color-bg-muted: #0F172A;
+  --color-bg: #2A3242;
+  --color-bg-muted: #1E2432;
   --bs-body-bg: var(--color-body-bg);
   --bs-body-color: var(--color-text);
   --bs-body-font-family: var(--font-family-sans);
@@ -549,30 +562,169 @@
   input::placeholder,
   textarea::placeholder {
     color: var(--color-placeholder) !important;
+    opacity: 0.8 !important;
   }
   
-  /* Ensure all buttons use theme colors */
-  button:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info) {
+  /* Đảm bảo tất cả text luôn luôn là trắng */
+  body {
+    color: #FFFFFF !important;
+    background-color: var(--color-body-bg) !important;
+  }
+  
+  p,
+  span,
+  div {
+    color: #FFFFFF !important;
+  }
+  
+  /* Headings luôn là trắng */
+  h1, h2, h3, h4, h5, h6 {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Labels và small text - trắng hoặc gần trắng */
+  label {
+    color: #FFFFFF !important;
+    font-weight: 500 !important;
+  }
+  
+  small {
+    color: #E0E0E0 !important;
+  }
+  
+  /* Buttons với màu sắc - không quá sáng, không quá tối */
+  .btn-primary {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-primary-hover) !important;
+    border-color: var(--color-primary-hover) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-success {
+    background-color: var(--color-success) !important;
+    border-color: var(--color-success) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-success:hover:not(:disabled) {
+    background-color: var(--color-success-hover) !important;
+    border-color: var(--color-success-hover) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-warning {
+    background-color: var(--color-warning) !important;
+    border-color: var(--color-warning) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-warning:hover:not(:disabled) {
+    background-color: var(--color-warning-hover) !important;
+    border-color: var(--color-warning-hover) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-danger {
+    background-color: var(--color-danger) !important;
+    border-color: var(--color-danger) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-danger:hover:not(:disabled) {
+    background-color: var(--color-danger-hover) !important;
+    border-color: var(--color-danger-hover) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-info {
+    background-color: var(--color-info) !important;
+    border-color: var(--color-info) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .btn-info:hover:not(:disabled) {
+    background-color: var(--color-primary-hover) !important;
+    border-color: var(--color-primary-hover) !important;
+    color: #FFFFFF !important;
+  }
+  
+  /* Buttons muted - có màu nhẹ */
+  button:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):not(.btn-outline-primary):not(.btn-outline-secondary) {
     background-color: var(--color-button-muted-bg);
-    color: var(--color-text);
+    color: #FFFFFF !important;
     border-color: var(--color-border);
   }
   
-  button:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):hover {
+  button:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):not(.btn-outline-primary):not(.btn-outline-secondary):hover {
     background-color: var(--color-button-muted-hover);
+    color: #FFFFFF !important;
   }
   
-  /* Ensure all cards use dark theme */
+  /* Cards với màu sắc nhẹ - không quá sáng, không quá tối */
   .card,
   [class*="card"],
   [class*="Card"] {
     background-color: var(--color-card) !important;
-    color: var(--color-text) !important;
+    color: #FFFFFF !important;
     border-color: var(--color-border) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    border-left: 3px solid transparent;
+  }
+  
+  /* Card với accent màu nhẹ */
+  .card-primary,
+  .card[data-accent="primary"] {
+    border-left-color: var(--color-primary) !important;
+    background: linear-gradient(to right, var(--color-card-primary), var(--color-card)) !important;
+  }
+  
+  .card-success,
+  .card[data-accent="success"] {
+    border-left-color: var(--color-success) !important;
+    background: linear-gradient(to right, var(--color-card-success), var(--color-card)) !important;
+  }
+  
+  .card-warning,
+  .card[data-accent="warning"] {
+    border-left-color: var(--color-warning) !important;
+    background: linear-gradient(to right, var(--color-card-warning), var(--color-card)) !important;
+  }
+  
+  .card-danger,
+  .card[data-accent="danger"] {
+    border-left-color: var(--color-danger) !important;
+    background: linear-gradient(to right, var(--color-card-danger), var(--color-card)) !important;
+  }
+  
+  /* Card text luôn là trắng */
+  .card * {
+    color: #FFFFFF !important;
+  }
+  
+  .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+    color: #FFFFFF !important;
+  }
+  
+  /* Card header nổi bật hơn */
+  .card-header {
+    background-color: var(--color-card-muted) !important;
+    border-bottom-color: var(--color-border) !important;
+    color: #FFFFFF !important;
   }
   
   /* Ensure all modals use dark theme */
-  .modal-content,
+  .modal-content {
+    background-color: var(--color-modal-bg) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  }
+  
   .modal-header,
   .modal-body,
   .modal-footer {
@@ -581,15 +733,40 @@
     border-color: var(--color-border) !important;
   }
   
-  /* Ensure all dropdowns use dark theme */
-  .dropdown-menu,
-  .dropdown-item {
-    background-color: var(--color-dropdown-bg) !important;
-    color: var(--color-text) !important;
+  .modal-header .modal-title {
+    color: #FFFFFF !important;
   }
   
-  .dropdown-item:hover {
+  .modal-body * {
+    color: #FFFFFF !important;
+  }
+  
+  .modal-body h1, .modal-body h2, .modal-body h3, .modal-body h4, .modal-body h5, .modal-body h6 {
+    color: #FFFFFF !important;
+  }
+  
+  /* Ensure all dropdowns use dark theme */
+  .dropdown-menu {
+    background-color: var(--color-dropdown-bg) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  .dropdown-item {
+    background-color: var(--color-dropdown-bg) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .dropdown-item:hover,
+  .dropdown-item:focus {
     background-color: var(--bs-dropdown-link-hover-bg) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .dropdown-item.active,
+  .dropdown-item:active {
+    background-color: var(--color-primary) !important;
+    color: #FFFFFF !important;
   }
   
   /* Ensure all tables use dark theme */
@@ -607,21 +784,63 @@
     background-color: var(--color-table-header) !important;
   }
   
+  .table thead th {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+  }
+  
   .table tbody tr:hover {
     background-color: var(--color-table-hover) !important;
+  }
+  
+  .table tbody td {
+    color: #FFFFFF !important;
   }
   
   /* Ensure all badges use dark theme */
   .badge {
     background-color: var(--color-badge-soft-bg);
-    color: var(--color-badge-soft-text);
+    color: var(--color-badge-soft-text) !important;
+    font-weight: 500 !important;
   }
   
-  /* Ensure all alerts use dark theme */
+  /* Ensure all alerts use dark theme - text luôn là trắng */
   .alert {
     background-color: var(--color-card-muted) !important;
-    color: var(--color-text) !important;
+    color: #FFFFFF !important;
     border-color: var(--color-border) !important;
+  }
+  
+  .alert * {
+    color: #FFFFFF !important;
+  }
+  
+  .alert-success {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    border-color: var(--color-success) !important;
+    border-left-width: 3px !important;
+    color: #FFFFFF !important;
+  }
+  
+  .alert-danger {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    border-color: var(--color-danger) !important;
+    border-left-width: 3px !important;
+    color: #FFFFFF !important;
+  }
+  
+  .alert-warning {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    border-color: var(--color-warning) !important;
+    border-left-width: 3px !important;
+    color: #FFFFFF !important;
+  }
+  
+  .alert-info {
+    background-color: rgba(74, 144, 226, 0.2) !important;
+    border-color: var(--color-info) !important;
+    border-left-width: 3px !important;
+    color: #FFFFFF !important;
   }
   
   /* Ensure all tooltips use dark theme */
@@ -655,13 +874,13 @@
   .accordion-header,
   .accordion-button {
     background-color: var(--color-card) !important;
-    color: var(--color-text) !important;
+    color: #FFFFFF !important;
     border-color: var(--color-border) !important;
   }
   
   .accordion-button:not(.collapsed) {
     background-color: var(--color-soft-primary) !important;
-    color: var(--color-heading) !important;
+    color: #FFFFFF !important;
   }
   
   /* Ensure all pagination uses dark theme */
@@ -673,45 +892,99 @@
   
   .pagination .page-link:hover {
     background-color: var(--color-card-muted) !important;
+    color: var(--color-text) !important;
   }
   
   .pagination .page-item.active .page-link {
     background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
     color: var(--color-text-inverse) !important;
   }
   
+  .pagination .page-item.disabled .page-link {
+    background-color: var(--color-card-muted) !important;
+    color: var(--color-text-muted) !important;
+    opacity: 0.5 !important;
+  }
+  
   /* Ensure all tabs use dark theme */
+  .nav-tabs {
+    border-bottom-color: var(--color-border) !important;
+  }
+  
   .nav-tabs .nav-link {
     color: var(--color-text) !important;
     border-color: var(--color-border) !important;
+    background-color: transparent !important;
   }
   
   .nav-tabs .nav-link:hover {
     background-color: var(--color-card-muted) !important;
+    color: var(--color-text) !important;
+    border-color: var(--color-border) !important;
+  }
+  
+  .nav-tabs .nav-link {
+    color: #FFFFFF !important;
+  }
+  
+  .nav-tabs .nav-link:hover {
+    background-color: var(--color-card-muted) !important;
+    color: #FFFFFF !important;
   }
   
   .nav-tabs .nav-link.active {
     background-color: var(--color-card) !important;
-    color: var(--color-primary) !important;
-    border-color: var(--color-border) !important;
+    color: #FFFFFF !important;
+    border-color: var(--color-border) var(--color-border) var(--color-card) !important;
+    border-bottom-color: var(--color-primary) !important;
+    font-weight: 600 !important;
   }
   
   /* Ensure all progress bars use dark theme */
   .progress {
     background-color: var(--color-card-muted) !important;
+    border: 1px solid var(--color-border) !important;
   }
   
   .progress-bar {
     background-color: var(--color-primary) !important;
+    color: var(--color-text-inverse) !important;
+    font-weight: 600 !important;
+  }
+  
+  .progress-bar.bg-success {
+    background-color: var(--color-success) !important;
+  }
+  
+  .progress-bar.bg-danger {
+    background-color: var(--color-danger) !important;
+  }
+  
+  .progress-bar.bg-warning {
+    background-color: var(--color-warning) !important;
   }
   
   /* Ensure all toasts use dark theme */
-  .toast,
-  .toast-header,
+  .toast {
+    background-color: var(--color-card) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  .toast-header {
+    background-color: var(--color-card-muted) !important;
+    color: #FFFFFF !important;
+    border-bottom-color: var(--color-border) !important;
+  }
+  
   .toast-body {
     background-color: var(--color-card) !important;
-    color: var(--color-text) !important;
-    border-color: var(--color-border) !important;
+    color: #FFFFFF !important;
+  }
+  
+  .toast-body * {
+    color: #FFFFFF !important;
   }
   
   /* Ensure all offcanvas use dark theme */
@@ -719,17 +992,30 @@
   .offcanvas-header,
   .offcanvas-body {
     background-color: var(--color-card) !important;
-    color: var(--color-text) !important;
+    color: #FFFFFF !important;
     border-color: var(--color-border) !important;
   }
   
+  .offcanvas-title {
+    color: #FFFFFF !important;
+  }
+  
   /* Ensure all breadcrumbs use dark theme */
+  .breadcrumb {
+    background-color: transparent !important;
+  }
+  
   .breadcrumb-item {
     color: var(--color-text-muted) !important;
   }
   
   .breadcrumb-item.active {
-    color: var(--color-heading) !important;
+    color: #FFFFFF !important;
+    font-weight: 500 !important;
+  }
+  
+  .breadcrumb-item + .breadcrumb-item::before {
+    color: var(--color-text-muted) !important;
   }
   
   /* Ensure all spinners use dark theme */
@@ -787,6 +1073,53 @@
   
   .p-menu .p-menuitem-link:hover {
     background-color: var(--bs-dropdown-link-hover-bg) !important;
+  }
+  
+  /* Sidebar dark theme enhancements */
+  .neo-sidebar {
+    background-color: var(--color-elevated) !important;
+    border-right-color: var(--color-border) !important;
+  }
+  
+  .neo-sidebar__brand-icon {
+    background: var(--color-card) !important;
+    border-color: var(--color-border) !important;
+  }
+  
+  .neo-sidebar__footer {
+    border-top-color: var(--color-border) !important;
+  }
+  
+  .neo-sidebar__quick {
+    background-color: var(--color-card-muted) !important;
+    border-color: var(--color-border) !important;
+    color: var(--color-text) !important;
+  }
+  
+  .neo-sidebar__quick:hover,
+  .neo-sidebar__quick:focus-visible {
+    background-color: var(--color-card) !important;
+    border-color: var(--color-border-strong) !important;
+  }
+  
+  .neo-sidebar__item-link {
+    color: var(--color-text) !important;
+  }
+  
+  .neo-sidebar__item-link:hover {
+    background-color: var(--color-card-muted) !important;
+    color: var(--color-text) !important;
+  }
+  
+  .neo-sidebar__item-link.active,
+  .neo-sidebar__item-link[aria-current="page"] {
+    background-color: var(--color-soft-primary) !important;
+    color: var(--color-primary) !important;
+    border-left-color: var(--color-primary) !important;
+  }
+  
+  .neo-sidebar__heading {
+    color: var(--color-text-muted) !important;
   }
   
   /* Custom components dark theme */
@@ -6050,7 +6383,7 @@ body {
 body {
   font-family: var(--font-family-sans);
   line-height: 1.6;
-  font-weight: 400;
+  font-weight: var(--font-weight-book); /* Human touch: body text mềm mại hơn */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   background: var(--color-body-bg);
@@ -6126,6 +6459,7 @@ p {
   line-height: var(--line-height-relaxed);
   color: var(--color-text);
   margin: 0 0 var(--spacing-5) 0;
+  font-weight: var(--font-weight-book); /* Human touch: body text mềm mại hơn với weight 450 */
 }
 
 small {
@@ -6152,7 +6486,7 @@ button {
   border-radius: var(--radius-md);
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-base);
-  padding: var(--spacing-2) var(--spacing-5);
+  padding: var(--spacing-3) var(--spacing-6); /* Minimalist: tăng padding để thoải mái hơn */
   transition: all var(--transition-base);
   line-height: var(--line-height-normal);
   display: inline-flex;
@@ -6189,12 +6523,13 @@ button {
   background: var(--color-primary-dark);
   border-color: var(--color-primary-dark);
   box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-primary:active:not(:disabled) {
   background: var(--color-primary-dark);
-  /* No brightness filter */
+  border-color: var(--color-primary-dark);
+  color: var(--color-text-inverse) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-secondary {
@@ -6206,12 +6541,12 @@ button {
 .btn-secondary:hover:not(:disabled),
 .btn-secondary:focus:not(:disabled) {
   background: var(--color-secondary-hover);
-  /* Only color change */
+  color: #0f172a !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-secondary:active:not(:disabled) {
   background: var(--color-secondary-hover);
-  /* No brightness filter */
+  color: #0f172a !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-outline-primary {
@@ -6223,9 +6558,14 @@ button {
 .btn-outline-primary:hover:not(:disabled),
 .btn-outline-primary:focus:not(:disabled) {
   background: var(--color-soft-primary);
-  color: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
-  /* Only color change */
+  color: var(--color-primary) !important; /* Đảm bảo màu chữ rõ ràng */
+  border-color: var(--color-primary);
+}
+
+.btn-outline-primary:active:not(:disabled) {
+  background: var(--color-soft-primary);
+  color: var(--color-primary) !important; /* Đảm bảo màu chữ rõ ràng */
+  border-color: var(--color-primary);
 }
 
 .btn-outline-secondary {
@@ -6238,7 +6578,13 @@ button {
 .btn-outline-secondary:focus:not(:disabled) {
   background: var(--color-card-muted);
   border-color: var(--color-border-strong);
-  color: var(--color-heading);
+  color: var(--color-text) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-outline-secondary:active:not(:disabled) {
+  background: var(--color-card-muted);
+  border-color: var(--color-border-strong);
+  color: var(--color-text) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-success {
@@ -6252,12 +6598,13 @@ button {
 .btn-success:focus:not(:disabled) {
   background: var(--color-success-hover);
   border-color: var(--color-success-hover);
-  /* Only color change, no transform */
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-success:active:not(:disabled) {
   background: var(--color-success-hover);
-  /* No transform */
+  border-color: var(--color-success-hover);
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-danger {
@@ -6271,12 +6618,13 @@ button {
 .btn-danger:focus:not(:disabled) {
   background: var(--color-danger-hover);
   border-color: var(--color-danger-hover);
-  /* Only color change, no transform */
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-danger:active:not(:disabled) {
   background: var(--color-danger-hover);
-  /* No transform */
+  border-color: var(--color-danger-hover);
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-warning {
@@ -6290,12 +6638,13 @@ button {
 .btn-warning:focus:not(:disabled) {
   background: var(--color-warning-hover);
   border-color: var(--color-warning-hover);
-  /* Only color change, no transform */
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-warning:active:not(:disabled) {
   background: var(--color-warning-hover);
-  /* No transform */
+  border-color: var(--color-warning-hover);
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-light {
@@ -6342,7 +6691,7 @@ button {
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
-  padding: var(--spacing-5);
+  padding: var(--spacing-6); /* Minimalist: tăng padding để có nhiều khoảng trắng */
   transition: background-color var(--transition-base),
     border-color var(--transition-base),
     box-shadow var(--transition-base);
@@ -6359,7 +6708,7 @@ button {
   background-color: var(--color-card);
   border-color: var(--color-border-strong);
   box-shadow: var(--shadow-hover);
-  transform: translateY(-1px);
+  transform: translateY(-0.5px); /* Human touch: tinh tế hơn, không quá mạnh */
 }
 
 .card-header,
@@ -6464,11 +6813,11 @@ button {
 
 .form-control,
 .form-select {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm); /* Human touch: nhỏ hơn một chút từ radius-md */
   border: 1px solid var(--color-input-border);
   background: var(--color-input-bg);
   color: var(--color-text);
-  padding: var(--spacing-2) var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4); /* Minimalist: tăng padding để dễ click hơn */
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   transition: border-color var(--transition-base),
@@ -6480,7 +6829,7 @@ button {
 .form-control:focus,
 .form-select:focus {
   border-color: var(--color-input-focus);
-  box-shadow: 0 0 0 3px rgba(44, 120, 115, 0.1);
+  box-shadow: 0 0 0 2px rgba(107, 142, 159, 0.12); /* Rõ ràng nhưng không aggressive: 2px thay vì 3px, opacity thấp hơn */
   background: var(--color-card);
   outline: none;
 }
@@ -6511,31 +6860,38 @@ button {
   border-radius: 0.25rem;
   border: 1px solid var(--color-input-border);
   background-color: #fff;
+  background-image: none;
   padding: 0;
   flex-shrink: 0;
 }
 
 .form-check-input[type="radio"] {
   border-radius: 50%;
+  background-image: none;
 }
 
 .form-check-input:checked {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain;
+  background-size: 65% 65%;
 }
 
 .form-check-input[type="radio"]:checked {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='1.5' fill='%23fff'/%3e%3c/svg%3e");
+  background-size: 50% 50%;
+}
+
+.form-check-input:not(:checked) {
+  background-image: none !important;
 }
 
 .form-check-input:focus {
   border-color: var(--color-input-focus);
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 2px rgba(107, 142, 159, 0.15); /* Rõ ràng nhưng không aggressive: 2px thay vì 0.25rem */
 }
 
 .form-check-label {
@@ -6619,27 +6975,43 @@ textarea.form-control {
   border-radius: var(--component-radius-lg);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-modal);
-  background: var(--color-card);
+  background: color-mix(in srgb, var(--color-card) 92%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
+/* Fallback cho trình duyệt không hỗ trợ color-mix */
+@supports not (color-mix(in srgb, white, transparent)) {
+  .modal-content {
+    background: rgba(255, 255, 255, 0.92);
+  }
+  
+  :root.dark-theme .modal-content,
+  :root[class*="dark"] .modal-content {
+    background: rgba(30, 41, 59, 0.92);
+  }
+}
+
 .modal-header {
   padding: var(--spacing-6);
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-card);
+  background: transparent;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--spacing-4);
   flex-shrink: 0;
+  position: relative;
 }
 
 .modal-header__content {
   flex: 1;
   min-width: 0;
+  padding-right: 2.5rem; /* Tạo khoảng trống cho nút X */
 }
 
 .modal-title {
@@ -6663,6 +7035,7 @@ textarea.form-control {
   align-items: center;
   gap: var(--spacing-2);
   flex-shrink: 0;
+  padding-right: 2.5rem; /* Tạo khoảng trống cho nút X */
 }
 
 .modal-body {
@@ -6678,7 +7051,7 @@ textarea.form-control {
 .modal-footer {
   padding: var(--spacing-4) var(--spacing-6);
   border-top: 1px solid var(--color-border);
-  background: var(--color-card);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -6686,19 +7059,57 @@ textarea.form-control {
   flex-shrink: 0;
 }
 
-/* Modal close button - Sử dụng style Bootstrap mặc định với một số cải thiện nhẹ */
-.btn-close {
+/* Modal close button - Nút X màu đỏ ở trên bên phải */
+.modal-header .btn-close {
+  padding: 0.5rem;
+  opacity: 1;
+  transition: all var(--transition-base);
+  position: absolute;
+  top: var(--spacing-4);
+  right: var(--spacing-4);
+  z-index: 10;
+  background-color: transparent;
+  border: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23dc3545'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1em;
+  filter: none;
+}
+
+.modal-header .btn-close::before {
+  content: '';
+  display: none;
+}
+
+.modal-header .btn-close:hover,
+.modal-header .btn-close:focus {
+  opacity: 0.8;
+  transform: scale(1.1);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23c82333'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+}
+
+.modal-header .btn-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Giữ style cho các btn-close khác (không phải trong modal-header) */
+.btn-close:not(.modal-header .btn-close) {
   padding: 0.5rem;
   opacity: 0.7;
   transition: opacity var(--transition-base);
 }
 
-.btn-close:hover,
-.btn-close:focus {
+.btn-close:not(.modal-header .btn-close):hover,
+.btn-close:not(.modal-header .btn-close):focus {
   opacity: 1;
 }
 
-.btn-close:disabled {
+.btn-close:not(.modal-header .btn-close):disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
@@ -6744,8 +7155,8 @@ textarea.form-control {
 .modal-backdrop.show {
   opacity: 1;
   background: rgba(15, 23, 42, 0.45) !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  backdrop-filter: blur(4px) !important;
   filter: none !important;
 }
 
@@ -6765,7 +7176,7 @@ textarea.form-control {
 }
 
 .table > :not(caption) > * > * {
-  padding: var(--spacing-3) var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-5); /* Minimalist: tăng padding để dễ đọc hơn */
   vertical-align: middle;
   border-color: var(--color-border);
   font-size: var(--font-size-base);
@@ -6987,6 +7398,144 @@ textarea.form-control {
 }
 
 /* ============================================
+   BADGE STATUS & TYPE - Standard Badge Classes
+   ============================================ */
+/* Base Badge - Tiêu chuẩn đồng bộ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-sans);
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* Status Badges - Tiêu chuẩn đồng bộ */
+.badge-status--success {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.badge-status--warning {
+  background: rgba(251, 191, 36, 0.18);
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+.badge-status--danger {
+  background: rgba(244, 63, 94, 0.18);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.badge-status--info {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
+.badge-status--default {
+  background: var(--color-card-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* Type Badges - Tiêu chuẩn đồng bộ */
+.badge-type--primary {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
+.badge-type--secondary {
+  background: var(--color-card-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.badge-type--takeaway {
+  background: rgba(251, 146, 60, 0.18);
+  border-color: #fb923c;
+  color: #ea580c;
+  font-weight: var(--font-weight-semibold);
+}
+
+.badge-type--success {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+/* ============================================
+   ACTION BUTTON - Standard Action Button
+   ============================================ */
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  background: var(--color-card);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--font-family-sans);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.action-button--icon-only {
+  width: 36px;
+  padding: var(--spacing-2);
+  min-width: 36px;
+}
+
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.action-button i {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Primary Action Button */
+.action-button--primary {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-card);
+}
+
+.action-button--primary:hover:not(:disabled) {
+  background: rgba(13, 110, 253, 0.18);
+  color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* Secondary Action Button */
+.action-button--secondary {
+  border-color: var(--color-border);
+  color: var(--color-text);
+  background: var(--color-card);
+}
+
+.action-button--secondary:hover:not(:disabled) {
+  background: var(--color-card-muted);
+  border-color: var(--color-border-strong);
+  color: var(--color-heading);
+}
+
+/* ============================================
       ALERTS
       ============================================ */
 .alert {
@@ -7156,7 +7705,57 @@ textarea.form-control {
   display: flex;
   flex-direction: column;
   gap: var(--component-gap-lg);
+  padding: var(--spacing-4);
   padding-bottom: var(--component-padding-lg);
+  background: var(--color-body-bg);
+  min-height: 100vh;
+}
+
+/* ============================================
+   PAGINATION UTILITIES
+   ============================================ */
+.pagination-wrapper {
+  margin-bottom: 80px;
+}
+
+.page-size-select {
+  width: auto;
+  min-width: 80px;
+}
+
+/* ============================================
+   TABLE COLUMN WIDTH UTILITIES
+   ============================================ */
+.col-checkbox {
+  width: 50px;
+}
+
+.col-image {
+  width: 80px;
+}
+
+.col-name {
+  min-width: 200px;
+}
+
+.col-code {
+  width: 100px;
+}
+
+.col-price {
+  width: 120px;
+}
+
+.col-category {
+  width: 150px;
+}
+
+.col-status {
+  width: 120px;
+}
+
+.col-actions {
+  width: 120px;
 }
 
 /* ============================================
@@ -8054,10 +8653,16 @@ small,
   padding: 0 !important;
   flex-shrink: 0 !important;
   background-color: #fff !important;
+  background-image: none !important;
 }
 
 .form-check-input[type="radio"] {
   border-radius: 50% !important;
+  background-image: none !important;
+}
+
+.form-check-input:not(:checked) {
+  background-image: none !important;
 }
 
 .form-check-input:focus {
@@ -8069,17 +8674,17 @@ small,
 .form-check-input:checked {
   background-color: var(--bs-primary) !important;
   border-color: var(--bs-primary) !important;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
-  background-size: contain !important;
+  background-size: 65% 65% !important;
 }
 
 .form-check-input[type="radio"]:checked {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e") !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='1.5' fill='%23fff'/%3e%3c/svg%3e") !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
-  background-size: contain !important;
+  background-size: 50% 50% !important;
 }
 
 .form-check-label {
@@ -8162,12 +8767,13 @@ button {
 .btn-primary:hover:not(:disabled) {
   background-color: var(--bs-primary-dark) !important;
   border-color: var(--bs-primary-dark) !important;
-  /* NO transform, NO shadow */
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-primary:active:not(:disabled) {
   background-color: var(--bs-primary-dark) !important;
-  /* NO transform scale */
+  border-color: var(--bs-primary-dark) !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-secondary {
@@ -8180,6 +8786,13 @@ button {
 .btn-secondary:hover:not(:disabled) {
   background-color: #4a5568 !important;
   border-color: #4a5568 !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-secondary:active:not(:disabled) {
+  background-color: #4a5568 !important;
+  border-color: #4a5568 !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-outline-primary {
@@ -8191,7 +8804,13 @@ button {
 .btn-outline-primary:hover:not(:disabled) {
   background-color: rgba(44, 62, 80, 0.1) !important;
   border-color: var(--bs-primary) !important;
-  color: var(--bs-primary-dark) !important;
+  color: var(--bs-primary) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-outline-primary:active:not(:disabled) {
+  background-color: rgba(44, 62, 80, 0.15) !important;
+  border-color: var(--bs-primary) !important;
+  color: var(--bs-primary) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-outline-secondary {
@@ -8203,7 +8822,13 @@ button {
 .btn-outline-secondary:hover:not(:disabled) {
   background-color: rgba(93, 109, 126, 0.1) !important;
   border-color: var(--bs-secondary) !important;
-  color: var(--bs-secondary) !important;
+  color: var(--bs-secondary) !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-outline-secondary:active:not(:disabled) {
+  background-color: rgba(93, 109, 126, 0.15) !important;
+  border-color: var(--bs-secondary) !important;
+  color: var(--bs-secondary) !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-success {
@@ -8216,6 +8841,13 @@ button {
 .btn-success:hover:not(:disabled) {
   background-color: #229954 !important;
   border-color: #229954 !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-success:active:not(:disabled) {
+  background-color: #229954 !important;
+  border-color: #229954 !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-danger {
@@ -8228,6 +8860,13 @@ button {
 .btn-danger:hover:not(:disabled) {
   background-color: #a93226 !important;
   border-color: #a93226 !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-danger:active:not(:disabled) {
+  background-color: #a93226 !important;
+  border-color: #a93226 !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-warning {
@@ -8240,6 +8879,13 @@ button {
 .btn-warning:hover:not(:disabled) {
   background-color: #b9770e !important;
   border-color: #b9770e !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
+}
+
+.btn-warning:active:not(:disabled) {
+  background-color: #b9770e !important;
+  border-color: #b9770e !important;
+  color: #ffffff !important; /* Đảm bảo màu chữ rõ ràng */
 }
 
 .btn-sm {
@@ -8347,8 +8993,28 @@ button {
 
 .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.5) !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 1050 !important;
+}
+
+/* Chuẩn hóa z-index cho modals */
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal.show {
+  z-index: 1055 !important;
+}
+
+.modal-dialog {
+  z-index: 1056 !important;
+}
+
+/* Đảm bảo modal content luôn hiển thị trên backdrop */
+.modal-content {
+  position: relative;
+  z-index: 1 !important;
 }
 
 .modal.fade .modal-dialog {
@@ -8426,7 +9092,7 @@ button {
 }
 
 .bg-primary {
-  background-color: var(--bs-primary) !important;
+  background-color: var(--bs-light) !important;
   /* NO gradient */
 }
 
@@ -8991,8 +9657,8 @@ button {
 
 .neo-sidebar__quick:hover,
 .neo-sidebar__quick:focus-visible {
-  background-color: rgba(44, 62, 80, 0.15) !important;
-  border-color: rgba(44, 62, 80, 0.3) !important;
+  background-color: rgba(44, 62, 80, 0.08) !important;
+  border-color: rgba(44, 62, 80, 0.2) !important;
   /* NO transform */
 }
 
@@ -9006,15 +9672,15 @@ button {
 
 .neo-sidebar__item-link:hover {
   background-color: #F8F9FA !important;
-  color: var(--bs-primary) !important;
+  color: #495057 !important;
   /* NO transform */
 }
 
 .neo-sidebar__item-link.active,
 .neo-sidebar__item-link[aria-current="page"] {
-  background-color: rgba(44, 62, 80, 0.1) !important;
-  color: var(--bs-primary) !important;
-  border-left: 3px solid var(--bs-primary) !important;
+  background-color: rgba(44, 62, 80, 0.08) !important;
+  color: #495057 !important;
+  border-left: 3px solid rgba(44, 62, 80, 0.3) !important;
   font-weight: 600 !important;
 }
 

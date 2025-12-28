@@ -28,7 +28,7 @@ export const getNotifications = () => {
     }
 }
 
-// Check for new notifications từ các APIs
+// Kiểm tra thông báo mới từ các APIs
 export const checkForNewNotifications = async () => {
     try {
         const store = useNotificationStore()
@@ -36,22 +36,22 @@ export const checkForNewNotifications = async () => {
 
         const checks = []
 
-        // Check orders nếu được bật
+        // Kiểm tra orders nếu được bật
         if (settings.orderNotifications) {
             checks.push(checkOrderNotifications())
         }
 
-        // Check inventory nếu được bật
+        // Kiểm tra inventory nếu được bật
         if (settings.inventoryAlerts) {
             checks.push(checkInventoryAlerts())
         }
 
-        // Check staff notifications nếu được bật
+        // Kiểm tra thông báo staff nếu được bật
         if (settings.staffNotifications) {
             checks.push(checkStaffNotifications())
         }
 
-        // Check real-time dashboard alerts
+        // Kiểm tra cảnh báo dashboard real-time
         checks.push(checkRealTimeAlerts())
 
         await Promise.all(checks)
@@ -60,7 +60,7 @@ export const checkForNewNotifications = async () => {
     }
 }
 
-// Check order notifications
+// Kiểm tra thông báo đơn hàng
 const checkOrderNotifications = async () => {
     try {
         const store = useNotificationStore()
@@ -121,7 +121,7 @@ const checkOrderNotifications = async () => {
     }
 }
 
-// Check inventory alerts
+// Kiểm tra cảnh báo tồn kho
 const checkInventoryAlerts = async () => {
     try {
         const store = useNotificationStore()
@@ -192,7 +192,7 @@ const checkInventoryAlerts = async () => {
     }
 }
 
-// Check staff notifications
+// Kiểm tra thông báo nhân viên
 const checkStaffNotifications = async () => {
     try {
         const store = useNotificationStore()
@@ -203,7 +203,7 @@ const checkStaffNotifications = async () => {
             return
         }
 
-        // Check upcoming shifts
+        // Kiểm tra ca làm việc sắp tới
         const assignments = await shiftService.getAssignmentsForCurrentUser()
         const assignmentsList = Array.isArray(assignments) ? assignments : []
 
@@ -245,7 +245,7 @@ const checkStaffNotifications = async () => {
     }
 }
 
-// Check real-time dashboard alerts
+// Kiểm tra cảnh báo dashboard real-time
 const checkRealTimeAlerts = async () => {
     try {
         const store = useNotificationStore()
@@ -290,7 +290,7 @@ const checkRealTimeAlerts = async () => {
     }
 }
 
-// Helper functions
+// Các hàm trợ giúp
 const isNotificationExists = (notificationId) => {
     const store = useNotificationStore()
     return store.notifications.some(n =>
@@ -333,25 +333,25 @@ const getActionRoute = (action) => {
     return routeMap[action] || '/'
 }
 
-// Mark as read (client-side only)
+// Đánh dấu đã đọc (chỉ client-side)
 export const markAsRead = (_notificationId) =>
     // Client-side only, không cần API call
     ({ success: true })
 
 
-// Mark all as read
+// Đánh dấu tất cả đã đọc
 export const markAllAsRead = () =>
     // Client-side only
     ({ success: true })
 
 
-// Delete notification
+// Xóa thông báo
 export const deleteNotification = (_notificationId) =>
     // Client-side only
     ({ success: true })
 
 
-// Clear all notifications
+// Xóa tất cả thông báo
 export const clearAll = () =>
     // Client-side only
     ({ success: true })

@@ -276,7 +276,7 @@ export const universalSearch = async (keyword, options = {}) => {
         // Search files
         if (entities.includes('files')) {
             promises.push(
-                fileService.getFiles({
+                fileService.listFiles({
                     keyword: trimmedKeyword,
                     page: 0,
                     size: limit

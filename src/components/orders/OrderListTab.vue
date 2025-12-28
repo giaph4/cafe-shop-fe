@@ -2,29 +2,11 @@
   <div class="order-list-tab">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
-        <h5
-          class="mb-0"
-          style="font-weight: var(--font-weight-semibold); color: var(--color-heading); font-family: var(--font-family-sans);"
-        >
+        <h5 class="mb-0">
           Danh sách đơn hàng
         </h5>
-        <small
-          class="text-muted"
-          style="font-family: var(--font-family-sans);"
-        >Tổng: {{
+        <small class="text-muted">Tổng: {{
           totalElements.toLocaleString('vi-VN') }} đơn hàng</small>
-      </div>
-      <div class="d-flex gap-2">
-        <button
-          v-if="canExport"
-          class="btn btn-sm btn-outline-primary"
-          type="button"
-          :disabled="loading || orders.length === 0"
-          @click="handleExport"
-        >
-          <i class="bi bi-download me-1" />
-          Xuất Excel
-        </button>
       </div>
     </div>
 
@@ -51,10 +33,7 @@
         <table class="table table-hover align-middle">
           <thead class="table-light">
             <tr>
-              <th
-                scope="col"
-                style="width: 50px;"
-              >
+              <th scope="col" class="col-checkbox">
                 <input
                   type="checkbox"
                   :checked="bulkActions.isSelectAll && orders.length > 0"
@@ -120,14 +99,17 @@
               </td>
               <td>
                 <span
-                  class="badge"
-                  :class="order.type === 'TAKE_AWAY' ? 'bg-info' : 'bg-primary'"
+                  class="badge badge-type"
+                  :class="order.type === 'TAKE_AWAY' ? 'badge-type--takeaway' : 'badge-type--primary'"
                 >
-                  {{ order.type === 'TAKE_AWAY' ? 'Mang về' : 'Tại quán' }}
+                  {{ order.type === 'TAKE_AWAY' ? 'Mang đi' : 'Tại quán' }}
                 </span>
               </td>
-              <td>{{ order.tableName || '—' }}</td>
-              <td>{{ order.staffUsername || '—' }}</td>
+              <td>
+                <span v-if="order.type === 'DINE_IN'">{{ order.tableName || '—' }}</span>
+                <span v-else class="text-muted small">—</span>
+              </td>
+              <td>{{ getStaffDisplayName(order) }}</td>
               <td class="d-none d-md-table-cell">
                 {{ order.customerName || 'Khách lẻ' }}
               </td>
@@ -136,8 +118,8 @@
               </td>
               <td>
                 <span
+                  class="badge badge-status"
                   :class="getStatusBadgeClass(order.status)"
-                  :style="getStatusBadgeStyle(order.status)"
                 >
                   {{ getStatusLabel(order.status) }}
                 </span>
@@ -148,37 +130,59 @@
                 </div>
               </td>
               <td class="text-end">
-                <div class="action-grid">
-                  <button
-                    class="action-button"
-                    type="button"
-                    title="Xem chi tiết"
-                    @click="$emit('view-detail', order.id)"
-                  >
-                    <i class="bi bi-eye" />
-                    <span>Chi tiết</span>
-                  </button>
-                  <button
-                    v-if="canCancel"
-                    class="action-button action-button--primary"
-                    type="button"
-                    title="Cập nhật đơn hàng"
-                    @click="$emit('update', order)"
-                  >
-                    <i class="bi bi-pencil" />
-                    <span>Cập nhật</span>
-                  </button>
-                  <button
-                    v-if="canCancel && order.status === 'PENDING'"
-                    class="action-button action-button--danger"
-                    type="button"
-                    title="Hủy đơn"
-                    :disabled="cancelling"
-                    @click="$emit('cancel', order)"
-                  >
-                    <i class="bi bi-x-circle" />
-                    <span>Hủy</span>
-                  </button>
+                <div class="action-buttons">
+                  <!-- Menu dropdown cho các hành động -->
+                  <div class="dropdown action-dropdown">
+                    <button
+                      :id="`action-menu-${order.id}`"
+                      class="action-button action-button--secondary action-button--icon-only"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      title="Thao tác"
+                      @click.stop
+                    >
+                      <i class="bi bi-three-dots-vertical" />
+                    </button>
+                    <ul
+                      class="dropdown-menu dropdown-menu-end"
+                      :aria-labelledby="`action-menu-${order.id}`"
+                    >
+                      <li>
+                        <button
+                          class="dropdown-item"
+                          type="button"
+                          @click="$emit('view-detail', order.id)"
+                        >
+                          <i class="bi bi-eye me-2" />
+                          Chi tiết
+                        </button>
+                      </li>
+                      <li>
+                        <hr class="dropdown-divider">
+                        <button
+                          class="dropdown-item"
+                          type="button"
+                          @click="$emit('print', order)"
+                        >
+                          <i class="bi bi-printer me-2" />
+                          In đơn
+                        </button>
+                      </li>
+                      <li v-if="canCancel && order.status === 'PENDING'">
+                        <hr class="dropdown-divider">
+                        <button
+                          class="dropdown-item dropdown-item--danger"
+                          type="button"
+                          :disabled="cancelling"
+                          @click="$emit('cancel', order)"
+                        >
+                          <i class="bi bi-x-circle me-2" />
+                          Hủy đơn
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -186,16 +190,52 @@
         </table>
       </div>
       <div
-        v-if="totalPages > 1"
-        class="d-flex justify-content-end mt-3"
-        style="margin-bottom: 80px;"
+        v-if="totalPages > 1 || pageSize"
+        class="d-flex justify-content-between align-items-center mt-3 pagination-wrapper"
       >
-        <Pagination
-          mode="zero-based"
-          :current-page="zeroBasedPage"
-          :total-pages="totalPages"
-          @page-change="$emit('page-change', $event)"
-        />
+        <!-- Page Size Selector -->
+        <div
+          v-if="pageSize"
+          class="d-flex align-items-center gap-2"
+        >
+          <label class="mb-0 text-muted small">
+            Hiển thị:
+          </label>
+          <select
+            :value="pageSize"
+            class="form-select form-select-sm page-size-select"
+            @change="$emit('page-size-change', parseInt($event.target.value, 10))"
+          >
+            <option :value="10">
+              10
+            </option>
+            <option :value="20">
+              20
+            </option>
+            <option :value="30">
+              30
+            </option>
+            <option :value="50">
+              50
+            </option>
+          </select>
+          <span class="text-muted small">
+            / trang
+          </span>
+        </div>
+        <div v-else />
+        <!-- Pagination -->
+        <div
+          v-if="totalPages > 1"
+          class="d-flex justify-content-center flex-grow-1"
+        >
+          <Pagination
+            mode="zero-based"
+            :current-page="zeroBasedPage"
+            :total-pages="totalPages"
+            @page-change="$emit('page-change', $event)"
+          />
+        </div>
       </div>
     </template>
 
@@ -263,6 +303,10 @@ const props = defineProps({
         type: Number,
         default: 0
     },
+    pageSize: {
+        type: Number,
+        default: null
+    },
     canExport: {
         type: Boolean,
         default: false
@@ -277,7 +321,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['view-detail', 'update', 'cancel', 'page-change', 'export', 'refresh'])
+const emit = defineEmits(['view-detail', 'cancel', 'page-change', 'page-size-change', 'export', 'refresh', 'print', 'pay'])
 
 // Bulk Actions
 const bulkActions = useBulkActions({
@@ -325,7 +369,25 @@ const bulkActionItems = computed(() => {
 const exportColumns = [
     { key: 'id', label: 'ID' },
     { key: 'tableName', label: 'Bàn' },
-    { key: 'staffUsername', label: 'Nhân viên' },
+    { 
+        key: 'staff', 
+        label: 'Nhân viên',
+        value: (item) => {
+            const fullName = item.staff?.fullName || item.staffFullName || item.staffName
+            if (fullName) {
+                return fullName.split(' ').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                ).join(' ')
+            }
+            const username = item.staffUsername || item.staff?.username
+            if (username) {
+                return username.split(/[_\s-]/).map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                ).join(' ')
+            }
+            return '—'
+        }
+    },
     { key: 'customerName', label: 'Khách hàng' },
     {
         key: 'totalAmount',
@@ -379,6 +441,32 @@ const handleBulkAction = async (action) => {
     }
 }
 
+// Format staff display name: Ưu tiên fullName, fallback về username với format chuẩn
+const getStaffDisplayName = (order) => {
+    if (!order) return '—'
+    
+    // Ưu tiên staff.fullName hoặc staffFullName
+    const fullName = order.staff?.fullName || order.staffFullName || order.staffName
+    if (fullName) {
+        // Format: Viết hoa chữ cái đầu mỗi từ
+        return fullName.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ')
+    }
+    
+    // Fallback về username nhưng format lại
+    const username = order.staffUsername || order.staff?.username
+    if (username) {
+        // Format username: "giapho" -> "Giapho" hoặc "gia_pho" -> "Gia Pho"
+        return username
+            .split(/[_\s-]/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+    }
+    
+    return '—'
+}
+
 // Handle select all
 const handleSelectAll = () => {
     if (bulkActions.isSelectAll.value) {
@@ -395,45 +483,15 @@ const handleExport = (result) => {
 }
 
 const STATUS_METADATA = {
-    PENDING: { label: 'Đang chờ', badgeClass: 'badge' },
-    PAID: { label: 'Đã thanh toán', badgeClass: 'badge' },
-    CANCELLED: { label: 'Đã hủy', badgeClass: 'badge' },
-    TRANSFERRED: { label: 'Đã chuyển ca', badgeClass: 'badge' }
+    PENDING: { label: 'Đang chờ', badgeClass: 'badge-status--warning' },
+    PAID: { label: 'Đã thanh toán', badgeClass: 'badge-status--success' },
+    CANCELLED: { label: 'Đã hủy', badgeClass: 'badge-status--danger' },
+    TRANSFERRED: { label: 'Đã chuyển ca', badgeClass: 'badge-status--info' }
 }
 
 const getStatusLabel = (status) => STATUS_METADATA[status]?.label || status
 
-const getStatusBadgeClass = (status) => STATUS_METADATA[status]?.badgeClass || 'badge'
-
-const getStatusBadgeStyle = (status) => {
-    const styles = {
-        PENDING: {
-            background: 'var(--color-soft-amber)',
-            border: '1px solid var(--color-warning)',
-            color: 'var(--color-warning)'
-        },
-        PAID: {
-            background: 'var(--color-soft-emerald)',
-            border: '1px solid var(--color-success)',
-            color: 'var(--color-success)'
-        },
-        CANCELLED: {
-            background: 'var(--color-soft-rose)',
-            border: '1px solid var(--color-danger)',
-            color: 'var(--color-danger)'
-        },
-        TRANSFERRED: {
-            background: 'var(--color-soft-sky)',
-            border: '1px solid var(--color-info)',
-            color: 'var(--color-info)'
-        }
-    }
-    return styles[status] || {
-        background: 'var(--color-card-muted)',
-        border: '1px solid var(--color-border)',
-        color: 'var(--color-text-muted)'
-    }
-}
+const getStatusBadgeClass = (status) => STATUS_METADATA[status]?.badgeClass || 'badge-status--default'
 
 </script>
 
@@ -442,73 +500,48 @@ const getStatusBadgeStyle = (status) => {
   padding: 0;
 }
 
-/* Action buttons - Chuẩn hóa theo base.css */
-.action-grid {
+/* Action buttons - Chuẩn hóa theo base.css và Products.vue */
+.action-buttons {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-2);
-  justify-content: flex-end;
-}
-
-.action-button {
-  display: inline-flex;
   align-items: center;
+  gap: var(--spacing-2);
   justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-card);
-  color: var(--color-primary);
+}
+
+.action-dropdown {
+  position: relative;
+}
+
+/* Action button styles đã được di chuyển vào base.css */
+
+/* Dropdown menu items */
+.order-list-tab :global(.dropdown-item) {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-2) var(--spacing-3);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  transition: all var(--transition-base);
-  cursor: pointer;
-  min-width: auto;
-  font-family: var(--font-family-sans);
+  color: var(--color-text);
+  transition: background-color var(--transition-base);
 }
 
-.action-button:hover:not(:disabled) {
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-  border-color: var(--color-primary);
+.order-list-tab :global(.dropdown-item:hover) {
+  background: var(--color-card-muted);
+  color: var(--color-heading);
 }
 
-.action-button:active:not(:disabled) {
-  background: var(--color-primary-dark);
+.order-list-tab :global(.dropdown-item--danger) {
+  color: #ef4444;
 }
 
-.action-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
+.order-list-tab :global(.dropdown-item--danger:hover) {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
 }
 
-.action-button i {
-  font-size: 18px;
-  line-height: 1;
-}
-
-.action-button--primary {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-}
-
-.action-button--primary:hover:not(:disabled) {
-  background: var(--color-primary-dark);
-}
-
-.action-button--danger {
-  border-color: var(--color-danger);
-  background: var(--color-card);
-  color: var(--color-danger);
-}
-
-.action-button--danger:hover:not(:disabled) {
-  background: var(--color-danger);
-  color: var(--color-text-inverse);
-  border-color: var(--color-danger);
+.order-list-tab :global(.dropdown-item i) {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
 }
 
 /* Table - Chuẩn hóa theo base.css */
@@ -546,19 +579,26 @@ const getStatusBadgeStyle = (status) => {
   background: var(--color-card-muted);
 }
 
-/* Badge - Chuẩn hóa */
-.order-list-tab :global(.badge) {
-  padding: var(--spacing-1) var(--spacing-2);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-family-sans);
+/* Badge styles đã được di chuyển vào base.css */
+
+.col-checkbox {
+  width: 50px;
 }
 
+.pagination-wrapper {
+  margin-bottom: 80px;
+}
+
+.page-size-select {
+  width: auto;
+  min-width: 80px;
+}
+
+/* Responsive - Mobile */
 @media (max-width: 768px) {
-  .action-grid {
+  .action-buttons {
     flex-direction: column;
-    gap: var(--spacing-1);
+    width: 100%;
   }
 
   .action-button {
@@ -567,7 +607,19 @@ const getStatusBadgeStyle = (status) => {
   }
 
   .action-button span {
+    display: inline;
+  }
+}
+
+@media (max-width: 576px) {
+  .action-button span {
     display: none;
+  }
+
+  .action-button {
+    min-width: 36px;
+    padding: 8px;
+    justify-content: center;
   }
 }
 </style>

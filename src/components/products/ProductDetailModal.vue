@@ -4,197 +4,230 @@
       ref="modal"
       class="modal fade product-detail-modal"
       tabindex="-1"
+      aria-labelledby="productDetailModalLabel"
       aria-hidden="true"
     >
       <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-          <div class="modal-header align-items-start">
-            <div>
-              <h5 class="modal-title">
-                Chi tiết sản phẩm
+          <div class="modal-header">
+            <div class="modal-header__content">
+              <h5
+                id="productDetailModalLabel"
+                class="modal-title"
+              >
+                Chi tiết sản phẩm #{{ detail.value?.id || '—' }}
               </h5>
-              <p class="text-muted mb-0">
-                Cập nhật lần cuối: {{ formatDate(detail.value?.createdAt) || '—' }}
+              <p class="modal-subtitle">
+                Xem thông tin chi tiết, giá cả và công thức của sản phẩm.
               </p>
             </div>
-            <button
-              type="button"
-              class="btn-close"
-              aria-label="Đóng"
-              @click="hide"
-            />
+            <div class="modal-header__actions">
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Đóng"
+                @click="hide"
+              />
+            </div>
           </div>
 
           <div class="modal-body">
-            <div
-              v-if="loading"
-              class="detail-state"
-            >
-              <div
-                class="spinner-border text-primary"
-                role="status"
-              />
-            </div>
-            <div
+            <LoadingState v-if="loading" />
+            <ErrorState
               v-else-if="error"
-              class="error-message d-flex align-items-center gap-2"
-            >
-              <i class="bi bi-exclamation-triangle" />
-              <span>{{ error }}</span>
-            </div>
-            <div
+              :message="error"
+              :show-retry="false"
+            />
+            <EmptyState
               v-else-if="!detail.value"
-              class="detail-state text-muted"
+              title="Không tìm thấy"
+              message="Không tìm thấy thông tin sản phẩm."
             >
-              Không tìm thấy thông tin sản phẩm.
-            </div>
-            <div
-              v-else
-              class="detail-grid"
-            >
-              <aside class="detail-media">
-                <div class="image-frame">
-                  <img
-                    :src="detail.value.imageUrl || '/placeholder.png'"
-                    alt="Ảnh sản phẩm"
-                  >
-                </div>
-                <div
-                  class="status-block"
-                  :class="detail.value.available ? 'status-block--active' : 'status-block--inactive'"
-                >
-                  <i
-                    class="bi"
-                    :class="detail.value.available ? 'bi-check-circle-fill' : 'bi-pause-circle'"
-                  />
-                  <span>{{ detail.value.available ? 'Đang kinh doanh' : 'Ngừng bán' }}</span>
-                </div>
-                <dl class="meta-list">
-                  <div>
-                    <dt>Mã sản phẩm</dt>
-                    <dd>{{ detail.value.code }}</dd>
+              <template #icon>
+                <i class="bi bi-box-seam" />
+              </template>
+            </EmptyState>
+            <template v-else>
+              <div class="product-detail__layout">
+                <!-- Left Column: Image & Meta Info -->
+                <aside class="product-detail__left-column">
+                  <div class="product-detail__image-card">
+                    <div class="image-frame">
+                      <img
+                        :src="detail.value.imageUrl || '/placeholder.png'"
+                        alt="Ảnh sản phẩm"
+                      >
+                    </div>
+                    <div class="product-detail__status-badge">
+                      <span
+                        class="badge badge-status"
+                        :class="detail.value.available ? 'badge-status--success' : 'badge-status--default'"
+                      >
+                        <i
+                          class="bi me-1"
+                          :class="detail.value.available ? 'bi-check-circle-fill' : 'bi-pause-circle-fill'"
+                        />
+                        {{ detail.value.available ? 'Đang kinh doanh' : 'Ngừng bán' }}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <dt>Danh mục</dt>
-                    <dd>{{ detail.value.categoryName || '—' }}</dd>
-                  </div>
-                  <div>
-                    <dt>Ngày tạo</dt>
-                    <dd>{{ formatDate(detail.value.createdAt) || '—' }}</dd>
-                  </div>
-                </dl>
-              </aside>
 
-              <section class="detail-content">
-                <header class="detail-header">
-                  <h3>{{ detail.value.name }}</h3>
-                  <p class="text-muted mb-0">
-                    {{
-                      detail.value.description || 'Chưa có mô tả chi tiết.'
-                    }}
-                  </p>
-                </header>
+                  <div class="info-section">
+                    <h6 class="section-title">
+                      <i class="bi bi-info-circle me-2" />
+                      Thông tin cơ bản
+                    </h6>
+                    <div class="info-grid">
+                      <div class="info-item">
+                        <span class="info-label">Mã sản phẩm:</span>
+                        <span class="info-value">{{ detail.value.code || '—' }}</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">Danh mục:</span>
+                        <span class="info-value">{{ detail.value.categoryName || '—' }}</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">Ngày tạo:</span>
+                        <span class="info-value">{{ formatDate(detail.value.createdAt) || '—' }}</span>
+                      </div>
+                      <div
+                        v-if="detail.value.updatedAt"
+                        class="info-item"
+                      >
+                        <span class="info-label">Cập nhật:</span>
+                        <span class="info-value">{{ formatDate(detail.value.updatedAt) || '—' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
 
-                <div class="info-cards">
-                  <div class="info-card">
-                    <span class="label">Giá bán</span>
-                    <strong class="value text-primary">{{
-                      formatCurrency(detail.value.price)
-                    }}</strong>
-                  </div>
-                  <div class="info-card">
-                    <span class="label">Giá vốn</span>
-                    <strong class="value">{{
-                      detail.value.cost !== null ? formatCurrency(detail.value.cost) : '—'
-                    }}</strong>
-                  </div>
-                  <div class="info-card">
-                    <span class="label">Biên lợi nhuận</span>
-                    <strong class="value text-success">{{ profitMargin }}</strong>
-                  </div>
-                </div>
-
-                <section class="recipe-section">
-                  <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="mb-0">
-                      Công thức & Định lượng
-                    </h5>
-                    <button
-                      v-if="recipeLoading"
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary"
-                      disabled
+                <!-- Right Column: Main Content -->
+                <section class="product-detail__right-column">
+                  <div class="info-section">
+                    <h6 class="section-title">
+                      <i class="bi bi-box-seam me-2" />
+                      {{ detail.value.name }}
+                    </h6>
+                    <p
+                      v-if="detail.value.description"
+                      class="section-description"
                     >
-                      <span class="spinner-border spinner-border-sm me-2" />
-                      Đang tải công thức
-                    </button>
-                    <button
+                      {{ detail.value.description }}
+                    </p>
+                    <p
                       v-else
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary"
-                      @click="refreshRecipe"
+                      class="section-description text-muted"
                     >
-                      <i class="bi bi-arrow-repeat me-2" />Tải lại
-                    </button>
-                  </div>
-
-                  <div
-                    v-if="recipeError"
-                    class="error-message d-flex align-items-center gap-2"
-                  >
-                    <i class="bi bi-exclamation-circle" />
-                    <span>{{ recipeError }}</span>
-                  </div>
-
-                  <div
-                    v-if="recipeLoading"
-                    class="detail-state py-4"
-                  >
-                    <div
-                      class="spinner-border text-primary"
-                      role="status"
-                    />
-                  </div>
-                  <div
-                    v-else-if="recipe.length === 0"
-                    class="empty-recipe"
-                  >
-                    <i class="bi bi-journal-x" />
-                    <p class="mb-0">
-                      Chưa thiết lập công thức cho sản phẩm này.
+                      Chưa có mô tả chi tiết.
                     </p>
                   </div>
-                  <div
-                    v-else
-                    class="table-responsive"
-                  >
-                    <table class="table table-sm align-middle">
-                      <thead>
-                        <tr>
-                          <th>Nguyên liệu</th>
-                          <th>Đơn vị</th>
-                          <th class="text-end">
-                            Định lượng
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="ingredient in recipe"
-                          :key="ingredient.id || ingredient.ingredientId"
-                        >
-                          <td>{{ ingredient.ingredientName }}</td>
-                          <td>{{ ingredient.unit }}</td>
-                          <td class="text-end">
-                            {{ formatNumber(ingredient.quantityNeeded) }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+
+                  <div class="info-section">
+                    <h6 class="section-title">
+                      <i class="bi bi-currency-dollar me-2" />
+                      Giá cả & Lợi nhuận
+                    </h6>
+                    <div class="info-cards">
+                      <div class="info-card">
+                        <span class="info-card__label">Giá bán</span>
+                        <strong class="info-card__value info-card__value--primary">{{
+                          formatCurrency(detail.value.price)
+                        }}</strong>
+                      </div>
+                      <div class="info-card">
+                        <span class="info-card__label">Giá vốn</span>
+                        <strong class="info-card__value">{{
+                          detail.value.cost !== null ? formatCurrency(detail.value.cost) : '—'
+                        }}</strong>
+                      </div>
+                      <div class="info-card">
+                        <span class="info-card__label">Biên lợi nhuận</span>
+                        <strong class="info-card__value info-card__value--success">{{ profitMargin }}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="info-section">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                      <h6 class="section-title mb-0">
+                        <i class="bi bi-list-check me-2" />
+                        Công thức & Định lượng
+                      </h6>
+                      <button
+                        v-if="recipeLoading"
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        disabled
+                      >
+                        <span class="spinner-border spinner-border-sm me-2" />
+                        Đang tải
+                      </button>
+                      <button
+                        v-else
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        @click="refreshRecipe"
+                      >
+                        <i class="bi bi-arrow-repeat me-2" />
+                        Tải lại
+                      </button>
+                    </div>
+
+                    <ErrorState
+                      v-if="recipeError"
+                      :message="recipeError"
+                      :show-retry="false"
+                      container-class="error-state--sm"
+                    />
+
+                    <LoadingState
+                      v-else-if="recipeLoading"
+                      text="Đang tải công thức..."
+                      container-class="loading-state--sm"
+                    />
+
+                    <EmptyState
+                      v-else-if="recipe.length === 0"
+                      title="Chưa có công thức"
+                      message="Chưa thiết lập công thức cho sản phẩm này."
+                    >
+                      <template #icon>
+                        <i class="bi bi-journal-x" />
+                      </template>
+                    </EmptyState>
+
+                    <div
+                      v-else
+                      class="table-wrapper"
+                    >
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th>Nguyên liệu</th>
+                            <th>Đơn vị</th>
+                            <th class="text-end">
+                              Định lượng
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr
+                            v-for="ingredient in recipe"
+                            :key="ingredient.id || ingredient.ingredientId"
+                          >
+                            <td>{{ ingredient.ingredientName }}</td>
+                            <td>{{ ingredient.unit }}</td>
+                            <td class="text-end">
+                              {{ formatNumber(ingredient.quantityNeeded) }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </section>
-              </section>
-            </div>
+              </div>
+            </template>
           </div>
 
           <div class="modal-footer">
@@ -218,6 +251,9 @@ import { Modal } from 'bootstrap'
 import { toast } from 'vue3-toastify'
 import { getProductById, getProductRecipe } from '@/api/productService'
 import { formatCurrency, formatDateTime, formatNumber } from '@/utils/formatters'
+import LoadingState from '@/components/common/LoadingState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
     product: {
@@ -258,6 +294,7 @@ const fetchDetail = async (id) => {
     } catch (err) {
         error.value = err.response?.data?.message || 'Không thể tải chi tiết sản phẩm.'
         detail.value = null
+        console.error('[ProductDetailModal] Error:', err)
     } finally {
         loading.value = false
     }
@@ -276,6 +313,7 @@ const fetchRecipe = async (id) => {
     } catch (err) {
         recipeError.value = err.response?.data?.message || 'Không thể tải công thức sản phẩm.'
         recipe.value = []
+        console.error('[ProductDetailModal] Recipe Error:', err)
     } finally {
         recipeLoading.value = false
     }
@@ -313,7 +351,7 @@ const show = async () => {
 const hide = () => modalInstance?.hide()
 
 onMounted(() => {
-    modalInstance = new Modal(modal.value, { backdrop: true })
+    modalInstance = new Modal(modal.value, { backdrop: 'static' })
 })
 
 onBeforeUnmount(() => {
@@ -329,27 +367,52 @@ defineExpose({ show, hide })
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-card);
+    box-shadow: var(--shadow-modal);
 }
 
 .product-detail-modal :global(.modal-header) {
     padding: var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-card);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-4);
 }
 
-.product-detail-modal :global(.modal-title) {
-    font-size: var(--font-size-lg);
+.modal-header__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.product-detail-modal :global(.modal-header .modal-title) {
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    margin-bottom: var(--spacing-1);
+    line-height: var(--line-height-tight);
     font-family: var(--font-family-sans);
 }
 
-.product-detail-modal :global(.modal-header .text-muted) {
+.modal-subtitle {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    margin-bottom: 0;
+    line-height: var(--line-height-base);
     font-family: var(--font-family-sans);
+}
+
+.modal-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
 }
 
 .product-detail-modal :global(.modal-body) {
-    padding: var(--spacing-4);
+    padding: var(--spacing-5);
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
     background: var(--color-card);
 }
 
@@ -428,138 +491,222 @@ defineExpose({ show, hide })
     font-family: var(--font-family-sans);
 }
 
-/* Error Message - không dùng alert */
-.error-message {
-    padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-danger);
-    background: var(--color-soft-rose);
-    color: var(--color-danger);
-    font-size: var(--font-size-base);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    font-family: var(--font-family-sans);
-}
-
-.error-message i {
-    font-size: 18px;
-    line-height: 1;
-}
-
-.detail-state {
-    min-height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-.detail-state .spinner-border {
-    color: var(--color-primary);
-}
-
-.detail-state .text-muted {
-    font-family: var(--font-family-sans);
-}
-
-.detail-grid {
+/* Layout */
+.product-detail__layout {
     display: grid;
-    grid-template-columns: minmax(240px, 320px) 1fr;
+    grid-template-columns: minmax(280px, 360px) 1fr;
     gap: var(--spacing-6);
 }
 
-.detail-media {
+.product-detail__left-column {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-4);
+    gap: var(--spacing-5);
+}
+
+.product-detail__right-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+}
+
+/* Image Card */
+.product-detail__image-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.product-detail__status-badge {
+    display: flex;
+    justify-content: center;
 }
 
 .image-frame {
     border-radius: var(--radius-sm);
     overflow: hidden;
     border: 1px solid var(--color-border);
+    background: var(--color-card-muted);
 }
 
 .image-frame img {
     width: 100%;
-    height: 260px;
+    height: 280px;
     object-fit: cover;
+    display: block;
 }
 
-.status-block {
+/* Badge System - Chuẩn hóa theo tiêu chuẩn */
+.product-detail-modal :global(.badge) {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-3);
+    padding: var(--spacing-1) var(--spacing-2);
     border-radius: var(--radius-sm);
-    font-weight: var(--font-weight-medium);
     font-size: var(--font-size-sm);
-    width: fit-content;
+    font-weight: var(--font-weight-medium);
     font-family: var(--font-family-sans);
+    border: 1px solid;
+    white-space: nowrap;
+    line-height: 1.4;
 }
 
-.status-block i {
-    font-size: 18px;
+.product-detail-modal :global(.badge-status) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    border: 1px solid;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.product-detail-modal :global(.badge-status i) {
+    font-size: 16px;
     line-height: 1;
 }
 
-.status-block--active {
-    background: var(--color-soft-emerald);
-    color: var(--color-success);
-    border: 1px solid var(--color-success);
+/* Status Badge Variants */
+.product-detail-modal :global(.badge-status--success),
+.product-detail-modal :global(.badge-status--active) {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: #22c55e;
+    color: #22c55e;
 }
 
-.status-block--inactive {
-    background: var(--color-soft-rose);
-    color: var(--color-danger);
-    border: 1px solid var(--color-danger);
+.product-detail-modal :global(.badge-status--warning),
+.product-detail-modal :global(.badge-status--pending) {
+    background: rgba(251, 191, 36, 0.18);
+    border-color: #f59e0b;
+    color: #f59e0b;
 }
 
-.meta-list {
+.product-detail-modal :global(.badge-status--danger),
+.product-detail-modal :global(.badge-status--cancelled) {
+    background: rgba(244, 63, 94, 0.18);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.product-detail-modal :global(.badge-status--info),
+.product-detail-modal :global(.badge-status--transferred) {
+    background: rgba(14, 165, 233, 0.18);
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+}
+
+.product-detail-modal :global(.badge-status--default),
+.product-detail-modal :global(.badge-status--inactive) {
+    background: var(--color-card-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+}
+
+/* Type Badge Variants */
+.product-detail-modal :global(.badge-type) {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    border: 1px solid;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.product-detail-modal :global(.badge-type--primary),
+.product-detail-modal :global(.badge-type--percentage) {
+    background: rgba(14, 165, 233, 0.18);
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+}
+
+.product-detail-modal :global(.badge-type--secondary),
+.product-detail-modal :global(.badge-type--fixed) {
+    background: var(--color-card-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+}
+
+.product-detail-modal :global(.badge-type--success),
+.product-detail-modal :global(.badge-type--premium) {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
+/* Info Section */
+.info-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    font-family: var(--font-family-sans);
+}
+
+.section-title i {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.section-description {
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: 0;
+    font-family: var(--font-family-sans);
+}
+
+/* Info Grid */
+.info-grid {
     display: grid;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
     border-radius: var(--radius-sm);
-    border: 1px dashed var(--color-border);
+    border: 1px solid var(--color-border);
     background: var(--color-card-muted);
 }
 
-.meta-list dt {
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-2) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
-    margin-bottom: var(--spacing-1);
     font-family: var(--font-family-sans);
 }
 
-.meta-list dd {
-    margin: 0;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
+.info-value {
     font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
-}
-
-.detail-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-5);
-}
-
-.detail-header h3 {
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--spacing-2);
-    font-size: var(--font-size-xl);
-    line-height: var(--line-height-tight);
     color: var(--color-heading);
+    font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-sans);
 }
 
-.detail-header .text-muted {
-    font-family: var(--font-family-sans);
-}
-
+/* Info Cards */
 .info-cards {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -580,16 +727,18 @@ defineExpose({ show, hide })
 .info-card:hover {
     background: var(--color-card-muted);
     border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.info-card .label {
-    font-size: var(--font-size-base);
+.info-card__label {
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     font-weight: var(--font-weight-medium);
     font-family: var(--font-family-sans);
 }
 
-.info-card .value {
+.info-card__value {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
@@ -597,51 +746,31 @@ defineExpose({ show, hide })
     font-family: var(--font-family-sans);
 }
 
-.info-card .value.text-primary {
+.info-card__value--primary {
     color: var(--color-primary);
 }
 
-.info-card .value.text-success {
+.info-card__value--success {
     color: var(--color-success);
 }
 
-.recipe-section {
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--spacing-4);
-}
-
-.recipe-section h5 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin-bottom: var(--spacing-3);
-    font-family: var(--font-family-sans);
-}
-
-.recipe-section .btn {
-    padding: var(--spacing-1) var(--spacing-3);
+/* Table Wrapper */
+.table-wrapper {
     border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    transition: all var(--transition-base);
-    font-family: var(--font-family-sans);
-}
-
-.recipe-section .btn-outline-secondary {
-    border: 1px solid var(--color-primary);
-    color: var(--color-primary);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
     background: var(--color-card);
 }
 
-.recipe-section .btn-outline-secondary:hover:not(:disabled) {
-    background: var(--color-soft-primary);
-    border-color: var(--color-primary-dark);
-    color: var(--color-primary-dark);
+/* Error State & Loading State - Small variants */
+.error-state--sm {
+    min-height: 120px;
+    padding: var(--spacing-4);
 }
 
-.recipe-section .btn i {
-    font-size: 18px;
-    line-height: 1;
+.loading-state--sm {
+    min-height: 120px;
+    padding: var(--spacing-4);
 }
 
 /* Table - Minimal Table Styling */
@@ -677,38 +806,36 @@ defineExpose({ show, hide })
     background: var(--color-card-muted);
 }
 
-.empty-recipe {
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: var(--spacing-6);
-    text-align: center;
-    color: var(--color-text-muted);
-    display: grid;
-    gap: var(--spacing-3);
-    justify-items: center;
-    background: var(--color-card-muted);
-}
-
-.empty-recipe i {
-    font-size: 48px;
-    color: var(--color-primary);
-}
-
-.empty-recipe p {
-    font-family: var(--font-family-sans);
-}
-
+/* Responsive Design */
 @media (max-width: 992px) {
-    .detail-grid {
+    .product-detail__layout {
         grid-template-columns: 1fr;
     }
 
     .image-frame img {
-        height: 220px;
+        height: 240px;
     }
 
     .info-cards {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-detail-modal :global(.modal-body) {
+        padding: var(--spacing-4);
+    }
+
+    .image-frame img {
+        height: 200px;
+    }
+
+    .info-grid {
+        padding: var(--spacing-3);
+    }
+
+    .info-card {
+        padding: var(--spacing-3);
     }
 }
 </style>

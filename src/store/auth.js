@@ -84,7 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
             const decoded = JSON.parse(atob(payload))
             return decoded
         } catch {
-            // JWT decode failed - return null silently
+            // Giải mã JWT thất bại - trả về null im lặng
             return null
         }
     }
@@ -131,7 +131,7 @@ export const useAuthStore = defineStore('auth', () => {
                 return null
             }
 
-            // Format 1: accessToken (chuẩn)
+            // Định dạng 1: accessToken (chuẩn)
             if (payload.accessToken) {
                 const accessToken = String(payload.accessToken).trim()
                 if (!accessToken) {
@@ -164,7 +164,7 @@ export const useAuthStore = defineStore('auth', () => {
                 }
             }
 
-            // Format 2: token (legacy)
+            // Định dạng 2: token (legacy)
             if (payload.token) {
                 const token = String(payload.token).trim()
                 if (!token) {
@@ -197,7 +197,7 @@ export const useAuthStore = defineStore('auth', () => {
                 }
             }
 
-            // Format 3: access_token (OAuth2 style)
+            // Định dạng 3: access_token (OAuth2 style)
             if (payload.access_token) {
                 const accessToken = String(payload.access_token).trim()
                 if (!accessToken) {
@@ -244,7 +244,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (router) {
             router.push('/login')
         } else {
-            // Fallback for non-component usage
+            // Fallback cho trường hợp không dùng trong component
             window.location.href = '/login'
         }
     }
@@ -302,7 +302,7 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const data = await authService.refreshToken(currentRefresh)
 
-            // Map response tương tự như login
+            // Ánh xạ response tương tự như login
             const mapResponse = (payload) => {
                 if (!payload) return null
                 if (payload.accessToken) {
@@ -363,14 +363,14 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    // MEMORY LEAK FIX: Store cleanup function để có thể remove listener
+    // Lưu cleanup function để có thể remove listener (tránh memory leak)
     let unauthorizedListener = null
     if (typeof window !== 'undefined') {
         unauthorizedListener = handleUnauthorized
         window.addEventListener('auth:unauthorized', handleUnauthorized)
     }
 
-    // Cleanup function để remove event listener
+    // Hàm cleanup để gỡ event listener
     const cleanup = () => {
         if (typeof window !== 'undefined' && unauthorizedListener) {
             window.removeEventListener('auth:unauthorized', unauthorizedListener)

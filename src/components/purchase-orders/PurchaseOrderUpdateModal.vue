@@ -374,7 +374,6 @@ const handleSubmit = async () => {
         // Thông báo rõ ràng cho người dùng
         error.value = 'Backend không hỗ trợ cập nhật đơn nhập hàng. Vui lòng hủy đơn cũ và tạo đơn mới.'
         toast.error(error.value)
-        return
     } catch (err) {
         error.value = err.response?.data?.message || err.message || 'Không thể cập nhật đơn nhập hàng.'
         toast.error(error.value)

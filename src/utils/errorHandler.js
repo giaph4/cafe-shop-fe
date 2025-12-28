@@ -1,21 +1,18 @@
 /**
- * === SECTION: UNIFIED ERROR HANDLING SYSTEM ===
- * Centralized error handling utilities cho toàn bộ ứng dụng
- * PERFORMANCE FIX: Gộp tất cả error handlers vào một file để giảm bundle size
- * SECURITY FIX: Chuẩn hóa error messages để tránh leak thông tin nhạy cảm
+ * Hệ thống xử lý lỗi tập trung cho toàn bộ ứng dụng
+ * Gộp tất cả error handlers vào một file để giảm bundle size
+ * Chuẩn hóa error messages để tránh rò rỉ thông tin nhạy cảm
  */
 
-import { ERROR_MESSAGES } from '@/constants'
+import { ERROR_MESSAGES } from '@/constants/index'
 import { showError } from './toast'
 import logger from './logger'
 
-// === SECTION: ERROR MESSAGE EXTRACTION ===
-
 /**
- * Extract error message from error object
- * Hỗ trợ nhiều format: AxiosError, Error, và custom error objects
- * @param {Error|AxiosError|Object} error - Error object
- * @returns {string} Error message
+ * Trích xuất thông báo lỗi từ đối tượng lỗi
+ * Hỗ trợ nhiều định dạng: AxiosError, Error, và custom error objects
+ * @param {Error|AxiosError|Object} error - Đối tượng lỗi
+ * @returns {string} Thông báo lỗi
  */
 export function getErrorMessage (error) {
     if (!error) return ERROR_MESSAGES.UNKNOWN_ERROR
@@ -61,19 +58,17 @@ export function getErrorMessage (error) {
 }
 
 /**
- * Extract error message (alias for compatibility)
- * @param {Error|AxiosError} error - Error object
- * @returns {string} Error message
+ * Trích xuất thông báo lỗi (alias để tương thích)
+ * @param {Error|AxiosError} error - Đối tượng lỗi
+ * @returns {string} Thông báo lỗi
  */
 export const extractErrorMessage = getErrorMessage
 
-// === SECTION: API ERROR BUILDING ===
-
 /**
- * Build standardized error object from API error
- * Dùng cho API services để chuẩn hóa error format
- * @param {Error|AxiosError} error - Error object from axios
- * @returns {Object} Standardized error object
+ * Tạo đối tượng lỗi chuẩn hóa từ lỗi API
+ * Dùng cho API services để chuẩn hóa định dạng lỗi
+ * @param {Error|AxiosError} error - Đối tượng lỗi từ axios
+ * @returns {Object} Đối tượng lỗi đã chuẩn hóa
  */
 export const buildApiError = (error) => {
     const response = error?.response
@@ -89,12 +84,10 @@ export const buildApiError = (error) => {
     }
 }
 
-// === SECTION: ERROR TYPE CHECKING ===
-
 /**
- * Check if error is a specific HTTP status
- * @param {Error|AxiosError} error - Error object
- * @param {number} status - HTTP status code
+ * Kiểm tra xem lỗi có phải là một HTTP status cụ thể không
+ * @param {Error|AxiosError} error - Đối tượng lỗi
+ * @param {number} status - Mã HTTP status
  * @returns {boolean}
  */
 export function isErrorStatus (error, status) {
@@ -116,8 +109,8 @@ export function isNetworkError (error) {
 }
 
 /**
- * Check if error is timeout error
- * @param {Error|AxiosError} error - Error object
+ * Kiểm tra xem lỗi có phải là timeout không
+ * @param {Error|AxiosError} error - Đối tượng lỗi
  * @returns {boolean}
  */
 export function isTimeoutError (error) {
@@ -125,8 +118,8 @@ export function isTimeoutError (error) {
 }
 
 /**
- * Check if error is retryable (5xx errors)
- * @param {Error|AxiosError} error - Error object
+ * Kiểm tra xem lỗi có thể retry được không (lỗi 5xx)
+ * @param {Error|AxiosError} error - Đối tượng lỗi
  * @returns {boolean}
  */
 export function isRetryableError (error) {
@@ -134,16 +127,14 @@ export function isRetryableError (error) {
     return status >= 500 && status < 600
 }
 
-// === SECTION: ERROR HANDLING ===
-
 /**
- * Handle error and show toast
- * @param {Error|AxiosError} error - Error object
- * @param {Object} [options] - Options
- * @param {boolean} [options.showToast=true] - Show error toast
- * @param {Function} [options.onError] - Custom error handler
- * @param {string} [options.context] - Context for logging
- * @returns {string} Error message
+ * Xử lý lỗi và hiển thị toast
+ * @param {Error|AxiosError} error - Đối tượng lỗi
+ * @param {Object} [options] - Tùy chọn
+ * @param {boolean} [options.showToast=true] - Hiển thị toast lỗi
+ * @param {Function} [options.onError] - Handler lỗi tùy chỉnh
+ * @param {string} [options.context] - Ngữ cảnh để logging
+ * @returns {string} Thông báo lỗi
  */
 export function handleError (error, options = {}) {
     const {
@@ -171,14 +162,14 @@ export function handleError (error, options = {}) {
 }
 
 /**
- * Handle API error with standardized pattern
- * Alias cho compatibility với useErrorHandler composable
- * @param {Error|AxiosError} error - Error object
- * @param {Object} options - Options
- * @param {string} options.context - Context of the error (for logging)
- * @param {boolean} options.showToast - Show toast notification (default: true)
- * @param {string} options.fallbackMessage - Fallback message (deprecated, dùng ERROR_MESSAGES)
- * @returns {string} Error message
+ * Xử lý lỗi API với pattern chuẩn hóa
+ * Alias để tương thích với useErrorHandler composable
+ * @param {Error|AxiosError} error - Đối tượng lỗi
+ * @param {Object} options - Tùy chọn
+ * @param {string} options.context - Ngữ cảnh của lỗi (để logging)
+ * @param {boolean} options.showToast - Hiển thị toast thông báo (mặc định: true)
+ * @param {string} options.fallbackMessage - Thông báo fallback (deprecated, dùng ERROR_MESSAGES)
+ * @returns {string} Thông báo lỗi
  */
 export function handleApiError (error, options = {}) {
     const {
@@ -189,14 +180,12 @@ export function handleApiError (error, options = {}) {
     return handleError(error, { showToast, context })
 }
 
-// === SECTION: ERROR LOGGING ===
-
 /**
- * Log error to console (for debugging)
- * @param {Error|AxiosError} error - Error object
- * @param {string} [context] - Context where error occurred
- * @param {Object} [options] - Options
- * @param {string} [options.level='error'] - Log level (error, warn, info)
+ * Ghi log lỗi (để debug)
+ * @param {Error|AxiosError} error - Đối tượng lỗi
+ * @param {string} [context] - Ngữ cảnh nơi lỗi xảy ra
+ * @param {Object} [options] - Tùy chọn
+ * @param {string} [options.level='error'] - Mức log (error, warn, info)
  */
 export function logError (error, context = '', options = {}) {
     const { level = 'error' } = options

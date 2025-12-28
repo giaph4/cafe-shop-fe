@@ -80,6 +80,9 @@ const props = defineProps({
     }
 })
 
+// Định nghĩa các sự kiện emit
+const emit = defineEmits(['day-click'])
+
 const currentDate = ref(new Date())
 const events = ref([])
 
@@ -102,12 +105,12 @@ const calendarDays = computed(() => {
 
     const days = []
 
-    // Add empty cells for days before month starts
+    // Thêm ô trống cho các ngày trước khi tháng bắt đầu
     for (let i = 0; i < firstDayOfWeek; i++) {
         days.push({ date: null, isCurrentMonth: false, events: [] })
     }
 
-    // Add days of the month
+    // Thêm các ngày trong tháng
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day)
         const dayEvents = events.value.filter(e => {
@@ -152,8 +155,8 @@ const nextMonth = () => {
 
 const handleDayClick = (day) => {
     if (day.date && day.isCurrentMonth) {
-        // Emit event or handle day click
-        console.log('Day clicked:', day)
+        // Phát sự kiện để component cha xử lý
+        emit('day-click', day)
     }
 }
 

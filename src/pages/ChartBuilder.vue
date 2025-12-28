@@ -234,7 +234,7 @@ const selectedDataSource = computed(() => chartConfig.dataSource)
 
 const handleDataSourceChange = (dataSource) => {
     chartConfig.dataSource = dataSource
-    // Reset series when data source changes
+    // Reset series khi data source thay đổi
     chartConfig.series = []
     fetchChartData()
 }
@@ -268,7 +268,7 @@ const fetchChartData = async () => {
     error.value = null
 
     try {
-        // Fetch data based on data source
+        // Lấy dữ liệu dựa trên nguồn dữ liệu
         const data = await chartBuilderStore.fetchDataSourceData(
             chartConfig.dataSource,
             chartConfig.dataSourceConfig
@@ -385,7 +385,7 @@ const toggleFullscreen = () => {
 }
 
 onMounted(() => {
-    // Load saved charts if any
+    // Tải các biểu đồ đã lưu nếu có
     chartBuilderStore.loadSavedCharts()
 })
 </script>

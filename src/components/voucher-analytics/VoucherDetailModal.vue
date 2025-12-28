@@ -335,7 +335,6 @@ const handleClose = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1055;
     display: block;
     overflow-x: hidden;
     overflow-y: auto;
@@ -348,7 +347,6 @@ const handleClose = () => {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 1050;
     background-color: var(--color-backdrop);
     opacity: 1;
 }
@@ -356,7 +354,6 @@ const handleClose = () => {
 /* Modal Dialog - Above backdrop */
 .voucher-detail-modal :global(.modal-dialog) {
     position: relative;
-    z-index: 1056;
     margin: var(--spacing-4) auto;
     pointer-events: none;
 }

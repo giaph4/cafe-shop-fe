@@ -1,13 +1,36 @@
 import { computed, ref, watch } from 'vue'
 
+/**
+ * Các chế độ phân trang
+ */
 export const PaginationMode = Object.freeze({
     ZERO_BASED: 'zero-based',
     ONE_BASED: 'one-based'
 })
 
+/**
+ * Kiểm tra xem sessionStorage có khả dụng không
+ */
 const hasSessionStorage = () => typeof window !== 'undefined' && window.sessionStorage
 
+/**
+ * @deprecated Sử dụng useTableData thay thế
+ * Composable quản lý phân trang (CŨ - ĐÃ DEPRECATED)
+ * @param {Object} options - Tùy chọn phân trang
+ * @param {string} options.mode - Chế độ phân trang (zero-based hoặc one-based)
+ * @param {number} options.initialPage - Trang ban đầu
+ * @param {number} options.pageSize - Số phần tử mỗi trang
+ * @param {string} options.persistKey - Key để lưu trạng thái vào sessionStorage
+ * @returns {Object} Các utility phân trang
+ */
 export function usePagination (options = {}) {
+    if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+            '[DEPRECATED] usePagination đã bị deprecated. ' +
+            'Vui lòng sử dụng useTableData thay thế. ' +
+            'Xem: src/composables/useTableData.js'
+        )
+    }
     const mode = options.mode ?? PaginationMode.ZERO_BASED
     const initialPage = options.initialPage ?? (mode === PaginationMode.ONE_BASED ? 1 : 0)
     const initialPageSize = options.pageSize ?? 10

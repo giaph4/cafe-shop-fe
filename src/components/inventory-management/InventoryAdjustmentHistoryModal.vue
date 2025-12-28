@@ -2,11 +2,15 @@
   <Teleport to="body">
     <div
       v-if="show"
-      class="modal fade show d-block"
+      class="inventory-adjustment-history-modal modal fade show"
       tabindex="-1"
       role="dialog"
       @click.self="handleClose"
     >
+      <div
+        class="modal-backdrop fade show"
+        @click="handleClose"
+      />
       <div
         class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable"
         @click.stop
@@ -96,22 +100,22 @@
                 <table class="table table-hover">
                   <thead>
                     <tr>
-                      <th style="width: 120px">
+                      <th class="col-time">
                         Thời gian
                       </th>
-                      <th style="width: 150px">
+                      <th class="col-adjuster">
                         Người điều chỉnh
                       </th>
-                      <th style="width: 120px">
+                      <th class="col-old-stock">
                         Tồn kho cũ
                       </th>
-                      <th style="width: 120px">
+                      <th class="col-new-stock">
                         Tồn kho mới
                       </th>
-                      <th style="width: 120px">
+                      <th class="col-change">
                         Thay đổi
                       </th>
-                      <th style="width: 100px">
+                      <th class="col-change-percent">
                         % Thay đổi
                       </th>
                       <th>Lý do</th>
@@ -301,7 +305,7 @@
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-secondary"
+              class="btn btn-outline-secondary"
               @click="handleClose"
             >
               Đóng
@@ -310,11 +314,6 @@
         </div>
       </div>
     </div>
-    <div
-      v-if="show"
-      class="modal-backdrop fade show"
-      @click="handleClose"
-    />
   </Teleport>
 </template>
 
@@ -324,14 +323,14 @@ import * as inventoryAdjustmentHistoryService from '@/api/inventoryAdjustmentHis
 import { formatNumber, formatDate, formatDateTime } from '@/utils/formatters'
 
 const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  },
-  ingredient: {
-    type: Object,
-    default: null
-  }
+    show: {
+        type: Boolean,
+        default: false
+    },
+    ingredient: {
+        type: Object,
+        default: null
+    }
 })
 
 const emit = defineEmits(['close'])
@@ -340,178 +339,204 @@ const loading = ref(false)
 const error = ref(null)
 const history = ref([])
 const pagination = ref({
-  currentPage: 0,
-  totalPages: 0,
-  totalElements: 0,
-  size: 20
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    size: 20
 })
 
 const filters = ref({
-  startDate: null,
-  endDate: null
+    startDate: null,
+    endDate: null
 })
 
 const comparisonSummary = computed(() => {
-  const totalAdjustments = history.value.length
-  const totalIncreases = history.value
-    .filter(item => item.isIncrease)
-    .reduce((sum, item) => sum + Math.abs(parseFloat(item.adjustmentAmount || 0)), 0)
-  const totalDecreases = history.value
-    .filter(item => item.isDecrease)
-    .reduce((sum, item) => sum + Math.abs(parseFloat(item.adjustmentAmount || 0)), 0)
-  const averageChangePercentage = totalAdjustments > 0
-    ? history.value.reduce((sum, item) => sum + parseFloat(item.changePercentage || 0), 0) / totalAdjustments
-    : 0
+    const totalAdjustments = history.value.length
+    const totalIncreases = history.value
+        .filter(item => item.isIncrease)
+        .reduce((sum, item) => sum + Math.abs(parseFloat(item.adjustmentAmount || 0)), 0)
+    const totalDecreases = history.value
+        .filter(item => item.isDecrease)
+        .reduce((sum, item) => sum + Math.abs(parseFloat(item.adjustmentAmount || 0)), 0)
+    const averageChangePercentage = totalAdjustments > 0
+        ? history.value.reduce((sum, item) => sum + parseFloat(item.changePercentage || 0), 0) / totalAdjustments
+        : 0
 
-  return {
-    totalAdjustments,
-    totalIncreases,
-    totalDecreases,
-    averageChangePercentage
-  }
+    return {
+        totalAdjustments,
+        totalIncreases,
+        totalDecreases,
+        averageChangePercentage
+    }
 })
 
 const handleClose = () => {
-  emit('close')
+    emit('close')
 }
 
 const handleFilterChange = () => {
-  loadHistory(0)
+    loadHistory(0)
 }
 
 const clearFilters = () => {
-  filters.value.startDate = null
-  filters.value.endDate = null
-  loadHistory(0)
+    filters.value.startDate = null
+    filters.value.endDate = null
+    loadHistory(0)
 }
 
 const loadHistory = async (page = 0) => {
-  if (!props.ingredient?.id) return
+    if (!props.ingredient?.id) return
 
-  loading.value = true
-  error.value = null
+    loading.value = true
+    error.value = null
 
-  try {
-    let response
-    if (filters.value.startDate && filters.value.endDate) {
-      const startDate = new Date(filters.value.startDate)
-      startDate.setHours(0, 0, 0, 0)
-      const endDate = new Date(filters.value.endDate)
-      endDate.setHours(23, 59, 59, 999)
-      response = await inventoryAdjustmentHistoryService.getHistoryByIngredientIdAndDateRange(
-        props.ingredient.id,
-        startDate.toISOString(),
-        endDate.toISOString(),
-        page,
-        pagination.value.size
-      )
-    } else {
-      response = await inventoryAdjustmentHistoryService.getHistoryByIngredientId(
-        props.ingredient.id,
-        page,
-        pagination.value.size
-      )
+    try {
+        let response
+        if (filters.value.startDate && filters.value.endDate) {
+            const startDate = new Date(filters.value.startDate)
+            startDate.setHours(0, 0, 0, 0)
+            const endDate = new Date(filters.value.endDate)
+            endDate.setHours(23, 59, 59, 999)
+            response = await inventoryAdjustmentHistoryService.getHistoryByIngredientIdAndDateRange(
+                props.ingredient.id,
+                startDate.toISOString(),
+                endDate.toISOString(),
+                page,
+                pagination.value.size
+            )
+        } else {
+            response = await inventoryAdjustmentHistoryService.getHistoryByIngredientId(
+                props.ingredient.id,
+                page,
+                pagination.value.size
+            )
+        }
+
+        history.value = response.content || []
+        pagination.value = {
+            currentPage: response.number || page,
+            totalPages: response.totalPages || 0,
+            totalElements: response.totalElements || 0,
+            size: response.size || 20
+        }
+    } catch (err) {
+        error.value = err.response?.data?.message || err.message || 'Không thể tải lịch sử điều chỉnh'
+        console.error('Error loading adjustment history:', err)
+    } finally {
+        loading.value = false
     }
-
-    history.value = response.content || []
-    pagination.value = {
-      currentPage: response.number || page,
-      totalPages: response.totalPages || 0,
-      totalElements: response.totalElements || 0,
-      size: response.size || 20
-    }
-  } catch (err) {
-    error.value = err.response?.data?.message || err.message || 'Không thể tải lịch sử điều chỉnh'
-    console.error('Error loading adjustment history:', err)
-  } finally {
-    loading.value = false
-  }
 }
 
 const loadPage = (page) => {
-  if (page >= 0 && page < pagination.value.totalPages) {
-    loadHistory(page)
-  }
+    if (page >= 0 && page < pagination.value.totalPages) {
+        loadHistory(page)
+    }
 }
 
 const formatDateTimeDisplay = (dateString) => {
-  if (!dateString) return '—'
-  try {
-    return formatDateTime(dateString)
-  } catch {
-    return dateString
-  }
+    if (!dateString) return '—'
+    try {
+        return formatDateTime(dateString)
+    } catch {
+        return dateString
+    }
 }
 
 const formatRelativeTime = (dateString) => {
-  if (!dateString) return ''
-  try {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now - date
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-    
-    if (diffMins < 1) return 'Vừa xong'
-    if (diffMins < 60) return `${diffMins} phút trước`
-    if (diffHours < 24) return `${diffHours} giờ trước`
-    if (diffDays < 7) return `${diffDays} ngày trước`
-    return formatDate(dateString)
-  } catch {
-    return ''
-  }
+    if (!dateString) return ''
+    try {
+        const date = new Date(dateString)
+        const now = new Date()
+        const diffMs = now - date
+        const diffMins = Math.floor(diffMs / 60000)
+        const diffHours = Math.floor(diffMs / 3600000)
+        const diffDays = Math.floor(diffMs / 86400000)
+
+        if (diffMins < 1) return 'Vừa xong'
+        if (diffMins < 60) return `${diffMins} phút trước`
+        if (diffHours < 24) return `${diffHours} giờ trước`
+        if (diffDays < 7) return `${diffDays} ngày trước`
+        return formatDate(dateString)
+    } catch {
+        return ''
+    }
 }
 
 const formatAdjustmentAmount = (amount) => {
-  if (!amount) return '0'
-  const num = parseFloat(amount)
-  return num > 0 ? `+${formatNumber(num)}` : formatNumber(num)
+    if (!amount) return '0'
+    const num = parseFloat(amount)
+    return num > 0 ? `+${formatNumber(num)}` : formatNumber(num)
 }
 
 const formatPercentage = (percentage) => {
-  if (!percentage) return '0%'
-  const num = parseFloat(percentage)
-  return num > 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`
+    if (!percentage) return '0%'
+    const num = parseFloat(percentage)
+    return num > 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`
 }
 
 const getRowClass = (item) => {
-  if (item.isIncrease) return 'table-success'
-  if (item.isDecrease) return 'table-danger'
-  return ''
+    if (item.isIncrease) return 'table-success'
+    if (item.isDecrease) return 'table-danger'
+    return ''
 }
 
 const getAdjustmentClass = (item) => {
-  if (item.isIncrease) return 'text-success fw-semibold'
-  if (item.isDecrease) return 'text-danger fw-semibold'
-  return 'text-muted'
+    if (item.isIncrease) return 'text-success fw-semibold'
+    if (item.isDecrease) return 'text-danger fw-semibold'
+    return 'text-muted'
 }
 
 const getAdjustmentIcon = (item) => {
-  if (item.isIncrease) return 'bi-arrow-up'
-  if (item.isDecrease) return 'bi-arrow-down'
-  return 'bi-dash'
+    if (item.isIncrease) return 'bi-arrow-up'
+    if (item.isDecrease) return 'bi-arrow-down'
+    return 'bi-dash'
 }
 
 watch(() => props.show, (newVal) => {
-  if (newVal && props.ingredient?.id) {
-    loadHistory(0)
-  }
+    if (newVal && props.ingredient?.id) {
+        loadHistory(0)
+    }
 })
 
 watch(() => props.ingredient, (newVal) => {
-  if (props.show && newVal?.id) {
-    loadHistory(0)
-  }
+    if (props.show && newVal?.id) {
+        loadHistory(0)
+    }
 })
 </script>
 
 <style scoped>
 .history-filters {
-  background: var(--color-card, #fff);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-border, #dee2e6);
+  background: var(--color-card);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.inventory-adjustment-history-modal :global(.form-label) {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-heading);
+  margin-bottom: var(--spacing-2);
+}
+
+.inventory-adjustment-history-modal :global(.form-control) {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-base);
+  background: var(--color-card);
+  color: var(--color-heading);
+  font-family: var(--font-family-sans);
+  transition: all var(--transition-base);
+}
+
+.inventory-adjustment-history-modal :global(.form-control:focus) {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 0;
+  box-shadow: none;
 }
 
 .history-table-container {
@@ -520,13 +545,15 @@ watch(() => props.ingredient, (newVal) => {
 }
 
 .quantity-old {
-  color: var(--color-text-muted, #6c757d);
+  color: var(--color-text-muted);
   text-decoration: line-through;
+  font-family: var(--font-family-sans);
 }
 
 .quantity-new {
-  color: var(--color-primary, #0d6efd);
-  font-weight: 600;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family-sans);
 }
 
 .adjustment-amount {
@@ -538,7 +565,9 @@ watch(() => props.ingredient, (newVal) => {
 }
 
 .comparison-summary {
-  border: 1px solid var(--color-border, #dee2e6);
+  border: 1px solid var(--color-border);
+  background: var(--color-card-muted);
+  border-radius: var(--radius-sm);
 }
 
 .summary-card {
@@ -546,19 +575,154 @@ watch(() => props.ingredient, (newVal) => {
 }
 
 .summary-label {
-  font-size: 0.85rem;
-  color: var(--color-text-muted, #6c757d);
-  margin-bottom: 0.5rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-2);
+  font-family: var(--font-family-sans);
+  font-weight: var(--font-weight-medium);
 }
 
 .summary-value {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text, #212529);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-heading);
+  font-family: var(--font-family-sans);
 }
 
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
+/* Modal Container - Fixed positioning */
+.inventory-adjustment-history-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1055;
+  display: block;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Modal Backdrop - Behind modal content */
+.inventory-adjustment-history-modal :global(.modal-backdrop) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1050;
+  background-color: var(--color-backdrop);
+  opacity: 1;
+}
+
+/* Modal Dialog - Above backdrop */
+.inventory-adjustment-history-modal :global(.modal-dialog) {
+  position: relative;
+  z-index: 1056;
+  margin: var(--spacing-4) auto;
+  pointer-events: none;
+}
+
+.inventory-adjustment-history-modal :global(.modal-content) {
+  pointer-events: auto;
+  border-radius: var(--component-radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-modal);
+  background: var(--color-card);
+}
+
+.inventory-adjustment-history-modal :global(.modal-header) {
+  padding: var(--spacing-6);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-card);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
+
+.modal-header__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.inventory-adjustment-history-modal :global(.modal-title) {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-heading);
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-1);
+  font-family: var(--font-family-sans);
+  line-height: var(--line-height-tight);
+  display: flex;
+  align-items: center;
+}
+
+.modal-subtitle {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0;
+  font-family: var(--font-family-sans);
+  line-height: var(--line-height-normal);
+}
+
+.inventory-adjustment-history-modal :global(.modal-body) {
+  padding: var(--spacing-6);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  background: var(--color-card);
+}
+
+.inventory-adjustment-history-modal :global(.modal-footer) {
+  padding: var(--spacing-4) var(--spacing-6);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-card);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+}
+
+/* Button Styles - Đồng bộ */
+.inventory-adjustment-history-modal :global(.btn-outline-secondary) {
+  border: 1px solid var(--color-border);
+  color: var(--color-heading);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-2) var(--spacing-4);
+  transition: all var(--transition-base);
+}
+
+.inventory-adjustment-history-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+  background: var(--color-card-muted);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.col-time {
+  width: 120px;
+}
+
+.col-adjuster {
+  width: 150px;
+}
+
+.col-old-stock {
+  width: 120px;
+}
+
+.col-new-stock {
+  width: 120px;
+}
+
+.col-change {
+  width: 120px;
+}
+
+.col-change-percent {
+  width: 100px;
 }
 </style>
 

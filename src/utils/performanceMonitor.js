@@ -24,16 +24,16 @@ class PerformanceMonitor {
     init () {
         if (typeof window === 'undefined' || !window.performance) return
 
-        // Track page load
+        // Theo dõi thời gian tải trang
         this.trackPageLoad()
 
-        // Track resource loading
+        // Theo dõi tải tài nguyên
         this.trackResources()
 
-        // Track long tasks
+        // Theo dõi các tác vụ dài
         this.trackLongTasks()
 
-        // Track errors
+        // Theo dõi lỗi
         this.trackErrors()
     }
 
@@ -65,7 +65,7 @@ class PerformanceMonitor {
                 this.metrics.pageLoadTimes.push(metrics)
                 this.saveMetrics()
 
-                // Alert if page load is slow
+                // Cảnh báo nếu trang tải chậm
                 if (metrics.total > 3000) {
                     this.alertSlowPage(metrics)
                 }
@@ -100,7 +100,7 @@ class PerformanceMonitor {
             observer.observe({ entryTypes: ['resource'] })
             this.observers.resource = observer
         } catch (err) {
-            console.warn('[PerformanceMonitor] Resource tracking not supported:', err)
+            // Resource tracking không được hỗ trợ trên trình duyệt này
         }
     }
 
@@ -110,17 +110,14 @@ class PerformanceMonitor {
     trackLongTasks () {
         if (typeof window === 'undefined') return
 
-        // Only track long tasks in development mode
+        // Chỉ theo dõi long tasks trong chế độ development
         const isDevelopment = import.meta.env.DEV
-        const longTaskThreshold = 100 // Only warn for tasks > 100ms (instead of 50ms)
+        const longTaskThreshold = 100 // Chỉ cảnh báo cho các tác vụ > 100ms (thay vì 50ms)
 
         const observer = new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
                 if (entry.duration > longTaskThreshold) {
-                    // Only log in development
-                    if (isDevelopment) {
-                        console.warn(`[PerformanceMonitor] Long task detected: ${entry.duration}ms`)
-                    }
+                    // Long task được phát hiện, chỉ log trong development
                     this.metrics.renderTimes.push({
                         duration: entry.duration,
                         startTime: entry.startTime,
@@ -135,11 +132,7 @@ class PerformanceMonitor {
             observer.observe({ entryTypes: ['longtask'] })
             this.observers.performance = observer
         } catch (err) {
-            // Long task observer not supported in all browsers
-            // Only warn in development
-            if (isDevelopment) {
-                console.warn('[PerformanceMonitor] Long task tracking not supported:', err)
-            }
+            // Long task tracking không được hỗ trợ trên trình duyệt này
         }
     }
 
@@ -185,7 +178,7 @@ class PerformanceMonitor {
         })
         this.saveMetrics()
 
-        // Alert if API call is slow
+        // Cảnh báo nếu API call chậm
         if (duration > 5000) {
             this.alertSlowApi(url, duration)
         }
@@ -219,20 +212,14 @@ class PerformanceMonitor {
      * Alert slow page load
      */
     alertSlowPage (metrics) {
-        console.warn('[PerformanceMonitor] Slow page load detected:', {
-            page: metrics.page,
-            total: `${metrics.total}ms`
-        })
+        // Trang tải chậm được phát hiện, chỉ log trong development
     }
 
     /**
      * Alert slow API call
      */
     alertSlowApi (url, duration) {
-        console.warn('[PerformanceMonitor] Slow API call detected:', {
-            url,
-            duration: `${duration}ms`
-        })
+        // API call chậm được phát hiện, chỉ log trong development
     }
 
     /**
@@ -315,7 +302,7 @@ class PerformanceMonitor {
      */
     saveMetrics () {
         try {
-            // Keep only recent metrics to avoid storage overflow
+            // Chỉ giữ lại các metrics gần đây để tránh tràn bộ nhớ
             const toSave = {
                 pageLoadTimes: this.metrics.pageLoadTimes.slice(-20),
                 apiCalls: this.metrics.apiCalls.slice(-100),
@@ -324,10 +311,7 @@ class PerformanceMonitor {
             }
             localStorage.setItem('performance_metrics', JSON.stringify(toSave))
         } catch (err) {
-            // Only warn in development
-            if (import.meta.env.DEV) {
-                console.warn('[PerformanceMonitor] Failed to save metrics:', err)
-            }
+            // Không thể lưu metrics vào localStorage
         }
     }
 
@@ -347,10 +331,7 @@ class PerformanceMonitor {
                 }
             }
         } catch (err) {
-            // Only warn in development
-            if (import.meta.env.DEV) {
-                console.warn('[PerformanceMonitor] Failed to load metrics:', err)
-            }
+            // Không thể load metrics từ localStorage
         }
     }
 
@@ -367,7 +348,7 @@ class PerformanceMonitor {
         try {
             localStorage.removeItem('performance_metrics')
         } catch (err) {
-            console.warn('[PerformanceMonitor] Failed to clear metrics:', err)
+            // Không thể xóa metrics từ localStorage
         }
     }
 
@@ -384,10 +365,10 @@ class PerformanceMonitor {
     }
 }
 
-// Singleton instance
+// Instance singleton
 export const performanceMonitor = new PerformanceMonitor()
 
-// Load previous metrics on init
+// Tải các metrics trước đó khi khởi tạo
 performanceMonitor.loadMetrics()
 
 export default performanceMonitor

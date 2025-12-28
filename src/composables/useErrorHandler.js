@@ -1,7 +1,6 @@
 /**
- * === SECTION: ERROR HANDLER COMPOSABLE ===
- * Vue composable wrapper cho error handling utilities
- * PERFORMANCE FIX: Sử dụng unified error handler từ utils
+ * Composable xử lý lỗi cho Vue components
+ * Sử dụng unified error handler từ utils để đảm bảo tính nhất quán
  */
 
 import {
@@ -12,11 +11,11 @@ import {
 } from '@/utils/errorHandler'
 
 /**
- * Composable for error handling trong Vue components
- * @param {Object} options - Options
- * @param {string} options.context - Context for error handling
- * @param {boolean} options.showToast - Show toast on error (default: true)
- * @returns {Object} Error handling utilities
+ * Composable xử lý lỗi trong Vue components
+ * @param {Object} options - Tùy chọn
+ * @param {string} options.context - Ngữ cảnh để xử lý lỗi
+ * @param {boolean} options.showToast - Hiển thị toast khi có lỗi (mặc định: true)
+ * @returns {Object} Các utility xử lý lỗi
  */
 export function useErrorHandler (options = {}) {
     const {
@@ -25,10 +24,10 @@ export function useErrorHandler (options = {}) {
     } = options
 
     /**
-     * Handle error với context và options đã cấu hình
-     * @param {Error|AxiosError} error - Error object
-     * @param {string} [overrideContext] - Override context cho lần gọi này
-     * @returns {string} Error message
+     * Xử lý lỗi với ngữ cảnh và tùy chọn đã cấu hình
+     * @param {Error|AxiosError} error - Đối tượng lỗi
+     * @param {string} [overrideContext] - Ghi đè ngữ cảnh cho lần gọi này
+     * @returns {string} Thông báo lỗi
      */
     const handleError = (error, overrideContext) => handleErrorUtil(error, {
         context: overrideContext || context,
@@ -36,9 +35,9 @@ export function useErrorHandler (options = {}) {
     })
 
     /**
-     * Handle API error
-     * @param {Error|AxiosError} error - Error object
-     * @returns {string} Error message
+     * Xử lý lỗi API
+     * @param {Error|AxiosError} error - Đối tượng lỗi
+     * @returns {string} Thông báo lỗi
      */
     const handleApiError = (error) => handleApiErrorUtil(error, {
         context,

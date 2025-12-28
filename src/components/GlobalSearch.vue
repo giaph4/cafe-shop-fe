@@ -382,7 +382,7 @@ const performSearch = async () => {
         })
         results.value = searchResults
 
-        // Add to history
+        // Thêm vào lịch sử
         searchStore.addToHistory('products', searchKeyword.value)
         searchStore.addToRecent(searchKeyword.value, 'universal', searchResults.total)
     } catch (err) {

@@ -1,17 +1,17 @@
 /**
- * Composable for Bootstrap Modal
- * Chuẩn hóa modal initialization và management
+ * Composable quản lý Bootstrap Modal
+ * Chuẩn hóa khởi tạo và quản lý modal
  */
 
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { Modal } from 'bootstrap'
 
 /**
- * Composable for managing Bootstrap modal
- * @param {Object} options - Modal options
- * @param {boolean} options.backdrop - Backdrop option (default: 'static')
- * @param {boolean} options.keyboard - Keyboard option (default: false)
- * @returns {Object} Modal utilities
+ * Composable quản lý Bootstrap modal
+ * @param {Object} options - Tùy chọn modal
+ * @param {boolean|string} options.backdrop - Tùy chọn backdrop (mặc định: 'static')
+ * @param {boolean} options.keyboard - Cho phép đóng bằng phím ESC (mặc định: false)
+ * @returns {Object} Các utility modal
  */
 export const useModal = (options = {}) => {
     const modalRef = ref(null)
@@ -23,7 +23,7 @@ export const useModal = (options = {}) => {
     } = options
 
     /**
-     * Initialize modal instance
+     * Khởi tạo instance modal
      */
     const initModal = () => {
         if (modalRef.value && !modalInstance) {
@@ -35,7 +35,7 @@ export const useModal = (options = {}) => {
     }
 
     /**
-     * Show modal
+     * Hiển thị modal
      */
     const show = () => {
         if (!modalInstance) {
@@ -45,14 +45,14 @@ export const useModal = (options = {}) => {
     }
 
     /**
-     * Hide modal
+     * Ẩn modal
      */
     const hide = () => {
         modalInstance?.hide()
     }
 
     /**
-     * Toggle modal
+     * Chuyển đổi trạng thái modal (hiển thị/ẩn)
      */
     const toggle = () => {
         if (!modalInstance) {
@@ -62,7 +62,7 @@ export const useModal = (options = {}) => {
     }
 
     /**
-     * Dispose modal instance
+     * Hủy instance modal
      */
     const dispose = () => {
         if (modalInstance) {
@@ -72,7 +72,8 @@ export const useModal = (options = {}) => {
     }
 
     /**
-     * Check if modal is shown
+     * Kiểm tra xem modal có đang hiển thị không
+     * @returns {boolean} True nếu modal đang hiển thị
      */
     const isShown = () => modalInstance?._isShown || false
 

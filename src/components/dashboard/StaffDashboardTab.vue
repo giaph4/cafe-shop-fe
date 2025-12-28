@@ -358,29 +358,32 @@ defineProps({
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    color: var(--color-primary);
-    background: var(--color-bg-muted);
+    transition: transform var(--transition-base);
 }
 
-/* Màu icon - không dùng gradient, dùng màu nhạt */
+.kpi-card:hover .kpi-card__icon {
+    transform: scale(1.05);
+}
+
+/* Màu icon - đồng bộ với voucher card style */
 .kpi-card--revenue .kpi-card__icon {
-    background: var(--color-bg-muted);
-    color: var(--color-primary);
+    background: rgba(59, 130, 246, 0.18);
+    color: #3b82f6;
 }
 
 .kpi-card--average .kpi-card__icon {
-    background: var(--color-bg-muted);
-    color: var(--color-info);
+    background: rgba(14, 165, 233, 0.18);
+    color: #0ea5e9;
 }
 
 .kpi-card--shifts .kpi-card__icon {
-    background: var(--color-bg-muted);
-    color: var(--color-secondary);
+    background: rgba(139, 92, 246, 0.18);
+    color: #8b5cf6;
 }
 
 .kpi-card--salary .kpi-card__icon {
-    background: var(--color-bg-muted);
-    color: var(--color-accent);
+    background: rgba(34, 197, 94, 0.18);
+    color: #22c55e;
 }
 
 .kpi-card__content {

@@ -1,5 +1,49 @@
 <template>
   <div class="customers-staff">
+    <!-- Summary metrics - Di chuyển lên trên cùng -->
+    <div class="summary-grid">
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-indigo-light">
+          <i class="bi bi-people-fill" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Tổng khách hàng</span>
+          <strong>{{ formatNumber(customerInsights.totalCustomers) }}</strong>
+          <small>Khách hàng trong kỳ</small>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-primary-light">
+          <i class="bi bi-person-plus" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Khách mới tháng này</span>
+          <strong>{{ formatNumber(newCustomersThisMonth) }}</strong>
+          <small>Khách hàng mới</small>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-emerald-light">
+          <i class="bi bi-briefcase-fill" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Tổng nhân viên</span>
+          <strong>{{ formatNumber(staffInsights.totalStaff) }}</strong>
+          <small>Nhân viên trong hệ thống</small>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-card__icon bg-amber-light">
+          <i class="bi bi-person-check-fill" />
+        </div>
+        <div class="summary-card__meta">
+          <span>Nhân viên hoạt động</span>
+          <strong>{{ formatNumber(activeStaffCount) }}</strong>
+          <small>Có doanh số trong kỳ</small>
+        </div>
+      </div>
+    </div>
+
     <div class="chart-grid">
       <div class="card chart-card">
         <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
@@ -23,20 +67,7 @@
                 Số đơn
               </option>
             </select>
-            <select
-              v-model="customerChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="bar">
-                Bar
-              </option>
-              <option value="horizontalBar">
-                Bar ngang
-              </option>
-              <option value="pie">
-                Pie
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định horizontalBar -->
             <select
               v-model="customerLimit"
               class="form-select form-select-sm"
@@ -92,20 +123,7 @@
                 Số đơn
               </option>
             </select>
-            <select
-              v-model="staffChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="bar">
-                Bar
-              </option>
-              <option value="horizontalBar">
-                Bar ngang
-              </option>
-              <option value="radar">
-                Radar
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định horizontalBar -->
           </div>
         </div>
         <div class="card-body">
@@ -126,48 +144,7 @@
       </div>
     </div>
 
-    <div class="summary-grid">
-      <div class="card summary-card">
-        <div class="summary-card__icon bg-emerald-light">
-          <i class="bi bi-wallet2" />
-        </div>
-        <div class="summary-card__meta">
-          <span>Tổng chi phí</span>
-          <strong>{{ formatCurrency(expenseTotals.totalExpenses) }}</strong>
-          <small v-if="expenseTotals.range">{{ expenseTotals.range }}</small>
-        </div>
-      </div>
-      <div class="card summary-card">
-        <div class="summary-card__icon bg-sky-light">
-          <i class="bi bi-bag-plus" />
-        </div>
-        <div class="summary-card__meta">
-          <span>Chi phí nhập nguyên liệu</span>
-          <strong>{{ formatCurrency(importTotals.totalImportedCost) }}</strong>
-          <small v-if="importTotals.range">{{ importTotals.range }}</small>
-        </div>
-      </div>
-      <div class="card summary-card">
-        <div class="summary-card__icon bg-indigo-light">
-          <i class="bi bi-people" />
-        </div>
-        <div class="summary-card__meta">
-          <span>Giá trị trung bình mỗi khách</span>
-          <strong>{{ formatCurrency(customerInsights.averageSpendPerCustomer) }}</strong>
-          <small>{{ customerInsights.totalCustomers }} khách</small>
-        </div>
-      </div>
-      <div class="card summary-card">
-        <div class="summary-card__icon bg-amber-light">
-          <i class="bi bi-briefcase" />
-        </div>
-        <div class="summary-card__meta">
-          <span>Doanh thu trung bình mỗi nhân viên</span>
-          <strong>{{ formatCurrency(staffInsights.averageRevenuePerStaff) }}</strong>
-          <small>{{ staffInsights.totalStaff }} nhân viên</small>
-        </div>
-      </div>
-    </div>
+    <!-- Summary metrics đã được di chuyển lên trên -->
 
     <div class="grid">
       <div class="card table-card">
@@ -205,7 +182,7 @@
               >
                 <td><span class="badge bg-primary-subtle text-primary">#{{ customer.rank }}</span></td>
                 <td class="fw-semibold">
-                  {{ customer.customerName }}
+                  {{ capitalizeWords(customer.customerName) }}
                 </td>
                 <td>{{ customer.phone || '—' }}</td>
                 <td class="text-end">
@@ -266,9 +243,14 @@
               >
                 <td><span class="badge bg-success-subtle text-success">#{{ staff.rank }}</span></td>
                 <td class="fw-semibold">
-                  {{ staff.fullName || staff.username }}
+                  {{ capitalizeWords(staff.fullName || staff.username) }}
                 </td>
-                <td><span class="role-chip">{{ prettyRole(staff.role) }}</span></td>
+                <td>
+                  <span
+                    class="role-chip"
+                    :class="getRoleBadgeClass(staff.role)"
+                  >{{ prettyRole(staff.role) }}</span>
+                </td>
                 <td class="text-end">
                   {{ formatNumber(staff.totalOrders) }}
                 </td>
@@ -312,7 +294,7 @@ const ApexChart = VueApexCharts
 
 const { isDark } = useThemePreference()
 
-const baseLabelStyle = computed(() => ({ colors: isDark.value ? '#cbd5f5' : '#64748b', fontSize: '12px' }))
+const baseLabelStyle = computed(() => ({ colors: isDark.value ? '#EFF2F6' : '#64748b', fontSize: '12px', fontWeight: isDark.value ? 500 : 400 }))
 const VIBRANT_PALETTE = Object.freeze([
     '#2563eb',
     '#f97316',
@@ -334,8 +316,8 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
     return {
         chart: {
             type,
-            toolbar: { show: true },
-            foreColor: dark ? '#e2e8f0' : '#475569',
+            toolbar: { show: false }, // Ẩn toolbar để giao diện chuyên nghiệp hơn
+            foreColor: dark ? '#EFF2F6' : '#475569',
             background: 'transparent'
         },
         stroke: isCircular
@@ -345,17 +327,19 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
         colors,
         grid: {
             strokeDashArray: 4,
-            borderColor: dark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.35)',
+            borderColor: dark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.35)',
             padding: { top: 8, bottom: 8, left: 12, right: 12 }
         },
         xaxis: {
             categories: [],
             labels: { style: { ...labelStyle } },
             axisBorder: {
-                color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: dark ? 1.5 : 1
             },
             axisTicks: {
-                color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: dark ? 1.5 : 1
             },
             crosshairs: {
                 stroke: {
@@ -370,7 +354,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
                 formatter: (value) => value ?? 0
             }
         },
-        legend: { position: 'bottom', labels: { colors: dark ? '#cbd5f5' : '#475569' } },
+        legend: { position: 'bottom', labels: { colors: dark ? '#EFF2F6' : '#475569', fontWeight: dark ? 500 : 400 } },
         tooltip: {
             theme: dark ? 'dark' : 'light',
             y: {
@@ -462,38 +446,22 @@ const formatDate = (value) => {
     return date.toLocaleDateString('vi-VN')
 }
 
+// Hàm chuẩn hóa tên người: viết hoa chữ cái đầu mỗi từ
+const capitalizeWords = (text) => {
+    if (!text || typeof text !== 'string') return text || '—'
+    return text
+        .toLowerCase()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+}
+
 const prettyRole = (role) => {
     if (!role) return '—'
     return role.replace('ROLE_', '').toLowerCase().replace(/(^|\s)\S/g, (s) => s.toUpperCase())
 }
 
-const buildTotals = (source, key) => {
-    if (!source) return { totalExpenses: 0, totalImportedCost: 0, range: '' }
-    const start = source.startDate
-    const end = source.endDate
-    const range = [start, end].filter(Boolean).join(' → ')
-    const totalKey = key || 'totalExpenses'
-    return {
-        [totalKey]: source[totalKey] ?? 0,
-        range
-    }
-}
-
-const expenseTotals = computed(() => {
-    const totals = buildTotals(props.totalExpenses ?? {}, 'totalExpenses')
-    return {
-        totalExpenses: totals.totalExpenses ?? 0,
-        range: totals.range
-    }
-})
-
-const importTotals = computed(() => {
-    const totals = buildTotals(props.totalImportedCost ?? {}, 'totalImportedIngredientCost')
-    return {
-        totalImportedCost: totals.totalImportedIngredientCost ?? 0,
-        range: totals.range
-    }
-})
+// Các computed expenseTotals và importTotals đã được xóa vì không thuộc tab này
 
 const customerInsights = computed(() => {
     const totalCustomers = props.topCustomers.length
@@ -502,6 +470,18 @@ const customerInsights = computed(() => {
         totalCustomers,
         averageSpendPerCustomer: totalCustomers > 0 ? totalRevenue / totalCustomers : 0
     }
+})
+
+// Tính số khách hàng mới trong tháng này
+const newCustomersThisMonth = computed(() => {
+    const thisMonth = new Date()
+    thisMonth.setDate(1)
+    thisMonth.setHours(0, 0, 0, 0)
+
+    return props.topCustomers.filter(customer => {
+        const created = customer.createdAt ? new Date(customer.createdAt) : (customer.lastOrderDate ? new Date(customer.lastOrderDate) : null)
+        return created && created >= thisMonth
+    }).length
 })
 
 const staffInsights = computed(() => {
@@ -513,11 +493,29 @@ const staffInsights = computed(() => {
     }
 })
 
+// Tính số nhân viên hoạt động (có doanh số > 0)
+const activeStaffCount = computed(() => props.staffPerformance.filter(staff => (staff.totalRevenue ?? 0) > 0 || (staff.totalOrders ?? 0) > 0).length)
+
+// Phân cấp màu cho badge vai trò
+const getRoleBadgeClass = (role) => {
+    if (!role) return 'role-chip--default'
+    const roleUpper = String(role).toUpperCase()
+    if (roleUpper.includes('ADMIN') || roleUpper.includes('ROLE_ADMIN')) {
+        return 'role-chip--admin' // Đỏ/Tím cho Admin
+    }
+    if (roleUpper.includes('MANAGER') || roleUpper.includes('ROLE_MANAGER') || roleUpper.includes('QUẢN LÝ')) {
+        return 'role-chip--manager' // Xanh đậm cho Manager
+    }
+    return 'role-chip--staff' // Xanh nhạt cho Staff (mặc định)
+}
+
 const customerMetric = ref('spend')
-const customerChartType = ref('bar')
+// Cố định biểu đồ khách hàng là horizontalBar để dễ đọc tên
+const customerChartType = ref('horizontalBar')
 const customerLimit = ref('5')
 const staffMetric = ref('revenue')
-const staffChartType = ref('bar')
+// Cố định biểu đồ nhân viên là horizontalBar để tránh text nghiêng
+const staffChartType = ref('horizontalBar')
 
 const limitedCustomers = computed(() => {
     if (customerLimit.value === 'all') return props.topCustomers
@@ -541,17 +539,54 @@ const customerChartSeries = computed(() => {
     ]
 })
 
+// Màu riêng cho biểu đồ khách hàng (xanh dương nhạt)
+const CUSTOMER_CHART_COLOR = '#3b82f6' // Xanh dương nhạt để phân biệt với nhân viên
+
+// Màu riêng cho biểu đồ nhân viên (xanh lá)
+const STAFF_CHART_COLOR = '#22c55e' // Xanh lá để phân biệt với khách hàng
+
 const customerChartOptions = computed(() => {
-    const labels = limitedCustomers.value.map((customer, index) => customer.customerName ?? `Khách #${customer.customerId ?? index + 1}`)
-    const base = createBaseOptions(resolvedCustomerChartType.value, VIBRANT_PALETTE)
+    const labels = limitedCustomers.value.map((customer, index) => capitalizeWords(customer.customerName ?? `Khách #${customer.customerId ?? index + 1}`))
+    // Dùng màu riêng cho biểu đồ khách hàng
+    const base = createBaseOptions(resolvedCustomerChartType.value, [CUSTOMER_CHART_COLOR])
 
     return mergeOptions(base, {
         labels,
-        xaxis: resolvedCustomerChartType.value === 'bar' ? { categories: labels } : base.xaxis,
+        xaxis: resolvedCustomerChartType.value === 'bar'
+            ? {
+                ...base.xaxis,
+                categories: labels,
+                labels: {
+                    ...base.xaxis.labels,
+                    rotate: customerChartType.value === 'horizontalBar' ? 0 : -35,
+                    style: {
+                        ...base.xaxis.labels.style,
+                        fontSize: customerChartType.value === 'horizontalBar' ? '13px' : '12px'
+                    },
+                    formatter: customerChartType.value === 'horizontalBar'
+                        ? (value) => customerMetric.value === 'spend' ? formatCurrency(value) : formatNumber(value)
+                        : undefined
+                }
+            }
+            : base.xaxis,
+        yaxis: resolvedCustomerChartType.value === 'bar' && customerChartType.value === 'horizontalBar'
+            ? {
+                ...base.yaxis,
+                labels: {
+                    ...base.yaxis.labels,
+                    style: {
+                        ...base.yaxis.labels.style,
+                        fontSize: '13px' // Tăng font size cho dễ đọc
+                    }
+                }
+            }
+            : base.yaxis,
         plotOptions: {
             bar: {
                 borderRadius: 8,
-                horizontal: customerChartType.value === 'horizontalBar'
+                horizontal: customerChartType.value === 'horizontalBar',
+                columnWidth: customerChartType.value === 'horizontalBar' ? '75%' : '55%',
+                barHeight: customerChartType.value === 'horizontalBar' ? '70%' : undefined
             },
             pie: {
                 donut: { size: '68%' }
@@ -601,16 +636,47 @@ const staffChartSeries = computed(() => {
 })
 
 const staffChartOptions = computed(() => {
-    const labels = props.staffPerformance.map((staff, index) => staff.fullName || staff.username || `NV #${staff.userId ?? index + 1}`)
-    const base = createBaseOptions(resolvedStaffChartType.value, VIBRANT_PALETTE)
+    const labels = props.staffPerformance.map((staff, index) => capitalizeWords(staff.fullName || staff.username || `NV #${staff.userId ?? index + 1}`))
+    // Dùng màu riêng cho biểu đồ nhân viên
+    const base = createBaseOptions(resolvedStaffChartType.value, [STAFF_CHART_COLOR])
 
     return mergeOptions(base, {
         labels,
-        xaxis: resolvedStaffChartType.value === 'bar' ? { categories: labels } : base.xaxis,
+        xaxis: resolvedStaffChartType.value === 'bar'
+            ? {
+                ...base.xaxis,
+                categories: labels,
+                labels: {
+                    ...base.xaxis.labels,
+                    rotate: staffChartType.value === 'horizontalBar' ? 0 : -35,
+                    style: {
+                        ...base.xaxis.labels.style,
+                        fontSize: staffChartType.value === 'horizontalBar' ? '13px' : '12px'
+                    },
+                    formatter: staffChartType.value === 'horizontalBar'
+                        ? (value) => staffMetric.value === 'revenue' ? formatCurrency(value) : formatNumber(value)
+                        : undefined
+                }
+            }
+            : base.xaxis,
+        yaxis: resolvedStaffChartType.value === 'bar' && staffChartType.value === 'horizontalBar'
+            ? {
+                ...base.yaxis,
+                labels: {
+                    ...base.yaxis.labels,
+                    style: {
+                        ...base.yaxis.labels.style,
+                        fontSize: '13px' // Tăng font size cho dễ đọc
+                    }
+                }
+            }
+            : base.yaxis,
         plotOptions: {
             bar: {
                 borderRadius: 8,
-                horizontal: staffChartType.value === 'horizontalBar'
+                horizontal: staffChartType.value === 'horizontalBar',
+                columnWidth: staffChartType.value === 'horizontalBar' ? '75%' : '55%',
+                barHeight: staffChartType.value === 'horizontalBar' ? '70%' : undefined
             }
         },
         stroke: staffChartType.value === 'radar'
@@ -668,6 +734,12 @@ const staffChartOptions = computed(() => {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: var(--color-card);
+    color: var(--color-heading);
+    transition: all var(--transition-base);
+    min-width: 100px;
 }
 
 .chart-card :global(.form-select:focus) {
@@ -788,6 +860,13 @@ const staffChartOptions = computed(() => {
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-3);
     font-family: var(--font-family-sans);
+    line-height: 1.6; /* Tăng line-height để text không bị cắt */
+    vertical-align: middle; /* Căn giữa theo chiều dọc */
+}
+
+.table-card :global(.table tbody td.fw-semibold) {
+    line-height: 1.6;
+    word-break: break-word; /* Tự động xuống dòng nếu tên quá dài */
 }
 
 .table-card :global(.table tbody tr:last-child td) {
@@ -811,10 +890,32 @@ const staffChartOptions = computed(() => {
     font-family: var(--font-family-sans);
 }
 
+/* Phân cấp màu cho vai trò */
+.role-chip--admin {
+    background: rgba(239, 68, 68, 0.15); /* Đỏ nhạt */
+    color: #dc2626; /* Đỏ đậm */
+}
+
+.role-chip--manager {
+    background: rgba(37, 99, 235, 0.15); /* Xanh dương nhạt */
+    color: #1d4ed8; /* Xanh dương đậm */
+}
+
+.role-chip--staff {
+    background: rgba(59, 130, 246, 0.1); /* Xanh dương rất nhạt */
+    color: #2563eb; /* Xanh dương */
+}
+
+.role-chip--default {
+    background: var(--color-badge-soft-bg);
+    color: var(--color-badge-soft-text);
+}
+
 .bg-emerald-light { background: var(--color-soft-emerald); color: var(--color-success); }
 .bg-sky-light { background: var(--color-soft-sky); color: var(--color-info); }
 .bg-indigo-light { background: var(--color-soft-primary); color: var(--color-primary); }
 .bg-amber-light { background: var(--color-soft-amber); color: var(--color-warning); }
+.bg-primary-light { background: var(--color-soft-primary); color: var(--color-primary); }
 
 @media (max-width: 768px) {
     .grid {

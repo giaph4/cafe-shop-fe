@@ -140,7 +140,7 @@ const toggleEmojiPicker = () => {
 
 const handleEmojiSelect = (emoji) => {
     if (!emoji) return
-    // Emit send-emoji event directly instead of adding to text
+    // Phát sự kiện send-emoji trực tiếp thay vì thêm vào text
     emit('send-emoji', emoji)
     showEmojiPicker.value = false
     nextTick(() => {

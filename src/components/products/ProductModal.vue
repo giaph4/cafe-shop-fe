@@ -284,28 +284,46 @@ const removingImage = ref(false)
 const isEditMode = computed(() => Boolean(props.product?.id))
 
 watch(
-    () => props.product,
-    (product) => {
-        if (product) {
-            form.value = {
-                ...defaultForm(),
-                ...product,
-                categoryId: product.categoryId ?? product.category?.id ?? product.categoryId,
-                createdAt: product.createdAt ?? null
+    () => [props.product, props.categories],
+    ([product, categories]) => {
+        if (product && product.id) { // Editing an existing product
+            // Explicitly map fields to prevent unexpected behavior from spreading
+            form.value.name = product.name || '';
+            form.value.code = product.code || '';
+            form.value.price = product.price;
+            form.value.cost = product.cost;
+            form.value.description = product.description || '';
+            form.value.imageUrl = product.imageUrl || null;
+            form.value.createdAt = product.createdAt || null;
+            form.value.available = product.available;
+            
+            previewImage.value = product.imageUrl || '/placeholder.png';
+
+            // Find the category ID by name, as the response only provides categoryName
+            let foundCategoryId = '';
+            if (categories && categories.length > 0 && product.categoryName) {
+                const matchingCategory = categories.find(c => c.name === product.categoryName);
+                if (matchingCategory) {
+                    foundCategoryId = matchingCategory.id;
+                }
             }
-            previewImage.value = product.imageUrl || '/placeholder.png'
+            form.value.categoryId = foundCategoryId ? Number(foundCategoryId) : '';
+
         } else {
-            form.value = defaultForm()
-            previewImage.value = '/placeholder.png'
+            // Reset to default form for new products
+            form.value = defaultForm();
+            previewImage.value = '/placeholder.png';
         }
-        imageFile.value = null
+
+        // Reset fields not part of the main product data on every change
+        imageFile.value = null;
         if (generatedPreviewUrl.value) {
-            URL.revokeObjectURL(generatedPreviewUrl.value)
-            generatedPreviewUrl.value = null
+            URL.revokeObjectURL(generatedPreviewUrl.value);
+            generatedPreviewUrl.value = null;
         }
-        activeTab.value = 'info'
+        activeTab.value = 'info';
     },
-    { immediate: true }
+    { immediate: true, deep: true }
 )
 
 watch(isEditMode, (value) => {

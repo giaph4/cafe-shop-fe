@@ -175,14 +175,14 @@ const searchQuery = ref('')
 const selectedIndex = ref(0)
 const searchInput = ref(null)
 
-// Build items from navigation
+// Xây dựng items từ navigation
 const allPages = computed(() => {
     const pages = []
 
     navigationSections.forEach(section => {
         section.items.forEach(item => {
             if (item.to) {
-                // Check role permission
+                // Kiểm tra quyền role
                 const hasPermission = !item.roles ||
                     item.roles.some(role => authStore.userRoles.includes(role))
 
@@ -199,7 +199,7 @@ const allPages = computed(() => {
                 }
             }
 
-            // Handle children
+            // Xử lý children
             if (item.children) {
                 item.children.forEach(child => {
                     const hasPermission = !child.roles ||
@@ -224,7 +224,7 @@ const allPages = computed(() => {
     return pages
 })
 
-// Quick actions
+// Các hành động nhanh
 const quickActions = computed(() => {
     const actions = []
 
@@ -246,7 +246,7 @@ const quickActions = computed(() => {
                 icon: 'bi bi-box-seam',
                 action: () => {
                     router.push('/products')
-                    // Trigger new product modal after navigation
+                    // Kích hoạt modal tạo sản phẩm mới sau khi điều hướng
                     setTimeout(() => {
                         window.dispatchEvent(new CustomEvent('action:new-product'))
                     }, 300)
@@ -271,10 +271,10 @@ const quickActions = computed(() => {
     return actions
 })
 
-// Recent items
+// Các items gần đây
 const recentItems = computed(() => shortcutsStore.recentActions.slice(0, 5))
 
-// Filtered items
+// Các items đã lọc
 const filteredPages = computed(() => {
     if (!searchQuery.value) return []
 
@@ -305,7 +305,7 @@ const filteredItems = computed(() => {
     return items
 })
 
-// Navigation helpers
+// Các helper điều hướng
 const getPageIndex = (index) => {
     let offset = 0
     if (!searchQuery.value && recentItems.value.length > 0) {
@@ -323,7 +323,7 @@ const getActionIndex = (index) => {
     return offset + index
 }
 
-// Navigation
+// Điều hướng
 const navigateDown = () => {
     if (selectedIndex.value < filteredItems.value.length - 1) {
         selectedIndex.value++
@@ -340,13 +340,13 @@ const navigateUp = () => {
     }
 }
 
-// Execute
+// Thực thi
 const executeItem = (item) => {
     if (item.action) {
         item.action()
     }
 
-    // Add to recent
+    // Thêm vào gần đây
     shortcutsStore.addRecentAction({
         id: item.id,
         title: item.title,
@@ -364,7 +364,7 @@ const executeSelected = () => {
     }
 }
 
-// Format shortcut
+// Định dạng shortcut
 const formatShortcut = (shortcut) => {
     if (!shortcut) return ''
     const parts = shortcut.split('+')
@@ -376,7 +376,7 @@ const formatShortcut = (shortcut) => {
     }).join(' + ')
 }
 
-// Open/Close
+// Mở/Đóng
 const open = () => {
     isOpen.value = true
     searchQuery.value = ''
@@ -392,7 +392,7 @@ const close = () => {
     selectedIndex.value = 0
 }
 
-// Listen for shortcut event
+// Lắng nghe sự kiện shortcut
 const handleCommandPaletteShortcut = () => {
     open()
 }
@@ -405,7 +405,7 @@ onBeforeUnmount(() => {
     window.removeEventListener('shortcut:command-palette', handleCommandPaletteShortcut)
 })
 
-// Watch search query to reset selection
+// Theo dõi search query để reset selection
 watch(searchQuery, () => {
     selectedIndex.value = 0
 })

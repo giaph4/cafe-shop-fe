@@ -50,16 +50,16 @@ api.interceptors.request.use((config) => {
 })
 
 /**
- * Retry logic với exponential backoff cho network errors
- * @param {Object} config - Axios request config
- * @param {Error} error - Error object
- * @returns {Promise} - Retry promise hoặc reject
+ * Logic retry với exponential backoff cho lỗi mạng
+ * @param {Object} config - Cấu hình request Axios
+ * @param {Error} error - Đối tượng lỗi
+ * @returns {Promise} - Promise retry hoặc reject
  */
 const retryRequest = async (config, error) => {
     const retryConfig = config || {}
     const retryCount = retryConfig._retryCount ?? 0
 
-    // Chỉ retry cho network errors hoặc timeout, không retry cho 4xx (trừ 401 đã xử lý riêng)
+    // Chỉ retry cho lỗi mạng hoặc timeout, không retry cho 4xx (trừ 401 đã xử lý riêng)
     const isNetworkError = !error.response && (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message === 'Network Error')
     const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout')
     const isRetryableStatus = error.response?.status >= 500 && error.response?.status < 600
@@ -68,8 +68,8 @@ const retryRequest = async (config, error) => {
         return Promise.reject(error)
     }
 
-    // Với 5xx errors, chỉ retry 1 lần (vì nếu backend lỗi thì retry nhiều lần cũng không giúp)
-    // Với network errors, retry 3 lần
+    // Với lỗi 5xx, chỉ retry 1 lần (vì nếu backend lỗi thì retry nhiều lần cũng không giúp)
+    // Với lỗi mạng, retry 3 lần
     const maxRetries = isRetryableStatus ? 1 : (retryConfig._maxRetries ?? 3)
     const retryDelay = retryConfig._retryDelay ?? 1000
 
@@ -81,9 +81,9 @@ const retryRequest = async (config, error) => {
     // Tính toán delay với exponential backoff: delay * 2^retryCount
     const delay = retryDelay * Math.pow(2, retryCount)
 
-    // Log retry trong development
+    // Ghi log retry trong development
     if (import.meta.env.DEV) {
-        logger.warn(`[Axios Retry] Retrying request (${retryCount + 1}/${maxRetries}) after ${delay}ms:`, {
+        logger.warn(`[Axios Retry] Đang retry request (${retryCount + 1}/${maxRetries}) sau ${delay}ms:`, {
             url: config?.url,
             method: config?.method,
             error: error.message || error.code

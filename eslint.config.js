@@ -25,7 +25,7 @@ export default [
             vue
         },
         rules: {
-            // Vue specific
+            // Quy tắc Vue cụ thể
             'vue/multi-word-component-names': 'warn',
             'vue/no-unused-vars': 'error',
             'vue/no-unused-components': 'warn',
@@ -35,11 +35,11 @@ export default [
             'vue/component-name-in-template-casing': ['warn', 'PascalCase'],
             'vue/attribute-hyphenation': ['warn', 'always'],
             'vue/v-on-event-hyphenation': ['warn', 'always'],
-            
-            // General JavaScript
+
+            // JavaScript chung
             'no-console': ['warn', { allow: ['warn', 'error'] }],
             'no-debugger': 'error',
-            'no-unused-vars': ['error', { 
+            'no-unused-vars': ['error', {
                 argsIgnorePattern: '^_',
                 varsIgnorePattern: '^_'
             }],
@@ -50,8 +50,8 @@ export default [
             'arrow-body-style': ['warn', 'as-needed'],
             'object-shorthand': 'warn',
             'prefer-template': 'warn',
-            
-            // Code quality
+
+            // Chất lượng code
             'eqeqeq': ['error', 'always'],
             'no-eval': 'error',
             'no-implied-eval': 'error',
@@ -66,8 +66,8 @@ export default [
             'no-useless-concat': 'error',
             'no-useless-return': 'error',
             'require-await': 'warn',
-            
-            // Best practices
+
+            // Thực hành tốt nhất
             'array-callback-return': 'warn',
             'consistent-return': 'warn',
             'default-case': 'warn',
@@ -80,8 +80,8 @@ export default [
             'no-param-reassign': ['warn', { props: false }],
             'no-return-await': 'warn',
             'prefer-promise-reject-errors': 'warn',
-            
-            // Style
+
+            // Phong cách code
             'indent': ['warn', 4, { SwitchCase: 1 }],
             'quotes': ['warn', 'single', { avoidEscape: true }],
             'semi': ['warn', 'never'],

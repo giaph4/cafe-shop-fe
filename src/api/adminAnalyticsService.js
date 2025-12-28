@@ -1,5 +1,5 @@
 import api from './axios'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 
 const BASE_URL = '/api/admin/analytics'
 

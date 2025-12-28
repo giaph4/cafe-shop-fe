@@ -48,7 +48,7 @@
           <div class="modal-footer">
             <button
               type="button"
-              class="btn-flat btn-flat--outline"
+              class="btn btn-outline-secondary"
               @click="handleClose"
             >
               Đóng
@@ -177,6 +177,25 @@ const handleClose = () => {
     align-items: center;
     justify-content: flex-end;
     gap: var(--spacing-2);
+}
+
+/* Button Styles - Đồng bộ */
+.stock-chart-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    transition: all var(--transition-base);
+}
+
+.stock-chart-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .chart-container {

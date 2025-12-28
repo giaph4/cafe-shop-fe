@@ -4,38 +4,37 @@ import { getOrders, getOrderById } from '@/api/orderService'
 import logger from '@/utils/logger'
 
 /**
- * Pinia store để quản lý order state và caching
+ * Pinia store quản lý order state và caching
  * Store này cung cấp:
  * - Cache cho orders để tránh refetch không cần thiết
- * - Quick access to orders by ID
- * - Methods để load và manage orders
+ * - Truy cập nhanh orders theo ID
+ * - Các methods để load và quản lý orders
  */
 export const useOrderStore = defineStore('orders', () => {
     // State
     const orders = ref([])
-    const ordersMap = ref(new Map()) // Map<orderId, order> for quick lookup
+    const ordersMap = ref(new Map()) // Map<orderId, order> để tra cứu nhanh
     const loading = ref(false)
     const error = ref(null)
     const lastUpdated = ref(null)
 
-    // Computed: Get order by ID
-    const getOrderById = (id) => ordersMap.value.get(id) || null
+    // Lấy order theo ID
+    const getOrderByIdFn = (id) => ordersMap.value.get(id) || null
 
-    // Computed: Get orders by status
+    // Lấy orders theo trạng thái
     const getOrdersByStatus = (status) => orders.value.filter(order => order?.status === status)
 
-    // Computed: Get pending orders
+    // Orders đang chờ xử lý
     const pendingOrders = computed(() => orders.value.filter(order => order?.status === 'PENDING'))
 
-    // Computed: Get paid orders
+    // Orders đã thanh toán
     const paidOrders = computed(() => orders.value.filter(order => order?.status === 'PAID'))
 
     /**
-     * Load orders from API
+     * Load orders từ API
      * @param {Object} params - Query parameters (page, size, status, etc.)
-     * @param {boolean} force - Force reload
+     * @param {boolean} force - Bắt buộc reload
      */
-
     const loadOrders = async (params = {}, force = false) => {
         if (loading.value && !force) return
 
@@ -58,10 +57,10 @@ export const useOrderStore = defineStore('orders', () => {
 
             const ordersArray = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
 
-            // Update orders list
+            // Cập nhật danh sách orders
             orders.value = ordersArray
 
-            // Update map
+            // Cập nhật map
             ordersArray.forEach(order => {
                 if (order?.id) {
                     ordersMap.value.set(order.id, order)
@@ -72,7 +71,7 @@ export const useOrderStore = defineStore('orders', () => {
             return data
         } catch (err) {
             error.value = err.response?.data?.message || err.message || 'Không thể tải danh sách đơn hàng.'
-            logger.error('Failed to load orders:', err)
+            logger.error('Không thể tải orders:', err)
             throw err
         } finally {
             loading.value = false
@@ -80,19 +79,19 @@ export const useOrderStore = defineStore('orders', () => {
     }
 
     /**
-     * Load single order by ID
+     * Load một order theo ID
      * @param {number} orderId - Order ID
-     * @param {boolean} force - Force reload from API
+     * @param {boolean} force - Bắt buộc reload từ API
      */
     const loadOrder = async (orderId, force = false) => {
         if (!orderId) return null
 
-        // Check cache first
+        // Kiểm tra cache trước
         if (!force) {
-            const cached = getOrderById(orderId)
+            const cached = getOrderByIdFn(orderId)
             if (cached && lastUpdated.value) {
                 const age = Date.now() - lastUpdated.value
-                if (age < 60000) { // 1 minute cache
+                if (age < 60000) { // Cache 1 phút
                     return cached
                 }
             }
@@ -101,10 +100,10 @@ export const useOrderStore = defineStore('orders', () => {
         try {
             const order = await getOrderById(orderId)
             if (order?.id) {
-                // Update cache
+                // Cập nhật cache
                 ordersMap.value.set(order.id, order)
 
-                // Update in list if exists
+                // Cập nhật trong danh sách nếu có
                 const index = orders.value.findIndex(o => o.id === order.id)
                 if (index !== -1) {
                     orders.value[index] = order
@@ -114,22 +113,22 @@ export const useOrderStore = defineStore('orders', () => {
             }
             return order
         } catch (err) {
-            logger.error('Failed to load order:', err)
+            logger.error('Không thể tải order:', err)
             throw err
         }
     }
 
     /**
-     * Update order in cache
-     * @param {Object} order - Updated order object
+     * Cập nhật order trong cache
+     * @param {Object} order - Order object đã cập nhật
      */
     const updateOrder = (order) => {
         if (!order?.id) return
 
-        // Update map
+        // Cập nhật map
         ordersMap.value.set(order.id, order)
 
-        // Update in list
+        // Cập nhật trong danh sách
         const index = orders.value.findIndex(o => o.id === order.id)
         if (index !== -1) {
             orders.value[index] = order
@@ -141,7 +140,7 @@ export const useOrderStore = defineStore('orders', () => {
     }
 
     /**
-     * Remove order from cache
+     * Xóa order khỏi cache
      * @param {number} orderId - Order ID
      */
     const removeOrder = (orderId) => {
@@ -154,7 +153,7 @@ export const useOrderStore = defineStore('orders', () => {
     }
 
     /**
-     * Clear all state
+     * Xóa tất cả state
      */
     const clear = () => {
         orders.value = []
@@ -176,7 +175,7 @@ export const useOrderStore = defineStore('orders', () => {
         paidOrders,
 
         // Methods
-        getOrderById,
+        getOrderById: getOrderByIdFn,
         getOrdersByStatus,
         loadOrders,
         loadOrder,
@@ -185,4 +184,3 @@ export const useOrderStore = defineStore('orders', () => {
         clear
     }
 })
-

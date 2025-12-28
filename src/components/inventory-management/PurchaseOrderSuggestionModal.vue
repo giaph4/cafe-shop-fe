@@ -178,7 +178,7 @@
           <div class="modal-footer">
             <button
               type="button"
-              class="btn-flat btn-flat--outline"
+              class="btn btn-outline-secondary"
               :disabled="creating"
               @click="handleClose"
             >
@@ -186,7 +186,7 @@
             </button>
             <button
               type="button"
-              class="btn-flat btn-flat--primary"
+              class="btn btn-primary"
               :disabled="!canCreate || creating"
               @click="handleCreate"
             >
@@ -237,36 +237,36 @@ const error = ref('')
 // Merge tất cả nhà cung cấp, ưu tiên hiển thị những người đã từng cung cấp trước
 const suppliers = computed(() => {
     const historicalIds = new Set(historicalSuppliers.value.map(s => s.supplierId))
-    
+
     // Tách thành 2 nhóm: đã từng cung cấp và chưa từng cung cấp
     const historical = []
     const others = []
-    
+
     for (const supplier of allSuppliers.value) {
         // Backend có thể trả về id hoặc supplierId
         const supplierId = supplier.id || supplier.supplierId
         const supplierName = supplier.name || supplier.supplierName || 'N/A'
-        
+
         if (historicalIds.has(supplierId)) {
             // Tìm thông tin từ historical để có lastUnitPrice
             const historicalInfo = historicalSuppliers.value.find(s => s.supplierId === supplierId)
             historical.push({
                 ...supplier,
-                supplierId: supplierId,
-                supplierName: supplierName,
+                supplierId,
+                supplierName,
                 lastUnitPrice: historicalInfo?.lastUnitPrice,
                 isHistorical: true
             })
         } else {
             others.push({
                 ...supplier,
-                supplierId: supplierId,
-                supplierName: supplierName,
+                supplierId,
+                supplierName,
                 isHistorical: false
             })
         }
     }
-    
+
     // Sắp xếp: đã từng cung cấp trước, sau đó là các nhà cung cấp khác
     return [...historical, ...others]
 })
@@ -288,7 +288,7 @@ const getMinDate = () => {
 const initializeFormData = (suggestion) => {
     const suggestedQuantity = safeNumber(suggestion?.suggestion?.quantity, 0)
     const lastUnitPrice = safeNumber(suggestion?.lastPurchaseOrder?.unitPrice, 0)
-    
+
     return {
         quantity: suggestedQuantity > 0 ? suggestedQuantity : 1, // Tối thiểu 1
         supplierId: suggestion?.suggestion?.supplierId || '',
@@ -320,8 +320,8 @@ const loadAllSuppliers = async () => {
     try {
         const response = await supplierService.getSuppliers()
         // Handle both array and page format
-        const suppliersList = Array.isArray(response) 
-            ? response 
+        const suppliersList = Array.isArray(response)
+            ? response
             : (response?.content || [])
         allSuppliers.value = suppliersList
     } catch (err) {
@@ -379,7 +379,7 @@ const handleCreate = async () => {
             }]
         }
 
-        // Add expectedDate only if provided (optional field)
+        // Thêm expectedDate chỉ khi được cung cấp (trường tùy chọn)
         // Backend expects LocalDateTime, so we send ISO string with time
         if (formData.value.expectedDate) {
             // Convert date string to ISO format with time (LocalDateTime format)
@@ -411,7 +411,6 @@ const handleCreate = async () => {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1055;
     display: block;
     overflow-x: hidden;
     overflow-y: auto;
@@ -424,7 +423,6 @@ const handleCreate = async () => {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 1050;
     background-color: var(--color-backdrop);
     opacity: 1;
 }
@@ -432,7 +430,6 @@ const handleCreate = async () => {
 /* Modal Dialog - Above backdrop */
 .purchase-order-modal :global(.modal-dialog) {
     position: relative;
-    z-index: 1056;
     margin: var(--spacing-4) auto;
     pointer-events: none;
 }
@@ -498,6 +495,54 @@ const handleCreate = async () => {
     align-items: center;
     justify-content: flex-end;
     gap: var(--spacing-2);
+}
+
+/* Button Styles - Đồng bộ */
+.purchase-order-modal :global(.btn-outline-secondary) {
+    border: 1px solid var(--color-border);
+    color: var(--color-heading);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    transition: all var(--transition-base);
+}
+
+.purchase-order-modal :global(.btn-outline-secondary:hover:not(:disabled)) {
+    background: var(--color-card-muted);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.purchase-order-modal :global(.btn-primary) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.purchase-order-modal :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--color-primary-dark);
+}
+
+.purchase-order-modal :global(.btn-primary:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.purchase-order-modal :global(.btn-primary i) {
+    font-size: 18px;
+    line-height: 1;
 }
 
 /* Form Labels - Chuẩn hóa */

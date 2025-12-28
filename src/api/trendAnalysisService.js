@@ -125,7 +125,7 @@ const analyzeHourlyPattern = (hourlyData) => {
 
 export const analyzeTrends = async ({ startDate, endDate, metric: _metric = 'revenue' } = {}) => {
     try {
-        // Call backend API instead of calculating locally
+        // Gọi backend API để lấy dữ liệu phân tích xu hướng
         const { data } = await api.get('/api/v1/reports/trend-analysis', {
             params: { startDate, endDate }
         })
@@ -134,7 +134,7 @@ export const analyzeTrends = async ({ startDate, endDate, metric: _metric = 'rev
             throw new Error('Không nhận được dữ liệu từ server')
         }
 
-        // Normalize response to match frontend expectations
+        // Chuẩn hóa response cho frontend
         return {
             dailyData: (data.dailyData || []).map(d => ({
                 date: d.date,

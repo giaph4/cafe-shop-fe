@@ -1,14 +1,15 @@
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSearchStore } from '@/store/search'
-import { cleanParams } from '@/api/utils'
+import { cleanParams } from '@/api/helpers'
+import logger from '@/utils/logger'
 
 /**
- * Composable for advanced filters with preset management
- * @param {Object} options - Options
- * @param {string} options.pageName - Page name for presets
- * @param {Object} options.defaultFilters - Default filter values
- * @param {Function} options.onFilterChange - Callback when filters change
+ * Composable quản lý bộ lọc nâng cao với preset
+ * @param {Object} options - Tùy chọn cấu hình
+ * @param {string} options.pageName - Tên trang để lưu presets
+ * @param {Object} options.defaultFilters - Giá trị bộ lọc mặc định
+ * @param {Function} options.onFilterChange - Callback khi bộ lọc thay đổi
  */
 export function useAdvancedFilters (options = {}) {
     const { pageName, defaultFilters = {}, onFilterChange } = options
@@ -20,7 +21,7 @@ export function useAdvancedFilters (options = {}) {
     const activePresetId = ref(null)
     const showFilterPanel = ref(false)
 
-    // Load saved filters from localStorage
+    // Tải bộ lọc đã lưu từ localStorage
     const loadSavedFilters = () => {
         try {
             const saved = localStorage.getItem(`filters:${pageName}`)
@@ -29,26 +30,26 @@ export function useAdvancedFilters (options = {}) {
                 filters.value = { ...defaultFilters, ...parsed }
             }
         } catch (err) {
-            console.warn('[useAdvancedFilters] Failed to load saved filters', err)
+            logger.warn('[useAdvancedFilters] Không thể tải bộ lọc đã lưu', err)
         }
     }
 
-    // Save filters to localStorage
+    // Lưu bộ lọc vào localStorage
     const saveFilters = () => {
         try {
             localStorage.setItem(`filters:${pageName}`, JSON.stringify(filters.value))
         } catch (err) {
-            console.warn('[useAdvancedFilters] Failed to save filters', err)
+            logger.warn('[useAdvancedFilters] Không thể lưu bộ lọc', err)
         }
     }
 
-    // Sync filters with URL query params
+    // Đồng bộ bộ lọc với URL query params
     const syncWithQuery = () => {
         const query = route.query
         Object.keys(defaultFilters).forEach(key => {
             if (query[key] !== undefined) {
                 const value = query[key]
-                // Try to parse as number or boolean
+                // Thử parse thành number hoặc boolean
                 if (value === 'true') {
                     filters.value[key] = true
                 } else if (value === 'false') {
@@ -62,7 +63,7 @@ export function useAdvancedFilters (options = {}) {
         })
     }
 
-    // Update URL with current filters
+    // Cập nhật URL với bộ lọc hiện tại
     const updateQuery = () => {
         const query = { ...route.query }
         const clean = cleanParams(filters.value)
@@ -78,7 +79,7 @@ export function useAdvancedFilters (options = {}) {
         router.replace({ query })
     }
 
-    // Apply filters
+    // Áp dụng bộ lọc
     const applyFilters = () => {
         saveFilters()
         updateQuery()
@@ -88,7 +89,7 @@ export function useAdvancedFilters (options = {}) {
         showFilterPanel.value = false
     }
 
-    // Clear all filters
+    // Xóa tất cả bộ lọc
     const clearFilters = () => {
         filters.value = { ...defaultFilters }
         saveFilters()
@@ -99,21 +100,21 @@ export function useAdvancedFilters (options = {}) {
         }
     }
 
-    // Save current filters as preset
+    // Lưu bộ lọc hiện tại thành preset
     const savePreset = (presetName) => {
         const preset = searchStore.saveFilterPreset(pageName, presetName, filters.value)
         activePresetId.value = preset.id
         return preset
     }
 
-    // Load preset
+    // Tải preset
     const loadPreset = (preset) => {
         filters.value = { ...defaultFilters, ...preset.filters }
         activePresetId.value = preset.id
         applyFilters()
     }
 
-    // Delete preset
+    // Xóa preset
     const deletePreset = (presetId) => {
         searchStore.deleteFilterPreset(pageName, presetId)
         if (activePresetId.value === presetId) {
@@ -121,23 +122,23 @@ export function useAdvancedFilters (options = {}) {
         }
     }
 
-    // Get filter presets
+    // Lấy danh sách presets bộ lọc
     const filterPresets = computed(() => searchStore.getFilterPresets(pageName))
 
-    // Sanitized filters (remove empty values)
+    // Bộ lọc đã được sanitize (loại bỏ giá trị rỗng)
     const sanitizedFilters = computed(() => cleanParams(filters.value))
 
-    // Check if filters are active
+    // Kiểm tra có bộ lọc nào đang active không
     const hasActiveFilters = computed(() => Object.keys(defaultFilters).some(key => {
         const defaultValue = defaultFilters[key]
         const currentValue = filters.value[key]
         return currentValue !== defaultValue &&
-                   currentValue !== null &&
-                   currentValue !== undefined &&
-                   currentValue !== ''
+            currentValue !== null &&
+            currentValue !== undefined &&
+            currentValue !== ''
     }))
 
-    // Watch filters and update query (debounced)
+    // Theo dõi bộ lọc và cập nhật query (debounced)
     let updateTimeout = null
     watch(filters, () => {
         clearTimeout(updateTimeout)
@@ -146,7 +147,11 @@ export function useAdvancedFilters (options = {}) {
         }, 500)
     }, { deep: true })
 
-    // Initialize
+    onBeforeUnmount(() => {
+        clearTimeout(updateTimeout)
+    })
+
+    // Khởi tạo
     onMounted(() => {
         syncWithQuery()
         loadSavedFilters()
@@ -170,4 +175,3 @@ export function useAdvancedFilters (options = {}) {
         updateQuery
     }
 }
-

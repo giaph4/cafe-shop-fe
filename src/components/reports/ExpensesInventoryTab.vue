@@ -1,35 +1,8 @@
 <template>
   <div class="expenses-inventory">
-    <div class="export-row d-flex flex-wrap gap-2 justify-content-end">
-      <button
-        class="btn btn-outline-primary"
-        type="button"
-        :disabled="expensesExporting"
-        @click="handleExportExpenses"
-      >
-        <span
-          v-if="expensesExporting"
-          class="spinner-border spinner-border-sm me-2"
-        />
-        Xuất chi phí
-      </button>
-      <button
-        class="btn btn-outline-secondary"
-        type="button"
-        :disabled="inventoryExporting"
-        @click="handleExportInventory"
-      >
-        <span
-          v-if="inventoryExporting"
-          class="spinner-border spinner-border-sm me-2"
-        />
-        Xuất tồn kho
-      </button>
-    </div>
-
     <div class="grid">
       <div class="card chart-card">
-        <div class="card-header border-0 d-flex justify-content-between align-items-center">
+        <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
           <div>
             <h5 class="mb-1">
               Chi phí theo ngày
@@ -37,6 +10,20 @@
             <p class="text-muted mb-0">
               Tổng: {{ formatCurrency(expensesTotals.overall) }}
             </p>
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-outline-primary btn-sm"
+              type="button"
+              :disabled="expensesExporting"
+              @click="handleExportExpenses"
+            >
+              <span
+                v-if="expensesExporting"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              Xuất chi phí
+            </button>
           </div>
         </div>
         <div class="card-body">
@@ -80,20 +67,34 @@
             Tổng {{ formatNumber(inventorySummary.totalItems) }} nguyên liệu · Thiếu hụt {{ formatNumber(inventorySummary.lowStockCount) }}
           </p>
         </div>
-        <div class="form-check form-switch">
-          <input
-            id="lowStockToggle"
-            class="form-check-input"
-            type="checkbox"
-            role="switch"
-            :checked="lowStockOnly"
-            :disabled="inventoryLoading"
-            @change="emit('update:lowStockOnly', $event.target.checked)"
+        <div class="d-flex gap-2 align-items-center">
+          <div class="form-check form-switch">
+            <input
+              id="lowStockToggle"
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              :checked="lowStockOnly"
+              :disabled="inventoryLoading"
+              @change="emit('update:lowStockOnly', $event.target.checked)"
+            >
+            <label
+              class="form-check-label"
+              for="lowStockToggle"
+            >Chỉ hiển thị thiếu hụt</label>
+          </div>
+          <button
+            class="btn btn-outline-secondary btn-sm"
+            type="button"
+            :disabled="inventoryExporting"
+            @click="handleExportInventory"
           >
-          <label
-            class="form-check-label"
-            for="lowStockToggle"
-          >Chỉ hiển thị thiếu hụt</label>
+            <span
+              v-if="inventoryExporting"
+              class="spinner-border spinner-border-sm me-2"
+            />
+            Xuất tồn kho
+          </button>
         </div>
       </div>
       <div class="card-body">
@@ -151,7 +152,7 @@
                 :key="item.id"
               >
                 <td class="fw-semibold">
-                  {{ item.name }}
+                  {{ capitalizeWords(item.name) }}
                 </td>
                 <td>{{ item.unit || '—' }}</td>
                 <td class="text-end">
@@ -211,7 +212,8 @@ const ApexChart = VueApexCharts
 
 const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
 
-const BASE_LABEL_STYLE = Object.freeze({ colors: prefersDark ? '#cbd5f5' : '#64748b', fontSize: '12px' })
+// Màu chữ trục X/Y rõ ràng hơn trong dark theme
+const BASE_LABEL_STYLE = Object.freeze({ colors: prefersDark ? '#EFF2F6' : '#4B5563', fontSize: '12px', fontWeight: prefersDark ? 500 : 400 })
 const VIBRANT_PALETTE = Object.freeze([
     '#2563eb',
     '#f97316',
@@ -231,8 +233,8 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
     return {
         chart: {
             type,
-            toolbar: { show: true },
-            foreColor: prefersDark ? '#e2e8f0' : '#475569',
+            toolbar: { show: false }, // Ẩn toolbar để giao diện chuyên nghiệp hơn
+            foreColor: prefersDark ? '#EFF2F6' : '#475569',
             background: 'transparent'
         },
         stroke: isCircular
@@ -242,17 +244,19 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
         colors,
         grid: {
             strokeDashArray: 4,
-            borderColor: prefersDark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.35)',
+            borderColor: prefersDark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.35)',
             padding: { top: 8, bottom: 8, left: 12, right: 12 }
         },
         xaxis: {
             categories: [],
             labels: { style: { ...BASE_LABEL_STYLE } },
             axisBorder: {
-                color: prefersDark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: prefersDark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: prefersDark ? 1.5 : 1
             },
             axisTicks: {
-                color: prefersDark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: prefersDark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: prefersDark ? 1.5 : 1
             },
             crosshairs: {
                 stroke: {
@@ -267,7 +271,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
                 formatter: (value) => value ?? 0
             }
         },
-        legend: { position: 'bottom', labels: { colors: prefersDark ? '#cbd5f5' : '#475569' } },
+        legend: { position: 'bottom', labels: { colors: prefersDark ? '#EFF2F6' : '#475569', fontWeight: prefersDark ? 500 : 400 } },
         tooltip: {
             theme: prefersDark ? 'dark' : 'light',
             y: {
@@ -354,10 +358,47 @@ const formatNumber = (value) => new Intl.NumberFormat('vi-VN', { maximumFraction
 
 const buildRange = (start, end) => [start, end].filter(Boolean).join(' → ')
 
+// Hàm chuẩn hóa tên category: xử lý dữ liệu rác
+const normalizeCategoryName = (category) => {
+    if (!category || typeof category !== 'string') return 'Khác'
+    const normalized = category.trim()
+
+    // Xử lý các trường hợp đặc biệt
+    if (normalized === '' || normalized.toLowerCase() === 'other' || normalized === 'OTHER') {
+        return 'Khác'
+    }
+
+    // Loại bỏ các ký tự không hợp lệ (như "ásds")
+    if (normalized.length < 2 || /^[^a-zA-ZÀ-ỹ0-9\s]+$/.test(normalized)) {
+        return 'Khác'
+    }
+
+    // Viết hoa chữ cái đầu mỗi từ
+    return normalized
+        .toLowerCase()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+}
+
+// Hàm chuẩn hóa tên nguyên liệu
+const capitalizeWords = (text) => {
+    if (!text || typeof text !== 'string') return text || '—'
+    return text
+        .toLowerCase()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+}
+
 const categoriesSet = computed(() => {
     const set = new Set()
     props.expensesEntries.forEach((entry) => {
-        entry.categories?.forEach((category) => set.add(category.category))
+        entry.categories?.forEach((category) => {
+            // Chuẩn hóa tên category trước khi thêm vào set
+            const normalized = normalizeCategoryName(category.category)
+            set.add(normalized)
+        })
     })
     return Array.from(set)
 })
@@ -371,16 +412,42 @@ const expensesSeries = computed(() => {
             }
         ]
     }
+
+    // Tạo series với category đã được normalize
     return categoriesSet.value.map((category) => ({
-        name: category,
+        name: category, // Đã được normalize trong categoriesSet
         data: props.expensesEntries.map((entry) => {
-            const found = entry.categories?.find((item) => item.category === category)
+            // Tìm category match (có thể là tên gốc hoặc đã normalize)
+            const found = entry.categories?.find((item) => {
+                const normalized = normalizeCategoryName(item.category)
+                return normalized === category || item.category === category
+            })
             return found ? found.amount : 0
         })
     }))
 })
 
-const xCategories = computed(() => props.expensesEntries.map((entry) => entry.date))
+// Format ngày tháng ngắn gọn cho trục X
+const formatDateShort = (dateString) => {
+    if (!dateString) return ''
+    try {
+        const date = new Date(dateString)
+        const day = String(date.getDate()).padStart(2, '0')
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        return `${day}/${month}` // Format: 14/09
+    } catch {
+        // Nếu không parse được, thử lấy phần cuối
+        if (typeof dateString === 'string' && dateString.includes('-')) {
+            const parts = dateString.split('-')
+            if (parts.length >= 3) {
+                return `${parts[2]}/${parts[1]}` // Format: YYYY-MM-DD -> DD/MM
+            }
+        }
+        return dateString
+    }
+}
+
+const xCategories = computed(() => props.expensesEntries.map((entry) => formatDateShort(entry.date)))
 
 const expensesOptions = computed(() => {
     const base = createBaseOptions('area', VIBRANT_PALETTE)
@@ -389,20 +456,34 @@ const expensesOptions = computed(() => {
         chart: { type: 'area', stacked: true, toolbar: { show: false } },
         xaxis: {
             categories: xCategories.value,
-            labels: base.xaxis.labels
+            labels: {
+                ...base.xaxis.labels,
+                style: {
+                    ...base.xaxis.labels.style,
+                    colors: '#4B5563', // Màu xám đậm thay vì xanh nhạt
+                    fontSize: '13px' // Tăng font size cho dễ đọc
+                },
+                rotate: -45, // Xoay nhẹ để tránh chồng chéo
+                rotateAlways: false
+            }
         },
         yaxis: {
             labels: {
+                ...base.yaxis.labels,
+                style: {
+                    ...base.yaxis.labels.style,
+                    colors: '#4B5563' // Màu xám đậm thay vì xanh nhạt
+                },
                 formatter: (value) => formatCurrency(value)
             }
         },
         fill: {
             type: 'gradient',
             gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.6,
+                shadeIntensity: 0.5, // Giảm gradient
+                opacityFrom: 0.4, // Giảm opacity
                 opacityTo: 0.1,
-                stops: [0, 90, 100]
+                stops: [0, 100] // Đơn giản hóa
             }
         }
     })
@@ -417,29 +498,36 @@ const heaviestExpense = computed(() => {
     return [...props.expensesEntries].sort((a, b) => b.total - a.total)[0]
 })
 
+// Tính giá trị tồn kho (tổng giá trị của tất cả nguyên liệu)
+const inventoryValue = computed(() => props.inventoryItems.reduce((sum, item) => {
+    const quantity = Number(item.quantityOnHand) || 0
+    const unitPrice = Number(item.unitPrice) || 0
+    return sum + (quantity * unitPrice)
+}, 0))
+
 const inventoryStats = computed(() => [
     {
         label: 'Tổng nguyên liệu',
         value: props.inventorySummary.totalItems,
         icon: 'bi bi-box-seam',
-        variant: 'variant-primary'
+        variant: 'variant-primary',
+        display: formatNumber(props.inventorySummary.totalItems)
     },
     {
         label: 'Thiếu hụt',
         value: props.inventorySummary.lowStockCount,
         icon: 'bi bi-exclamation-triangle',
-        variant: 'variant-warning'
+        variant: 'variant-warning',
+        display: formatNumber(props.inventorySummary.lowStockCount)
     },
     {
-        label: 'Tổng tồn kho',
-        value: props.inventorySummary.totalQuantity,
-        icon: 'bi bi-graph-up',
-        variant: 'variant-success'
+        label: 'Giá trị tồn kho',
+        value: inventoryValue.value,
+        icon: 'bi bi-cash-stack',
+        variant: 'variant-success',
+        display: formatCurrency(inventoryValue.value)
     }
-].map((stat) => ({
-    ...stat,
-    display: formatNumber(stat.value ?? 0)
-})))
+])
 
 const displayedInventory = computed(() => {
     const source = props.lowStockOnly
@@ -526,7 +614,10 @@ const handleExportInventory = () => emit('export:inventory')
     font-family: var(--font-family-sans);
 }
 
-.chart-card :global(.card-body),
+.chart-card :global(.card-body) {
+    padding: var(--spacing-3); /* Giảm từ spacing-4 xuống spacing-3 để giảm khoảng trắng */
+}
+
 .inventory-card :global(.card-body) {
     padding: var(--spacing-4);
 }
@@ -632,10 +723,26 @@ const handleExportInventory = () => emit('export:inventory')
     text-align: left;
 }
 
+.inventory-card :global(.table thead th.text-end) {
+    text-align: right; /* Đảm bảo căn lề phải cho header */
+}
+
+.inventory-card :global(.table tbody td.text-end) {
+    text-align: right; /* Đảm bảo căn lề phải cho số liệu */
+    font-variant-numeric: tabular-nums; /* Tabular numbers để thẳng hàng */
+}
+
 .inventory-card :global(.table tbody td) {
     border-bottom: 1px solid var(--color-border);
     padding: var(--spacing-3);
     font-family: var(--font-family-sans);
+    line-height: 1.6; /* Tăng line-height */
+    vertical-align: middle; /* Căn giữa theo chiều dọc */
+}
+
+.inventory-card :global(.table tbody td.fw-semibold) {
+    line-height: 1.6;
+    word-break: break-word; /* Tự động xuống dòng nếu tên quá dài */
 }
 
 .inventory-card :global(.table tbody tr:last-child td) {

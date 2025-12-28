@@ -1,21 +1,5 @@
 <template>
   <div class="pos-product-menu">
-    <!-- Header -->
-    <div class="pos-product-menu__header">
-      <button
-        class="btn"
-        @click="$emit('back-to-tables')"
-      >
-        <i class="bi bi-arrow-left" /> Quay lại
-      </button>
-      <h2 class="pos-product-menu__title">
-        Chọn sản phẩm
-      </h2>
-      <div class="pos-product-menu__search-hint">
-        <kbd>/</kbd> <span class="search-hint-text">để tìm kiếm</span>
-      </div>
-    </div>
-
     <!-- Search Bar -->
     <div class="pos-product-menu__search">
       <div class="input-group input-group-lg">
@@ -61,76 +45,6 @@
       </button>
     </div>
 
-    <!-- Advanced Filters -->
-    <div class="pos-product-menu__advanced-filters">
-      <div class="row g-2">
-        <div class="col-md-3 col-6">
-          <label class="form-label small">Giá từ (₫)</label>
-          <input
-            v-model.number="filters.priceMin"
-            type="number"
-            class="form-control form-control-sm"
-            placeholder="Từ"
-            min="0"
-            step="1000"
-          >
-        </div>
-        <div class="col-md-3 col-6">
-          <label class="form-label small">Giá đến (₫)</label>
-          <input
-            v-model.number="filters.priceMax"
-            type="number"
-            class="form-control form-control-sm"
-            placeholder="Đến"
-            min="0"
-            step="1000"
-          >
-        </div>
-        <div class="col-md-3 col-6">
-          <label class="form-label small">Bán chạy</label>
-          <select
-            v-model="filters.bestseller"
-            class="form-select form-select-sm"
-          >
-            <option :value="null">
-              Tất cả
-            </option>
-            <option :value="true">
-              Chỉ bán chạy
-            </option>
-            <option :value="false">
-              Không bán chạy
-            </option>
-          </select>
-        </div>
-        <div class="col-md-3 col-6">
-          <label class="form-label small">Sắp xếp</label>
-          <select
-            v-model="sortState"
-            class="form-select form-select-sm"
-          >
-            <option value="">
-              Mặc định
-            </option>
-            <option value="name-asc">
-              Tên A-Z
-            </option>
-            <option value="name-desc">
-              Tên Z-A
-            </option>
-            <option value="price-asc">
-              Giá tăng dần
-            </option>
-            <option value="price-desc">
-              Giá giảm dần
-            </option>
-            <option value="bestseller-desc">
-              Bán chạy nhất
-            </option>
-          </select>
-        </div>
-      </div>
-    </div>
 
     <!-- Product List Header -->
     <div class="pos-product-menu__list-header">
@@ -200,7 +114,7 @@
         >
           <div class="product-card__image">
             <img
-              :src="product.imageUrl || '/placeholder.png'"
+              :src="getProductImage(product)"
               :alt="product.name"
               @error="handleImageError"
             >
@@ -210,6 +124,15 @@
             >
               <i class="bi bi-slash-circle" /> Ngừng bán
             </div>
+            <button
+              v-if="product.available"
+              class="product-card__quick-add"
+              type="button"
+              aria-label="Thêm nhanh"
+              @click.stop="selectProduct(product)"
+            >
+              <i class="bi bi-plus-lg" />
+            </button>
           </div>
           <div class="product-card__body">
             <h6 class="product-card__title">
@@ -217,12 +140,6 @@
             </h6>
             <div class="product-card__price">
               {{ formatCurrency(product.price) }}
-            </div>
-            <div
-              v-if="product.description"
-              class="product-card__description"
-            >
-              {{ product.description }}
             </div>
           </div>
         </div>
@@ -281,6 +198,15 @@
         </ul>
       </nav>
     </div>
+
+    <!-- Product Customization Modal -->
+    <ProductCustomizationModal
+      :product="customizationProduct"
+      :visible="showCustomizationModal"
+      @confirm="handleCustomizationConfirm"
+      @cancel="handleCustomizationCancel"
+      @close="showCustomizationModal = false"
+    />
   </div>
 </template>
 
@@ -295,11 +221,14 @@ import logger from '@/utils/logger'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import ProductCustomizationModal from './ProductCustomizationModal.vue'
 
 const emit = defineEmits(['product-selected', 'back-to-tables'])
 
 const searchInputRef = ref(null)
 const viewMode = ref('grid')
+const customizationProduct = ref(null)
+const showCustomizationModal = ref(false)
 
 const filters = ref({
     name: '',
@@ -514,15 +443,87 @@ const clearSearch = () => {
     searchInputRef.value?.focus()
 }
 
+const getProductImage = (product) => {
+    if (!product?.imageUrl) {
+        return '/placeholder.png'
+    }
+    
+    // Kiểm tra nếu URL có vẻ là sơ đồ UML (chứa từ khóa liên quan)
+    const url = product.imageUrl.toLowerCase()
+    const suspiciousKeywords = ['uml', 'diagram', 'sequence', 'usecase', 'class', 'flowchart', 'sơ đồ']
+    
+    if (suspiciousKeywords.some(keyword => url.includes(keyword))) {
+        return '/placeholder.png'
+    }
+    
+    return product.imageUrl
+}
+
 const handleImageError = (event) => {
-    event.target.src = '/placeholder.png'
+    // Kiểm tra nếu ảnh là sơ đồ UML hoặc không hợp lệ, dùng placeholder
+    const img = event.target
+    const src = img.src || ''
+    
+    // Nếu đã là placeholder rồi thì không làm gì
+    if (src.includes('placeholder.png')) {
+        return
+    }
+    
+    // Kiểm tra nếu ảnh có vẻ là sơ đồ kỹ thuật (dựa trên URL hoặc kích thước)
+    // Hoặc đơn giản là dùng placeholder mặc định
+    img.src = '/placeholder.png'
+    img.onerror = null // Tránh loop vô hạn
 }
 
 const selectProduct = (product) => {
     if (!product.available) {
         return
     }
-    emit('product-selected', product)
+    
+    // Kiểm tra xem sản phẩm có cần tùy chọn không
+    const needsCustomization = checkIfNeedsCustomization(product)
+    
+    if (needsCustomization) {
+        // Mở modal tùy chọn
+        customizationProduct.value = product
+        showCustomizationModal.value = true
+    } else {
+        // Thêm trực tiếp vào giỏ
+        emit('product-selected', product)
+    }
+}
+
+const checkIfNeedsCustomization = (product) => {
+    // Logic: Kiểm tra category để xem có cần tùy chọn
+    const category = product?.categoryName?.toLowerCase() || ''
+    const needsSize = category.includes('cà phê') || category.includes('trà') || category.includes('nước') || category.includes('sinh tố')
+    const needsIce = needsSize || category.includes('đá xay')
+    const needsSugar = needsSize
+    
+    // Nếu có bất kỳ tùy chọn nào thì cần modal
+    return needsSize || needsIce || needsSugar
+}
+
+const handleCustomizationConfirm = ({ product, customization, quantity }) => {
+    // Tạo product object với customization
+    const customizedProduct = {
+        ...product,
+        customization,
+        price: customization.finalPrice, // Cập nhật giá theo customization
+        notes: customization.notes
+    }
+    
+    // Emit với product đã được customize
+    emit('product-selected', customizedProduct)
+    
+    // Đóng modal
+    showCustomizationModal.value = false
+    customizationProduct.value = null
+}
+
+const handleCustomizationCancel = () => {
+    showCustomizationModal.value = false
+    customizationProduct.value = null
 }
 
 const handleKeydown = (event) => {
@@ -535,7 +536,22 @@ const handleKeydown = (event) => {
 // Watch cho name và categoryId để fetch lại
 let nameWatchTimeout = null
 watch(
-    () => [filters.value.name, filters.value.categoryId],
+    () => filters.value.name,
+    (newName) => {
+        if (nameWatchTimeout) clearTimeout(nameWatchTimeout)
+        nameWatchTimeout = setTimeout(() => {
+            // Khi search, tự động bỏ filter category để tìm kiếm toàn bộ
+            if (newName && newName.trim()) {
+                filters.value.categoryId = ''
+            }
+            filters.value.page = 0
+            currentPage.value = 0
+        }, 300)
+    }
+)
+
+watch(
+    () => filters.value.categoryId,
     () => {
         if (nameWatchTimeout) clearTimeout(nameWatchTimeout)
         nameWatchTimeout = setTimeout(() => {
@@ -574,88 +590,10 @@ onBeforeUnmount(() => {
     overflow: hidden;
 }
 
-/* Header - Chuẩn hóa */
-.pos-product-menu__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-4);
-    margin-bottom: var(--spacing-4);
-    padding-bottom: var(--spacing-3);
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-}
-
-.btn-back {
-    color: var(--color-text-muted);
-    text-decoration: none;
-    padding: var(--spacing-2);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all var(--transition-base);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
-}
-
-.btn-back:hover {
-    color: var(--color-primary);
-    background: var(--color-card-muted);
-}
-
-.btn-back i {
-    font-size: 18px;
-    line-height: 1;
-}
-
-.pos-product-menu__title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-heading);
-    margin: 0;
-    flex: 1;
-    text-align: center;
-    line-height: var(--line-height-tight);
-    font-family: var(--font-family-sans);
-}
-
-.pos-product-menu__search-hint {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    font-family: var(--font-family-sans);
-}
-
-.search-hint-text {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-}
-
-kbd {
-    background: var(--color-card-muted);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: var(--spacing-1) var(--spacing-2);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    font-family: 'Courier New', monospace;
-    color: var(--color-heading);
-    min-width: 24px;
-    text-align: center;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
 /* Search - Chuẩn hóa */
 .pos-product-menu__search {
-    margin-bottom: var(--spacing-4);
+    margin-bottom: var(--spacing-3);
+    padding-top: var(--spacing-3);
     flex-shrink: 0;
 }
 
@@ -684,41 +622,49 @@ kbd {
     line-height: 1;
 }
 
-/* Categories - Chuẩn hóa pill */
+/* Categories - Chuẩn hóa pill - Tăng kích thước cho dễ bấm */
 .pos-product-menu__categories {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-2);
+    gap: var(--spacing-3);
     margin-bottom: var(--spacing-4);
-    padding-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
 }
 
 .category-pill {
-    padding: var(--spacing-2) var(--spacing-4);
+    padding: var(--spacing-3) var(--spacing-5);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-card);
+    background: var(--color-card-muted);
     color: var(--color-text);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-base);
     transition: all var(--transition-base);
     cursor: pointer;
     white-space: nowrap;
     font-family: var(--font-family-sans);
+    min-height: 48px; /* Tăng kích thước cho dễ bấm trên màn hình cảm ứng (>= 44px) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
 }
 
 .category-pill:hover:not(.category-pill--active) {
-    background: var(--color-card-muted);
+    background: var(--color-card);
     border-color: var(--color-primary);
     color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .category-pill--active {
     background: var(--color-primary);
     color: var(--color-text-inverse);
     border-color: var(--color-primary);
+    box-shadow: 0 2px 4px rgba(44, 120, 115, 0.2);
 }
 
 /* Advanced Filters */
@@ -831,6 +777,14 @@ kbd {
 .product-card:hover {
     border-color: var(--color-primary);
     background: var(--color-card-muted);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+    transition: all var(--transition-base);
+}
+
+.product-card:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .product-card:focus {
@@ -867,22 +821,64 @@ kbd {
     transform: scale(1.02);
 }
 
+.product-card__quick-add {
+    position: absolute;
+    bottom: var(--spacing-2);
+    right: var(--spacing-2);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: 0 2px 8px rgba(44, 120, 115, 0.3);
+    z-index: 10;
+    font-size: 18px;
+    opacity: 0; /* Luôn ẩn mặc định */
+    transform: scale(0.8);
+    pointer-events: none; /* Tắt pointer events khi ẩn để tránh click nhầm */
+}
+
+.product-card:hover .product-card__quick-add,
+.product-card__quick-add:focus {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto; /* Bật pointer events khi hiện */
+}
+
+.product-card__quick-add:hover {
+    background: var(--color-primary-dark);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(44, 120, 115, 0.4);
+}
+
+.product-card__quick-add:active {
+    transform: scale(0.95);
+}
+
 /* Badge - Chuẩn hóa theo badge/pill hệ thống */
 .product-card__badge {
     position: absolute;
     top: var(--spacing-2);
     right: var(--spacing-2);
-    background: var(--color-soft-rose);
-    border: 1px solid var(--color-danger);
-    color: var(--color-danger);
-    padding: var(--spacing-1) var(--spacing-2);
+    background: rgba(220, 38, 38, 0.95); /* Background đỏ đậm, opacity cao để tăng tương phản */
+    border: 2px solid #dc2626; /* Border đậm hơn */
+    color: #ffffff; /* Chữ trắng thay vì đỏ */
+    padding: var(--spacing-2) var(--spacing-3); /* Tăng padding */
     border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-bold); /* Bold thay vì medium */
     display: flex;
     align-items: center;
     gap: 6px;
     font-family: var(--font-family-sans);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Thêm shadow để nổi bật */
+    z-index: 5; /* Đảm bảo hiển thị trên ảnh */
 }
 
 .product-card__badge i {
@@ -900,7 +896,7 @@ kbd {
 
 .product-card__title {
     font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-lg); /* Tăng từ base lên lg */
     color: var(--color-heading);
     margin: 0;
     line-height: var(--line-height-base);
@@ -948,18 +944,16 @@ kbd {
         padding: 1rem;
     }
 
-    .pos-product-menu__header {
-        flex-wrap: wrap;
-    }
-
-    .pos-product-menu__title {
-        order: 3;
-        width: 100%;
-        text-align: left;
-    }
-
     .pos-product-menu__products.view-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .product-card__quick-add {
+        opacity: 1;
+        transform: scale(1);
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
     }
 }
 

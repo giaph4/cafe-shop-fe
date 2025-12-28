@@ -1,5 +1,5 @@
 import api from './axios'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 
 export const getStaffDashboard = async (userId, params = {}) => {
     const url = userId ? `/api/staff/dashboard/${userId}` : '/api/staff/dashboard'

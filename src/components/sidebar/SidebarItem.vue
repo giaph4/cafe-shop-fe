@@ -277,7 +277,7 @@ watch(
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     text-align: left;
-    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    transition: background-color 0.18s ease, color 0.18s ease;
     cursor: pointer;
 }
 
@@ -292,15 +292,21 @@ watch(
 .neo-item__link:hover,
 .neo-item__link:focus-visible {
     background: var(--color-card-muted);
-    color: var(--color-primary);
-    border: 1px solid var(--color-border);
+    color: var(--color-heading);
+}
+
+.neo-item__link.is-active:hover,
+.neo-item__link.is-active:focus-visible {
+    background: var(--color-card-muted);
+    border-left-color: var(--color-primary);
 }
 
 .neo-item__link.is-active {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
     font-weight: var(--font-weight-semibold);
+    border-left: 3px solid var(--color-primary);
+    padding-left: calc(var(--spacing-4) - 3px);
 }
 
 .neo-item.is-collapsed > .neo-item__link {
@@ -310,6 +316,13 @@ watch(
     height: 56px;
     margin: 0.2rem auto;
     padding: 0;
+    border-left: none;
+}
+
+.neo-item.is-collapsed > .neo-item__link.is-active {
+    border-left: none;
+    border-top: 3px solid var(--color-primary);
+    padding-top: calc(var(--spacing-2) - 3px);
 }
 
 .neo-item.is-collapsed > .neo-item__link .neo-item__label,
@@ -354,9 +367,9 @@ watch(
 }
 
 .neo-item__link:hover .neo-item__badge {
-    background: rgba(245, 158, 11, 0.15);
-    border-color: rgba(245, 158, 11, 0.35);
-    color: #b45309;
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #d97706;
 }
 
 .neo-item__caret {
@@ -411,9 +424,10 @@ watch(
 }
 
 .neo-item__children :deep(.neo-item__link.is-active) {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+    border-left: 3px solid var(--color-primary);
+    padding-left: calc(var(--spacing-3) - 3px);
 }
 
 .neo-item__children :deep(.neo-item__icon) {

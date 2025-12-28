@@ -2,16 +2,10 @@
   <div class="customer-list-tab">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
-        <h5
-          class="mb-0"
-          style="font-weight: var(--font-weight-semibold); color: var(--color-heading); font-family: var(--font-family-sans);"
-        >
+        <h5 class="mb-0">
           Danh sách khách hàng
         </h5>
-        <small
-          class="text-muted"
-          style="font-family: var(--font-family-sans);"
-        >Tổng: {{ totalElements.toLocaleString('vi-VN') }} khách hàng</small>
+        <small class="text-muted">Tổng: {{ totalElements.toLocaleString('vi-VN') }} khách hàng</small>
       </div>
       <div class="d-flex gap-2">
         <button
@@ -59,10 +53,7 @@
         <table class="table table-hover align-middle">
           <thead class="table-light">
             <tr>
-              <th
-                scope="col"
-                style="width: 50px;"
-              >
+              <th scope="col" class="col-checkbox">
                 <input
                   type="checkbox"
                   :checked="bulkActions.isSelectAll && customers.length > 0"
@@ -161,16 +152,6 @@
                     <span>Lịch sử</span>
                   </router-link>
                   <button
-                    v-if="canManage"
-                    class="action-button"
-                    type="button"
-                    title="Chỉnh sửa"
-                    @click="$emit('edit', customer)"
-                  >
-                    <i class="bi bi-pencil" />
-                    <span>Chỉnh sửa</span>
-                  </button>
-                  <button
                     v-if="canDelete"
                     class="action-button action-button--danger"
                     type="button"
@@ -188,11 +169,48 @@
         </table>
       </div>
       <div
-        v-if="totalPages > 1"
-        class="d-flex justify-content-end mt-3"
-        style="margin-bottom: 80px;"
+        v-if="totalPages > 1 || pageSize"
+        class="d-flex justify-content-between align-items-center mt-3 pagination-wrapper"
       >
+        <!-- Page Size Selector -->
+        <div
+          v-if="pageSize"
+          class="d-flex align-items-center gap-2"
+        >
+          <label class="mb-0 text-muted small">
+            Hiển thị:
+          </label>
+          <select
+            :value="pageSize"
+            class="form-select form-select-sm page-size-select"
+            @change="$emit('page-size-change', parseInt($event.target.value, 10))"
+          >
+            <option :value="10">
+              10
+            </option>
+            <option :value="20">
+              20
+            </option>
+            <option :value="30">
+              30
+            </option>
+            <option :value="50">
+              50
+            </option>
+          </select>
+          <span class="text-muted small">
+            / trang
+          </span>
+        </div>
+        <div
+          v-else
+          class="text-muted small"
+        >
+          Hiển thị {{ customers.length }} / {{ totalElements.toLocaleString('vi-VN') }} khách hàng
+        </div>
+        <!-- Pagination -->
         <Pagination
+          v-if="totalPages > 1"
           mode="zero-based"
           :current-page="zeroBasedPage"
           :total-pages="totalPages"
@@ -265,6 +283,10 @@ const props = defineProps({
         type: Number,
         default: 0
     },
+    pageSize: {
+        type: Number,
+        default: null
+    },
     canExport: {
         type: Boolean,
         default: false
@@ -283,7 +305,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['create', 'view-detail', 'edit', 'delete', 'page-change', 'export', 'refresh'])
+const emit = defineEmits(['create', 'view-detail', 'edit', 'delete', 'page-change', 'page-size-change', 'export', 'refresh'])
 
 // Bulk Actions
 const bulkActions = useBulkActions({
@@ -574,6 +596,19 @@ const formatLoyaltyPoints = (points) => {
     .action-button span {
         display: none;
     }
+}
+
+.col-checkbox {
+  width: 50px;
+}
+
+.pagination-wrapper {
+  margin-bottom: 80px;
+}
+
+.page-size-select {
+  width: auto;
+  min-width: 80px;
 }
 </style>
 

@@ -80,12 +80,12 @@ const chartSeries = computed(() => {
     const safeValues = Array.isArray(values) ? values : []
 
     if (['pie', 'donut'].includes(chartType)) {
-        // For pie/donut, return array of values
+        // Với pie/donut, trả về mảng giá trị
         return safeValues.length > 0 ? safeValues : []
     }
 
     if (chartType === 'scatter') {
-        // For scatter, values should be array of {x, y} objects
+        // Với scatter, values phải là mảng objects {x, y}
         // Ensure both x and y are defined
         const scatterData = safeValues
             .map((y, index) => {
@@ -97,16 +97,16 @@ const chartSeries = computed(() => {
                 return null
             })
             .filter(item => item !== null)
-        
+
         if (scatterData.length === 0) return []
-        
+
         return [{
             name: props.config.yAxis?.label || 'Giá trị',
             data: scatterData
         }]
     }
 
-    // For other chart types, return simple array of values
+    // Với các loại biểu đồ khác, trả về mảng giá trị đơn giản
     return [{
         name: props.config.yAxis?.label || 'Giá trị',
         data: safeValues.map(v => Number(v) || 0)
@@ -130,7 +130,7 @@ const chartOptions = computed(() => {
 
     const options = createChartOptions({
         type: config.chartType,
-        colors: colors,
+        colors,
         hasLegend: config.legend?.show !== false,
         height: config.height || 400,
         xaxis: {

@@ -1,31 +1,41 @@
 import api from './axios'
 import logger from '@/utils/logger'
 
-// 8.1. Tạo đơn hàng mới
+/**
+ * Tạo đơn hàng mới
+ */
 export const createOrder = async (orderData) => {
     const { data } = await api.post('/api/v1/orders', orderData)
     return data
 }
 
-// 8.2. Lấy danh sách orders (phân trang)
+/**
+ * Lấy danh sách đơn hàng (phân trang)
+ */
 export const getOrders = async (page = 0, size = 10) => {
     const { data } = await api.get('/api/v1/orders', { params: { page, size } })
     return data
 }
 
-// 8.3. Lấy chi tiết đơn hàng
+/**
+ * Lấy chi tiết đơn hàng
+ */
 export const getOrderById = async (orderId) => {
     const { data } = await api.get(`/api/v1/orders/${orderId}`)
     return data
 }
 
-// 8.4. Lấy order đang PENDING của bàn
+/**
+ * Lấy đơn hàng đang PENDING của bàn
+ */
 export const getPendingOrderByTable = async (tableId) => {
     const { data } = await api.get(`/api/v1/orders/table/${tableId}/pending`)
     return data
 }
 
-// 8.5. Thêm món vào order
+/**
+ * Thêm món vào đơn hàng
+ */
 export const addItemToOrder = async ({ orderId, itemData }) => {
     // Validate input
     if (!itemData) {
@@ -61,20 +71,6 @@ export const addItemToOrder = async ({ orderId, itemData }) => {
         payload.notes = String(itemData.notes).trim()
     }
 
-    // Ghi log payload để debug (chỉ trong development)
-    if (import.meta.env.DEV) {
-        logger.log('[OrderService] Đang thêm món vào đơn hàng:', {
-            orderId,
-            payload,
-            payloadString: JSON.stringify(payload),
-            payloadType: {
-                productId: typeof payload.productId,
-                quantity: typeof payload.quantity,
-                notes: typeof payload.notes
-            }
-        })
-    }
-
     try {
         const { data } = await api.post(`/api/v1/orders/${orderId}/items`, payload)
         return data
@@ -96,8 +92,6 @@ export const addItemToOrder = async ({ orderId, itemData }) => {
         }
 
         logger.error('[OrderService] Không thể thêm món:', errorDetails)
-        logger.error('[OrderService] Lỗi đầy đủ:', error)
-        logger.error('[OrderService] Dữ liệu response lỗi:', errorResponse)
 
         // Tạo thông báo lỗi thân thiện hơn
         let userFriendlyMessage = 'Không thể thêm món vào đơn hàng'
@@ -121,7 +115,9 @@ export const addItemToOrder = async ({ orderId, itemData }) => {
     }
 }
 
-// 8.6. Cập nhật món trong order
+/**
+ * Cập nhật món trong đơn hàng
+ */
 export const updateOrderItem = async ({ orderId, orderDetailId, updateData }) => {
     // Đảm bảo format đúng cho backend
     const payload = {
@@ -142,25 +138,33 @@ export const updateOrderItem = async ({ orderId, orderDetailId, updateData }) =>
     return data
 }
 
-// 8.7. Xóa món khỏi order
+/**
+ * Xóa món khỏi đơn hàng
+ */
 export const removeItemFromOrder = async ({ orderId, orderDetailId }) => {
     const { data } = await api.delete(`/api/v1/orders/${orderId}/items/${orderDetailId}`)
     return data
 }
 
-// 8.8. Áp dụng voucher
+/**
+ * Áp dụng voucher cho đơn hàng
+ */
 export const applyVoucher = async ({ orderId, voucherCode }) => {
     const { data } = await api.post(`/api/v1/orders/${orderId}/voucher`, { voucherCode })
     return data
 }
 
-// 8.9. Xóa voucher
+/**
+ * Xóa voucher khỏi đơn hàng
+ */
 export const removeVoucher = async (orderId) => {
     const { data } = await api.delete(`/api/v1/orders/${orderId}/voucher`)
     return data
 }
 
-// 8.10. Thanh toán order
+/**
+ * Thanh toán đơn hàng
+ */
 export const processPayment = async ({ orderId, paymentData }) => {
     try {
         const { data } = await api.post(`/api/v1/orders/${orderId}/payment`, paymentData)
@@ -182,13 +186,16 @@ export const processPayment = async ({ orderId, paymentData }) => {
     }
 }
 
-// 8.11. Lấy orders theo trạng thái
+/**
+ * Lấy đơn hàng theo trạng thái
+ */
 export const getOrdersByStatus = async (status, page = 0, size = 10) => {
     const { data } = await api.get(`/api/v1/orders/status/${status}`, { params: { page, size } })
     return data
 }
 
-// 8.12. Lấy đơn hàng theo khoảng thời gian
+/**
+ * Lấy đơn hàng theo khoảng thời gian
 /**
  * Lấy danh sách đơn hàng theo khoảng thời gian.
  *
@@ -247,22 +254,7 @@ export const getOrdersByDateRange = async (startDate, endDate, page = 0, size = 
         // Chỉ dùng dự phòng khi 500 (lỗi server) và useFallback = true
         // Các lỗi khác (400, 401, 403, 404) sẽ throw ngay
         if (status !== 500 || !useFallback) {
-            // Ghi log lỗi trong development
-            if (import.meta.env.DEV && status !== 500) {
-                logger.error('[OrderService] Endpoint date range thất bại:', {
-                    status,
-                    message: primaryError.message,
-                    url: '/api/v1/orders/date-range',
-                    params: { startDate, endDate, page, size }
-                })
-            }
             throw primaryError
-        }
-
-        // Dự phòng: Lấy tất cả đơn hàng và lọc phía client
-        // Ghi log cảnh báo trong development
-        if (import.meta.env.DEV) {
-            logger.warn('[OrderService] Endpoint date range trả về 500, sử dụng dự phòng với lọc phía client')
         }
 
         try {
@@ -307,31 +299,26 @@ export const getOrdersByDateRange = async (startDate, endDate, page = 0, size = 
                 _fallback: true
             }
         } catch (fallbackError) {
-            // Ghi log lỗi trong development
-            if (import.meta.env.DEV) {
-                logger.error('[OrderService] Dự phòng cũng thất bại:', {
-                    message: fallbackError.message,
-                    url: '/api/v1/orders'
-                })
-            }
-
-            // Throw lỗi gốc (500 từ date-range) thay vì lỗi dự phòng
+            logger.error('[OrderService] Dự phòng cũng thất bại:', {
+                message: fallbackError.message,
+                url: '/api/v1/orders'
+            })
             throw primaryError
         }
     }
 }
 
-// 8.13. Hủy đơn hàng
+/**
+ * Hủy đơn hàng
+ */
 export const cancelOrder = async (orderId) => {
     const { data } = await api.put(`/api/v1/orders/${orderId}/cancel`)
     return data
 }
 
-// 8.14. Cập nhật thông tin đơn hàng
-// Chỉ cho phép cập nhật customerId và tableId cho đơn ở trạng thái PENDING
-// Không cho phép cập nhật status (dùng cancelOrder) hoặc note (không có field này trong Order)
 /**
  * Cập nhật thông tin đơn hàng (chỉ customerId và tableId)
+ * Chỉ cho phép cập nhật cho đơn ở trạng thái PENDING
  * @param {string|number} orderId - ID đơn hàng cần cập nhật
  * @param {Object} orderData - Dữ liệu đơn hàng cần cập nhật { customerId?, tableId? }
  * @returns {Promise<Object>} Đơn hàng đã được cập nhật
@@ -344,7 +331,7 @@ export const updateOrder = async (orderId, orderData) => {
     if (orderData.tableId !== undefined) {
         payload.tableId = orderData.tableId
     }
-    
+
     const { data } = await api.put(`/api/v1/orders/${orderId}`, payload)
     return data
 }

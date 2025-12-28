@@ -14,7 +14,7 @@ const calculateCancellationRate = (cancelled, total) => {
 
 export const analyzeCancellations = async ({ startDate, endDate } = {}) => {
     try {
-        // Call backend API instead of calculating locally
+        // Gọi backend API để lấy dữ liệu phân tích hủy đơn
         const { data } = await api.get('/api/v1/reports/cancellation-analysis', {
             params: { startDate, endDate }
         })
@@ -23,7 +23,7 @@ export const analyzeCancellations = async ({ startDate, endDate } = {}) => {
             throw new Error('Không nhận được dữ liệu từ server')
         }
 
-        // Normalize response to match frontend expectations
+        // Chuẩn hóa response cho frontend
         return {
             summary: {
                 totalOrders: data.summary?.totalOrders || 0,

@@ -271,7 +271,7 @@ const handleKeyDown = (event) => {
     if (mainKey === ' ') mainKey = ' '
     if (mainKey === 'escape') mainKey = 'Escape'
 
-    // Don't add modifier keys as main key
+    // Không thêm modifier keys làm main key
     if (!['control', 'shift', 'alt', 'meta'].includes(mainKey)) {
         keys.push(mainKey)
         recordedKeys.value = []
@@ -285,7 +285,7 @@ const handleKeyDown = (event) => {
 }
 
 const handleKeyUp = () => {
-    // Stop recording when all keys are released
+    // Dừng recording khi tất cả phím được thả ra
     if (recordedShortcut.value) {
         stopRecording()
     }

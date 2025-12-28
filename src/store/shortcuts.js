@@ -121,7 +121,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
             recentActions.value.splice(index, 1)
         }
         recentActions.value.unshift(action)
-        // Keep only last 10
+        // Chỉ giữ lại 10 action gần nhất
         if (recentActions.value.length > 10) {
             recentActions.value = recentActions.value.slice(0, 10)
         }

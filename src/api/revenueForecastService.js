@@ -64,7 +64,7 @@ const calculateConfidenceInterval = (data, forecastValue) => {
 
 export const generateRevenueForecast = async ({ startDate, endDate, forecastDays = 7 }) => {
     try {
-        // Call backend API instead of calculating locally
+        // Gọi backend API để lấy dữ liệu dự báo doanh thu
         const { data } = await api.get('/api/v1/reports/revenue-forecast', {
             params: { startDate, endDate, forecastDays }
         })
@@ -73,7 +73,7 @@ export const generateRevenueForecast = async ({ startDate, endDate, forecastDays
             throw new Error('Không nhận được dữ liệu từ server')
         }
 
-        // Normalize response to match frontend expectations
+        // Chuẩn hóa response cho frontend
         return {
             historical: (data.historical || []).map(entry => ({
                 date: entry.date,

@@ -115,6 +115,7 @@
                 <a
                   :href="file.fileUrl"
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="btn btn-primary"
                 >
                   <i class="bi bi-download me-2" />Tải xuống để xem
@@ -142,6 +143,7 @@
                 <a
                   :href="file?.fileUrl"
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="btn btn-primary"
                   download
                 >

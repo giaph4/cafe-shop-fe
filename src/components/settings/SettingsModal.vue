@@ -158,7 +158,7 @@ const setActiveSection = (sectionId) => {
     activeSection.value = sectionId
 }
 
-// Expose methods
+// Expose các methods
 defineExpose({
     show,
     hide
@@ -167,7 +167,7 @@ defineExpose({
 
 <style scoped>
 .settings-modal {
-  z-index: 1055;
+  /* z-index được quản lý bởi base.css */
 }
 
 .settings-modal :deep(.modal-dialog) {

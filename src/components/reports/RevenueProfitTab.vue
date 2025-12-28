@@ -12,20 +12,6 @@
             </p>
           </div>
           <div class="d-flex gap-2 align-items-center">
-            <select
-              v-model="revenueChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="area">
-                Area
-              </option>
-              <option value="line">
-                Line
-              </option>
-              <option value="bar">
-                Column
-              </option>
-            </select>
             <button
               class="btn btn-outline-primary btn-sm"
               type="button"
@@ -71,20 +57,7 @@
             </p>
           </div>
           <div class="chart-controls">
-            <select
-              v-model="profitChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="bar">
-                Column
-              </option>
-              <option value="line">
-                Line
-              </option>
-              <option value="radar">
-                Radar
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định bar chart -->
           </div>
         </div>
         <div class="card-body">
@@ -138,20 +111,7 @@
             </p>
           </div>
           <div class="chart-controls d-flex gap-2">
-            <select
-              v-model="paymentChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="donut">
-                Donut
-              </option>
-              <option value="pie">
-                Pie
-              </option>
-              <option value="bar">
-                Bar
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định donut chart -->
             <select
               v-model="paymentMetric"
               class="form-select form-select-sm"
@@ -225,35 +185,20 @@
           </div>
           <div class="hourly-legend">
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #f0f9ff; border-color: #e0f2fe"
-              />
+              <span class="legend-color legend-color--low" />
               <span class="legend-label">Thấp</span>
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #bfdbfe; border-color: #7dd3fc"
-              />
+              <span class="legend-color legend-color--medium-low" />
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #60a5fa; border-color: #0ea5e9"
-              />
+              <span class="legend-color legend-color--medium" />
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #3b82f6; border-color: #0284c7"
-              />
+              <span class="legend-color legend-color--medium-high" />
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #1e40af; border-color: #0c4a6e"
-              />
+              <span class="legend-color legend-color--high" />
               <span class="legend-label">Cao</span>
             </div>
           </div>
@@ -267,7 +212,7 @@
             <div class="hourly-chart-section">
               <ApexChart
                 v-if="isValidSeries(hourlyChartSeries) && hourlyChartOptions"
-                type="line"
+                type="bar"
                 height="280"
                 :series="hourlyChartSeries"
                 :options="hourlyChartOptions"
@@ -283,8 +228,11 @@
               </div>
             </div>
 
-            <!-- Heatmap Grid -->
-            <div class="hourly-grid">
+            <!-- Heatmap Grid - Chỉ hiển thị giờ có giao dịch -->
+            <div
+              class="hourly-grid"
+              :class="{ 'hourly-grid--compact': fullHourlyData.length < 6 }"
+            >
               <div
                 v-for="bucket in fullHourlyData"
                 :key="bucket.hour"
@@ -293,7 +241,7 @@
                 :style="getHeatmapStyle(bucket)"
               >
                 <span class="hourly-card__hour">{{ bucket.hour }}h</span>
-                <strong class="hourly-card__revenue">{{ formatCurrency(bucket.revenue) }}</strong>
+                <strong class="hourly-card__revenue">{{ formatCurrencyShort(bucket.revenue) }}</strong>
                 <span class="hourly-card__orders">{{ bucket.orderCount }} đơn</span>
               </div>
             </div>
@@ -348,7 +296,15 @@
                 {{ formatCurrency(item.totalRevenue) }}
               </td>
               <td class="text-end">
-                <span class="badge bg-light text-dark">{{ (item.revenuePercentage ?? 0).toFixed(2) }}%</span>
+                <div class="category-percentage">
+                  <div class="category-percentage__bar-wrapper">
+                    <div
+                      class="category-percentage__bar"
+                      :style="{ width: `${item.revenuePercentage ?? 0}%` }"
+                    />
+                  </div>
+                  <span class="badge bg-light text-dark ms-2">{{ (item.revenuePercentage ?? 0).toFixed(2) }}%</span>
+                </div>
               </td>
             </tr>
             <tr v-if="!categorySales?.length">
@@ -371,6 +327,47 @@ import { computed, ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 import { useThemePreference } from '@/composables/useThemePreference'
+
+// Format currency ngắn gọn (1M, 1tr)
+const formatCurrencyShort = (value) => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return '0đ'
+    const absValue = Math.abs(value)
+    if (absValue >= 1000000000) {
+        return `${(value / 1000000000).toFixed(1)}T`
+    }
+    if (absValue >= 1000000) {
+        return `${(value / 1000000).toFixed(1)}M`
+    }
+    if (absValue >= 1000) {
+        return `${(value / 1000).toFixed(0)}K`
+    }
+    return formatCurrency(value)
+}
+
+// Format ngày ngắn gọn (06/12 hoặc 06) - ưu tiên ngày/tháng để rõ ràng hơn
+const formatDateShort = (dateString) => {
+    if (!dateString) return ''
+    try {
+        const date = new Date(dateString)
+        const day = String(date.getDate()).padStart(2, '0')
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        // Hiển thị ngày/tháng (06/12) để rõ ràng hơn
+        return `${day}/${month}`
+    } catch {
+        // Nếu không parse được, thử lấy phần cuối (sau dấu -)
+        if (typeof dateString === 'string' && dateString.includes('-')) {
+            const parts = dateString.split('-')
+            if (parts.length >= 3) {
+                // Format: YYYY-MM-DD -> DD/MM
+                return `${parts[2]}/${parts[1]}`
+            }
+            if (parts.length >= 2) {
+                return parts[parts.length - 1] // Lấy ngày cuối cùng
+            }
+        }
+        return dateString
+    }
+}
 
 // Helper function to validate series data
 const isValidSeries = (series) => {
@@ -413,10 +410,29 @@ const baseLabelStyle = computed(() => ({
     colors: isDark.value ? '#cbd5f5' : '#64748b',
     fontSize: '12px'
 }))
+// Color coding: Đồng nhất màu sắc
+const REVENUE_COLOR = '#2563eb' // Xanh dương cho Doanh thu
+const PROFIT_COLOR = '#22c55e' // Xanh lá cho Lợi nhuận
+const COST_COLOR = '#f97316' // Cam cho Giá vốn
+
+// Palette cho payment methods - KHÔNG dùng màu tài chính (revenue/profit/cost)
+const PAYMENT_PALETTE = Object.freeze([
+    '#3b82f6', // Xanh dương nhạt (không phải REVENUE_COLOR)
+    '#8b5cf6', // Tím
+    '#ec4899', // Hồng
+    '#0ea5e9', // Xanh cyan
+    '#14b8a6', // Xanh ngọc
+    '#facc15', // Vàng
+    '#ef4444', // Đỏ (không phải COST_COLOR)
+    '#9333ea', // Tím đậm
+    '#06b6d4', // Cyan
+    '#84cc16'  // Xanh lá nhạt (không phải PROFIT_COLOR)
+])
+
 const VIBRANT_PALETTE = Object.freeze([
-    '#2563eb',
-    '#f97316',
-    '#22c55e',
+    REVENUE_COLOR,
+    COST_COLOR,
+    PROFIT_COLOR,
     '#facc15',
     '#ec4899',
     '#9333ea',
@@ -486,10 +502,10 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
                 : {
                     type: 'gradient',
                     gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: dark ? 0.45 : 0.55,
-                        opacityTo: dark ? 0.1 : 0.15,
-                        stops: [0, 90, 100]
+                        shadeIntensity: 0.5, // Giảm từ 1 xuống 0.5
+                        opacityFrom: dark ? 0.3 : 0.35, // Giảm opacity
+                        opacityTo: dark ? 0.05 : 0.08, // Giảm opacity
+                        stops: [0, 100] // Đơn giản hóa
                     }
                 },
         plotOptions: {
@@ -508,7 +524,8 @@ const mergeOptions = (base, overrides = {}) => ({
     chart: { ...base.chart, ...overrides.chart },
     stroke: { ...base.stroke, ...overrides.stroke },
     dataLabels: { ...base.dataLabels, ...overrides.dataLabels },
-    colors: overrides.colors ?? base.colors,
+    // Ưu tiên colors từ overrides để có thể override màu từ props
+    colors: overrides.colors !== undefined ? overrides.colors : base.colors,
     grid: { ...base.grid, ...overrides.grid },
     xaxis: {
         ...base.xaxis,
@@ -561,9 +578,10 @@ const mergeOptions = (base, overrides = {}) => ({
     }
 })
 
-const revenueChartType = ref('area')
-const profitChartType = ref('bar')
-const paymentChartType = ref('donut')
+// Chart types cố định - không cho phép người dùng thay đổi
+const revenueChartType = ref('area') // Cố định Area chart cho doanh thu
+const profitChartType = ref('bar') // Cố định Bar chart cho lợi nhuận
+const paymentChartType = ref('donut') // Cố định Donut chart cho phương thức thanh toán
 const paymentMetric = ref('orders')
 
 // Normalize series props to ensure they're always valid arrays
@@ -586,38 +604,66 @@ const normalizedProfitSeries = computed(() => {
             { name: 'Lợi nhuận', data: [] }
         ]
     }
-    return series.map(s => ({
+    const mapped = series.map(s => ({
         name: s?.name || 'Doanh thu',
         data: Array.isArray(s?.data) ? s.data.map(v => Number(v) || 0) : []
     }))
+
+    // Nếu dùng stacked, cần transform data: Doanh thu = Giá vốn + Lợi nhuận
+    // Series sẽ là: [Giá vốn, Lợi nhuận] để stack lên nhau
+    if (isStackedProfit.value && mapped.length >= 2) {
+        // Tìm series theo tên
+        const revenueSeries = mapped.find(s => s.name?.toLowerCase().includes('doanh thu') || s.name?.toLowerCase().includes('revenue'))
+        const profitSeries = mapped.find(s => s.name?.toLowerCase().includes('lợi nhuận') || s.name?.toLowerCase().includes('profit'))
+        const costSeries = mapped.find(s => s.name?.toLowerCase().includes('giá vốn') || s.name?.toLowerCase().includes('cost'))
+
+        // Nếu có profit data, tính cost = revenue - profit
+        if (revenueSeries && profitSeries && revenueSeries.data.length > 0 && profitSeries.data.length > 0) {
+            const costData = revenueSeries.data.map((rev, idx) => {
+                const profit = profitSeries.data[idx] || 0
+                return Math.max(0, rev - profit) // Cost không thể âm
+            })
+            return [
+                { name: 'Giá vốn', data: costData, color: COST_COLOR },
+                { name: 'Lợi nhuận', data: profitSeries.data, color: PROFIT_COLOR }
+            ]
+        }
+        // Fallback: dùng cost series nếu có
+        if (costSeries && profitSeries) {
+            return [
+                { name: 'Giá vốn', data: costSeries.data, color: COST_COLOR },
+                { name: 'Lợi nhuận', data: profitSeries.data, color: PROFIT_COLOR }
+            ]
+        }
+    }
+
+    return mapped
 })
 
-// Build full 24 hours data with missing hours filled with 0
+// Build hourly data - CHỈ hiển thị giờ có giao dịch (revenue > 0 hoặc orderCount > 0)
 const fullHourlyData = computed(() => {
-    const hoursMap = new Map()
-    // Initialize all 24 hours with 0
-    for (let i = 0; i < 24; i++) {
-        hoursMap.set(i, {
-            hour: i,
-            revenue: 0,
-            orderCount: 0
-        })
-    }
-    // Fill with actual data
     const sales = Array.isArray(props.hourlySales) ? props.hourlySales : []
-    if (sales.length > 0) {
-        sales.forEach(item => {
-            const hour = Number(item?.hour)
-            if (!isNaN(hour) && hour >= 0 && hour < 24) {
+    const hoursMap = new Map()
+
+    // CHỈ lấy giờ có giao dịch thực sự (revenue > 0 hoặc orderCount > 0)
+    sales.forEach(item => {
+        const hour = Number(item?.hour)
+        if (!isNaN(hour) && hour >= 0 && hour < 24) {
+            const revenue = Number(item?.revenue) || Number(item?.totalRevenue) || 0
+            const orderCount = Number(item?.orderCount) || 0
+            // CHỈ thêm giờ có giao dịch (bỏ điều kiện giờ hoạt động để tránh hiển thị 0đ)
+            if (revenue > 0 || orderCount > 0) {
                 hoursMap.set(hour, {
                     hour,
-                    revenue: Number(item?.revenue) || Number(item?.totalRevenue) || 0,
-                    orderCount: Number(item?.orderCount) || 0
+                    revenue,
+                    orderCount
                 })
             }
-        })
-    }
-    return Array.from(hoursMap.values())
+        }
+    })
+
+    // Sắp xếp theo giờ
+    return Array.from(hoursMap.values()).sort((a, b) => a.hour - b.hour)
 })
 
 // Calculate max values for heatmap intensity
@@ -680,16 +726,44 @@ const getHeatmapStyle = (bucket) => {
 }
 
 const computedRevenueOptions = computed(() => {
-    const colorSource = Array.isArray(props.revenueOptions?.colors) && props.revenueOptions.colors.length
-        ? props.revenueOptions.colors
-        : ['#2563eb']
+    // Đồng nhất màu: Doanh thu = Xanh dương
+    const colorSource = [REVENUE_COLOR]
     const base = createBaseOptions(revenueChartType.value, colorSource)
     const categories = props.revenueOptions?.xaxis?.categories ?? []
 
+    // Format categories ngắn gọn
+    const formattedCategories = categories.map(cat => formatDateShort(cat))
+
     return mergeOptions(base, {
         ...props.revenueOptions,
+        // Override colors để đồng nhất màu xanh dương cho doanh thu
+        colors: [REVENUE_COLOR],
         xaxis: {
-            categories,
+            categories: formattedCategories, // Dùng formattedCategories để ApexCharts hiển thị đúng
+            labels: {
+                ...base.xaxis.labels,
+                formatter: (value, opts) => {
+                    // ApexCharts sẽ truyền index hoặc giá trị từ categories
+                    // Nếu value là số (index), lấy từ formattedCategories
+                    if (typeof value === 'number' && formattedCategories[value] !== undefined) {
+                        return formattedCategories[value]
+                    }
+                    // Nếu value là string từ categories, đã được format rồi
+                    if (typeof value === 'string' && formattedCategories.includes(value)) {
+                        return value
+                    }
+                    // Nếu value là date string gốc, format lại
+                    if (typeof value === 'string') {
+                        return formatDateShort(value)
+                    }
+                    // Fallback: lấy từ formattedCategories theo index
+                    const index = opts?.dataPointIndex ?? value
+                    if (formattedCategories[index]) {
+                        return formattedCategories[index]
+                    }
+                    return value
+                }
+            },
             ...(props.revenueOptions?.xaxis || {})
         },
         stroke: {
@@ -708,40 +782,49 @@ const computedRevenueOptions = computed(() => {
             : { size: 0 },
         yaxis: {
             labels: {
-                formatter: (value) => formatCurrency(value)
+                formatter: (value) => formatCurrencyShort(value)
             }
         },
         tooltip: {
             theme: isDark.value ? 'dark' : 'light',
             y: {
-                formatter: (value) => formatCurrency(value)
+                formatter: (value) => formatCurrency(value) // Tooltip vẫn hiện đầy đủ
             }
         },
         fill: revenueChartType.value === 'line'
             ? {
                 type: 'gradient',
                 gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: isDark.value ? 0.35 : 0.45,
-                    opacityTo: isDark.value ? 0.05 : 0.15,
-                    stops: [0, 90, 100]
+                    shadeIntensity: 0.5, // Giảm từ 1 xuống 0.5
+                    opacityFrom: isDark.value ? 0.25 : 0.3, // Giảm opacity
+                    opacityTo: isDark.value ? 0.02 : 0.08, // Giảm opacity
+                    stops: [0, 100] // Đơn giản hóa stops
                 }
             }
             : base.fill
     })
 })
 
-const resolvedProfitChartType = computed(() => profitChartType.value)
+const resolvedProfitChartType = computed(() =>
+    // Nếu chọn stacked, vẫn dùng type 'bar' nhưng với stacked option
+    profitChartType.value === 'stacked' ? 'bar' : profitChartType.value
+)
+
+const isStackedProfit = computed(() => profitChartType.value === 'stacked')
 
 const computedProfitOptions = computed(() => {
-    const base = createBaseOptions(resolvedProfitChartType.value, ['#6366f1', '#f97316', '#22c55e'])
+    // Đồng nhất màu: Doanh thu = Xanh dương, Giá vốn = Cam, Lợi nhuận = Xanh lá
+    const base = createBaseOptions(resolvedProfitChartType.value, [REVENUE_COLOR, COST_COLOR, PROFIT_COLOR])
     const categories = ['Doanh thu', 'Giá vốn', 'Lợi nhuận']
 
     return mergeOptions(base, {
-        chart: { type: resolvedProfitChartType.value },
+        chart: {
+            type: resolvedProfitChartType.value,
+            ...(isStackedProfit.value ? { stacked: true } : {})
+        },
         xaxis: {
             ...base.xaxis,
-            categories: Array.isArray(categories) ? categories : []
+            categories: isStackedProfit.value ? ['Tổng'] : (Array.isArray(categories) ? categories : [])
         },
         dataLabels: { enabled: false },
         stroke: resolvedProfitChartType.value === 'radar'
@@ -756,19 +839,31 @@ const computedProfitOptions = computed(() => {
                 strokeWidth: 3,
                 strokeOpacity: isDark.value ? 0.8 : 0.6,
                 colors: ['#0f172a'],
-                strokeColors: resolvedProfitChartType.value === 'line' ? ['#6366f1', '#22c55e'] : undefined
+                strokeColors: resolvedProfitChartType.value === 'line' ? [REVENUE_COLOR, PROFIT_COLOR] : undefined
             }
             : { size: 0 },
         plotOptions: {
             bar: {
-                columnWidth: '48%',
+                columnWidth: isStackedProfit.value ? '60%' : '48%',
                 borderRadius: 10,
-                horizontal: false
+                horizontal: false,
+                ...(isStackedProfit.value ? {
+                    dataLabels: {
+                        position: 'top',
+                        hideOverflowingLabels: true
+                    }
+                } : {})
             }
         },
         yaxis: {
             labels: {
-                formatter: (val) => formatCurrency(val)
+                formatter: (val) => formatCurrencyShort(val)
+            }
+        },
+        tooltip: {
+            ...base.tooltip,
+            y: {
+                formatter: (val) => formatCurrency(val) // Tooltip vẫn hiện đầy đủ
             }
         }
     })
@@ -787,11 +882,11 @@ const paymentChartSeries = computed(() => {
         return [{ name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu', data: [] }]
     }
     const data = items.map((item) => paymentMetric.value === 'orders' ? (Number(item?.orderCount) || 0) : (Number(item?.totalAmount) || 0))
-    // For pie/donut charts, ApexCharts requires array of numbers directly
+    // Với pie/donut charts, ApexCharts yêu cầu mảng số trực tiếp
     if (paymentChartType.value === 'pie' || paymentChartType.value === 'donut') {
         return data
     }
-    // For bar charts, return object format
+    // Với bar charts, trả về dạng object
     return [
         {
             name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
@@ -802,7 +897,8 @@ const paymentChartSeries = computed(() => {
 
 const paymentChartOptions = computed(() => {
     const labels = paymentItems.value.map((item, index) => item.label ?? item.paymentMethod ?? `PTTT #${index + 1}`)
-    const base = createBaseOptions(resolvedPaymentChartType.value, VIBRANT_PALETTE)
+    // Dùng PAYMENT_PALETTE thay vì VIBRANT_PALETTE để tránh nhầm lẫn với màu tài chính
+    const base = createBaseOptions(resolvedPaymentChartType.value, PAYMENT_PALETTE)
     const isBar = resolvedPaymentChartType.value === 'bar'
 
     return mergeOptions(base, {
@@ -827,44 +923,36 @@ const paymentChartOptions = computed(() => {
     })
 })
 
-// Chart series for hourly sales
+// Chart series for hourly sales - chỉ giờ có giao dịch
+// Chuyển sang Bar chart dạng cột khít nhau
 const hourlyChartSeries = computed(() => {
     const data = Array.isArray(fullHourlyData.value) ? fullHourlyData.value : []
     if (data.length === 0) {
         return [
-            { name: 'Doanh thu', type: 'area', data: [] },
-            { name: 'Số đơn', type: 'line', data: [] }
+            { name: 'Doanh thu', data: [] }
         ]
     }
     const revenues = data.map(b => Number(b?.revenue) || 0)
-    const orders = data.map(b => Number(b?.orderCount) || 0)
 
     return [
         {
             name: 'Doanh thu',
-            type: 'area',
-            data: revenues
-        },
-        {
-            name: 'Số đơn',
-            type: 'line',
-            data: orders
+            data: revenues,
+            color: REVENUE_COLOR // Đồng nhất màu xanh dương
         }
     ]
 })
 
 // Chart options for hourly sales
 const hourlyChartOptions = computed(() => {
-    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#2563eb'
-    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim() || '#10b981'
     const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280'
     const headingColor = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#1f2937'
 
-    const hours = fullHourlyData.value.map(b => `${b.hour.toString().padStart(2, '0')}:00`)
+    const hours = fullHourlyData.value.map(b => `${b.hour.toString().padStart(2, '0')}h`)
 
     return {
         chart: {
-            type: 'line',
+            type: 'bar',
             toolbar: { show: false },
             stacked: false,
             zoom: { enabled: false },
@@ -874,43 +962,17 @@ const hourlyChartOptions = computed(() => {
                 speed: 800
             }
         },
-        stroke: {
-            curve: 'smooth',
-            width: [5, 4],
-            dashArray: [0, 10]
-        },
-        markers: {
-            size: [8, 7],
-            hover: {
-                size: 10
-            },
-            colors: [primaryColor, successColor],
-            strokeWidth: 2,
-            strokeColors: ['#ffffff', '#ffffff'],
-            fillOpacity: 1
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.5,
-                opacityTo: 0.2,
-                stops: [0, 50, 100],
-                colorStops: [
-                    {
-                        offset: 0,
-                        color: primaryColor,
-                        opacity: 0.5
-                    },
-                    {
-                        offset: 100,
-                        color: primaryColor,
-                        opacity: 0.2
-                    }
-                ]
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '85%', // Cột khít nhau (tăng từ mặc định)
+                borderRadius: 4,
+                dataLabels: {
+                    position: 'top'
+                }
             }
         },
-        colors: [primaryColor, successColor],
+        colors: [REVENUE_COLOR], // Chỉ hiển thị doanh thu
         xaxis: {
             categories: hours,
             labels: {
@@ -935,54 +997,29 @@ const hourlyChartOptions = computed(() => {
                 width: 2
             }
         },
-        yaxis: [
-            {
-                title: {
-                    text: 'Doanh thu (₫)',
-                    style: {
-                        color: primaryColor,
-                        fontSize: '13px',
-                        fontFamily: 'var(--font-family-sans)',
-                        fontWeight: '600'
-                    }
-                },
-                labels: {
-                    formatter: (val) => formatCurrency(val),
-                    style: {
-                        colors: textMuted,
-                        fontSize: '11px',
-                        fontFamily: 'var(--font-family-sans)'
-                    }
-                },
-                axisBorder: {
-                    show: true,
-                    color: primaryColor
+        yaxis: {
+            title: {
+                text: 'Doanh thu',
+                style: {
+                    color: REVENUE_COLOR,
+                    fontSize: '13px',
+                    fontFamily: 'var(--font-family-sans)',
+                    fontWeight: '600'
                 }
             },
-            {
-                opposite: true,
-                title: {
-                    text: 'Số đơn',
-                    style: {
-                        color: successColor,
-                        fontSize: '13px',
-                        fontFamily: 'var(--font-family-sans)',
-                        fontWeight: '600'
-                    }
-                },
-                labels: {
-                    style: {
-                        colors: textMuted,
-                        fontSize: '11px',
-                        fontFamily: 'var(--font-family-sans)'
-                    }
-                },
-                axisBorder: {
-                    show: true,
-                    color: successColor
+            labels: {
+                formatter: (val) => formatCurrencyShort(val),
+                style: {
+                    colors: textMuted,
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-family-sans)'
                 }
+            },
+            axisBorder: {
+                show: true,
+                color: REVENUE_COLOR
             }
-        ],
+        },
         tooltip: {
             shared: true,
             intersect: false,
@@ -992,28 +1029,14 @@ const hourlyChartOptions = computed(() => {
                 fontFamily: 'var(--font-family-sans)'
             },
             y: {
-                formatter: (val, { seriesIndex }) => {
-                    if (seriesIndex === 0) {
-                        return formatCurrency(val)
-                    }
-                    return `${val} đơn`
-                }
+                formatter: (val) => formatCurrency(val) // Tooltip hiển thị doanh thu đầy đủ
             },
             marker: {
                 show: true
             }
         },
         legend: {
-            show: true,
-            position: 'top',
-            horizontalAlign: 'right',
-            fontSize: '13px',
-            fontFamily: 'var(--font-family-sans)',
-            markers: {
-                width: 12,
-                height: 12,
-                radius: 2
-            }
+            show: false // Ẩn legend vì chỉ có một series
         },
         dataLabels: {
             enabled: false
@@ -1040,10 +1063,8 @@ const hourlyChartOptions = computed(() => {
                 left: 10
             }
         },
-        plotOptions: {
-            area: {
-                fillTo: 'origin'
-            }
+        dataLabels: {
+            enabled: false // Không hiển thị data labels trên cột để tránh rối
         }
     }
 })
@@ -1077,13 +1098,15 @@ const handleExportOrders = () => {
 .chart-card :global(.card-header) {
     background: var(--color-card);
     border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-4);
+    padding: var(--spacing-5); /* Tăng từ spacing-4 lên spacing-5 (20px -> 24px) */
 }
 
 .chart-card :global(.card-header h5) {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     font-family: var(--font-family-sans);
+    font-size: 1.125rem; /* Tăng từ mặc định lên 18px (từ ~16px) */
+    line-height: 1.5;
 }
 
 .chart-card :global(.card-header .text-muted) {
@@ -1091,7 +1114,7 @@ const handleExportOrders = () => {
 }
 
 .chart-card :global(.card-body) {
-    padding: var(--spacing-4);
+    padding: var(--spacing-5); /* Tăng từ spacing-4 lên spacing-5 (20px -> 24px) */
 }
 
 .chart-card :global(.form-select) {
@@ -1152,7 +1175,9 @@ const handleExportOrders = () => {
 .insight-list li strong {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-family: var(--font-family-sans);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace; /* Monospaced font cho số tiền */
+    font-variant-numeric: tabular-nums; /* Tabular numbers để thẳng hàng */
+    letter-spacing: 0.02em;
 }
 
 .analytics-grid {
@@ -1177,6 +1202,8 @@ const handleExportOrders = () => {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     font-family: var(--font-family-sans);
+    font-size: 1.125rem; /* Tăng từ mặc định lên 18px */
+    line-height: 1.5;
 }
 
 .analytic-card :global(.card-header .text-muted) {
@@ -1184,7 +1211,7 @@ const handleExportOrders = () => {
 }
 
 .analytic-card :global(.card-body) {
-    padding: var(--spacing-4);
+    padding: var(--spacing-5); /* Tăng từ spacing-4 lên spacing-5 (20px -> 24px) */
 }
 
 .analytic-card :global(.form-select) {
@@ -1240,7 +1267,9 @@ const handleExportOrders = () => {
 .payment-item__metrics strong {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
-    font-family: var(--font-family-sans);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace; /* Monospaced font cho số tiền */
+    font-variant-numeric: tabular-nums; /* Tabular numbers để thẳng hàng */
+    letter-spacing: 0.02em;
 }
 
 .payment-item__metrics {
@@ -1287,20 +1316,28 @@ const handleExportOrders = () => {
 .hourly-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-5);
+    gap: var(--spacing-4); /* Giảm từ spacing-5 xuống spacing-4 để các box số liệu không quá xa biểu đồ */
 }
 
 .hourly-chart-section {
     background: var(--color-card-muted);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    padding: var(--spacing-4);
+    padding: var(--spacing-5); /* Tăng padding */
+    margin-bottom: var(--spacing-3); /* Thêm margin-bottom để tách biệt với grid */
 }
 
 .hourly-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: var(--spacing-2);
+}
+
+/* Layout compact khi có ít items (< 6) - xếp ngang */
+.hourly-grid--compact {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    justify-content: center;
+    max-width: 100%;
 }
 
 /* Heatmap design */
@@ -1347,7 +1384,9 @@ const handleExportOrders = () => {
     font-weight: var(--font-weight-bold);
     color: var(--color-heading);
     font-size: var(--font-size-sm);
-    font-family: var(--font-family-sans);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace; /* Monospaced font cho số tiền */
+    font-variant-numeric: tabular-nums; /* Tabular numbers */
+    letter-spacing: 0.02em;
     line-height: 1.4;
     margin-bottom: var(--spacing-1);
 }
@@ -1454,6 +1493,8 @@ const handleExportOrders = () => {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
     font-family: var(--font-family-sans);
+    font-size: 1.125rem; /* Tăng từ mặc định lên 18px */
+    line-height: 1.5;
 }
 
 .table-card :global(.card-header .text-muted) {
@@ -1491,6 +1532,31 @@ const handleExportOrders = () => {
     border-bottom: none;
 }
 
+/* Progress bar cho tỷ trọng danh mục */
+.category-percentage {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    min-width: 200px;
+}
+
+.category-percentage__bar-wrapper {
+    flex: 1;
+    height: 8px;
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    position: relative;
+}
+
+.category-percentage__bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    border-radius: var(--radius-sm);
+    transition: width 0.3s ease;
+    min-width: 2px;
+}
+
 @media (max-width: 768px) {
     .payment-item,
     .payment-item__metrics {
@@ -1524,5 +1590,30 @@ const handleExportOrders = () => {
         width: 16px;
         height: 16px;
     }
+}
+
+.legend-color--low {
+    background: #f0f9ff;
+    border-color: #e0f2fe;
+}
+
+.legend-color--medium-low {
+    background: #bfdbfe;
+    border-color: #7dd3fc;
+}
+
+.legend-color--medium {
+    background: #60a5fa;
+    border-color: #0ea5e9;
+}
+
+.legend-color--medium-high {
+    background: #3b82f6;
+    border-color: #0284c7;
+}
+
+.legend-color--high {
+    background: #1e40af;
+    border-color: #0c4a6e;
 }
 </style>

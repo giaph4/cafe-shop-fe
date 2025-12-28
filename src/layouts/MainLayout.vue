@@ -129,7 +129,7 @@ onMounted(() => {
     window.addEventListener('shortcut:shortcuts-help', handleShortcutsHelp)
     window.addEventListener('shortcut:open-settings', handleOpenSettings)
 
-    // Add mobile-specific body class
+    // Thêm class cho mobile
     if (isMobile.value) {
         document.body.classList.add('is-mobile')
     }
@@ -140,7 +140,7 @@ onBeforeUnmount(() => {
     window.removeEventListener('shortcut:shortcuts-help', handleShortcutsHelp)
     window.removeEventListener('shortcut:open-settings', handleOpenSettings)
 
-    // Remove mobile body class
+    // Xóa class mobile
     document.body.classList.remove('is-mobile')
 })
 

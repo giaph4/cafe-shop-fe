@@ -48,7 +48,7 @@ export class ExportImportService {
                 ws['!cols'] = formatting.widths.map(w => ({ wch: w }))
             }
 
-            // Add worksheet
+            // Thêm worksheet
             XLSX.utils.book_append_sheet(wb, ws, sheetName)
 
             // Write file
@@ -87,7 +87,7 @@ export class ExportImportService {
 
             // Convert to CSV
             const headers = includeHeaders && exportData.length > 0
-                ? `${Object.keys(exportData[0]).join(delimiter)  }\n`
+                ? `${Object.keys(exportData[0]).join(delimiter)}\n`
                 : ''
 
             const rows = exportData.map(item =>
@@ -104,7 +104,7 @@ export class ExportImportService {
             const csv = headers + rows
 
             // Download
-            const blob = new Blob([`\uFEFF${  csv}`], { type: 'text/csv;charset=utf-8;' })
+            const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' })
             const link = document.createElement('a')
             link.href = URL.createObjectURL(blob)
             link.download = filename
@@ -165,7 +165,7 @@ export class ExportImportService {
             // Create PDF
             const doc = new jsPDF(orientation)
 
-            // Add title
+            // Thêm tiêu đề
             doc.setFontSize(16)
             doc.text(title, 14, 20)
 
@@ -181,7 +181,7 @@ export class ExportImportService {
                 })
             }
 
-            // Add table (simplified - you may want to use a table plugin)
+            // Thêm bảng (đơn giản hóa - có thể dùng table plugin)
             let y = 30
             const lineHeight = 7
             const pageHeight = doc.internal.pageSize.height

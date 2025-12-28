@@ -1,14 +1,11 @@
 import api from './axios'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 import logger from '@/utils/logger'
 
 const BASE_URL = '/api/v1/suppliers'
 
-// Sử dụng cleanParams từ utils thay vì buildQueryParams
-
 /**
- * 11.1 Lấy danh sách nhà cung cấp (hỗ trợ phân trang/search)
- *
+ * Lấy danh sách nhà cung cấp (hỗ trợ phân trang/search)
  * Normalize response để xử lý cả array và Page format:
  * - Format 1: Page object { content: [], totalElements, totalPages, ... }
  * - Format 2: Array trực tiếp []
@@ -117,14 +114,12 @@ export const getSuppliers = async (params = {}) => {
     }
 
     // Format không xác định: log warning và trả về format mặc định
-    if (import.meta.env.DEV) {
-        logger.warn('[SupplierService] Unknown response format:', {
-            hasContent: data.content !== undefined,
-            isArray: Array.isArray(data),
-            hasData: data.data !== undefined,
-            keys: Object.keys(data)
-        })
-    }
+    logger.warn('[SupplierService] Unknown response format:', {
+        hasContent: data.content !== undefined,
+        isArray: Array.isArray(data),
+        hasData: data.data !== undefined,
+        keys: Object.keys(data)
+    })
 
     // Fallback: trả về format mặc định
     if (params.page !== undefined || params.size !== undefined) {
@@ -143,7 +138,7 @@ export const getSuppliers = async (params = {}) => {
 }
 
 /**
- * 11.2 Lấy chi tiết nhà cung cấp
+ * Lấy chi tiết nhà cung cấp
  */
 export const getSupplierById = async (id) => {
     const { data } = await api.get(`${BASE_URL}/${id}`)
@@ -159,7 +154,7 @@ const normalizeSupplierPayload = (payload = {}) => ({
 })
 
 /**
- * 11.3 Tạo nhà cung cấp mới
+ * Tạo nhà cung cấp mới
  */
 export const createSupplier = async (supplierData) => {
     const payload = normalizeSupplierPayload(supplierData)
@@ -168,7 +163,7 @@ export const createSupplier = async (supplierData) => {
 }
 
 /**
- * 11.4 Cập nhật nhà cung cấp
+ * Cập nhật nhà cung cấp
  */
 export const updateSupplier = async ({ id, data: supplierData }) => {
     const payload = normalizeSupplierPayload(supplierData)
@@ -177,7 +172,7 @@ export const updateSupplier = async ({ id, data: supplierData }) => {
 }
 
 /**
- * 11.5 Xóa nhà cung cấp
+ * Xóa nhà cung cấp
  */
 export const deleteSupplier = async (id) => {
     await api.delete(`${BASE_URL}/${id}`)

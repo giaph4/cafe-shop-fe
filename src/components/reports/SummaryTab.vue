@@ -5,6 +5,7 @@
         v-for="card in summaryCards"
         :key="card.key"
         class="summary-card"
+        :class="{ 'summary-card--warning': card.key === 'lowStockItems' && (card.value ?? 0) > 0 }"
       >
         <div
           class="summary-card__icon"
@@ -14,11 +15,14 @@
         </div>
         <div class="summary-card__meta">
           <span class="summary-card__label">{{ card.label }}</span>
-          <strong class="summary-card__value">{{ card.displayValue }}</strong>
-          <small
-            v-if="card.subtitle"
-            class="summary-card__subtitle"
-          >{{ card.subtitle }}</small>
+          <div class="summary-card__value-wrapper">
+            <strong class="summary-card__value">{{ card.displayValue }}</strong>
+            <small
+              v-if="card.subtitle"
+              class="summary-card__subtitle"
+              :class="card.subtitleClass"
+            >{{ card.subtitle }}</small>
+          </div>
         </div>
       </div>
     </div>
@@ -71,27 +75,14 @@
             </p>
           </div>
           <div class="chart-controls">
-            <select
-              v-model="revenueChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="area">
-                Area
-              </option>
-              <option value="line">
-                Line
-              </option>
-              <option value="bar">
-                Column
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định area chart -->
           </div>
         </div>
         <div class="card-body">
           <ApexChart
             v-if="chartsReady && isValidSeries(revenueSeries) && computedRevenueOptions"
             :type="revenueChartType"
-            height="320"
+            height="280"
             :series="revenueSeries"
             :options="computedRevenueOptions"
           />
@@ -126,26 +117,13 @@
             </p>
           </div>
           <div class="chart-controls d-flex gap-2">
-            <select
-              v-model="paymentChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="donut">
-                Donut
-              </option>
-              <option value="pie">
-                Pie
-              </option>
-              <option value="bar">
-                Bar
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định donut chart -->
             <select
               v-model="paymentMetric"
               class="form-select form-select-sm"
             >
               <option value="orders">
-                Theo số đơn
+                Theo số lượng đơn
               </option>
               <option value="amount">
                 Theo doanh thu
@@ -154,11 +132,14 @@
           </div>
         </div>
         <div class="card-body">
-          <template v-if="paymentItems.length">
+          <div
+            v-if="paymentItems.length"
+            class="payment-chart-wrapper"
+          >
             <ApexChart
               v-if="isValidSeries(paymentChartSeries) && paymentChartOptions"
               :type="resolvedPaymentChartType"
-              height="320"
+              height="280"
               :series="paymentChartSeries"
               :options="paymentChartOptions"
             />
@@ -171,7 +152,7 @@
                 Chưa có dữ liệu để hiển thị
               </p>
             </div>
-          </template>
+          </div>
           <p
             v-else
             class="text-muted mb-0"
@@ -183,54 +164,6 @@
     </div>
 
     <div class="analytics-grid">
-      <div class="card analytics-card">
-        <div class="card-header border-0">
-          <h5 class="mb-1">
-            So sánh với kỳ trước
-          </h5>
-          <p class="text-muted mb-0">
-            Theo doanh thu và số đơn
-          </p>
-        </div>
-        <div
-          v-if="salesComparison"
-          class="card-body"
-        >
-          <div class="comparison-grid">
-            <div class="comparison-item">
-              <span class="comparison-item__label">Doanh thu hiện tại</span>
-              <strong>{{ formatCurrency(salesComparison.currentRevenue) }}</strong>
-            </div>
-            <div class="comparison-item">
-              <span class="comparison-item__label">Doanh thu kỳ trước</span>
-              <strong>{{ formatCurrency(salesComparison.previousRevenue) }}</strong>
-            </div>
-            <div class="comparison-item">
-              <span class="comparison-item__label">Tăng trưởng doanh thu</span>
-              <strong :class="salesComparison.growthAmount >= 0 ? 'text-success' : 'text-danger'">
-                {{ formatCurrency(salesComparison.growthAmount) }}
-              </strong>
-              <small :class="salesComparison.growthPercentage >= 0 ? 'text-success' : 'text-danger'">
-                {{ salesComparison.growthPercentage?.toFixed(2) ?? '0.00' }}%
-              </small>
-            </div>
-            <div class="comparison-item">
-              <span class="comparison-item__label">Số đơn</span>
-              <strong>{{ formatNumber(salesComparison.currentOrders) }}</strong>
-              <small>Trước: {{ formatNumber(salesComparison.previousOrders) }}</small>
-            </div>
-          </div>
-        </div>
-        <div
-          v-else
-          class="card-body"
-        >
-          <p class="text-muted mb-0">
-            Chưa có dữ liệu so sánh cho giai đoạn này.
-          </p>
-        </div>
-      </div>
-
       <div class="card analytics-card">
         <div class="card-header border-0">
           <h5 class="mb-1">
@@ -305,7 +238,7 @@
         <div class="card-header border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
           <div>
             <h5 class="mb-1">
-              Top sản phẩm
+              Top danh mục
             </h5>
             <p class="text-muted mb-0">
               Dựa trên {{ productMetric === 'revenue' ? 'doanh thu' : 'số lượng' }}
@@ -323,27 +256,14 @@
                 Số lượng
               </option>
             </select>
-            <select
-              v-model="productChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="bar">
-                Bar
-              </option>
-              <option value="horizontalBar">
-                Bar ngang
-              </option>
-              <option value="pie">
-                Pie
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định horizontalBar -->
           </div>
         </div>
         <div class="card-body">
           <ApexChart
-            v-if="topProductItems.length && isValidSeries(productChartSeries) && productChartOptions"
+            v-if="topCategoryItems.length && isValidSeries(productChartSeries) && productChartOptions"
             :type="resolvedProductChartType"
-            height="320"
+            height="280"
             :series="productChartSeries"
             :options="productChartOptions"
           />
@@ -351,7 +271,7 @@
             v-else
             class="text-muted mb-0"
           >
-            Chưa có dữ liệu sản phẩm.
+            Chưa có dữ liệu danh mục.
           </p>
         </div>
       </div>
@@ -366,20 +286,7 @@
             </p>
           </div>
           <div class="chart-controls d-flex gap-2">
-            <select
-              v-model="customerChartType"
-              class="form-select form-select-sm"
-            >
-              <option value="bar">
-                Bar
-              </option>
-              <option value="horizontalBar">
-                Bar ngang
-              </option>
-              <option value="pie">
-                Pie
-              </option>
-            </select>
+            <!-- Chart type selector đã được ẩn - sử dụng mặc định horizontalBar -->
             <select
               v-model="customerTopLimit"
               class="form-select form-select-sm"
@@ -400,7 +307,7 @@
           <ApexChart
             v-if="topCustomerItems.length && isValidSeries(customerChartSeries) && customerChartOptions"
             :type="resolvedCustomerChartType"
-            height="320"
+            height="280"
             :series="customerChartSeries"
             :options="customerChartOptions"
           />
@@ -452,6 +359,7 @@ const props = defineProps({
     profit: { type: Object, default: null },
     dailyRevenue: { type: Object, default: null },
     bestSellers: { type: Array, default: () => [] },
+    categorySales: { type: Array, default: () => [] },
     topCustomers: { type: Array, default: () => [] },
     productSummary: { type: Object, default: null },
     insights: { type: Array, default: () => [] },
@@ -466,16 +374,17 @@ const chartsReady = ref(false)
 const revenueChartType = ref('area')
 const paymentChartType = ref('donut')
 const paymentMetric = ref('orders')
-const productChartType = ref('bar')
+const productChartType = ref('horizontalBar')
 const productMetric = ref('revenue')
-const customerChartType = ref('bar')
+const customerChartType = ref('horizontalBar')
 const customerTopLimit = ref('5')
 
 const { isDark } = useThemePreference()
 
 const baseLabelStyle = computed(() => ({
-    colors: isDark.value ? '#cbd5f5' : '#64748b',
-    fontSize: '12px'
+    colors: isDark.value ? '#EFF2F6' : '#64748b',
+    fontSize: '12px',
+    fontWeight: isDark.value ? 500 : 400
 }))
 const VIBRANT_PALETTE = Object.freeze([
     '#2563eb',
@@ -499,27 +408,29 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
         chart: {
             type,
             toolbar: { show: true },
-            foreColor: dark ? '#e2e8f0' : '#475569',
+            foreColor: dark ? '#EFF2F6' : '#475569',
             background: 'transparent'
         },
         stroke: isCircular
             ? { colors: ['#ffffff'], width: 2 }
-            : { curve: 'smooth', width: isBar ? 0 : 3 },
+            : { curve: 'straight', width: isBar ? 0 : 3 },
         dataLabels: { enabled: false },
         colors,
         grid: {
             strokeDashArray: 4,
-            borderColor: dark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.35)',
+            borderColor: dark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.35)',
             padding: { top: 8, bottom: 8, left: 12, right: 12 }
         },
         xaxis: {
             categories: [],
             labels: { style: { ...labelStyle } },
             axisBorder: {
-                color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: dark ? 1.5 : 1
             },
             axisTicks: {
-                color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                strokeWidth: dark ? 1.5 : 1
             },
             crosshairs: {
                 stroke: {
@@ -534,7 +445,7 @@ const createBaseOptions = (type, colors = VIBRANT_PALETTE) => {
                 formatter: (value) => value ?? 0
             }
         },
-        legend: { position: 'bottom', labels: { colors: dark ? '#cbd5f5' : '#475569' } },
+        legend: { position: 'bottom', labels: { colors: dark ? '#EFF2F6' : '#475569', fontWeight: dark ? 500 : 400 } },
         tooltip: {
             theme: dark ? 'dark' : 'light',
             y: {
@@ -625,13 +536,19 @@ onMounted(() => {
 
 const summaryCards = computed(() => {
     const s = props.stats ?? {}
+    const comparison = props.salesComparison
+    const todayGrowth = comparison?.growthPercentage ?? 0
+    const revenueValue = s.todayRevenue ?? 0
+
     return [
         {
             key: 'todayRevenue',
-            label: 'Doanh thu hôm nay: ',
-            value: s.todayRevenue,
+            label: 'Tổng doanh thu: ',
+            value: revenueValue,
             icon: 'bi bi-cash-stack',
-            variant: 'variant-primary'
+            variant: 'variant-primary',
+            subtitle: comparison && revenueValue > 0 ? ` ${todayGrowth >= 0 ? '+' : ''}${todayGrowth.toFixed(2)}% so với kỳ trước` : null,
+            subtitleClass: todayGrowth >= 0 ? 'text-success' : 'text-danger'
         },
         {
             key: 'monthRevenue',
@@ -642,7 +559,7 @@ const summaryCards = computed(() => {
         },
         {
             key: 'todayOrders',
-            label: 'Đơn hàng hôm nay: ',
+            label: 'Tổng đơn hàng: ',
             value: s.todayOrders,
             icon: 'bi bi-bag-check',
             variant: 'variant-amber',
@@ -657,7 +574,7 @@ const summaryCards = computed(() => {
         },
         {
             key: 'todayProfit',
-            label: 'Lợi nhuận hôm nay: ',
+            label: 'Tổng lợi nhuận: ',
             value: s.todayProfit,
             icon: 'bi bi-graph-up',
             variant: 'variant-emerald'
@@ -673,9 +590,10 @@ const summaryCards = computed(() => {
     ].map((card) => ({
         ...card,
         displayValue: typeof card.formatter === 'function' ? card.formatter(card.value ?? 0) : formatCurrency(card.value ?? 0),
-        subtitle: card.key === 'todayRevenue' && props.dailyRevenue
+        subtitle: card.subtitle || (card.key === 'todayRevenue' && props.dailyRevenue && !card.subtitle && revenueValue > 0
             ? `Ngày ${props.dailyRevenue.date}: ${formatCurrency(props.dailyRevenue.totalRevenue)}`
-            : null
+            : null),
+        subtitleClass: card.subtitleClass || null
     }))
 })
 
@@ -723,7 +641,7 @@ const inventoryHighlights = computed(() => {
 })
 
 const paymentItems = computed(() => props.paymentStats ?? [])
-const paymentMetricLabel = computed(() => paymentMetric.value === 'orders' ? 'Tỷ trọng theo số đơn' : 'Tỷ trọng theo doanh thu')
+const paymentMetricLabel = computed(() => paymentMetric.value === 'orders' ? 'Tỷ trọng theo số lượng đơn' : 'Tỷ trọng theo doanh thu')
 
 const computedRevenueOptions = computed(() => {
     const chartType = revenueChartType.value === 'bar' ? 'bar' : revenueChartType.value
@@ -745,8 +663,8 @@ const computedRevenueOptions = computed(() => {
             }
         },
         stroke: chartType === 'bar'
-            ? { curve: 'smooth', width: 0 }
-            : { curve: 'smooth', width: chartType === 'line' ? 3 : 2 },
+            ? { curve: 'straight', width: 0 }
+            : { curve: 'straight', width: chartType === 'line' ? 3 : 2 },
         fill: chartType === 'bar'
             ? { type: 'solid', opacity: 0.95, colors: baseColors }
             : base.fill,
@@ -777,11 +695,11 @@ const paymentChartSeries = computed(() => {
         return [{ name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu', data: [] }]
     }
     const data = items.map((item) => paymentMetric.value === 'orders' ? (Number(item?.orderCount) || 0) : (Number(item?.totalAmount) || 0))
-    // For pie/donut charts, ApexCharts requires array of numbers directly
+    // Với pie/donut charts, ApexCharts yêu cầu mảng số trực tiếp
     if (paymentChartType.value === 'pie' || paymentChartType.value === 'donut') {
         return data
     }
-    // For bar charts, return object format
+    // Với bar charts, trả về dạng object
     return [
         {
             name: paymentMetric.value === 'orders' ? 'Số đơn' : 'Doanh thu',
@@ -797,6 +715,7 @@ const paymentChartOptions = computed(() => {
         : []
     const base = createBaseOptions(resolvedPaymentChartType.value, VIBRANT_PALETTE)
     const isBar = resolvedPaymentChartType.value === 'bar'
+    const isCircular = ['pie', 'donut'].includes(resolvedPaymentChartType.value)
 
     return mergeOptions(base, {
         labels: labels.length > 0 ? labels : undefined,
@@ -804,13 +723,21 @@ const paymentChartOptions = computed(() => {
             enabled: !isBar,
             formatter: (val) => `${Number(val).toFixed(1)}%`
         },
-        xaxis: isBar
-            ? {
-                ...base.xaxis,
-                categories: labels.length > 0 ? labels : []
-            }
-            : base.xaxis,
+        chart: {
+            ...base.chart,
+            width: isCircular ? '70%' : '100%'
+        },
+        legend: {
+            position: isCircular ? 'right' : 'bottom',
+            horizontalAlign: isCircular ? 'center' : 'center',
+            labels: { colors: isDark.value ? '#cbd5f5' : '#475569' }
+        },
         plotOptions: {
+            pie: {
+                donut: {
+                    size: isCircular ? '60%' : '70%'
+                }
+            },
             bar: {
                 borderRadius: 8,
                 horizontal: false,
@@ -827,63 +754,105 @@ const paymentChartOptions = computed(() => {
     })
 })
 
-const topProductItems = computed(() => {
-    if (!props.bestSellers?.length) return []
-    const limit = productMetric.value === 'revenue' ? 8 : 8
-    return props.bestSellers.slice(0, limit)
+// Đổi từ Top sản phẩm sang Top danh mục
+const topCategoryItems = computed(() => {
+    if (!props.categorySales?.length) return []
+    const limit = 8
+    // Sắp xếp theo doanh thu hoặc số lượng tùy theo productMetric
+    const sorted = [...props.categorySales].sort((a, b) => {
+        const valA = productMetric.value === 'revenue'
+            ? (Number(a?.totalRevenue) || 0)
+            : (Number(a?.totalQuantitySold) || 0)
+        const valB = productMetric.value === 'revenue'
+            ? (Number(b?.totalRevenue) || 0)
+            : (Number(b?.totalQuantitySold) || 0)
+        return valB - valA
+    })
+    return sorted.slice(0, limit)
 })
 
 const resolvedProductChartType = computed(() => productChartType.value === 'horizontalBar' ? 'bar' : productChartType.value)
 
 const productChartSeries = computed(() => {
-    if (!topProductItems.value.length) {
+    const items = Array.isArray(topCategoryItems.value) ? topCategoryItems.value : []
+    if (!items.length) {
         // Return empty array for pie, empty object array for bar
         if (productChartType.value === 'pie') {
             return []
         }
         return [{ name: productMetric.value === 'revenue' ? 'Doanh thu' : 'Số lượng', data: [] }]
     }
-    const values = topProductItems.value.map((item) => {
+    const values = items.map((item) => {
         const val = productMetric.value === 'revenue'
-            ? (Number(item?.totalRevenueGenerated) || 0)
+            ? (Number(item?.totalRevenue) || 0)
             : (Number(item?.totalQuantitySold) || 0)
         return val
-    })
-    // For pie charts, ApexCharts requires array of numbers directly
+    }).filter(v => typeof v === 'number' && !isNaN(v)) // Đảm bảo tất cả giá trị đều là số hợp lệ
+
+    // Với pie charts, ApexCharts yêu cầu mảng số trực tiếp
     if (productChartType.value === 'pie') {
-        return values
+        return values.length > 0 ? values : []
     }
     // For bar charts, return object format
     return [
         {
             name: productMetric.value === 'revenue' ? 'Doanh thu' : 'Số lượng',
-            data: values
+            data: values.length > 0 ? values : []
         }
     ]
 })
 
 const productChartOptions = computed(() => {
-    const items = Array.isArray(topProductItems.value) ? topProductItems.value : []
+    const items = Array.isArray(topCategoryItems.value) ? topCategoryItems.value : []
     const labels = items.length > 0
-        ? items.map((item, index) => item?.productName || `SP #${index + 1}`)
+        ? items.map((item, index) => item?.categoryName || `Danh mục #${index + 1}`)
         : []
     const base = createBaseOptions(resolvedProductChartType.value, VIBRANT_PALETTE)
 
+    const isHorizontal = productChartType.value === 'horizontalBar'
+    const isBar = resolvedProductChartType.value === 'bar'
+
+    // Đảm bảo categories luôn là array, không phải undefined
+    const safeCategories = Array.isArray(labels) && labels.length > 0 ? labels : []
+
     return mergeOptions(base, {
-        labels: labels.length > 0 ? labels : undefined,
+        labels: safeCategories.length > 0 ? safeCategories : undefined,
         dataLabels: { enabled: productChartType.value === 'pie' },
-        xaxis: resolvedProductChartType.value === 'bar'
-            ? {
-                ...base.xaxis,
-                categories: labels.length > 0 ? labels : []
-            }
-            : base.xaxis,
         plotOptions: {
             bar: {
                 borderRadius: 8,
-                horizontal: productChartType.value === 'horizontalBar'
+                horizontal: isHorizontal,
+                columnWidth: isHorizontal ? '75%' : '65%', /* Tăng độ dày bar từ mặc định */
+                barHeight: isHorizontal ? '70%' : undefined /* Tăng chiều cao bar ngang */
             }
         },
+        // Với ApexCharts, categories luôn ở xaxis, dù horizontal hay vertical
+        xaxis: isBar
+            ? {
+                ...base.xaxis,
+                categories: safeCategories, // Luôn là array, không phải undefined
+                labels: {
+                    ...base.xaxis.labels,
+                    style: {
+                        ...base.xaxis.labels.style,
+                        fontSize: '13px' /* Tăng font size trục hoành */
+                    },
+                    formatter: isHorizontal ? (value) => productMetric.value === 'revenue' ? formatCurrency(value) : formatNumber(value) : undefined
+                }
+            }
+            : base.xaxis,
+        yaxis: isBar
+            ? {
+                ...base.yaxis,
+                labels: {
+                    ...base.yaxis.labels,
+                    style: {
+                        ...base.yaxis.labels.style,
+                        fontSize: isHorizontal ? '13px' : '12px' /* Tăng font size cho bar ngang */
+                    }
+                }
+            }
+            : base.yaxis,
         tooltip: {
             y: {
                 formatter: (value) => productMetric.value === 'revenue' ? formatCurrency(value) : formatNumber(value)
@@ -902,23 +871,26 @@ const topCustomerItems = computed(() => {
 const resolvedCustomerChartType = computed(() => customerChartType.value === 'horizontalBar' ? 'bar' : customerChartType.value)
 
 const customerChartSeries = computed(() => {
-    if (!topCustomerItems.value.length) {
+    const items = Array.isArray(topCustomerItems.value) ? topCustomerItems.value : []
+    if (!items.length) {
         // Return empty array for pie, empty object array for bar
         if (customerChartType.value === 'pie') {
             return []
         }
         return [{ name: 'Chi tiêu', data: [] }]
     }
-    const values = topCustomerItems.value.map((item) => Number(item?.totalSpent) || 0)
-    // For pie charts, ApexCharts requires array of numbers directly
+    const values = items.map((item) => Number(item?.totalSpent) || 0)
+        .filter(v => typeof v === 'number' && !isNaN(v)) // Đảm bảo tất cả giá trị đều là số hợp lệ
+
+    // Với pie charts, ApexCharts yêu cầu mảng số trực tiếp
     if (customerChartType.value === 'pie') {
-        return values
+        return values.length > 0 ? values : []
     }
     // For bar charts, return object format
     return [
         {
             name: 'Chi tiêu',
-            data: values
+            data: values.length > 0 ? values : []
         }
     ]
 })
@@ -930,20 +902,49 @@ const customerChartOptions = computed(() => {
         : []
     const base = createBaseOptions(resolvedCustomerChartType.value, VIBRANT_PALETTE)
 
+    const isHorizontal = customerChartType.value === 'horizontalBar'
+    const isBar = resolvedCustomerChartType.value === 'bar'
+
+    // Đảm bảo categories luôn là array, không phải undefined
+    const safeCategories = Array.isArray(labels) && labels.length > 0 ? labels : []
+
     return mergeOptions(base, {
-        labels: labels.length > 0 ? labels : undefined,
-        xaxis: resolvedCustomerChartType.value === 'bar'
-            ? {
-                ...base.xaxis,
-                categories: labels.length > 0 ? labels : []
-            }
-            : base.xaxis,
+        labels: safeCategories.length > 0 ? safeCategories : undefined,
         plotOptions: {
             bar: {
                 borderRadius: 8,
-                horizontal: customerChartType.value === 'horizontalBar'
+                horizontal: isHorizontal,
+                columnWidth: isHorizontal ? '75%' : '65%', /* Tăng độ dày bar */
+                barHeight: isHorizontal ? '70%' : undefined /* Tăng chiều cao bar ngang */
             }
         },
+        // Với ApexCharts, categories luôn ở xaxis, dù horizontal hay vertical
+        xaxis: isBar
+            ? {
+                ...base.xaxis,
+                categories: safeCategories, // Luôn là array, không phải undefined
+                labels: {
+                    ...base.xaxis.labels,
+                    style: {
+                        ...base.xaxis.labels.style,
+                        fontSize: '13px' /* Tăng font size trục hoành */
+                    },
+                    formatter: isHorizontal ? (value) => formatCurrency(value) : undefined
+                }
+            }
+            : base.xaxis,
+        yaxis: isBar
+            ? {
+                ...base.yaxis,
+                labels: {
+                    ...base.yaxis.labels,
+                    style: {
+                        ...base.yaxis.labels.style,
+                        fontSize: isHorizontal ? '13px' : '12px' /* Tăng font size cho bar ngang */
+                    }
+                }
+            }
+            : base.yaxis,
         tooltip: {
             y: {
                 formatter: (value) => formatCurrency(value)
@@ -957,13 +958,18 @@ const customerChartOptions = computed(() => {
 .reports-summary {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: 1.75rem; /* Tăng khoảng cách giữa các section */
+}
+
+/* Tăng khoảng cách đặc biệt giữa Điểm nổi bật và biểu đồ */
+.summary-insights {
+    margin-bottom: 0.75rem; /* Tăng margin-bottom để tách biệt rõ ràng hơn */
 }
 
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem; /* Tăng khoảng cách giữa các card */
 }
 
 .summary-card {
@@ -1031,6 +1037,12 @@ const customerChartOptions = computed(() => {
     line-height: 1.4;
 }
 
+.summary-card__value-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
 .summary-card__value {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-semibold);
@@ -1045,6 +1057,18 @@ const customerChartOptions = computed(() => {
     color: var(--color-text-muted);
     font-family: var(--font-family-sans);
     line-height: 1.4;
+    font-weight: var(--font-weight-medium);
+    margin-top: var(--spacing-1);
+}
+
+.summary-card--warning {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.summary-card--warning:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.4);
 }
 
 .summary-insights {
@@ -1073,8 +1097,20 @@ const customerChartOptions = computed(() => {
 
 .summary-insights__grid {
     display: grid;
-    gap: var(--spacing-4);
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--spacing-4); /* Tăng từ spacing-3 lên spacing-4 */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+@media (max-width: 1200px) {
+    .summary-insights__grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .summary-insights__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .summary-insight {
@@ -1094,13 +1130,14 @@ const customerChartOptions = computed(() => {
 }
 
 .summary-insight__icon {
-    width: 48px;
-    height: 48px;
+    width: 56px; /* Tăng từ 48px lên 56px */
+    height: 56px; /* Tăng từ 48px lên 56px */
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 24px; /* Tăng từ 20px lên 24px */
+    flex-shrink: 0; /* Đảm bảo icon không bị co lại */
 }
 
 .summary-insight__content {
@@ -1118,10 +1155,11 @@ const customerChartOptions = computed(() => {
 }
 
 .summary-insight__value {
-    font-size: var(--font-size-lg);
+    font-size: 1.125rem; /* Tăng từ var(--font-size-lg) lên 18px */
     color: var(--color-heading);
     font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-sans);
+    line-height: 1.4;
 }
 
 .summary-insight__detail {
@@ -1160,11 +1198,11 @@ const customerChartOptions = computed(() => {
 }
 
 .summary-insight.accent-primary .summary-insight__icon { background: var(--color-soft-primary); color: var(--color-primary); }
-.summary-insight.accent-success .summary-insight__icon { background: var(--color-soft-emerald); color: var(--color-success); }
-.summary-insight.accent-info .summary-insight__icon { background: var(--color-soft-sky); color: var(--color-info); }
-.summary-insight.accent-warning .summary-insight__icon { background: var(--color-soft-amber); color: var(--color-warning); }
+.summary-insight.accent-success .summary-insight__icon { background: var(--color-soft-primary); color: var(--color-primary); }
+.summary-insight.accent-info .summary-insight__icon { background: var(--color-soft-primary); color: var(--color-primary); }
+.summary-insight.accent-warning .summary-insight__icon { background: var(--color-soft-primary); color: var(--color-primary); }
 .summary-insight.accent-purple .summary-insight__icon { background: var(--color-soft-primary); color: var(--color-primary); }
-.summary-insight.accent-danger .summary-insight__icon { background: var(--color-soft-rose); color: var(--color-danger); }
+.summary-insight.accent-danger .summary-insight__icon { background: var(--color-soft-emerald); color: var(--color-success); }
 
 /* Dark theme styles removed - using CSS variables for theme compatibility */
 
@@ -1212,7 +1250,8 @@ const customerChartOptions = computed(() => {
 .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
+    gap: 1.5rem; /* Tăng từ 1rem lên 1.5rem */
+    margin-top: 0.5rem; /* Thêm margin-top để tách biệt với phần trên */
 }
 
 .chart-card {
@@ -1252,6 +1291,12 @@ const customerChartOptions = computed(() => {
     outline: 2px solid var(--color-primary);
     outline-offset: 0;
     box-shadow: none;
+}
+
+.payment-chart-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .payment-list {
@@ -1298,8 +1343,8 @@ const customerChartOptions = computed(() => {
 
 .analytics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
 }
 
 .analytics-card {

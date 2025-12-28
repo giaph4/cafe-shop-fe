@@ -39,11 +39,12 @@ export function useChartOptions () {
         const isCircular = ['pie', 'donut', 'radialBar'].includes(type)
         const dark = isDark.value
 
-        // Base label style
+        // Base label style - rõ ràng hơn trong dark theme
         const baseLabelStyle = {
-            colors: dark ? '#cbd5f5' : '#64748b',
+            colors: dark ? '#EFF2F6' : '#64748b',
             fontSize: '12px',
-            fontFamily: 'var(--font-family-sans)'
+            fontFamily: 'var(--font-family-sans)',
+            fontWeight: dark ? 500 : 400
         }
 
         // Grid padding - tăng bottom nếu có rotated labels, tăng top nếu có legend
@@ -81,7 +82,8 @@ export function useChartOptions () {
             fontFamily: 'var(--font-family-sans)',
             fontSize: '12px',
             labels: {
-                colors: dark ? '#cbd5f5' : '#475569'
+                colors: dark ? '#EFF2F6' : '#475569',
+                fontWeight: dark ? 500 : 400
             },
             itemMargin: {
                 horizontal: 10,
@@ -110,7 +112,7 @@ export function useChartOptions () {
                 type,
                 height,
                 toolbar: { show: true },
-                foreColor: dark ? '#e2e8f0' : '#475569',
+                foreColor: dark ? '#EFF2F6' : '#475569',
                 background: 'transparent',
                 ...restOptions.chart
             },
@@ -121,7 +123,7 @@ export function useChartOptions () {
             colors,
             grid: {
                 strokeDashArray: 4,
-                borderColor: dark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.35)',
+                borderColor: dark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.35)',
                 padding: gridPadding,
                 ...customGrid
             },
@@ -139,10 +141,12 @@ export function useChartOptions () {
             baseOptions.xaxis = {
                 labels: xaxisLabels,
                 axisBorder: {
-                    color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                    color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                    strokeWidth: dark ? 1.5 : 1
                 },
                 axisTicks: {
-                    color: dark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(203, 213, 225, 0.6)'
+                    color: dark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                    strokeWidth: dark ? 1.5 : 1
                 },
                 ...customXaxis
             }

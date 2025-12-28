@@ -160,7 +160,7 @@ export const useCustomDashboardStore = defineStore('customDashboard', () => {
         try {
             await deleteDashboardLayout(layoutId)
 
-            // Remove from allLayouts
+            // Xóa khỏi allLayouts
             allLayouts.value = allLayouts.value.filter(l => l.id !== layoutId)
 
             // Clear currentLayout nếu đang xóa layout hiện tại

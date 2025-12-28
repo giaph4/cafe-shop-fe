@@ -58,6 +58,7 @@
           class="btn btn-primary"
           @click="createNewOrder"
         >
+          <i class="bi bi-plus-lg" />
           Tạo đơn hàng mới
         </button>
       </template>
@@ -74,12 +75,43 @@
           class="pos-cart__item"
         >
           <div class="pos-cart__item-info">
-            <h6 class="mb-1">
-              {{ item.productName }}
-            </h6>
-            <p class="mb-0 text-muted small">
-              {{ formatCurrencySafe(item.priceAtOrder) }} × {{ item.quantity }}
-            </p>
+            <div class="pos-cart__item-header">
+              <button
+                class="btn btn-sm btn-outline-danger pos-cart__delete-btn--inline"
+                type="button"
+                :disabled="isProcessing('quantity')"
+                aria-label="Xóa món"
+                title="Xóa (Phím Delete)"
+                @click="removeItem(index)"
+              >
+                <i class="bi bi-trash" />
+              </button>
+              <div class="pos-cart__item-name-wrapper">
+                <h6 class="mb-1">
+                  {{ item.productName }}
+                </h6>
+                <div
+                  v-if="item.customization"
+                  class="pos-cart__item-customization"
+                >
+                  <span
+                    v-if="item.customization.size"
+                    class="customization-badge"
+                  >{{ item.customization.size }}</span>
+                  <span
+                    v-if="item.customization.ice"
+                    class="customization-badge"
+                  >{{ getIceLabel(item.customization.ice) }}</span>
+                  <span
+                    v-if="item.customization.sugar"
+                    class="customization-badge"
+                  >{{ getSugarLabel(item.customization.sugar) }}</span>
+                </div>
+                <p class="mb-0 text-primary fw-semibold">
+                  {{ formatCurrencySafe(item.priceAtOrder) }} × {{ item.quantity }}
+                </p>
+              </div>
+            </div>
             <!-- Ghi chú cho món -->
             <div class="pos-cart__item-notes">
               <div
@@ -94,7 +126,7 @@
                   {{ item.notes }}
                 </span>
                 <button
-                  class="btn btn-sm btn-link p-0 text-muted pos-cart__item-notes-edit-btn"
+                  class="btn btn-sm btn-outline-secondary pos-cart__item-notes-edit-btn"
                   type="button"
                   :disabled="isProcessing('quantity')"
                   title="Chỉnh sửa ghi chú"
@@ -144,7 +176,7 @@
           <div class="pos-cart__item-actions">
             <div class="quantity-controls">
               <button
-                class="btn btn-sm btn-outline-secondary quantity-btn"
+                class="btn btn-outline-secondary quantity-btn quantity-btn--large"
                 type="button"
                 :disabled="isProcessing('quantity')"
                 aria-label="Giảm số lượng"
@@ -164,7 +196,7 @@
                 @blur="setQuantity(index, item.quantity)"
               >
               <button
-                class="btn btn-sm btn-outline-secondary quantity-btn"
+                class="btn btn-outline-secondary quantity-btn quantity-btn--large"
                 type="button"
                 :disabled="isProcessing('quantity')"
                 aria-label="Tăng số lượng"
@@ -174,16 +206,6 @@
                 <i class="bi bi-plus" />
               </button>
             </div>
-            <button
-              class="btn btn-sm btn-outline-danger"
-              type="button"
-              :disabled="isProcessing('quantity')"
-              aria-label="Xóa món"
-              title="Xóa (Phím Delete)"
-              @click="removeItem(index)"
-            >
-              <i class="bi bi-trash" />
-            </button>
           </div>
           <span class="pos-cart__item-total">{{ formatCurrencySafe(item.priceAtOrder * item.quantity)
           }}</span>
@@ -233,20 +255,9 @@
               type="text"
               class="form-control"
               placeholder="Nhập tên hoặc SĐT khách hàng"
+              @input="handleCustomerSearchInput"
               @keyup.enter.prevent="triggerCustomerSearch"
             >
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              :disabled="customerSearchLoading"
-              @click="triggerCustomerSearch"
-            >
-              <span
-                v-if="customerSearchLoading"
-                class="spinner-border spinner-border-sm me-2"
-              />
-              Tìm
-            </button>
           </div>
           <ul
             v-if="showCustomerSuggestions"
@@ -276,7 +287,10 @@
       </section>
 
       <section class="pos-cart__summary">
-        <div class="pos-cart__summary-row">
+        <div
+          v-if="showSubTotal"
+          class="pos-cart__summary-row"
+        >
           <span>Tổng phụ</span>
           <span>{{ formatCurrencySafe(subTotal) }}</span>
         </div>
@@ -345,7 +359,7 @@
             </button>
             <button
               v-else
-              class="btn btn-success"
+              class="btn btn-outline-primary"
               type="button"
               :disabled="!canApplyVoucher"
               @click="applyVoucher"
@@ -371,7 +385,7 @@
 
       <section class="pos-cart__actions">
         <button
-          class="btn btn-success"
+          class="btn btn-success btn-lg pos-cart__payment-btn"
           type="button"
           :disabled="!canProcessPayment"
           @click="processPayment"
@@ -380,17 +394,25 @@
             v-if="isProcessing('pay')"
             class="spinner-border spinner-border-sm me-2"
           />
+          <i
+            v-else
+            class="bi bi-credit-card me-2"
+          />
           Thanh toán
         </button>
         <button
-          class="btn btn-outline-primary"
+          class="btn btn-primary pos-cart__save-btn"
           type="button"
           :disabled="isProcessing('save') || cartIsEmpty"
           @click="saveOrder"
         >
           <span
             v-if="isProcessing('save')"
-            class="spinner-border spinner-border-sm me-2"
+            class="spinner-border spinner-border-sm"
+          />
+          <i
+            v-else
+            class="bi bi-save"
           />
           Lưu đơn hàng
         </button>
@@ -402,7 +424,11 @@
         >
           <span
             v-if="isProcessing('cancel')"
-            class="spinner-border spinner-border-sm me-2"
+            class="spinner-border spinner-border-sm"
+          />
+          <i
+            v-else
+            class="bi bi-x-circle"
           />
           {{ isExistingOrder ? 'Hủy đơn hàng' : 'Hủy tạo mới' }}
         </button>
@@ -415,9 +441,103 @@
     :order="localOrder"
     :table="props.table"
     :processing="loadingAction === 'pay'"
+    :show-payment-result="isSuccessModalVisible"
     @confirm-payment="confirmPayment"
     @closed="handlePaymentModalClosed"
   />
+
+  <PaymentSuccessModal
+    :visible="isSuccessModalVisible"
+    :order-id="completedOrder?.id"
+    @close="handleSuccessModalClose"
+    @view-details="handleSuccessModalViewDetails"
+  />
+
+  <!-- Order Detail Modal -->
+  <OrderDetailModal
+    ref="orderDetailModalRef"
+    :order-id="selectedOrderId"
+  />
+
+  <!-- Cancel Order Confirmation Modal -->
+  <Teleport to="body">
+    <div
+      v-if="showCancelConfirm"
+      class="modal fade show"
+      style="display: block;"
+      tabindex="-1"
+      @click.self="showCancelConfirm = false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Xác nhận hủy đơn hàng
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Đóng"
+              @click="showCancelConfirm = false"
+            />
+          </div>
+          <div class="modal-body">
+            <p class="mb-3">
+              Bạn có chắc chắn muốn hủy đơn hàng này không?
+            </p>
+            <div
+              v-if="localOrder.id || localOrder.code"
+              class="alert alert-warning"
+            >
+              <i class="bi bi-exclamation-triangle me-2" />
+              <strong>Mã đơn:</strong> #{{ localOrder.code || localOrder.id }}
+              <br>
+              <strong>Tổng tiền:</strong> {{ formatCurrencySafe(totalAmount) }}
+              <br>
+              Hành động này không thể hoàn tác.
+            </div>
+            <div
+              v-else
+              class="alert alert-info"
+            >
+              <i class="bi bi-info-circle me-2" />
+              Đơn hàng chưa được lưu. Tất cả sản phẩm trong giỏ sẽ bị xóa.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="isProcessing('cancel')"
+              @click="showCancelConfirm = false"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              :disabled="isProcessing('cancel')"
+              @click="confirmCancelOrder"
+            >
+              <span
+                v-if="isProcessing('cancel')"
+                class="spinner-border spinner-border-sm me-2"
+              />
+              <i
+                v-else
+                class="bi bi-x-circle me-2"
+              />
+              Xác nhận hủy
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="modal-backdrop fade show"
+        @click="showCancelConfirm = false"
+      />
+    </div>
+  </Teleport>
 
   <!-- Order Cart Drawer -->
   <Teleport to="body">
@@ -788,11 +908,11 @@
             >
               <span
                 v-if="isProcessing('pay')"
-                class="spinner-border spinner-border-sm me-2"
+                class="spinner-border spinner-border-sm"
               />
               <i
                 v-else
-                class="bi bi-credit-card me-2"
+                class="bi bi-credit-card"
               />
               Thanh toán
             </button>
@@ -804,11 +924,11 @@
             >
               <span
                 v-if="isProcessing('save')"
-                class="spinner-border spinner-border-sm me-2"
+                class="spinner-border spinner-border-sm"
               />
               <i
                 v-else
-                class="bi bi-save me-2"
+                class="bi bi-save"
               />
               Lưu đơn hàng
             </button>
@@ -821,13 +941,17 @@
 
 <script setup>
 import { ref, watch, computed, onBeforeUnmount, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import * as orderService from '@/api/orderService.js'
 import { searchCustomers } from '@/api/customerService.js'
 import { formatCurrency } from '@/utils/formatters.js'
 import { toast } from 'vue3-toastify'
 import logger from '@/utils/logger'
 import PosPaymentModal from './PosPaymentModal.vue'
+import PaymentSuccessModal from '@/components/pos/PaymentSuccessModal.vue'
+import OrderDetailModal from '@/components/orders/OrderDetailModal.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { useDraftOrder, removeDraftFromStorage } from '@/composables/useDraftOrder'
 
 const props = defineProps({
     table: Object,
@@ -849,13 +973,19 @@ const localOrder = ref({
 })
 const originalOrderSnapshot = ref(null)
 const isCreatingNew = ref(false)
+
+// Sử dụng useDraftOrder để auto-save draft
+const { saveDraft, syncDraftToServer } = useDraftOrder(localOrder, {
+    autoSave: true,
+    debounceMs: 2000
+})
 const voucherCode = ref('')
 const voucherError = ref(null)
 const loadingAction = ref(null)
 const editingNotesIndex = ref(null)
 const editingNotesValue = ref('')
 
-// Drawer state
+// State cho drawer
 const drawerOpen = ref(false)
 const drawerSearchQuery = ref('')
 const drawerSearchQueryDebounced = ref('')
@@ -864,6 +994,66 @@ const drawerCategoryFilter = ref('')
 const drawerLoading = ref(false)
 let drawerSearchTimeout = null
 const paymentModalRef = ref(null)
+const paymentResultModalRef = ref(null)
+const orderDetailModalRef = ref(null)
+
+// Hàm đóng tất cả modal để đảm bảo chỉ có 1 modal mở tại một thời điểm
+const closeAllModals = async () => {
+    // Đóng tất cả modal refs
+    if (paymentModalRef.value) {
+        paymentModalRef.value.hide()
+    }
+    if (paymentResultModalRef.value) {
+        paymentResultModalRef.value.hide()
+    }
+    if (orderDetailModalRef.value) {
+        orderDetailModalRef.value.hide()
+    }
+
+    // Đóng tất cả modal Bootstrap còn sót lại (phòng trường hợp)
+    try {
+        // eslint-disable-next-line no-undef
+        if (typeof bootstrap !== 'undefined' && bootstrap?.Modal) {
+            const openModals = document.querySelectorAll('.modal.show')
+            openModals.forEach(modalElement => {
+                const bsModal = bootstrap.Modal.getInstance(modalElement)
+                if (bsModal) {
+                    bsModal.hide()
+                }
+            })
+        }
+    } catch (error) {
+        // Ignore error if bootstrap is not available
+        logger.warn('Bootstrap Modal not available:', error)
+    }
+
+    // Đợi tất cả modal đóng hoàn toàn (Bootstrap modal có transition 300ms)
+    await new Promise(resolve => setTimeout(resolve, 350))
+
+    // Cleanup backdrop
+    cleanupAllBackdrops()
+}
+
+// Cleanup tất cả backdrop còn sót lại
+const cleanupAllBackdrops = () => {
+    const backdrops = document.querySelectorAll('.modal-backdrop')
+    backdrops.forEach(backdrop => {
+        backdrop.remove()
+    })
+
+    // Xóa class modal-open khỏi body
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+}
+
+// New state for success modal
+const isSuccessModalVisible = ref(false)
+const completedOrder = ref(null)
+
+const selectedOrderId = ref(null)
+const showCancelConfirm = ref(false)
+const router = useRouter()
 
 const customerSearchTerm = ref('')
 const customerSearchResults = ref([])
@@ -1015,6 +1205,27 @@ const orderStatusMeta = computed(() => {
 const orderStatusLabel = computed(() => orderStatusMeta.value.label)
 const orderStatusClass = computed(() => orderStatusMeta.value.class)
 
+// Helper functions cho customization labels
+const getIceLabel = (ice) => {
+    const labels = {
+        normal: 'Đá bình thường',
+        less: 'Ít đá',
+        no: 'Không đá',
+        extra: 'Nhiều đá'
+    }
+    return labels[ice] || ice
+}
+
+const getSugarLabel = (sugar) => {
+    const labels = {
+        normal: 'Đường bình thường',
+        less: 'Ít đường',
+        no: 'Không đường',
+        extra: 'Nhiều đường'
+    }
+    return labels[sugar] || sugar
+}
+
 const formatCurrencySafe = (value) => {
     const numeric = Number(value)
     if (!Number.isFinite(numeric)) return '—'
@@ -1022,7 +1233,7 @@ const formatCurrencySafe = (value) => {
 }
 
 const subTotal = computed(() => {
-    // Always calculate from local items for real-time updates
+    // Luôn tính từ local items để cập nhật real-time
     const items = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
     const calculated = items.reduce((acc, item) => {
         const price = Number(item.priceAtOrder) || 0
@@ -1030,7 +1241,7 @@ const subTotal = computed(() => {
         return acc + (price * qty)
     }, 0)
 
-    // Only use backend value if no local items (for initial load)
+    // Chỉ dùng giá trị backend nếu không có local items (cho lần load đầu tiên)
     if (items.length === 0) {
         const backendSubTotal = localOrder.value.subTotal
         if (Number.isFinite(backendSubTotal)) {
@@ -1052,16 +1263,16 @@ const tipAmount = computed(() => {
 })
 
 const totalAmount = computed(() => {
-    // Always calculate from local items for real-time updates
+    // Luôn tính từ local items để cập nhật real-time
     const items = Array.isArray(localOrder.value.items) ? localOrder.value.items : []
 
-    // If we have local items, always calculate from them
+    // Nếu có local items, luôn tính từ chúng
     if (items.length > 0) {
         const amountAfterDiscount = Math.max(subTotal.value - discountAmount.value, 0)
         return Math.max(amountAfterDiscount + tipAmount.value, 0)
     }
 
-    // Only use backend value if no local items (for initial load)
+    // Chỉ dùng giá trị backend nếu không có local items (cho lần load đầu tiên)
     const backendTotal = Number(localOrder.value.totalAmount)
     if (Number.isFinite(backendTotal)) {
         return Math.max(backendTotal, 0)
@@ -1080,13 +1291,18 @@ const cartIsEmpty = computed(() => {
 const showDiscountRow = computed(() => discountAmount.value > 0)
 const showTipRow = computed(() => tipAmount.value > 0)
 
+const showSubTotal = computed(() =>
+    // Chỉ hiển thị "Tổng phụ" nếu khác "Tổng cộng" (có giảm giá, tip, hoặc thuế)
+    showDiscountRow.value || showTipRow.value || Math.abs(subTotal.value - totalAmount.value) > 0.01
+)
+
 const showSelectTableButton = computed(() => !props.table && props.viewIntent !== 'takeaway' && !cartIsEmpty.value)
 
 const trimmedVoucherCode = computed(() => voucherCode.value.trim().toUpperCase())
 const canApplyVoucher = computed(() => isExistingOrder.value && Boolean(trimmedVoucherCode.value) && !isProcessing('apply-voucher'))
 const canProcessPayment = computed(() => isExistingOrder.value && !cartIsEmpty.value && !isProcessing('pay'))
 
-// Drawer computed
+// Computed cho drawer
 const cartItemCount = computed(() => localOrder.value?.items?.length || 0)
 const showExpandButton = computed(() => cartItemCount.value > 3 || (localOrder.value?.items && localOrder.value.items.length > 0))
 
@@ -1110,7 +1326,7 @@ const filteredDrawerItems = computed(() => {
     if (!localOrder.value?.items) return []
     let items = [...localOrder.value.items]
 
-    // Filter by search query (use debounced value)
+    // Lọc theo từ khóa tìm kiếm (sử dụng giá trị debounced)
     if (drawerSearchQueryDebounced.value) {
         const query = drawerSearchQueryDebounced.value.toLowerCase()
         items = items.filter(item =>
@@ -1119,7 +1335,7 @@ const filteredDrawerItems = computed(() => {
         )
     }
 
-    // Filter by category
+    // Lọc theo danh mục
     if (drawerCategoryFilter.value) {
         items = items.filter(item => item.categoryId === drawerCategoryFilter.value)
     }
@@ -1140,7 +1356,7 @@ const filteredDrawerItems = computed(() => {
             break
         case 'newest':
         default:
-            // Keep original order (newest first)
+            // Giữ nguyên thứ tự ban đầu (mới nhất trước)
             break
     }
 
@@ -1151,6 +1367,8 @@ const hasSelectedCustomer = computed(() => Boolean(localOrder.value.customerId))
 const selectedCustomerName = computed(() => localOrder.value.customerName || 'Khách lẻ')
 const selectedCustomerPhone = computed(() => localOrder.value.customerPhone || '')
 const showCustomerSuggestions = computed(() => customerSearchTerm.value && !hasSelectedCustomer.value)
+
+
 
 const createNewOrder = () => {
     isCreatingNew.value = true
@@ -1164,7 +1382,26 @@ const addProduct = (product) => {
         createNewOrder()
     }
 
-    const existingItem = localOrder.value.items.find(item => item.productId === product.id)
+    // Xử lý customization nếu có
+    const finalPrice = product.customization?.finalPrice || product.price
+    const notes = product.customization?.notes || product.notes || ''
+    const customization = product.customization ? {
+        size: product.customization.size,
+        ice: product.customization.ice,
+        sugar: product.customization.sugar
+    } : null
+
+    // Tìm item có cùng productId và customization (nếu có)
+    const existingItem = localOrder.value.items.find(item => {
+        if (item.productId !== product.id) return false
+        // Nếu có customization, phải khớp hoàn toàn
+        if (customization) {
+            return JSON.stringify(item.customization) === JSON.stringify(customization)
+        }
+        // Nếu không có customization, chỉ cần productId khớp
+        return !item.customization
+    })
+
     if (existingItem) {
         existingItem.quantity++
     } else {
@@ -1172,10 +1409,14 @@ const addProduct = (product) => {
             productId: product.id,
             productName: product.name,
             quantity: 1,
-            priceAtOrder: product.price,
-            notes: ''
+            priceAtOrder: finalPrice, // Dùng giá đã customize
+            notes: notes,
+            customization: customization // Lưu customization để hiển thị sau
         })
     }
+    
+    // Buộc cập nhật reactivity
+    localOrder.value = { ...localOrder.value }
 }
 
 const updateQuantity = (index, change) => {
@@ -1183,9 +1424,9 @@ const updateQuantity = (index, change) => {
     if (newQuantity <= 0) {
         removeItem(index)
     } else {
-        // Update quantity immediately for real-time calculation
+        // Cập nhật số lượng ngay lập tức để tính toán real-time
         localOrder.value.items[index].quantity = newQuantity
-        // Force reactivity update
+        // Buộc cập nhật reactivity
         localOrder.value = { ...localOrder.value }
     }
 }
@@ -1193,12 +1434,12 @@ const updateQuantity = (index, change) => {
 const setQuantity = (index, value) => {
     const numValue = parseInt(value, 10)
     if (Number.isFinite(numValue) && numValue > 0) {
-        // Update quantity immediately for real-time calculation
+        // Cập nhật số lượng ngay lập tức để tính toán real-time
         localOrder.value.items[index].quantity = numValue
-        // Force reactivity update
+        // Buộc cập nhật reactivity
         localOrder.value = { ...localOrder.value }
     } else if (numValue <= 0) {
-        // Remove item if quantity is 0 or negative
+        // Xóa item nếu số lượng bằng 0 hoặc âm
         removeItem(index)
     }
 }
@@ -1206,11 +1447,11 @@ const setQuantity = (index, value) => {
 const removeItem = (index) => {
     const item = localOrder.value.items[index]
     if (!item) return
-    // Cancel editing if removing the item being edited
+    // Hủy chỉnh sửa nếu đang xóa item đang được chỉnh sửa
     if (editingNotesIndex.value === index) {
         cancelEditNotes()
     }
-    // Quick remove without confirmation for better UX in POS
+    // Xóa nhanh không cần xác nhận để UX tốt hơn trong POS
     localOrder.value.items.splice(index, 1)
     toast.info(`Đã xóa "${item.productName}" khỏi đơn hàng`, { autoClose: 2000 })
 }
@@ -1224,7 +1465,7 @@ const saveItemNotes = (index) => {
     if (editingNotesIndex.value === index && localOrder.value.items[index]) {
         const trimmedNotes = editingNotesValue.value?.trim() || ''
         localOrder.value.items[index].notes = trimmedNotes
-        // Force reactivity update
+        // Buộc cập nhật reactivity
         localOrder.value = { ...localOrder.value }
     }
     cancelEditNotes()
@@ -1235,13 +1476,11 @@ const cancelEditNotes = () => {
     editingNotesValue.value = ''
 }
 
-// Helper functions for drawer items
-const getDrawerItemRealIndex = (item) => {
-    return localOrder.value.items.findIndex(i => 
-        (i.id && i.id === item.id) || 
+// Các hàm helper cho drawer items
+const getDrawerItemRealIndex = (item) => localOrder.value.items.findIndex(i =>
+    (i.id && i.id === item.id) ||
         (i.productId === item.productId && (!i.orderDetailId || i.orderDetailId === item.orderDetailId))
-    )
-}
+)
 
 const startEditNotesForDrawerItem = (item) => {
     const realIndex = getDrawerItemRealIndex(item)
@@ -1288,7 +1527,9 @@ const saveOrder = async () => {
             items: localOrder.value.items.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
-                notes: item.notes
+                notes: item.notes || null,
+                // Gửi customization nếu có (backend có thể cần xử lý)
+                customization: item.customization || null
             }))
         }
 
@@ -1639,8 +1880,14 @@ const saveOrder = async () => {
                 loadingAction.value = null
             }
         } else {
+            // Tạo order mới
             const newOrder = await orderService.createOrder(orderData)
             updateLocalOrderFromServer(newOrder, { syncBaseline: true })
+            
+            // Xóa draft từ localStorage sau khi tạo order thành công
+            if (localOrder.value.id && String(localOrder.value.id).startsWith('draft_')) {
+                removeDraftFromStorage(localOrder.value.id)
+            }
 
             // Lưu ý: Backend không hỗ trợ order-level note
             // Ghi chú chỉ có thể lưu ở item-level (OrderDetail.notes)
@@ -1773,7 +2020,7 @@ const handleClearAll = async () => {
 
     try {
         loadingAction.value = 'quantity'
-        // Remove all items
+        // Xóa tất cả items
         const itemsToRemove = [...localOrder.value.items]
         for (const item of itemsToRemove) {
             if (item.orderDetailId && localOrder.value.id) {
@@ -1857,11 +2104,41 @@ onBeforeUnmount(() => {
     document.body.style.overflow = ''
 })
 
-const processPayment = () => {
+const processPayment = async () => {
     if (!localOrder.value.id) {
         toast.error('Vui lòng lưu đơn hàng trước khi thanh toán.')
         return
     }
+    
+    // Validation: Kiểm tra inventory lần cuối trước khi thanh toán
+    try {
+        loadingAction.value = 'validate'
+        const items = localOrder.value.items || []
+        const outOfStockItems = []
+        
+        // Kiểm tra từng item (có thể gọi API check inventory nếu có)
+        // Tạm thời chỉ check available flag từ product data
+        for (const item of items) {
+            // Nếu có product data và available = false, thêm vào danh sách
+            if (item.product && !item.product.available) {
+                outOfStockItems.push(item.productName || item.product.name)
+            }
+        }
+        
+        if (outOfStockItems.length > 0) {
+            toast.error(`Một số sản phẩm đã hết hàng: ${outOfStockItems.join(', ')}. Vui lòng xóa khỏi đơn hoặc thay thế.`)
+            loadingAction.value = null
+            return
+        }
+    } catch (error) {
+        logger.warn('Inventory validation failed, proceeding anyway:', error)
+        // Không block payment nếu validation fail (có thể do network)
+    } finally {
+        loadingAction.value = null
+    }
+    
+    // Đóng tất cả modal khác trước khi mở payment modal
+    await closeAllModals()
     paymentModalRef.value?.show()
 }
 
@@ -1874,57 +2151,37 @@ const confirmPayment = async ({ orderId, paymentMethod, tipAmount: tip, customer
     try {
         loadingAction.value = 'pay'
 
-        // Xây dựng payment data
         const paymentData = {
             paymentMethod: paymentMethod || 'CASH'
-        }
+        };
+        if (customerId) paymentData.customerId = customerId;
+        if (tip > 0) paymentData.tipAmount = tip;
+        if (voucherCode) paymentData.voucherCode = voucherCode;
 
-        // Thêm customerId từ modal hoặc từ order hiện tại
-        if (customerId) {
-            paymentData.customerId = customerId
-        } else if (localOrder.value.customerId) {
-            paymentData.customerId = localOrder.value.customerId
-        }
+        const updatedOrder = await orderService.processPayment({ orderId, paymentData });
 
-        // Thêm tipAmount nếu có (chỉ gửi khi > 0)
-        const tipValue = Number(tip) || 0
-        if (tipValue > 0) {
-            paymentData.tipAmount = tipValue
-        }
-
-        // Thêm voucherCode từ modal hoặc từ order hiện tại
-        if (voucherCode) {
-            paymentData.voucherCode = voucherCode
-        } else if (localOrder.value.voucherCode) {
-            paymentData.voucherCode = localOrder.value.voucherCode
-        }
-
-        const updatedOrder = await orderService.processPayment({
-            orderId,
-            paymentData
-        })
-
+        // Thành công
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
-        paymentModalRef.value?.show()
-        toast.success('Thanh toán thành công.')
+        
+        // 1. Đóng modal thanh toán hiện tại
+        paymentModalRef.value?.hide()
+        
+        // 2. Đợi animation đóng (khoảng 300-350ms)
+        await new Promise(resolve => setTimeout(resolve, 350))
+
+        // 3. Mở modal thành công
+        completedOrder.value = updatedOrder
+        isSuccessModalVisible.value = true
+
         emitOrderUpdated('payment', updatedOrder)
     } catch (error) {
-        // Extract error message from enhanced error or response
-        const message = error?.message
-			|| error?.response?.data?.message
-			|| error?.response?.data?.error
-			|| 'Thanh toán thất bại. Vui lòng kiểm tra lại thông tin thanh toán.'
-
-        // Ghi log lỗi để debug
-        if (import.meta.env.DEV) {
-            logger.error('[PosOrderCart] Lỗi thanh toán:', {
-                message,
-                status: error?.status || error?.response?.status,
-                response: error?.response?.data
-            })
-        }
-
-        toast.error(message)
+        const errorMessage = error?.response?.data?.message || 'Thanh toán thất bại. Vui lòng thử lại.'
+        toast.error(errorMessage)
+        logger.error('[PosOrderCart] Lỗi thanh toán:', {
+            message: errorMessage,
+            status: error?.response?.status,
+            error,
+        })
     } finally {
         loadingAction.value = null
     }
@@ -1936,22 +2193,60 @@ const handlePaymentModalClosed = () => {
     }
 }
 
+// New handlers for PaymentSuccessModal
+const handleSuccessModalClose = () => {
+    isSuccessModalVisible.value = false
+    completedOrder.value = null
+    window.location.reload()
+}
+
+const handleSuccessModalViewDetails = async (orderId) => {
+    if (!orderId) {
+        toast.warning('Không tìm thấy thông tin đơn hàng.')
+        return
+    }
+
+    // Set order ID cho modal chi tiết
+    selectedOrderId.value = orderId
+    
+    // Đóng modal thành công
+    isSuccessModalVisible.value = false
+    
+    // Đợi modal thành công đóng hoàn toàn
+    await new Promise(resolve => setTimeout(resolve, 350))
+    
+    // Mở modal chi tiết đơn hàng
+    if (orderDetailModalRef.value) {
+        orderDetailModalRef.value.show()
+    }
+}
+
 const requestTableSelection = () => {
     emit('request-table-selection')
 }
 
-const showPaymentModal = (order) => {
+const showPaymentModal = async (order) => {
     if (order) {
         updateLocalOrderFromServer(order, { syncBaseline: true })
     }
     isCreatingNew.value = false
+
+    // Đóng tất cả modal khác trước khi mở payment modal
+    await closeAllModals()
+
+    await nextTick()
     paymentModalRef.value?.show()
 }
 
-const cancelOrder = async () => {
+const cancelOrder = () => {
+    showCancelConfirm.value = true
+}
+
+const confirmCancelOrder = async () => {
     if (!localOrder.value.id) {
         isCreatingNew.value = false
         localOrder.value = { items: [] }
+        showCancelConfirm.value = false
         return
     }
     try {
@@ -1960,6 +2255,7 @@ const cancelOrder = async () => {
         updateLocalOrderFromServer(updatedOrder, { syncBaseline: true })
         toast.success('Đã hủy đơn hàng.')
         emitOrderUpdated('cancelled', updatedOrder)
+        showCancelConfirm.value = false
     } catch (error) {
         const message = error?.response?.data?.message || 'Hủy đơn hàng thất bại.'
         toast.error(message)
@@ -2011,6 +2307,16 @@ const detachFromTable = () => {
         }
     }
     isCreatingNew.value = true
+}
+
+const handleCustomerSearchInput = () => {
+    // Tự động search khi gõ (auto-suggest)
+    const keyword = customerSearchTerm.value.trim()
+    if (!keyword) {
+        customerSearchResults.value = []
+        return
+    }
+    fetchCustomerSuggestions(keyword)
 }
 
 const triggerCustomerSearch = () => {
@@ -2201,6 +2507,16 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 	cursor: pointer;
 }
 
+/* Tăng kích thước nút cho màn hình cảm ứng */
+.quantity-btn--large {
+	min-width: 44px;
+	height: 44px;
+}
+
+.quantity-btn--large i {
+	font-size: 20px;
+}
+
 .quantity-btn:hover:not(:disabled) {
 	background: var(--color-card-muted);
 	color: var(--color-primary);
@@ -2222,7 +2538,7 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .quantity-input {
-	width: 50px;
+	width: 60px;
 	text-align: center;
 	border: none;
 	border-left: 1px solid var(--color-border);
@@ -2230,8 +2546,9 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 	background: transparent;
 	font-weight: var(--font-weight-semibold);
 	font-size: var(--font-size-base);
-	padding: var(--spacing-1);
+	padding: var(--spacing-2);
 	color: var(--color-text);
+	min-height: 44px; /* Đồng bộ với nút lớn */
 }
 
 .quantity-input:focus {
@@ -2248,10 +2565,51 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 	font-family: var(--font-family-sans);
 }
 
+/* Item Header - Tên món và nút xóa */
+.pos-cart__item-header {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--spacing-2);
+	margin-bottom: var(--spacing-1);
+}
+
+.pos-cart__item-name-wrapper {
+	flex: 1;
+	min-width: 0;
+}
+
+.pos-cart__item-customization {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--spacing-1);
+	margin-top: var(--spacing-1);
+	margin-bottom: var(--spacing-1);
+}
+
+.customization-badge {
+	display: inline-block;
+	padding: 2px var(--spacing-2);
+	border-radius: var(--radius-sm);
+	background: var(--color-soft-primary);
+	color: var(--color-primary);
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-medium);
+	border: 1px solid var(--color-primary);
+}
+
+.pos-cart__delete-btn--inline {
+	min-width: 32px;
+	height: 32px;
+	padding: 0;
+	flex-shrink: 0;
+	margin-top: 2px; /* Căn chỉnh với tên món */
+}
+
 /* Item Notes - Ghi chú cho từng món */
 .pos-cart__item-notes {
-	margin-top: var(--spacing-2);
-	padding-top: var(--spacing-2);
+	margin-top: var(--spacing-3);
+	padding-top: var(--spacing-3);
+	padding-bottom: var(--spacing-2);
 	border-top: 1px solid var(--color-border);
 }
 
@@ -2278,15 +2636,11 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .pos-cart__item-notes-edit-btn {
-	font-size: var(--font-size-xs);
-	padding: 2px 6px;
-	text-decoration: none;
+	font-size: var(--font-size-sm);
+	padding: var(--spacing-1) var(--spacing-3);
 	white-space: nowrap;
 	flex-shrink: 0;
-}
-
-.pos-cart__item-notes-edit-btn:hover {
-	text-decoration: underline;
+	min-height: 32px;
 }
 
 .pos-cart__item-notes-edit {
@@ -2331,8 +2685,8 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 .pos-cart__summary {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-3);
-	padding: var(--spacing-4);
+	gap: var(--spacing-4); /* Tăng từ spacing-3 lên spacing-4 để tránh bấm nhầm */
+	padding: var(--spacing-5); /* Tăng padding */
 	border-radius: var(--radius-sm);
 	background: var(--color-card-muted);
 	border: 1px solid var(--color-border);
@@ -2347,11 +2701,18 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 }
 
 .pos-cart__summary-row--total {
-	font-size: var(--font-size-lg);
-	font-weight: var(--font-weight-semibold);
+	font-size: calc(var(--font-size-lg) * 1.3); /* Tăng từ lg lên ~xl */
+	font-weight: var(--font-weight-bold); /* Đổi từ semibold sang bold */
 	color: var(--color-heading);
-	margin-top: var(--spacing-1);
+	margin-top: var(--spacing-2); /* Tăng margin */
+	padding-top: var(--spacing-2); /* Thêm padding */
+	padding-bottom: var(--spacing-2);
 	font-family: var(--font-family-sans);
+}
+
+.pos-cart__summary-row--total span:last-child {
+	font-size: calc(var(--font-size-lg) * 1.4); /* Số tiền to hơn nữa */
+	color: var(--color-primary); /* Màu xanh để nổi bật */
 }
 
 .pos-cart__summary-divider {
@@ -2522,7 +2883,43 @@ defineExpose({ addProduct, startDraft, attachToTable, detachFromTable, showPayme
 
 .pos-cart__actions {
 	display: grid;
-	gap: var(--spacing-3);
+	gap: var(--spacing-4); /* Tăng từ spacing-3 lên spacing-4 */
+}
+
+/* Nút Thanh toán nổi bật */
+.pos-cart__payment-btn {
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-bold);
+	padding: var(--spacing-4) var(--spacing-6);
+	box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+	transition: all var(--transition-base);
+	border: 2px solid var(--color-success);
+}
+
+.pos-cart__payment-btn:hover:not(:disabled) {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+	background-color: var(--color-success-hover);
+	border-color: var(--color-success-hover);
+}
+
+.pos-cart__payment-btn:active:not(:disabled) {
+	transform: translateY(0);
+	box-shadow: 0 2px 8px rgba(25, 135, 84, 0.3);
+}
+
+/* Cải thiện nút xóa - tách xa nút + để tránh bấm nhầm */
+.pos-cart__delete-btn {
+	margin-left: var(--spacing-2);
+	min-width: 44px; /* Tăng kích thước cho dễ bấm */
+	height: 44px;
+	padding: 0 var(--spacing-3);
+}
+
+/* Cải thiện nút lưu đơn - làm rõ hơn nhưng không lấn át nút thanh toán */
+.pos-cart__save-btn {
+	font-weight: var(--font-weight-semibold);
+	min-height: 44px;
 }
 
 /* Status Pill - Chuẩn hóa theo badge/pill hệ thống */

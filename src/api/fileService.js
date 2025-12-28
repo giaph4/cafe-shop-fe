@@ -1,6 +1,6 @@
 import api from './axios'
 import { createFileFormData, getMultipartHeaders } from './helpers'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 
 const BASE_URL = '/api/v1/files'
 

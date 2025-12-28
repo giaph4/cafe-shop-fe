@@ -30,7 +30,8 @@
             </label>
           </div>
           <button
-            class="btn btn-outline-secondary"
+            class="btn btn-outline-secondary btn-sm"
+            type="button"
             :disabled="loading"
             @click="handleRefresh"
           >
@@ -240,31 +241,31 @@
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover table-minimal mb-0">
-              <thead>
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
                 <tr>
-                  <th style="width: 200px">
+                  <th scope="col" class="col-ingredient">
                     Nguyên liệu
                   </th>
-                  <th style="width: 120px">
+                  <th scope="col" class="col-stock text-end">
                     Tồn kho
                   </th>
-                  <th style="width: 120px">
+                  <th scope="col" class="col-reorder text-end">
                     Mức đặt lại
                   </th>
-                  <th style="width: 140px">
+                  <th scope="col" class="col-consumption text-end">
                     Tiêu thụ/ngày
                   </th>
-                  <th style="width: 120px">
+                  <th scope="col" class="col-remaining text-end">
                     Còn lại
                   </th>
-                  <th style="width: 120px">
+                  <th scope="col" class="col-status text-center">
                     Trạng thái
                   </th>
-                  <th style="width: 180px">
+                  <th scope="col" class="col-suggestion">
                     Đề xuất
                   </th>
-                  <th style="width: 120px" class="text-center">
+                  <th scope="col" class="col-actions text-center">
                     Thao tác
                   </th>
                 </tr>
@@ -382,28 +383,31 @@
                     </span>
                   </td>
                   <td>
-                    <div class="action-buttons">
+                    <div class="action-grid">
                       <button
-                        class="btn btn-sm btn-outline-primary"
+                        class="action-button action-button--primary"
                         title="Xem lịch sử tồn kho"
                         @click="showStockHistory(item)"
                       >
                         <i class="bi bi-graph-up" />
+                        <span>Biểu đồ</span>
                       </button>
                       <button
-                        class="btn btn-sm btn-outline-info"
+                        class="action-button action-button--info"
                         title="Xem lịch sử điều chỉnh tồn kho"
                         @click="showAdjustmentHistory(item)"
                       >
                         <i class="bi bi-clock-history" />
+                        <span>Lịch sử</span>
                       </button>
                       <button
                         v-if="item.suggestion && item.alert.status !== 'STABLE'"
-                        class="btn btn-sm btn-success"
+                        class="action-button action-button--success"
                         title="Tạo đơn đặt hàng"
                         @click="showPurchaseOrderModal(item)"
                       >
                         <i class="bi bi-cart-plus" />
+                        <span>Đặt hàng</span>
                       </button>
                     </div>
                   </td>
@@ -462,7 +466,6 @@ import { useInventoryManagementStore } from '@/store/inventoryManagement'
 import StockLevelChartModal from '@/components/inventory-management/StockLevelChartModal.vue'
 import PurchaseOrderSuggestionModal from '@/components/inventory-management/PurchaseOrderSuggestionModal.vue'
 import InventoryAdjustmentHistoryModal from '@/components/inventory-management/InventoryAdjustmentHistoryModal.vue'
-import PageHeader from '@/components/common/PageHeader.vue'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -489,143 +492,141 @@ const showHistoryModal = ref(false)
 const selectedHistoryIngredient = ref(null)
 
 // Computed filters
-const hasActiveFilters = computed(() => {
-  return searchQuery.value !== '' || statusFilter.value !== ''
-})
+const hasActiveFilters = computed(() => searchQuery.value !== '' || statusFilter.value !== '')
 
 const filteredItems = computed(() => {
-  let result = items.value
+    let result = items.value
 
-  // Search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase().trim()
-    result = result.filter(item =>
-      item.name.toLowerCase().includes(query) ||
+    // Search filter
+    if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase().trim()
+        result = result.filter(item =>
+            item.name.toLowerCase().includes(query) ||
       item.unit.toLowerCase().includes(query)
-    )
-  }
+        )
+    }
 
-  // Status filter
-  if (statusFilter.value) {
-    result = result.filter(item => item.alert.status === statusFilter.value)
-  }
+    // Status filter
+    if (statusFilter.value) {
+        result = result.filter(item => item.alert.status === statusFilter.value)
+    }
 
-  return result
+    return result
 })
 
 const sortedItems = computed(() => {
-  const items = [...filteredItems.value]
+    const items = [...filteredItems.value]
 
-  switch (sortBy.value) {
-    case 'name':
-      return items.sort((a, b) => a.name.localeCompare(b.name))
-    case 'stock':
-      return items.sort((a, b) => a.currentStock - b.currentStock)
-    case 'days':
-      return items.sort((a, b) => {
-        const aDays = a.daysRemaining ?? Infinity
-        const bDays = b.daysRemaining ?? Infinity
-        return aDays - bDays
-      })
-    case 'priority':
-    default:
-      return items.sort((a, b) => a.alert.priority - b.alert.priority)
-  }
+    switch (sortBy.value) {
+        case 'name':
+            return items.sort((a, b) => a.name.localeCompare(b.name))
+        case 'stock':
+            return items.sort((a, b) => a.currentStock - b.currentStock)
+        case 'days':
+            return items.sort((a, b) => {
+                const aDays = a.daysRemaining ?? Infinity
+                const bDays = b.daysRemaining ?? Infinity
+                return aDays - bDays
+            })
+        case 'priority':
+        default:
+            return items.sort((a, b) => a.alert.priority - b.alert.priority)
+    }
 })
 
 // Helper functions
 const getRowClass = (item) => {
-  if (item.alert.status === 'CRITICAL') return 'table-danger'
-  if (item.alert.status === 'WARNING') return 'table-warning'
-  if (item.alert.status === 'INFO') return 'table-info'
-  return ''
+    if (item.alert.status === 'CRITICAL') return 'table-danger'
+    if (item.alert.status === 'WARNING') return 'table-warning'
+    if (item.alert.status === 'INFO') return 'table-info'
+    return ''
 }
 
 const getDaysRemainingClass = (item) => {
-  if (item.daysRemaining === null || !isFinite(item.daysRemaining)) {
-    return 'days-remaining--na'
-  }
-  if (item.daysRemaining <= 2) {
-    return 'days-remaining--critical'
-  }
-  if (item.daysRemaining <= 5) {
-    return 'days-remaining--warning'
-  }
-  return 'days-remaining--normal'
+    if (item.daysRemaining === null || !isFinite(item.daysRemaining)) {
+        return 'days-remaining--na'
+    }
+    if (item.daysRemaining <= 2) {
+        return 'days-remaining--critical'
+    }
+    if (item.daysRemaining <= 5) {
+        return 'days-remaining--warning'
+    }
+    return 'days-remaining--normal'
 }
 
 const getStatusIcon = (status) => {
-  switch (status) {
-    case 'CRITICAL':
-      return 'bi-exclamation-triangle-fill'
-    case 'WARNING':
-      return 'bi-exclamation-circle-fill'
-    case 'INFO':
-      return 'bi-info-circle-fill'
-    case 'STABLE':
-      return 'bi-check-circle-fill'
-    default:
-      return 'bi-circle'
-  }
+    switch (status) {
+        case 'CRITICAL':
+            return 'bi-exclamation-triangle-fill'
+        case 'WARNING':
+            return 'bi-exclamation-circle-fill'
+        case 'INFO':
+            return 'bi-info-circle-fill'
+        case 'STABLE':
+            return 'bi-check-circle-fill'
+        default:
+            return 'bi-circle'
+    }
 }
 
 // Actions
 const handleAnalyze = async () => {
-  try {
-    await store.analyzeInventory({ includeStable: includeStable.value })
-  } catch (err) {
-    logger.error('Không thể phân tích tồn kho thông minh:', err)
-  }
+    try {
+        await store.analyzeInventory({ includeStable: includeStable.value })
+    } catch (err) {
+        logger.error('Không thể phân tích tồn kho thông minh:', err)
+    }
 }
 
 const handleRefresh = () => {
-  handleAnalyze()
+    handleAnalyze()
 }
 
 const clearFilters = () => {
-  searchQuery.value = ''
-  statusFilter.value = ''
+    searchQuery.value = ''
+    statusFilter.value = ''
 }
 
 const showStockHistory = async (item) => {
-  selectedIngredient.value = item
-  try {
-    await store.getStockHistory(item.ingredientId, 30)
-  } catch (err) {
-    logger.error('Không thể tải lịch sử tồn kho:', err)
-  }
+    selectedIngredient.value = item
+    try {
+        await store.getStockHistory(item.ingredientId, 30)
+    } catch (err) {
+        logger.error('Không thể tải lịch sử tồn kho:', err)
+    }
 }
 
 const showPurchaseOrderModal = async (item) => {
-  selectedSuggestion.value = item
-  try {
-    await store.getSuppliers(item.ingredientId)
-  } catch (err) {
-    logger.error('Không thể tải danh sách nhà cung cấp:', err)
-  }
+    selectedSuggestion.value = item
+    try {
+        await store.getSuppliers(item.ingredientId)
+    } catch (err) {
+        logger.error('Không thể tải danh sách nhà cung cấp:', err)
+    }
 }
 
 const showAdjustmentHistory = (item) => {
-  selectedHistoryIngredient.value = {
-    id: item.ingredientId,
-    name: item.name,
-    unit: item.unit
-  }
-  showHistoryModal.value = true
+    selectedHistoryIngredient.value = {
+        id: item.ingredientId,
+        name: item.name,
+        unit: item.unit
+    }
+    showHistoryModal.value = true
 }
 
 const closeHistoryModal = () => {
-  showHistoryModal.value = false
-  selectedHistoryIngredient.value = null
+    showHistoryModal.value = false
+    selectedHistoryIngredient.value = null
 }
 
 const handlePurchaseOrderCreated = () => {
-  selectedSuggestion.value = null
-  handleAnalyze()
+    selectedSuggestion.value = null
+    handleAnalyze()
 }
 
 onMounted(() => {
-  handleAnalyze()
+    handleAnalyze()
 })
 </script>
 
@@ -758,11 +759,11 @@ onMounted(() => {
   color: var(--color-text-muted);
 }
 
-/* Standard Card */
+/* Standard Card - Đồng bộ với các trang khác */
 .standard-card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -773,6 +774,29 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Button Styles - Đồng bộ */
+.smart-inventory-page :global(.btn-outline-secondary) {
+  border: 1px solid var(--color-border);
+  color: var(--color-heading);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-2) var(--spacing-3);
+  transition: all var(--transition-base);
+}
+
+.smart-inventory-page :global(.btn-outline-secondary:hover:not(:disabled)) {
+  background: var(--color-card-muted);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.smart-inventory-page :global(.btn-outline-secondary:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .card-title {
@@ -927,34 +951,107 @@ onMounted(() => {
   font-style: italic;
 }
 
-/* Action Buttons */
-.action-buttons {
+/* Action Buttons - Đồng bộ với các trang khác */
+.action-grid {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-2);
+  justify-content: flex-end;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-}
-
-/* Table Styles */
-.table-minimal {
+  gap: 6px;
+  height: 36px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  background: var(--color-card);
   font-size: var(--font-size-sm);
-}
-
-.table-minimal thead th {
-  background: var(--color-card-muted);
-  border-bottom: 2px solid var(--color-border);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-heading);
-  padding: var(--spacing-3);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-sans);
+  transition: all var(--transition-base);
+  cursor: pointer;
   white-space: nowrap;
 }
 
-.table-minimal tbody td {
-  padding: var(--spacing-3);
-  vertical-align: middle;
-  border-bottom: 1px solid var(--color-border);
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
-.table-minimal tbody tr:hover {
+.action-button i {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Primary (Biểu đồ) */
+.action-button--primary {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-card);
+}
+
+.action-button--primary:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Info (Lịch sử) */
+.action-button--info {
+  border-color: var(--color-info);
+  color: var(--color-info);
+  background: var(--color-card);
+}
+
+.action-button--info:hover:not(:disabled) {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0284c7;
+  border-color: #0284c7;
+}
+
+/* Success (Đặt hàng) */
+.action-button--success {
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background: var(--color-card);
+}
+
+.action-button--success:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border-color: #16a34a;
+}
+
+/* Table Styles - Đồng bộ với InventoryReport */
+.smart-inventory-page :global(.table thead th) {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-heading);
+  background: var(--color-card-muted);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-3);
+  vertical-align: middle;
+  font-family: var(--font-family-sans);
+}
+
+.smart-inventory-page :global(.table tbody td) {
+  font-size: var(--font-size-base);
+  padding: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+  font-family: var(--font-family-sans);
+}
+
+.smart-inventory-page :global(.table tbody tr:last-child td) {
+  border-bottom: none;
+}
+
+.smart-inventory-page :global(.table tbody tr:hover) {
   background: var(--color-card-muted);
 }
 
@@ -1021,8 +1118,46 @@ onMounted(() => {
     font-size: var(--font-size-xs);
   }
 
-  .action-buttons {
+  .action-grid {
     flex-direction: column;
+    width: 100%;
   }
+
+  .action-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.col-ingredient {
+  width: 200px;
+}
+
+.col-stock {
+  width: 120px;
+}
+
+.col-reorder {
+  width: 120px;
+}
+
+.col-consumption {
+  width: 140px;
+}
+
+.col-remaining {
+  width: 120px;
+}
+
+.col-status {
+  width: 120px;
+}
+
+.col-suggestion {
+  width: 180px;
+}
+
+.col-actions {
+  width: 120px;
 }
 </style>

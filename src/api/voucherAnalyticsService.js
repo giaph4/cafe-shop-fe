@@ -22,19 +22,19 @@ const _calculateVoucherDiscount = (voucher, orderAmount) => {
 
 export const analyzeVoucherPerformance = async ({ startDate, endDate, voucherId = null }) => {
     try {
-        // Call backend API instead of calculating locally
+        // Gọi backend API để lấy dữ liệu phân tích voucher
         const params = { startDate, endDate }
         if (voucherId) {
             params.voucherId = voucherId
         }
-        
+
         const { data } = await api.get('/api/v1/reports/voucher-analytics', { params })
 
         if (!data) {
             throw new Error('Không nhận được dữ liệu từ server')
         }
 
-        // Normalize response to match frontend expectations
+        // Chuẩn hóa response cho frontend
         return {
             summary: {
                 totalVouchers: data.summary?.totalVouchers || 0,
@@ -92,19 +92,19 @@ export const analyzeVoucherPerformance = async ({ startDate, endDate, voucherId 
 
 export const getVoucherUsageOverTime = async ({ startDate, endDate, voucherId = null }) => {
     try {
-        // Call backend API instead of calculating locally
+        // Gọi backend API để lấy dữ liệu sử dụng voucher theo thời gian
         const params = { startDate, endDate }
         if (voucherId) {
             params.voucherId = voucherId
         }
-        
+
         const { data } = await api.get('/api/v1/reports/voucher-usage-over-time', { params })
 
         if (!data) {
             return []
         }
 
-        // Normalize response to match frontend expectations
+        // Chuẩn hóa response cho frontend
         return (Array.isArray(data) ? data : []).map(item => ({
             date: item.date,
             usageCount: item.usageCount || 0,

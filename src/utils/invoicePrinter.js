@@ -189,6 +189,115 @@ export const buildInvoiceDocument = (order, options = {}) => {
 </html>`
 }
 
+// Build nội dung hóa đơn dạng text
+export const buildInvoiceText = (order, options = {}) => {
+    if (!order) return ''
+    
+    const config = { ...DEFAULT_OPTIONS, ...options }
+    const items = resolveItems(order)
+    const subTotalValue = resolveSubTotal(order, items)
+    const discountValue = Math.max(0, toNumber(order?.discountAmount))
+    const tipValue = Math.max(0, toNumber(order?.tipAmount))
+    const totalValueRaw = toNumber(order?.totalAmount)
+    const calculatedTotal = Math.max(subTotalValue - discountValue, 0) + tipValue
+    const totalValue = totalValueRaw > 0 ? totalValueRaw : calculatedTotal
+    
+    const createdAt = order?.paidAt || order?.createdAt
+    const orderCode = order?.code || order?.id || '—'
+    const tableLabel = resolveTableLabel(order)
+    const paymentMethod = resolvePaymentMethod(order, options?.fallbackPaymentMethod)
+    
+    let text = ''
+    text += '='.repeat(40) + '\n'
+    text += `  ${config.storeName}\n`
+    text += `  ${config.subtitle}\n`
+    text += '='.repeat(40) + '\n\n'
+    
+    text += `Mã đơn: #${orderCode}\n`
+    text += `Ngày tạo: ${createdAt ? formatDateTime(createdAt) : '—'}\n`
+    text += `Bàn: ${tableLabel}\n`
+    text += `Nhân viên: ${order?.staffUsername || order?.staffName || '—'}\n`
+    text += `Khách hàng: ${order?.customerName || 'Khách lẻ'}\n`
+    text += `Thanh toán: ${paymentMethod}\n`
+    text += '\n' + '-'.repeat(40) + '\n\n'
+    
+    text += 'Sản phẩm'.padEnd(20) + 'SL'.padStart(5) + 'Đơn giá'.padStart(10) + 'Thành tiền'.padStart(12) + '\n'
+    text += '-'.repeat(40) + '\n'
+    
+    if (items.length === 0) {
+        text += 'Không có sản phẩm.\n'
+    } else {
+        items.forEach(item => {
+            const quantity = toNumber(item?.quantity || item?.qty)
+            const unitPrice = toNumber(item?.priceAtOrder || item?.price)
+            const total = quantity * unitPrice
+            const productName = (item?.productName || item?.name || '—').substring(0, 18)
+            text += productName.padEnd(20) + 
+                   String(quantity).padStart(5) + 
+                   formatCurrencySafe(unitPrice).padStart(10) + 
+                   formatCurrencySafe(total).padStart(12) + '\n'
+        })
+    }
+    
+    text += '\n' + '-'.repeat(40) + '\n'
+    text += 'Tổng phụ:'.padEnd(30) + formatCurrencySafe(subTotalValue).padStart(10) + '\n'
+    
+    if (discountValue > 0) {
+        text += 'Giảm giá:'.padEnd(30) + ('-' + formatCurrencySafe(discountValue)).padStart(10) + '\n'
+    }
+    
+    if (tipValue > 0) {
+        text += 'Tiền típ:'.padEnd(30) + ('+' + formatCurrencySafe(tipValue)).padStart(10) + '\n'
+    }
+    
+    text += '\n'
+    text += 'TỔNG CỘNG:'.padEnd(30) + formatCurrencySafe(totalValue).padStart(10) + '\n'
+    text += '\n' + '='.repeat(40) + '\n'
+    text += `  ${config.footerMessage}\n`
+    text += '='.repeat(40) + '\n'
+    
+    return text
+}
+
+// Download hóa đơn dạng txt
+export const downloadInvoiceAsTxt = (order, options = {}) => {
+    if (typeof window === 'undefined') {
+        throw new Error('Download is not available in the current environment.')
+    }
+    
+    const textContent = buildInvoiceText(order, options)
+    if (!textContent) {
+        throw new Error('Không có dữ liệu hóa đơn để xuất.')
+    }
+    
+    try {
+        const orderCode = order?.code || order?.id || 'invoice'
+        const fileName = `HoaDon_${orderCode}_${new Date().toISOString().split('T')[0]}.txt`
+        
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        link.style.display = 'none'
+        
+        document.body.appendChild(link)
+        link.click()
+        
+        // Cleanup
+        setTimeout(() => {
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+        }, 100)
+        
+        return true
+    } catch (error) {
+        console.error('Failed to download invoice:', error)
+        throw error
+    }
+}
+
 export const printInvoiceToWindow = (order, options = {}) => {
     if (typeof window === 'undefined') {
         throw new Error('Print is not available in the current environment.')
@@ -199,20 +308,88 @@ export const printInvoiceToWindow = (order, options = {}) => {
         throw new Error('Không có dữ liệu hóa đơn để in.')
     }
 
-    const printWindow = window.open('', '_blank', 'noopener,noreferrer')
-    if (!printWindow) {
-        return null
+    try {
+        // Tạo window mới với các features để tránh popup blocker
+        const printWindow = window.open(
+            '',
+            '_blank',
+            'width=800,height=600,scrollbars=yes,resizable=yes'
+        )
+        
+        if (!printWindow || printWindow.closed || typeof printWindow.closed === 'undefined') {
+            // Thử cách khác: tạo blob URL
+            const blob = new Blob([documentContent], { type: 'text/html' })
+            const url = URL.createObjectURL(blob)
+            const fallbackWindow = window.open(url, '_blank')
+            
+            if (!fallbackWindow) {
+                console.error('Popup blocked. Please allow popups for this site.')
+                return null
+            }
+            
+            // Cleanup URL sau khi window đóng
+            fallbackWindow.addEventListener('beforeunload', () => {
+                URL.revokeObjectURL(url)
+            })
+            
+            // Đợi window load xong rồi mới print
+            fallbackWindow.addEventListener('load', () => {
+                setTimeout(() => {
+                    fallbackWindow.focus()
+                    fallbackWindow.print()
+                    
+                    if (options.autoClose ?? DEFAULT_OPTIONS.autoClose) {
+                        setTimeout(() => {
+                            fallbackWindow.close()
+                            URL.revokeObjectURL(url)
+                        }, 1000)
+                    }
+                }, 100)
+            })
+            
+            return fallbackWindow
+        }
+
+        // Ghi nội dung vào window
+        printWindow.document.open()
+        printWindow.document.write(documentContent)
+        printWindow.document.close()
+        
+        // Đợi window load xong rồi mới print
+        printWindow.addEventListener('load', () => {
+            setTimeout(() => {
+                printWindow.focus()
+                printWindow.print()
+                
+                if (options.autoClose ?? DEFAULT_OPTIONS.autoClose) {
+                    setTimeout(() => {
+                        printWindow.close()
+                    }, 1000)
+                }
+            }, 100)
+        })
+        
+        // Fallback: nếu load event không fire, thử print sau 200ms
+        setTimeout(() => {
+            if (printWindow && !printWindow.closed) {
+                try {
+                    printWindow.focus()
+                    printWindow.print()
+                    
+                    if (options.autoClose ?? DEFAULT_OPTIONS.autoClose) {
+                        setTimeout(() => {
+                            printWindow.close()
+                        }, 1000)
+                    }
+                } catch (e) {
+                    console.warn('Print failed:', e)
+                }
+            }
+        }, 200)
+
+        return printWindow
+    } catch (error) {
+        console.error('Failed to open print window:', error)
+        throw error
     }
-
-    printWindow.document.open()
-    printWindow.document.write(documentContent)
-    printWindow.document.close()
-    printWindow.focus()
-    printWindow.print()
-
-    if (options.autoClose ?? DEFAULT_OPTIONS.autoClose) {
-        printWindow.close()
-    }
-
-    return printWindow
 }

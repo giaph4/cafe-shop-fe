@@ -102,8 +102,8 @@ const projects = [
     }
 ]
 
+// Chức năng: Mở modal hiển thị sơ đồ kiến trúc hệ thống
 const viewArchitecture = (project) => {
-    // TODO: Open modal with system architecture diagram
     logger.log('View architecture for:', project.title)
 }
 
@@ -347,4 +347,3 @@ onMounted(() => {
     }
 }
 </style>
-

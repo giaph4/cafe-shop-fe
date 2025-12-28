@@ -57,17 +57,17 @@ export const useSearchStore = defineStore('search', () => {
         }
     }
 
-    // Add to search history
+    // Thêm vào lịch sử tìm kiếm
     const addToHistory = (entity, keyword) => {
         if (!keyword || !keyword.trim()) return
 
         const trimmedKeyword = keyword.trim().toLowerCase()
         const history = searchHistory.value[entity] || []
 
-        // Remove duplicate
+        // Xóa bản sao
         const filtered = history.filter(k => k !== trimmedKeyword)
 
-        // Add to front
+        // Thêm vào đầu
         filtered.unshift(trimmedKeyword)
 
         // Limit to 10
@@ -75,7 +75,7 @@ export const useSearchStore = defineStore('search', () => {
         saveToStorage()
     }
 
-    // Add to recent searches (global)
+    // Thêm vào tìm kiếm gần đây (toàn cục)
     const addToRecent = (keyword, entity, resultCount = 0) => {
         if (!keyword || !keyword.trim()) return
 
@@ -86,12 +86,12 @@ export const useSearchStore = defineStore('search', () => {
             timestamp: new Date().toISOString()
         }
 
-        // Remove duplicate
+        // Xóa bản sao
         const filtered = recentSearches.value.filter(s =>
             s.keyword !== search.keyword || s.entity !== entity
         )
 
-        // Add to front
+        // Thêm vào đầu
         filtered.unshift(search)
 
         // Limit to 20
@@ -99,7 +99,7 @@ export const useSearchStore = defineStore('search', () => {
         saveToStorage()
     }
 
-    // Get suggestions for entity
+    // Lấy gợi ý cho entity
     const getSuggestions = (entity, keyword = '') => {
         const history = searchHistory.value[entity] || []
         if (!keyword) return history.slice(0, 5)
@@ -164,10 +164,10 @@ export const useSearchStore = defineStore('search', () => {
         }
     }
 
-    // Get filter presets for page
+    // Lấy các preset filter cho trang
     const getFilterPresets = (pageName) => savedFilterPresets.value[pageName] || []
 
-    // Clear history for entity
+    // Xóa lịch sử cho entity
     const clearHistory = (entity) => {
         if (entity) {
             searchHistory.value[entity] = []

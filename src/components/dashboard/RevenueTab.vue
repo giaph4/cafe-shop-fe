@@ -1,68 +1,192 @@
 <template>
   <div class="revenue">
-    <div class="revenue__grid">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h5 class="card-title">
-              Doanh thu theo ngày
-            </h5>
-            <p class="card-subtitle">
-              Trực quan hóa doanh thu trong giai đoạn đã chọn
-            </p>
+    <!-- Collapsible Sections -->
+    <div class="revenue__sections">
+      <!-- Revenue Chart Section -->
+      <div class="section-card">
+        <div
+          class="section-card__header"
+          @click="toggleSection('revenue')"
+        >
+          <div class="section-card__header-content">
+            <div>
+              <h5 class="section-card__title">
+                Doanh thu theo ngày
+              </h5>
+              <p class="section-card__subtitle">
+                Trực quan hóa doanh thu trong giai đoạn đã chọn
+              </p>
+            </div>
+            <button
+              class="section-card__toggle"
+              :class="{ 'section-card__toggle--expanded': expandedSections.revenue }"
+            >
+              <i class="bi bi-chevron-down" />
+            </button>
           </div>
         </div>
-        <div class="card-body">
-          <apexchart
-            v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
-            type="area"
-            height="320"
-            :series="revenueSeries"
-            :options="revenueOptions"
-          />
-          <EmptyState
-            v-else
-            message="Chưa có dữ liệu doanh thu"
-          />
-        </div>
+        <Transition name="accordion">
+          <div
+            v-if="expandedSections.revenue"
+            class="section-card__body"
+          >
+            <div
+              class="chart-container"
+              data-chart-type="revenue"
+            >
+              <apexchart
+                v-if="isMounted && revenueSeries && revenueSeries.length > 0 && revenueOptions"
+                ref="revenueChartRef"
+                type="area"
+                height="320"
+                :series="revenueSeries"
+                :options="enhancedRevenueOptions"
+              />
+              <div
+                v-else
+                class="chart-skeleton"
+              >
+                <SkeletonLoader
+                  variant="rectangular"
+                  height="320px"
+                />
+              </div>
+            </div>
+            <div class="chart-actions">
+              <div class="btn-group">
+                <button
+                  class="btn-flat btn-flat--outline"
+                  @click="handleExportChart('revenue', 'png')"
+                  title="Xuất PNG"
+                >
+                  <i class="bi bi-image me-2" />
+                  PNG
+                </button>
+                <button
+                  class="btn-flat btn-flat--outline"
+                  @click="handleExportChart('revenue', 'pdf')"
+                  title="Xuất PDF"
+                >
+                  <i class="bi bi-file-pdf me-2" />
+                  PDF
+                </button>
+                <button
+                  class="btn-flat btn-flat--outline"
+                  @click="handleExportChart('revenue', 'csv')"
+                  title="Xuất CSV"
+                >
+                  <i class="bi bi-file-earmark-spreadsheet me-2" />
+                  CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h5 class="card-title">
-              Lợi nhuận
-            </h5>
-            <p class="card-subtitle">
-              So sánh doanh thu và lợi nhuận trong kỳ
-            </p>
+      <!-- Profit Chart Section -->
+      <div class="section-card">
+        <div
+          class="section-card__header"
+          @click="toggleSection('profit')"
+        >
+          <div class="section-card__header-content">
+            <div>
+              <h5 class="section-card__title">
+                Lợi nhuận
+              </h5>
+              <p class="section-card__subtitle">
+                So sánh doanh thu và lợi nhuận trong kỳ
+              </p>
+            </div>
+            <button
+              class="section-card__toggle"
+              :class="{ 'section-card__toggle--expanded': expandedSections.profit }"
+            >
+              <i class="bi bi-chevron-down" />
+            </button>
           </div>
         </div>
-        <div class="card-body">
-          <apexchart
-            v-if="isMounted && profitSeries && profitSeries.length > 0 && profitOptions"
-            type="bar"
-            height="320"
-            :series="profitSeries"
-            :options="profitOptions"
-          />
-          <EmptyState
-            v-else
-            message="Chưa có dữ liệu lợi nhuận"
-          />
-        </div>
+        <Transition name="accordion">
+          <div
+            v-if="expandedSections.profit"
+            class="section-card__body"
+          >
+            <div
+              class="chart-container"
+              data-chart-type="profit"
+            >
+              <apexchart
+                v-if="isMounted && profitSeries && profitSeries.length > 0 && profitOptions"
+                ref="profitChartRef"
+                type="bar"
+                height="280"
+                :series="profitSeries"
+                :options="enhancedProfitOptions"
+              />
+              <div
+                v-else
+                class="chart-skeleton"
+              >
+                <SkeletonLoader
+                  variant="rectangular"
+                  height="280px"
+                />
+              </div>
+            </div>
+            <div class="chart-actions">
+              <div class="btn-group">
+                <button
+                  class="btn-flat btn-flat--outline"
+                  @click="handleExportChart('profit', 'png')"
+                  title="Xuất PNG"
+                >
+                  <i class="bi bi-image me-2" />
+                  PNG
+                </button>
+                <button
+                  class="btn-flat btn-flat--outline"
+                  @click="handleExportChart('profit', 'pdf')"
+                  title="Xuất PDF"
+                >
+                  <i class="bi bi-file-pdf me-2" />
+                  PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <h5 class="card-title">
-            Doanh thu theo danh mục
-          </h5>
+    <!-- Category Sales Section -->
+    <div class="section-card">
+      <div
+        class="section-card__header"
+        @click="toggleSection('category')"
+      >
+        <div class="section-card__header-content">
+          <div>
+            <h5 class="section-card__title">
+              Doanh thu theo danh mục
+            </h5>
+            <p class="section-card__subtitle">
+              Phân tích doanh thu theo từng danh mục sản phẩm
+            </p>
+          </div>
+          <button
+            class="section-card__toggle"
+            :class="{ 'section-card__toggle--expanded': expandedSections.category }"
+          >
+            <i class="bi bi-chevron-down" />
+          </button>
         </div>
       </div>
-      <div class="card-body">
+      <Transition name="accordion">
+        <div
+          v-if="expandedSections.category"
+          class="section-card__body"
+        >
         <div class="table-responsive">
           <table class="table">
             <thead>
@@ -103,59 +227,69 @@
             </tbody>
           </table>
         </div>
-      </div>
+        <div class="table-actions">
+          <button
+            class="btn-flat btn-flat--outline"
+            @click="handleExportTable('category')"
+            title="Xuất CSV"
+          >
+            <i class="bi bi-file-earmark-spreadsheet me-2" />
+            Xuất CSV
+          </button>
+        </div>
+        </div>
+      </Transition>
     </div>
 
-    <div class="card hourly-sales-card">
-      <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-          <div>
-            <h5 class="card-title">
+    <!-- Hourly Sales Section -->
+    <div class="section-card hourly-sales-card">
+      <div
+        class="section-card__header"
+        @click="toggleSection('hourly')"
+      >
+        <div class="section-card__header-content">
+          <div class="flex-grow-1">
+            <h5 class="section-card__title">
               Doanh thu theo khung giờ ({{ hourlySalesTitle }})
             </h5>
-            <p class="card-subtitle">
+            <p class="section-card__subtitle">
               Phân tích doanh thu và số đơn theo từng giờ trong ngày
             </p>
           </div>
           <div class="hourly-legend">
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #f0f9ff; border-color: #e0f2fe"
-              />
+              <span class="legend-color legend-color--low" />
               <span class="legend-label">Thấp</span>
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #bfdbfe; border-color: #7dd3fc"
-              />
+              <span class="legend-color legend-color--medium-low" />
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #60a5fa; border-color: #0ea5e9"
-              />
+              <span class="legend-color legend-color--medium" />
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #3b82f6; border-color: #0284c7"
-              />
+              <span class="legend-color legend-color--medium-high" />
             </div>
             <div class="legend-item">
-              <span
-                class="legend-color"
-                style="background: #1e40af; border-color: #0c4a6e"
-              />
+              <span class="legend-color legend-color--high" />
               <span class="legend-label">Cao</span>
             </div>
           </div>
+          <button
+            class="section-card__toggle"
+            :class="{ 'section-card__toggle--expanded': expandedSections.hourly }"
+          >
+            <i class="bi bi-chevron-down" />
+          </button>
         </div>
       </div>
-      <div class="card-body">
+      <Transition name="accordion">
         <div
-          v-if="hourlySales?.length"
+          v-if="expandedSections.hourly"
+          class="section-card__body"
+        >
+        <div
+          v-if="hourlySales?.length && hasHourlyData"
           class="hourly-content"
         >
           <!-- Chart Section -->
@@ -163,7 +297,7 @@
             <apexchart
               v-if="isMounted"
               type="line"
-              height="280"
+              height="180"
               :series="hourlyChartSeries"
               :options="hourlyChartOptions"
             />
@@ -186,58 +320,85 @@
         </div>
         <EmptyState
           v-else
-          message="Chưa có thống kê theo giờ"
+          message="Chưa có dữ liệu doanh thu theo giờ cho ngày đã chọn"
         />
-      </div>
+        </div>
+      </Transition>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <h5 class="card-title">
-            Sản phẩm bán chạy
-          </h5>
-          <p class="card-subtitle">
-            Tổng kết doanh số theo sản phẩm
-          </p>
+    <!-- Product Summary Section -->
+    <div class="section-card">
+      <div
+        class="section-card__header"
+        @click="toggleSection('products')"
+      >
+        <div class="section-card__header-content">
+          <div>
+            <h5 class="section-card__title">
+              Sản phẩm bán chạy
+            </h5>
+            <p class="section-card__subtitle">
+              Tổng kết doanh số theo sản phẩm
+            </p>
+          </div>
+          <button
+            class="section-card__toggle"
+            :class="{ 'section-card__toggle--expanded': expandedSections.products }"
+          >
+            <i class="bi bi-chevron-down" />
+          </button>
         </div>
       </div>
-      <div class="card-body">
+      <Transition name="accordion">
         <div
-          v-if="productSummary"
-          class="product-summary"
+          v-if="expandedSections.products"
+          class="section-card__body"
         >
-          <div class="product-summary__headline">
-            <div>
-              <span>Tổng số lượng</span>
-              <strong>{{ productSummary.totalQuantitySold }}</strong>
-            </div>
-            <div>
-              <span>Tổng doanh thu</span>
-              <strong>{{ formatCurrency(productSummary.totalRevenueGenerated) }}</strong>
-            </div>
-          </div>
-          <div class="product-summary__list">
-            <div
-              v-for="product in topProducts"
-              :key="product.productId"
-              class="product-summary__item"
-            >
-              <div class="product-summary__name">
-                {{ product.productName }}
+          <div
+            v-if="productSummary"
+            class="product-summary"
+          >
+            <div class="product-summary__headline">
+              <div>
+                <span>Tổng số lượng</span>
+                <strong>{{ productSummary.totalQuantitySold }}</strong>
               </div>
-              <div class="product-summary__metrics">
-                <span>{{ product.totalQuantitySold }} sp</span>
-                <strong>{{ formatCurrency(product.totalRevenueGenerated) }}</strong>
+              <div>
+                <span>Tổng doanh thu</span>
+                <strong>{{ formatCurrency(productSummary.totalRevenueGenerated) }}</strong>
               </div>
             </div>
+            <div class="product-summary__list">
+              <div
+                v-for="(product, index) in topProducts"
+                :key="product.productId"
+                class="product-summary__item"
+                :class="{ 'product-summary__item--even': index % 2 === 0 }"
+              >
+                <div class="product-summary__name">
+                  {{ product.productName }}
+                </div>
+                <div class="product-summary__metrics">
+                  <span>{{ product.totalQuantitySold }} sp</span>
+                  <div class="product-summary__revenue">
+                    <strong>{{ formatCurrency(product.totalRevenueGenerated) }}</strong>
+                    <div class="product-summary__progress">
+                      <div
+                        class="product-summary__progress-bar"
+                        :style="{ width: `${getRevenuePercentage(product)}%` }"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+          <EmptyState
+            v-else
+            message="Chưa có dữ liệu sản phẩm"
+          />
         </div>
-        <EmptyState
-          v-else
-          message="Chưa có dữ liệu sản phẩm"
-        />
-      </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -246,10 +407,28 @@
 import { computed, ref, onMounted, nextTick } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import EmptyState from '@/components/common/EmptyState.vue'
+import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import { formatCurrency } from '@/utils/formatters'
+import { useAccordionState } from '@/composables/useAccordionState'
+import { exportChart } from '@/utils/chartExport'
+import { exportChartDataToCSV, arrayToCSV, downloadCSV } from '@/utils/csvExport'
 
 const apexchart = VueApexCharts
 const isMounted = ref(false)
+
+// Expanded sections state với localStorage persistence
+// Mặc định chỉ mở 1-2 sections quan trọng nhất
+const { state: expandedSections, toggle: toggleSection } = useAccordionState('revenue-tab', {
+    revenue: true,
+    profit: false,
+    category: false,
+    hourly: false,
+    products: false
+})
+
+// Chart refs
+const revenueChartRef = ref(null)
+const profitChartRef = ref(null)
 
 onMounted(async () => {
     await nextTick()
@@ -274,11 +453,30 @@ const hourlySalesTitle = computed(() => {
 
 const topProducts = computed(() => props.productSummary?.products?.slice(0, 5) ?? [])
 
-// Build full 24 hours data with missing hours filled with 0
+// Kiểm tra xem có dữ liệu hourly thực sự không (không phải toàn số 0)
+const hasHourlyData = computed(() => {
+    if (!props.hourlySales?.length) return false
+    return fullHourlyData.value.some(bucket => bucket.revenue > 0 || bucket.orderCount > 0)
+})
+
+// Tính phần trăm doanh thu để hiển thị progress bar
+const maxRevenue = computed(() => {
+    if (!topProducts.value.length) return 1
+    return Math.max(...topProducts.value.map(p => p.totalRevenueGenerated || 0), 1)
+})
+
+const getRevenuePercentage = (product) => {
+    if (maxRevenue.value === 0) return 0
+    return ((product.totalRevenueGenerated || 0) / maxRevenue.value) * 100
+}
+
+// Build hourly data - chỉ hiển thị khung giờ hoạt động (6h-23h)
 const fullHourlyData = computed(() => {
     const hoursMap = new Map()
-    // Initialize all 24 hours with 0
-    for (let i = 0; i < 24; i++) {
+    // Chỉ khởi tạo từ 6h đến 23h (khung giờ hoạt động của quán cà phê)
+    const startHour = 6
+    const endHour = 23
+    for (let i = startHour; i <= endHour; i++) {
         hoursMap.set(i, {
             hour: i,
             revenue: 0,
@@ -289,7 +487,7 @@ const fullHourlyData = computed(() => {
     if (props.hourlySales?.length) {
         props.hourlySales.forEach(item => {
             const hour = Number(item.hour)
-            if (!isNaN(hour) && hour >= 0 && hour < 24) {
+            if (!isNaN(hour) && hour >= startHour && hour <= endHour) {
                 hoursMap.set(hour, {
                     hour,
                     revenue: item.revenue || item.totalRevenue || 0,
@@ -302,14 +500,14 @@ const fullHourlyData = computed(() => {
 })
 
 // Calculate max values for heatmap intensity
-const maxRevenue = computed(() => Math.max(...fullHourlyData.value.map(b => b.revenue), 1))
+const maxHourlyRevenue = computed(() => Math.max(...fullHourlyData.value.map(b => b.revenue), 1))
 
 const _maxOrders = computed(() => Math.max(...fullHourlyData.value.map(b => b.orderCount), 1))
 
 // Get heatmap intensity level (0-8) based on revenue - Cải thiện để rõ ràng hơn
 const getHeatmapIntensity = (bucket) => {
-    if (maxRevenue.value === 0) return 0
-    const ratio = bucket.revenue / maxRevenue.value
+    if (maxHourlyRevenue.value === 0) return 0
+    const ratio = bucket.revenue / maxHourlyRevenue.value
     // Sử dụng Math.ceil để đảm bảo các giá trị nhỏ cũng có màu
     // Và tăng contrast bằng cách scale tốt hơn
     if (ratio === 0) return 0
@@ -381,10 +579,161 @@ const hourlyChartSeries = computed(() => {
     ]
 })
 
+// Enhanced revenue options với annotations
+const enhancedRevenueOptions = computed(() => {
+    const baseOptions = { ...props.revenueOptions }
+    
+    // Cải thiện tooltip
+    baseOptions.tooltip = {
+        ...baseOptions.tooltip,
+        theme: 'light',
+        style: {
+            fontSize: '14px',
+            fontFamily: 'var(--font-family-sans)'
+        },
+        y: {
+            formatter: (val) => formatCurrency(val)
+        },
+        marker: {
+            show: true
+        }
+    }
+    
+    // Thêm annotations cho insights
+    if (props.revenueSeries?.[0]?.data?.length > 0) {
+        const data = props.revenueSeries[0].data
+        const maxValue = Math.max(...data)
+        const minValue = Math.min(...data.filter(v => v > 0))
+        const avgValue = data.reduce((a, b) => a + b, 0) / data.length
+        const maxIndex = data.indexOf(maxValue)
+        const minIndex = data.indexOf(minValue)
+        
+        const annotations = {
+            points: [],
+            yaxis: []
+        }
+        
+        // Max point
+        if (maxValue > 0) {
+            annotations.points.push({
+                x: maxIndex,
+                y: maxValue,
+                marker: {
+                    size: 6,
+                    fillColor: '#fff',
+                    strokeColor: 'var(--color-primary)',
+                    strokeWidth: 2,
+                    radius: 2
+                },
+                label: {
+                    text: `Cao nhất: ${formatCurrency(maxValue)}`,
+                    style: {
+                        color: '#fff',
+                        background: 'var(--color-primary)',
+                        fontSize: '12px',
+                        padding: {
+                            left: 5,
+                            right: 5,
+                            top: 2,
+                            bottom: 2
+                        }
+                    }
+                }
+            })
+        }
+        
+        // Average line
+        annotations.yaxis.push({
+            y: avgValue,
+            borderColor: 'var(--color-text-muted)',
+            borderWidth: 2,
+            borderDashArray: 5,
+            label: {
+                text: `TB: ${formatCurrency(avgValue)}`,
+                style: {
+                    color: 'var(--color-text-muted)',
+                    background: 'var(--color-card)',
+                    fontSize: '11px',
+                    padding: {
+                        left: 4,
+                        right: 4,
+                        top: 2,
+                        bottom: 2
+                    }
+                },
+                position: 'right'
+            }
+        })
+        
+        baseOptions.annotations = annotations
+    }
+    
+    return baseOptions
+})
+
+// Enhanced profit options
+const enhancedProfitOptions = computed(() => {
+    return { ...props.profitOptions }
+})
+
+// Export chart functionality
+const handleExportChart = async (type, format = 'png') => {
+    try {
+        const chartContainer = document.querySelector(`.chart-container[data-chart-type="${type}"]`)
+        if (!chartContainer) {
+            throw new Error('Không tìm thấy biểu đồ để xuất')
+        }
+        
+        const chartElement = chartContainer.querySelector('.apexcharts-canvas') || chartContainer
+        const filename = `doanh-thu-${type}-${new Date().toISOString().split('T')[0]}`
+        
+        if (format === 'csv') {
+            let series, categories
+            if (type === 'revenue' && props.revenueSeries?.[0]?.data && props.revenueOptions?.xaxis?.categories) {
+                series = props.revenueSeries
+                categories = props.revenueOptions.xaxis.categories
+            } else {
+                throw new Error('Không có dữ liệu để xuất CSV')
+            }
+            exportChartDataToCSV(series, categories, filename)
+        } else {
+            await exportChart(chartElement, format, filename)
+        }
+    } catch (error) {
+        console.error('Lỗi khi xuất biểu đồ:', error)
+        alert(`Không thể xuất biểu đồ: ${error.message}`)
+    }
+}
+
+// Export table to CSV
+const handleExportTable = (type) => {
+    try {
+        let data, filename
+        if (type === 'category' && props.categorySales?.length) {
+            data = props.categorySales.map(item => ({
+                'Danh mục': item.categoryName,
+                'Số lượng': item.totalQuantity,
+                'Doanh thu': item.totalRevenue,
+                'Tỷ trọng (%)': (item.revenuePercentage || 0).toFixed(2)
+            }))
+            filename = `doanh-thu-danh-muc-${new Date().toISOString().split('T')[0]}`
+        } else {
+            throw new Error('Không có dữ liệu để xuất')
+        }
+        
+        const csvContent = arrayToCSV(data)
+        downloadCSV(csvContent, filename)
+    } catch (error) {
+        console.error('Lỗi khi xuất bảng:', error)
+        alert(`Không thể xuất bảng: ${error.message}`)
+    }
+}
+
 // Chart options for hourly sales - Cải thiện để rõ ràng hơn
 const hourlyChartOptions = computed(() => {
     const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#2563eb'
-    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim() || '#10b981'
+    // Số đơn hàng dùng màu cam thay vì xanh lá để tránh nhầm lẫn với Lợi nhuận
+    const orderColor = '#f97316' // Orange-500
     const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#6b7280'
     const headingColor = getComputedStyle(document.documentElement).getPropertyValue('--color-heading').trim() || '#1f2937'
 
@@ -403,16 +752,16 @@ const hourlyChartOptions = computed(() => {
             }
         },
         stroke: {
-            curve: 'smooth',
-            width: [5, 4], // Tăng độ dày đáng kể để rõ hơn
-            dashArray: [0, 10] // Tăng độ đứt nét cho số đơn
+            curve: 'monotoneCubic', // Thay 'smooth' bằng 'monotoneCubic' để chính xác hơn, không quá mềm
+            width: [3, 2.5], // Giảm độ dày để tinh tế hơn
+            dashArray: [0, 8] // Giảm độ đứt nét cho số đơn
         },
         markers: {
             size: [8, 7], // Tăng marker size để rõ hơn
             hover: {
                 size: 10
             },
-            colors: [primaryColor, successColor],
+            colors: [primaryColor, orderColor], // Số đơn dùng màu cam
             strokeWidth: 2,
             strokeColors: ['#ffffff', '#ffffff'],
             fillOpacity: 1
@@ -421,24 +770,24 @@ const hourlyChartOptions = computed(() => {
             type: 'gradient',
             gradient: {
                 shadeIntensity: 1,
-                opacityFrom: 0.5, // Tăng opacity để rõ hơn
-                opacityTo: 0.2,
+                opacityFrom: 0.3, // Giảm opacity để nhẹ nhàng hơn, không quá đậm
+                opacityTo: 0.1,
                 stops: [0, 50, 100],
                 colorStops: [
                     {
                         offset: 0,
                         color: primaryColor,
-                        opacity: 0.5
+                        opacity: 0.3
                     },
                     {
                         offset: 100,
                         color: primaryColor,
-                        opacity: 0.2
+                        opacity: 0.1
                     }
                 ]
             }
         },
-        colors: [primaryColor, successColor],
+        colors: [primaryColor, orderColor], // Số đơn dùng màu cam
         xaxis: {
             categories: hours,
             labels: {
@@ -492,7 +841,7 @@ const hourlyChartOptions = computed(() => {
                 title: {
                     text: 'Số đơn',
                     style: {
-                        color: successColor,
+                        color: orderColor, // Màu cam cho số đơn
                         fontSize: '13px',
                         fontFamily: 'var(--font-family-sans)',
                         fontWeight: '600'
@@ -507,7 +856,7 @@ const hourlyChartOptions = computed(() => {
                 },
                 axisBorder: {
                     show: true,
-                    color: successColor
+                    color: orderColor // Màu cam cho số đơn
                 }
             }
         ],
@@ -549,6 +898,7 @@ const hourlyChartOptions = computed(() => {
         grid: {
             borderColor: textMuted,
             strokeDashArray: 3,
+            opacity: 0.15, // Giảm opacity grid lines xuống rất thấp (mờ sương)
             xaxis: {
                 lines: {
                     show: true,
@@ -581,23 +931,176 @@ const hourlyChartOptions = computed(() => {
 .revenue {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
 }
 
-.revenue__grid {
+.revenue__sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+/* Section Card Styles (tương tự OverviewTab) */
+.section-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-base);
+    overflow: hidden;
+}
+
+.section-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.section-card__header {
+    padding: var(--spacing-4) var(--spacing-5);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color var(--transition-base);
+}
+
+.section-card__header:hover {
+    background: var(--color-card-muted);
+}
+
+.section-card__header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+}
+
+.section-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    font-family: var(--font-family-sans);
+    margin: 0 0 var(--spacing-1) 0;
+}
+
+.section-card__subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-sans);
+    margin: 0;
+}
+
+.section-card__toggle {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: var(--spacing-6);
+    place-items: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    flex-shrink: 0;
 }
 
-.card-header {
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--spacing-4);
-    margin-bottom: 0;
+.section-card__toggle:hover {
+    background: var(--color-card-muted);
+    color: var(--color-heading);
+}
+
+.section-card__toggle i {
+    font-size: 18px;
+    transition: transform var(--transition-base);
+}
+
+.section-card__toggle--expanded i {
+    transform: rotate(180deg);
+}
+
+.section-card__body {
+    padding: 0 var(--spacing-5) var(--spacing-5);
+}
+
+/* Accordion transition */
+.accordion-enter-active,
+.accordion-leave-active {
+    transition: all var(--transition-base);
+    overflow: hidden;
+}
+
+.accordion-enter-from,
+.accordion-leave-to {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.accordion-enter-to,
+.accordion-leave-from {
+    max-height: 1000px;
+    opacity: 1;
+}
+
+/* Chart Container */
+.chart-container {
+    margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.chart-skeleton {
+    height: 320px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.chart-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.btn-group {
+    display: inline-flex;
+    gap: var(--spacing-1);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.btn-group .btn-flat {
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--color-border);
+}
+
+.btn-group .btn-flat:last-child {
+    border-right: none;
+}
+
+.btn-group .btn-flat:hover {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.table-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--spacing-4);
 }
 
 .hourly-sales-card {
-    margin-top: var(--spacing-6);
+    margin-top: 0;
+}
+
+.flex-grow-1 {
+    flex: 1;
+    min-width: 0;
 }
 
 .hourly-legend {
@@ -624,6 +1127,31 @@ const hourlyChartOptions = computed(() => {
     border: 1px solid var(--color-border);
 }
 
+.legend-color--low {
+    background: #f0f9ff;
+    border-color: #e0f2fe;
+}
+
+.legend-color--medium-low {
+    background: #bfdbfe;
+    border-color: #7dd3fc;
+}
+
+.legend-color--medium {
+    background: #60a5fa;
+    border-color: #0ea5e9;
+}
+
+.legend-color--medium-high {
+    background: #3b82f6;
+    border-color: #0284c7;
+}
+
+.legend-color--high {
+    background: #1e40af;
+    border-color: #0c4a6e;
+}
+
 .legend-label {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
@@ -641,7 +1169,17 @@ const hourlyChartOptions = computed(() => {
     background: var(--color-card-muted);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    padding: var(--spacing-4);
+    padding: var(--spacing-3);
+}
+
+.badge.bg-soft-primary {
+    background: var(--color-soft-primary);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
 }
 
 .hourly-grid {
@@ -853,13 +1391,21 @@ const hourlyChartOptions = computed(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: var(--spacing-3) var(--spacing-4);
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--spacing-3);
+    transition: background-color var(--transition-base);
+}
+
+.product-summary__item--even {
+    background: var(--color-card-muted);
 }
 
 .product-summary__item:last-child {
     border-bottom: none;
-    padding-bottom: 0;
+}
+
+.product-summary__item:hover {
+    background: var(--color-card-muted);
 }
 
 .product-summary__name {
@@ -878,9 +1424,33 @@ const hourlyChartOptions = computed(() => {
     color: var(--color-text-muted);
 }
 
-.product-summary__metrics strong {
+.product-summary__revenue {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-1);
+    min-width: 150px;
+}
+
+.product-summary__revenue strong {
     font-weight: var(--font-weight-semibold);
     color: var(--color-heading);
+    font-size: var(--font-size-base);
+}
+
+.product-summary__progress {
+    width: 100%;
+    height: 6px;
+    background: var(--color-card-muted);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.product-summary__progress-bar {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-sm);
+    transition: width var(--transition-base);
 }
 
 @media (max-width: 992px) {

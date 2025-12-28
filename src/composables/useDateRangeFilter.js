@@ -1,20 +1,20 @@
 /**
- * Composable for Date Range Filter
+ * Composable quản lý bộ lọc khoảng thời gian
  * Chuẩn hóa date range filter pattern cho các pages
  */
 
 import { ref, computed } from 'vue'
 
 /**
- * Composable for managing date range filters
- * @param {Object} options - Options
- * @param {number} options.defaultDays - Default number of days (default: 7)
- * @param {string} options.startDate - Initial start date (optional)
- * @param {string} options.endDate - Initial end date (optional)
- * @returns {Object} Date range filter utilities
+ * Composable quản lý bộ lọc khoảng thời gian
+ * @param {Object} options - Tùy chọn cấu hình
+ * @param {number} options.defaultDays - Số ngày mặc định (default: 90)
+ * @param {string} options.startDate - Ngày bắt đầu ban đầu (tùy chọn)
+ * @param {string} options.endDate - Ngày kết thúc ban đầu (tùy chọn)
+ * @returns {Object} Các tiện ích bộ lọc khoảng thời gian
  */
 export const useDateRangeFilter = (defaultPreset = '90d') => {
-    // Support both old and new API
+    // Hỗ trợ cả API cũ và mới
     let defaultDays = 90
     let initialStartDate = null
     let initialEndDate = null
@@ -24,7 +24,7 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
         initialStartDate = defaultPreset.startDate
         initialEndDate = defaultPreset.endDate
     } else if (typeof defaultPreset === 'string') {
-        // Handle preset strings like '90d', '30d'
+        // Xử lý chuỗi preset như '90d', '30d'
         const match = defaultPreset.match(/(\d+)d/)
         if (match) {
             defaultDays = parseInt(match[1], 10)
@@ -32,15 +32,15 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     }
 
     /**
-     * Get today's date in YYYY-MM-DD format
+     * Lấy ngày hôm nay theo format YYYY-MM-DD
      */
     const today = () => new Date().toISOString().split('T')[0]
 
     /**
-     * Shift date by number of days
-     * @param {Date|string} baseDate - Base date
-     * @param {number} daysDiff - Number of days to shift (negative for past)
-     * @returns {string} Date in YYYY-MM-DD format
+     * Dịch chuyển ngày theo số ngày
+     * @param {Date|string} baseDate - Ngày gốc
+     * @param {number} daysDiff - Số ngày dịch chuyển (âm cho quá khứ)
+     * @returns {string} Ngày theo format YYYY-MM-DD
      */
     const shiftDateFrom = (baseDate, daysDiff) => {
         const date = baseDate instanceof Date ? baseDate : new Date(baseDate)
@@ -49,21 +49,21 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     }
 
     /**
-     * Format date to YYYY-MM-DD
+     * Format date thành YYYY-MM-DD
      * @param {Date} date - Date object
-     * @returns {string} Formatted date
+     * @returns {string} Ngày đã format
      */
     const formatDate = (date) => date.toISOString().split('T')[0]
 
     /**
-     * Shift date from today by number of days
-     * @param {number} days - Number of days to shift
-     * @returns {string} Date in YYYY-MM-DD format
+     * Dịch chuyển từ ngày hôm nay theo số ngày
+     * @param {number} days - Số ngày dịch chuyển
+     * @returns {string} Ngày theo format YYYY-MM-DD
      */
     const shiftDate = (days) => shiftDateFrom(new Date(), days)
 
     /**
-     * Initialize filters
+     * Khởi tạo bộ lọc
      */
     const filters = ref({
         startDate: initialStartDate || shiftDate(-defaultDays),
@@ -71,7 +71,7 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     })
 
     /**
-     * Date range presets
+     * Các preset khoảng thời gian
      */
     const presets = [
         { value: '30d', label: '30 ngày', days: 30 },
@@ -84,8 +84,8 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     const validationError = ref('')
 
     /**
-     * Apply preset
-     * @param {string} presetValue - Preset value ('30d', '90d', etc)
+     * Áp dụng preset
+     * @param {string} presetValue - Giá trị preset ('30d', '90d', etc)
      */
     const applyPreset = (presetValue) => {
         selectedPreset.value = presetValue
@@ -100,7 +100,7 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     }
 
     /**
-     * Validate dates
+     * Kiểm tra tính hợp lệ của ngày
      */
     const validateDates = () => {
         validationError.value = ''
@@ -111,15 +111,15 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
 
         const start = new Date(filters.value.startDate)
         const end = new Date(filters.value.endDate)
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const todayDate = new Date()
+        todayDate.setHours(0, 0, 0, 0)
 
         if (start > end) {
             validationError.value = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
             return
         }
 
-        if (end > today) {
+        if (end > todayDate) {
             validationError.value = 'Ngày kết thúc không được vượt quá hôm nay'
         }
     }
@@ -127,7 +127,7 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     const canAnalyze = computed(() => filters.value.startDate && filters.value.endDate && !validationError.value)
 
     /**
-     * Reset filters to default
+     * Reset bộ lọc về mặc định
      */
     const resetFilters = () => {
         filters.value = {
@@ -137,8 +137,8 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     }
 
     /**
-     * Validate date range
-     * @returns {Object} Validation result
+     * Kiểm tra tính hợp lệ của khoảng thời gian
+     * @returns {Object} Kết quả kiểm tra
      */
     const validate = computed(() => {
         const { startDate, endDate } = filters.value
@@ -174,8 +174,8 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     })
 
     /**
-     * Compute previous range for comparison
-     * @returns {Object} Previous date range
+     * Tính khoảng thời gian trước đó để so sánh
+     * @returns {Object} Khoảng thời gian trước
      */
     const computePreviousRange = () => {
         const start = new Date(`${filters.value.startDate}T00:00:00`)
@@ -191,8 +191,8 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
     }
 
     /**
-     * Get date range in days
-     * @returns {number} Number of days in range
+     * Lấy số ngày trong khoảng thời gian
+     * @returns {number} Số ngày trong khoảng
      */
     const rangeDays = computed(() => {
         const start = new Date(filters.value.startDate)
@@ -220,4 +220,3 @@ export const useDateRangeFilter = (defaultPreset = '90d') => {
         rangeDays
     }
 }
-

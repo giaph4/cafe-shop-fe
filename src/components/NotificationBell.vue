@@ -72,7 +72,7 @@
             v-else
             class="notification-bell__list"
           >
-            <button
+            <div
               v-for="notification in displayNotifications"
               :key="notification.id"
               class="notification-bell__item"
@@ -80,7 +80,6 @@
                 'notification-bell__item--unread': !notification.read,
                 [`notification-bell__item--${notification.priority}`]: true
               }"
-              type="button"
               @click="handleNotificationClick(notification)"
             >
               <div class="notification-bell__item-icon">
@@ -113,7 +112,7 @@
               >
                 <i class="bi bi-x" />
               </button>
-            </button>
+            </div>
           </div>
         </div>
 

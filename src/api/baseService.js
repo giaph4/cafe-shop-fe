@@ -5,10 +5,10 @@
 
 import api from './axios'
 import { buildApiError } from '@/utils/errorHandler'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 
 /**
- * Base service class với common methods
+ * Base service class với các methods chung
  */
 export class BaseService {
     constructor (baseUrl) {
@@ -16,9 +16,9 @@ export class BaseService {
     }
 
     /**
-     * Build full URL
-     * @param {string} path - Path to append
-     * @returns {string} Full URL
+     * Tạo URL đầy đủ
+     * @param {string} path - Đường dẫn cần thêm
+     * @returns {string} URL đầy đủ
      */
     buildUrl (path = '') {
         if (!path) return this.baseUrl
@@ -26,9 +26,9 @@ export class BaseService {
     }
 
     /**
-     * Handle API error
-     * @param {Error} error - Error object
-     * @throws {Object} Standardized error object
+     * Xử lý lỗi API
+     * @param {Error} error - Đối tượng lỗi
+     * @throws {Object} Đối tượng lỗi đã chuẩn hóa
      */
     handleError (error) {
         throw buildApiError(error)
@@ -36,9 +36,9 @@ export class BaseService {
 
     /**
      * GET request
-     * @param {string} path - Path to append
-     * @param {Object} params - Query parameters
-     * @returns {Promise} Response data
+     * @param {string} path - Đường dẫn cần thêm
+     * @param {Object} params - Tham số query
+     * @returns {Promise} Dữ liệu response
      */
     async get (path = '', params = {}) {
         try {
@@ -54,9 +54,9 @@ export class BaseService {
 
     /**
      * POST request
-     * @param {string} path - Path to append
-     * @param {Object} body - Request body
-     * @returns {Promise} Response data
+     * @param {string} path - Đường dẫn cần thêm
+     * @param {Object} body - Body của request
+     * @returns {Promise} Dữ liệu response
      */
     async post (path = '', body = {}) {
         try {
@@ -71,9 +71,9 @@ export class BaseService {
 
     /**
      * PUT request
-     * @param {string} path - Path to append
-     * @param {Object} body - Request body
-     * @returns {Promise} Response data
+     * @param {string} path - Đường dẫn cần thêm
+     * @param {Object} body - Body của request
+     * @returns {Promise} Dữ liệu response
      */
     async put (path = '', body = {}) {
         try {
@@ -88,9 +88,9 @@ export class BaseService {
 
     /**
      * PATCH request
-     * @param {string} path - Path to append
-     * @param {Object} body - Request body
-     * @returns {Promise} Response data
+     * @param {string} path - Đường dẫn cần thêm
+     * @param {Object} body - Body của request
+     * @returns {Promise} Dữ liệu response
      */
     async patch (path = '', body = {}) {
         try {
@@ -105,8 +105,8 @@ export class BaseService {
 
     /**
      * DELETE request
-     * @param {string} path - Path to append
-     * @returns {Promise} Response data
+     * @param {string} path - Đường dẫn cần thêm
+     * @returns {Promise} Dữ liệu response
      */
     async delete (path = '') {
         try {
@@ -121,9 +121,9 @@ export class BaseService {
 }
 
 /**
- * Create service instance helper
- * @param {string} baseUrl - Base URL for the service
- * @returns {BaseService} Service instance
+ * Helper tạo service instance
+ * @param {string} baseUrl - Base URL cho service
+ * @returns {BaseService} Instance của service
  */
 export const createService = (baseUrl) => new BaseService(baseUrl)
 

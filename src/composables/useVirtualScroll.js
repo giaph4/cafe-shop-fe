@@ -1,7 +1,13 @@
 import { ref, computed } from 'vue'
 
 /**
- * Composable for virtual scrolling with dynamic item heights
+ * Composable cho virtual scrolling với chiều cao item động
+ * @param {Object} options - Tùy chọn cấu hình
+ * @param {number} options.itemHeight - Chiều cao mặc định của item
+ * @param {number} options.containerHeight - Chiều cao container
+ * @param {number} options.overscan - Số item render thêm ngoài viewport
+ * @param {Array} options.items - Mảng items cần render
+ * @returns {Object} Các utility cho virtual scroll
  */
 export function useVirtualScroll (options = {}) {
     const {
@@ -13,11 +19,12 @@ export function useVirtualScroll (options = {}) {
 
     const containerRef = ref(null)
     const scrollTop = ref(0)
-    const itemHeights = ref(new Map()) // Store actual heights for dynamic sizing
+    // Lưu trữ chiều cao thực tế của từng item để hỗ trợ dynamic sizing
+    const itemHeights = ref(new Map())
 
     const totalHeight = computed(() => {
         if (itemHeights.value.size > 0) {
-            // Use actual heights if available
+            // Sử dụng chiều cao thực tế nếu có
             let total = 0
             items.forEach((item, index) => {
                 total += itemHeights.value.get(index) || itemHeight
@@ -116,7 +123,13 @@ export function useVirtualScroll (options = {}) {
 }
 
 /**
- * Composable for fixed-height virtual scrolling (simpler, faster)
+ * Composable cho virtual scrolling với chiều cao cố định (đơn giản hơn, nhanh hơn)
+ * @param {Object} options - Tùy chọn cấu hình
+ * @param {number} options.itemHeight - Chiều cao cố định của item
+ * @param {number} options.containerHeight - Chiều cao container
+ * @param {number} options.overscan - Số item render thêm ngoài viewport
+ * @param {Array} options.items - Mảng items cần render
+ * @returns {Object} Các utility cho virtual scroll
  */
 export function useFixedVirtualScroll (options = {}) {
     const {

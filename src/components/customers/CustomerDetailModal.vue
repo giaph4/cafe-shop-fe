@@ -162,68 +162,111 @@
                   <i class="bi bi-clock-history me-2" />
                   Lịch sử mua hàng
                 </h6>
-                <div
-                  v-if="ordersLoading"
-                  class="text-center py-3"
-                >
-                  <div
-                    class="spinner-border spinner-border-sm text-primary"
-                    role="status"
-                  />
-                </div>
-                <div
+                <LoadingState v-if="ordersLoading" />
+                <ErrorState
                   v-else-if="ordersError"
-                  class="error-message mb-0"
-                >
-                  <i class="bi bi-exclamation-triangle me-2" />
-                  {{ ordersError }}
-                </div>
-                <EmptyState
-                  v-else-if="orders.length === 0"
-                  title="Chưa có đơn hàng"
-                  message="Khách hàng này chưa có đơn hàng nào."
-                >
-                  <template #icon>
-                    <i class="bi bi-receipt-cutoff" />
-                  </template>
-                </EmptyState>
-                <div
-                  v-else
-                  class="orders-list"
-                >
-                  <div
-                    v-for="order in orders"
-                    :key="order.id"
-                    class="order-item"
+                  :message="ordersError"
+                  :show-retry="false"
+                />
+                <template v-else>
+                  <EmptyState
+                    v-if="orders.length === 0"
+                    title="Chưa có đơn hàng"
+                    message="Khách hàng này chưa có đơn hàng nào."
                   >
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div class="flex-grow-1">
-                        <div class="fw-semibold">
-                          Đơn #{{ order.id }}
-                        </div>
-                        <div class="small text-muted">
-                          {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
-                        </div>
-                        <div class="mt-1">
-                          <span
-                            :class="getStatusBadgeClass(order.status)"
-                            :style="getStatusBadgeStyle(order.status)"
-                          >
-                            {{ getStatusLabel(order.status) }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="text-end">
-                        <div
-                          class="fw-semibold"
-                          style="color: var(--color-primary); font-family: var(--font-family-sans);"
-                        >
-                          {{ formatCurrency(order.totalAmount) }}
+                    <template #icon>
+                      <i class="bi bi-receipt-cutoff" />
+                    </template>
+                  </EmptyState>
+                  <div v-else>
+                    <div class="orders-list">
+                      <div
+                        v-for="order in orders"
+                        :key="order.id"
+                        class="order-item"
+                      >
+                        <div class="d-flex justify-content-between align-items-start">
+                          <div class="flex-grow-1">
+                            <div class="fw-semibold">
+                              Đơn #{{ order.id }}
+                            </div>
+                            <div class="small text-muted">
+                              {{ order.tableName || 'Mang về' }} • {{ formatDateTime(order.createdAt) }}
+                            </div>
+                            <div class="mt-1">
+                              <span
+                                class="badge badge-status"
+                                :class="getStatusBadgeClass(order.status)"
+                              >
+                                {{ getStatusLabel(order.status) }}
+                              </span>
+                            </div>
+                          </div>
+                          <div class="text-end">
+                            <div
+                              class="fw-semibold"
+                              style="color: var(--color-primary); font-family: var(--font-family-sans);"
+                            >
+                              {{ formatCurrency(order.totalAmount) }}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
+                    <!-- Pagination cho lịch sử đơn hàng -->
+                    <div
+                      v-if="ordersTableData.totalPages > 1 || ordersTableData.pageSize"
+                      class="d-flex justify-content-between align-items-center mt-4"
+                    >
+                      <!-- Page Size Selector -->
+                      <div
+                        v-if="ordersTableData.pageSize"
+                        class="d-flex align-items-center gap-2"
+                      >
+                        <label
+                          class="mb-0 text-muted small"
+                          style="font-family: var(--font-family-sans);"
+                        >
+                          Hiển thị:
+                        </label>
+                        <select
+                          :value="ordersTableData.pageSize"
+                          class="form-select form-select-sm"
+                          style="width: auto; min-width: 80px; font-family: var(--font-family-sans);"
+                          @change="handleOrdersPageSizeChange(parseInt($event.target.value, 10))"
+                        >
+                          <option :value="10">
+                            10
+                          </option>
+                          <option :value="20">
+                            20
+                          </option>
+                          <option :value="30">
+                            30
+                          </option>
+                          <option :value="50">
+                            50
+                          </option>
+                        </select>
+                        <span
+                          class="text-muted small"
+                          style="font-family: var(--font-family-sans);"
+                        >
+                          / trang
+                        </span>
+                      </div>
+                      <div v-else />
+                      <!-- Pagination -->
+                      <Pagination
+                        v-if="ordersTableData.totalPages > 1"
+                        mode="zero-based"
+                        :current-page="ordersTableData.zeroBasedPage"
+                        :total-pages="ordersTableData.totalPages"
+                        @page-change="ordersTableData.setPage"
+                      />
+                    </div>
                   </div>
-                </div>
+                </template>
               </div>
             </template>
             <EmptyState
@@ -261,7 +304,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import { Modal } from 'bootstrap'
 import { getCustomerById, getCustomerPurchaseHistory } from '@/api/customerService'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
@@ -269,6 +312,8 @@ import logger from '@/utils/logger'
 import LoadingState from '@/components/common/LoadingState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { useTableData } from '@/composables/useTableData'
+import Pagination from '@/components/common/Pagination.vue'
 
 const props = defineProps({
     customerId: {
@@ -283,7 +328,6 @@ const modalElement = ref(null)
 let modalInstance = null
 
 const customer = ref(null)
-const orders = ref([])
 const summary = ref({
     totalOrders: 0,
     totalAmount: 0,
@@ -291,15 +335,37 @@ const summary = ref({
     lastPurchaseDate: null
 })
 const loading = ref(false)
-const ordersLoading = ref(false)
 const error = ref(null)
-const ordersError = ref(null)
+
+// Sử dụng useTableData cho lịch sử đơn hàng
+const ordersTableData = useTableData({
+    fetchFn: async (params) => {
+        if (!props.customerId) return { content: [], totalPages: 0, totalElements: 0 }
+        return await getCustomerPurchaseHistory({
+            id: props.customerId,
+            page: params.page,
+            size: params.size
+        })
+    },
+    initialPageSize: 10,
+    debounceMs: 300,
+    syncUrl: false, // Không sync URL cho modal
+    zeroBasedPage: true
+})
+
+// Computed để tính toán summary từ orders
+const orders = computed(() => ordersTableData.data.value || [])
+const ordersLoading = computed(() => ordersTableData.loading.value)
+const ordersError = computed(() => {
+    const err = ordersTableData.error.value
+    return err && typeof err === 'object' ? err.message : err
+})
 
 const STATUS_METADATA = {
-    PENDING: { label: 'Đang chờ', badgeClass: 'bg-warning-subtle text-warning' },
-    PAID: { label: 'Đã thanh toán', badgeClass: 'bg-success-subtle text-success' },
-    CANCELLED: { label: 'Đã hủy', badgeClass: 'bg-danger-subtle text-danger' },
-    TRANSFERRED: { label: 'Đã chuyển ca', badgeClass: 'bg-info-subtle text-info' }
+    PENDING: { label: 'Đang chờ', badgeClass: 'badge-status--warning' },
+    PAID: { label: 'Đã thanh toán', badgeClass: 'badge-status--success' },
+    CANCELLED: { label: 'Đã hủy', badgeClass: 'badge-status--danger' },
+    TRANSFERRED: { label: 'Đã chuyển ca', badgeClass: 'badge-status--info' }
 }
 
 const fetchCustomerDetails = async () => {
@@ -313,7 +379,8 @@ const fetchCustomerDetails = async () => {
     try {
         const response = await getCustomerById(props.customerId)
         customer.value = response
-        await fetchOrders()
+        // Refresh orders khi customer được load
+        ordersTableData.refresh()
     } catch (err) {
         logger.error('Failed to fetch customer details:', err)
         error.value = err?.response?.data?.message || 'Không thể tải thông tin chi tiết khách hàng.'
@@ -323,22 +390,21 @@ const fetchCustomerDetails = async () => {
     }
 }
 
-const fetchOrders = async () => {
-    if (!props.customerId) return
+// Watch orders để tính toán summary
+watch(
+    () => ordersTableData.data.value,
+    (ordersList) => {
+        if (!ordersList || !Array.isArray(ordersList)) {
+            summary.value = {
+                totalOrders: 0,
+                totalAmount: 0,
+                averageOrderValue: 0,
+                lastPurchaseDate: null
+            }
+            return
+        }
 
-    ordersLoading.value = true
-    ordersError.value = null
-    try {
-        const response = await getCustomerPurchaseHistory({
-            id: props.customerId,
-            page: 0,
-            size: 10
-        })
-
-        const ordersList = Array.isArray(response?.content) ? response.content : (Array.isArray(response) ? response : [])
-        orders.value = ordersList
-
-        // Tính toán thống kê
+        // Tính toán thống kê từ tất cả orders (có thể cần fetch all nếu có nhiều trang)
         const paidOrders = ordersList.filter(o => o.status === 'PAID')
         summary.value.totalOrders = ordersList.length
         summary.value.totalAmount = paidOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0)
@@ -350,14 +416,9 @@ const fetchOrders = async () => {
         } else {
             summary.value.lastPurchaseDate = null
         }
-    } catch (err) {
-        logger.error('Failed to fetch customer orders:', err)
-        ordersError.value = 'Không thể tải lịch sử đơn hàng.'
-        orders.value = []
-    } finally {
-        ordersLoading.value = false
-    }
-}
+    },
+    { immediate: true, deep: true }
+)
 
 const formatDate = (value) => {
     if (!value) return '—'
@@ -372,37 +433,7 @@ const formatLoyaltyPoints = (points) => {
 
 const getStatusLabel = (status) => STATUS_METADATA[status]?.label || status
 
-const getStatusBadgeClass = () => 'badge'
-
-const getStatusBadgeStyle = (status) => {
-    const styles = {
-        PENDING: {
-            background: 'var(--color-soft-amber)',
-            border: '1px solid var(--color-warning)',
-            color: 'var(--color-warning)'
-        },
-        PAID: {
-            background: 'var(--color-soft-emerald)',
-            border: '1px solid var(--color-success)',
-            color: 'var(--color-success)'
-        },
-        CANCELLED: {
-            background: 'var(--color-soft-rose)',
-            border: '1px solid var(--color-danger)',
-            color: 'var(--color-danger)'
-        },
-        TRANSFERRED: {
-            background: 'var(--color-soft-sky)',
-            border: '1px solid var(--color-info)',
-            color: 'var(--color-info)'
-        }
-    }
-    return styles[status] || {
-        background: 'var(--color-card-muted)',
-        border: '1px solid var(--color-border)',
-        color: 'var(--color-text-muted)'
-    }
-}
+const getStatusBadgeClass = (status) => STATUS_METADATA[status]?.badgeClass || 'badge-status--default'
 
 const handleEdit = () => {
     if (customer.value) {
@@ -411,10 +442,19 @@ const handleEdit = () => {
     }
 }
 
+const handleOrdersPageSizeChange = (size) => {
+    ordersTableData.setPageSize(size)
+    ordersTableData.setPage(0) // Reset về trang đầu khi đổi pageSize
+}
+
 const show = () => {
     if (modalInstance) {
         modalInstance.show()
         fetchCustomerDetails()
+        // Refresh orders khi modal mở
+        if (props.customerId) {
+            ordersTableData.refresh()
+        }
     }
 }
 
@@ -428,6 +468,9 @@ const hide = () => {
 watch(() => props.customerId, (newId) => {
     if (newId && modalInstance?._isShown) {
         fetchCustomerDetails()
+        // Reset và refresh orders khi customerId thay đổi
+        ordersTableData.goToFirst()
+        ordersTableData.refresh()
     }
 })
 
@@ -643,12 +686,49 @@ defineExpose({ show, hide })
 }
 
 /* Badge - Chuẩn hóa */
+/* Base Badge - Tiêu chuẩn đồng bộ */
 .customer-detail-modal :global(.badge) {
+    display: inline-flex;
+    align-items: center;
     padding: var(--spacing-1) var(--spacing-2);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     font-family: var(--font-family-sans);
+    border: 1px solid;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+/* Status Badges - Tiêu chuẩn đồng bộ */
+.badge-status--success {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
+.badge-status--warning {
+    background: rgba(251, 191, 36, 0.18);
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.badge-status--danger {
+    background: rgba(244, 63, 94, 0.18);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.badge-status--info {
+    background: rgba(14, 165, 233, 0.18);
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+}
+
+.badge-status--default {
+    background: var(--color-card-muted);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
 }
 
 /* Error message - không dùng alert */

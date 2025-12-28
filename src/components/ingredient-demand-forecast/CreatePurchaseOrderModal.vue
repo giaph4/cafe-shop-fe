@@ -3,17 +3,15 @@
     <div
       class="create-po-modal modal fade show"
       tabindex="-1"
-      style="display: block; z-index: 1055;"
+      style="display: block;"
       @click.self="handleClose"
     >
       <div
         class="modal-backdrop fade show"
-        style="z-index: 1050;"
         @click="handleClose"
       />
       <div
         class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
-        style="z-index: 1056;"
       >
         <div
           class="modal-content"

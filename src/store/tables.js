@@ -59,7 +59,7 @@ export const useTableStore = defineStore('tables', () => {
     const loadTables = async (force = false) => {
         if (loading.value && !force) return
 
-        // If we have recent data and not forcing, skip
+        // Nếu có dữ liệu mới và không bắt buộc, bỏ qua
         if (!force && tables.value.length > 0 && lastUpdated.value) {
             const age = Date.now() - lastUpdated.value
             if (age < 30000) { // 30 seconds cache
@@ -101,7 +101,7 @@ export const useTableStore = defineStore('tables', () => {
             if (index !== -1) {
                 tables.value[index] = { ...tables.value[index], ...updatedTable }
             } else {
-                // If table not in list, add it
+                // Nếu bàn không có trong danh sách, thêm vào
                 tables.value.push(updatedTable)
             }
 
@@ -138,14 +138,14 @@ export const useTableStore = defineStore('tables', () => {
                 if (index !== -1) {
                     tables.value[index] = { ...tables.value[index], ...tableData }
                 } else {
-                    // If table not in list, add it
+                    // Nếu bàn không có trong danh sách, thêm vào
                     tables.value.push(tableData)
                 }
                 lastUpdated.value = Date.now()
                 break
 
             case 'TABLE_CREATED':
-                // Add new table if not exists
+                // Thêm bàn mới nếu chưa tồn tại
                 if (!tables.value.find(t => t.id === tableData.id)) {
                     tables.value.push(tableData)
                     lastUpdated.value = Date.now()
@@ -153,7 +153,7 @@ export const useTableStore = defineStore('tables', () => {
                 break
 
             case 'TABLE_DELETED':
-                // Remove table from list
+                // Xóa bàn khỏi danh sách
                 const deleteIndex = tables.value.findIndex(t => t.id === tableData.id)
                 if (deleteIndex !== -1) {
                     tables.value.splice(deleteIndex, 1)

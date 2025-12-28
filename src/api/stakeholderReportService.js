@@ -1,5 +1,5 @@
 import api from './axios'
-import { cleanParams } from './utils'
+import { cleanParams } from './helpers'
 import logger from '@/utils/logger'
 
 const BASE_URL = '/api/stakeholder/reports'

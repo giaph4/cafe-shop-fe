@@ -30,7 +30,7 @@ const getDateRange = (config) => {
 
     let startDate = config?.dateFrom
     if (!startDate) {
-            // Mặc định: 7 ngày gần nhất
+        // Mặc định: 7 ngày gần nhất
         const daysAgo = new Date(today)
         daysAgo.setDate(daysAgo.getDate() - 7)
         startDate = formatDateForAPI(daysAgo)

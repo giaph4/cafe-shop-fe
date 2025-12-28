@@ -26,7 +26,10 @@
       </div>
     </div>
 
-    <div class="neo-nav__section neo-nav__section--center">
+    <div
+      v-if="!isPosPage"
+      class="neo-nav__section neo-nav__section--center"
+    >
       <GlobalSearch />
     </div>
 
@@ -183,8 +186,9 @@ const currentThemeInfo = computed(() => {
 })
 
 const pageTitle = computed(() => route.meta?.breadcrumb || route.meta?.title || route.name || 'Trang chính')
+const isPosPage = computed(() => route.name === 'POS')
 const displayName = computed(() => authStore.user?.fullName || authStore.user?.username || 'Người dùng')
-const avatarUrl = computed(() => authStore.user?.avatar || 'https://i.pravatar.cc/80')
+const avatarUrl = computed(() => authStore.user?.avatarUrl || authStore.user?.avatar || 'https://i.pravatar.cc/80')
 const canAccessSettings = computed(() => {
     const userRoles = authStore.userRoles || []
     return userRoles.includes('ROLE_ADMIN')

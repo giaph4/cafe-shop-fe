@@ -1,8 +1,8 @@
 /**
- * Composable for file upload functionality
- * MAINTAINABILITY FIX: Tách file upload logic ra khỏi component để dễ maintain và reuse
+ * Composable xử lý upload file
+ * Tách logic upload file ra khỏi component để dễ bảo trì và tái sử dụng
  *
- * Usage:
+ * Cách sử dụng:
  * const { fileItems, selectedFiles, handleFileSelect, handleUpload, removeFile, ... } = useFileUpload()
  */
 
@@ -33,12 +33,12 @@ export function useFileUpload (options = {}) {
     const uploadError = ref('')
     const uploadSuccess = ref([])
 
-    // UI JANK FIX: Throttle progress updates
+    // Throttle progress updates để tránh UI lag
     const throttledProgressUpdates = new Map()
 
     /**
-     * Update file progress với throttle
-     * UI JANK FIX: Throttle progress updates để giảm số lượng re-renders
+     * Cập nhật tiến độ upload file với throttle
+     * Throttle progress updates để giảm số lượng re-renders
      */
     const updateFileProgress = (fileItem, progress) => {
         if (!fileItem || !fileItem.id) return
@@ -59,8 +59,8 @@ export function useFileUpload (options = {}) {
     }
 
     /**
-     * Add files và generate preview
-     * MEMORY LEAK FIX: Sử dụng FileReader.readAsDataURL thay vì URL.createObjectURL
+     * Thêm files và tạo preview
+     * Sử dụng FileReader.readAsDataURL thay vì URL.createObjectURL để tránh memory leak
      */
     const addFiles = (files) => {
         files.forEach(file => {
@@ -92,8 +92,8 @@ export function useFileUpload (options = {}) {
     }
 
     /**
-     * Remove file và cleanup preview URL
-     * MEMORY LEAK FIX: Cleanup preview URL khi remove file
+     * Xóa file và dọn dẹp preview URL
+     * Cleanup preview URL khi xóa file để tránh memory leak
      */
     const removeFile = (index) => {
         if (fileItems.value[index]?.uploading) return
@@ -118,8 +118,8 @@ export function useFileUpload (options = {}) {
     }
 
     /**
-     * Handle file upload
-     * MAINTAINABILITY FIX: Tách logic upload ra khỏi component
+     * Xử lý upload file
+     * Tách logic upload ra khỏi component để dễ bảo trì
      */
     const handleUpload = async () => {
         if (selectedFiles.value.length === 0) {
@@ -179,7 +179,7 @@ export function useFileUpload (options = {}) {
                 })
             }
 
-            // Add upload date to each result
+            // Thêm ngày upload cho mỗi kết quả
             const now = new Date().toISOString()
             results = results.map(file => ({
                 ...file,

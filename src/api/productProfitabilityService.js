@@ -46,7 +46,7 @@ const classifyProduct = (margin, volume, avgMargin, avgVolume) => {
 
 export const analyzeProductProfitability = async ({ startDate, endDate } = {}) => {
     try {
-        // Call backend API instead of calculating locally
+        // Gọi backend API để lấy dữ liệu phân tích lợi nhuận sản phẩm
         const { data } = await api.get('/api/v1/reports/product-profitability', {
             params: { startDate, endDate }
         })
@@ -55,7 +55,7 @@ export const analyzeProductProfitability = async ({ startDate, endDate } = {}) =
             throw new Error('Không nhận được dữ liệu từ server')
         }
 
-        // Normalize response to match frontend expectations
+        // Chuẩn hóa response cho frontend
         return {
             products: (data.products || []).map(p => ({
                 productId: p.productId,
@@ -115,175 +115,11 @@ export const analyzeProductProfitability = async ({ startDate, endDate } = {}) =
     }
 }
 
-// Keep the old implementation as fallback (commented out)
-/*
-export const analyzeProductProfitability_OLD = async ({ startDate, endDate } = {}) => {
-    try {
-        const [products, orders, bestSellers] = await Promise.all([
-            productService.getProducts({ page: 0, size: 1000 }),
-            orderService.getOrdersByDateRange(startDate, endDate, 0, 1000),
-            reportService.getBestSellers(startDate, endDate, 1000)
-        ])
-
-        const productsList = Array.isArray(products) ? products : (products?.content || [])
-        const ordersList = Array.isArray(orders) ? orders : (orders?.content || [])
-        const bestSellersList = bestSellers?.items || []
-
-        const productAnalytics = await Promise.all(
-            productsList.map(async (product) => {
-                const recipe = await productService.getProductRecipe(product.id).catch(() => null)
-                const costPerUnit = await calculateProductCost(product, recipe)
-                const price = toNumber(product.price) || 0
-
-                const productOrders = ordersList.filter(order =>
-                    order.orderDetails?.some(detail => detail.productId === product.id)
-                )
-
-                let totalRevenue = 0
-                let totalCost = 0
-                let totalQuantity = 0
-
-                productOrders.forEach(order => {
-                    order.orderDetails?.forEach(detail => {
-                        if (detail.productId === product.id) {
-                            const quantity = toNumber(detail.quantity) || 0
-                            const detailPrice = toNumber(detail.price) || price
-                            totalQuantity += quantity
-                            totalRevenue += quantity * detailPrice
-                            totalCost += quantity * costPerUnit
-                        }
-                    })
-                })
-
-                const profit = totalRevenue - totalCost
-                const margin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0
-
-                const bestSellerData = bestSellersList.find(bs => bs.productId === product.id)
-                const volumeRank = bestSellerData ? bestSellerData.rank : null
-
-                return {
-                    productId: product.id,
-                    name: product.name,
-                    categoryId: product.categoryId,
-                    categoryName: product.category?.name || 'N/A',
-                    price,
-                    costPerUnit,
-                    totalRevenue,
-                    totalCost,
-                    profit,
-                    margin,
-                    totalQuantity,
-                    volumeRank,
-                    status: product.available ? 'active' : 'inactive'
-                }
-            })
-        )
-
-        const avgMargin = productAnalytics.length > 0
-            ? productAnalytics.reduce((sum, p) => sum + p.margin, 0) / productAnalytics.length
-            : 0
-
-        const avgVolume = productAnalytics.length > 0
-            ? productAnalytics.reduce((sum, p) => sum + p.totalQuantity, 0) / productAnalytics.length
-            : 0
-
-        const classifiedProducts = productAnalytics.map(product => ({
-            ...product,
-            classification: classifyProduct(product.margin, product.totalQuantity, avgMargin, avgVolume)
-        }))
-
-        const categoryAnalysis = {}
-        classifiedProducts.forEach(product => {
-            const categoryId = product.categoryId || 'uncategorized'
-            if (!categoryAnalysis[categoryId]) {
-                categoryAnalysis[categoryId] = {
-                    categoryId,
-                    categoryName: product.categoryName,
-                    totalRevenue: 0,
-                    totalCost: 0,
-                    totalProfit: 0,
-                    totalQuantity: 0,
-                    productCount: 0,
-                    avgMargin: 0
-                }
-            }
-            const cat = categoryAnalysis[categoryId]
-            cat.totalRevenue += product.totalRevenue
-            cat.totalCost += product.totalCost
-            cat.totalProfit += product.profit
-            cat.totalQuantity += product.totalQuantity
-            cat.productCount += 1
-        })
-
-        Object.keys(categoryAnalysis).forEach(categoryId => {
-            const cat = categoryAnalysis[categoryId]
-            cat.avgMargin = cat.totalRevenue > 0 ? (cat.totalProfit / cat.totalRevenue) * 100 : 0
-        })
-
-        const topProfitable = classifiedProducts
-            .sort((a, b) => b.profit - a.profit)
-            .slice(0, 10)
-
-        const lowMargin = classifiedProducts
-            .filter(p => p.margin < 20 && p.totalQuantity > 0)
-            .sort((a, b) => a.margin - b.margin)
-            .slice(0, 10)
-
-        return {
-            products: classifiedProducts.sort((a, b) => b.profit - a.profit),
-            categoryAnalysis: Object.values(categoryAnalysis),
-            topProfitable,
-            lowMargin,
-            summary: {
-                totalRevenue: classifiedProducts.reduce((sum, p) => sum + p.totalRevenue, 0),
-                totalCost: classifiedProducts.reduce((sum, p) => sum + p.totalCost, 0),
-                totalProfit: classifiedProducts.reduce((sum, p) => sum + p.profit, 0),
-                avgMargin,
-                avgVolume
-            },
-            period: { startDate, endDate },
-            generatedAt: new Date().toISOString()
-        }
-    } catch (error) {
-        throw buildApiError(error)
-    }
-}
-
-export const getPricingSuggestions = async (productId, currentPrice, currentMargin, targetMargin = 30) => {
-    try {
-        const product = await productService.getProductById(productId)
-        const recipe = await productService.getProductRecipe(productId).catch(() => null)
-        const costPerUnit = await calculateProductCost(product, recipe)
-
-        const suggestedPrice = costPerUnit > 0
-            ? (costPerUnit / (1 - targetMargin / 100))
-            : currentPrice * 1.1
-
-        const currentProfit = currentPrice - costPerUnit
-        const suggestedProfit = suggestedPrice - costPerUnit
-
-        const impact = {
-            priceChange: suggestedPrice - currentPrice,
-            priceChangePercent: ((suggestedPrice - currentPrice) / currentPrice) * 100,
-            marginChange: targetMargin - currentMargin,
-            profitIncrease: suggestedProfit - currentProfit,
-            profitIncreasePercent: currentProfit > 0 ? ((suggestedProfit - currentProfit) / currentProfit) * 100 : 0
-        }
-
-        return {
-            productId,
-            currentPrice,
-            currentMargin,
-            costPerUnit,
-            suggestedPrice,
-            targetMargin,
-            impact
-        }
-    } catch (error) {
-        throw buildApiError(error)
-    }
-}
-
+/**
+ * Xuất báo cáo phân tích lợi nhuận sản phẩm
+ * @param {Object} analyticsData - Dữ liệu phân tích
+ * @returns {Object} Dữ liệu xuất báo cáo
+ */
 export const exportProfitabilityReport = (analyticsData) => {
     const data = [
         ['BÁO CÁO PHÂN TÍCH LỢI NHUẬN SẢN PHẨM'],
@@ -302,7 +138,7 @@ export const exportProfitabilityReport = (analyticsData) => {
             product.totalRevenue.toLocaleString('vi-VN'),
             product.totalCost.toLocaleString('vi-VN'),
             product.profit.toLocaleString('vi-VN'),
-            `${product.margin.toFixed(2)  }%`,
+            `${product.margin.toFixed(2)}%`,
             product.totalQuantity,
             product.classification
         ])
@@ -314,4 +150,3 @@ export const exportProfitabilityReport = (analyticsData) => {
         filename: `phan-tich-loi-nhuan-${analyticsData.period.startDate}-${analyticsData.period.endDate}.xlsx`
     }
 }
-

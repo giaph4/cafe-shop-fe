@@ -195,13 +195,13 @@ const handleClearCache = async () => {
 
     clearingCache.value = true
     try {
-        // Clear localStorage except theme and essential settings
+        // Xóa localStorage trừ theme và các cài đặt cần thiết
         const theme = localStorage.getItem('app-theme')
         const language = localStorage.getItem('language')
 
         localStorage.clear()
 
-        // Restore essential settings
+        // Khôi phục các cài đặt cần thiết
         if (theme) localStorage.setItem('app-theme', theme)
         if (language) localStorage.setItem('language', language)
 
@@ -223,13 +223,14 @@ const handleResetSettings = async () => {
 
     resettingSettings.value = true
     try {
-        // Reset to defaults
+        // Đặt lại về mặc định
         settingsStore.setTheme(LIGHT_THEME)
         settingsStore.setLanguage('vi')
         settingsStore.setNotificationSound(true)
         settingsStore.setChristmasEffect(false)
+        settingsStore.setShowDevDemoFeatures(true)
 
-        // Clear other settings
+        // Xóa các cài đặt khác
         localStorage.removeItem('emailNotifications')
         localStorage.removeItem('pushNotifications')
         localStorage.removeItem('reduceMotion')
